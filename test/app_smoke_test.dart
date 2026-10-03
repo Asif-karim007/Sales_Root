@@ -13,7 +13,11 @@ import 'package:salesroot/core/storage/prefs_provider.dart';
 void main() {
   testWidgets('a stored session opens the shell', (tester) async {
     FlutterSecureStorage.setMockInitialValues({
-      'session': jsonEncode({'Token': 't', 'UserId': 1, 'Name': 'Karim Hossain'}),
+      'session': jsonEncode({
+        'Token': 't',
+        'UserId': 1,
+        'Name': 'Karim Hossain',
+      }),
     });
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();

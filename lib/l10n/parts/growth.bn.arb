@@ -1,0 +1,1107 @@
+{
+  "@@locale": "bn",
+  "growthAgoNow": "এখন",
+  "growthAgoMinutes": "{count} মি.",
+  "@growthAgoMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthAgoHours": "{count} ঘ.",
+  "@growthAgoHours": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthAgoDays": "{count} দিন",
+  "@growthAgoDays": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthSourceFacebook": "Facebook",
+  "growthSourceWebsite": "ওয়েবসাইট",
+  "growthSourceWhatsapp": "WhatsApp",
+  "growthSourceMessenger": "Messenger",
+  "growthSourceSms": "এসএমএস",
+  "growthSourceCall": "ফোন কল",
+  "growthChannelFacebook": "Facebook পেজ ও লিড ফর্ম",
+  "growthChannelWhatsapp": "WhatsApp বিজনেস",
+  "growthChannelMessenger": "Messenger ও Instagram DM",
+  "growthChannelWebsite": "ওয়েবসাইট ফর্ম",
+  "growthChannelHostedForm": "হোস্টেড ফর্ম",
+  "growthChannelEmail": "ইমেইল ইনবক্স (Gmail)",
+  "growthChannelLinkedin": "LinkedIn লিড ফর্ম",
+  "growthChannelGoogleAds": "Google Ads লিড ফর্ম",
+  "growthFieldName": "নাম",
+  "growthFieldMobile": "মোবাইল",
+  "growthFieldEmail": "ইমেইল",
+  "growthFieldArea": "এলাকা",
+  "growthFieldCompany": "প্রতিষ্ঠান",
+  "growthFieldNote": "নোট",
+  "growthFieldCustom": "কাস্টম ঘর",
+  "growthFieldSkip": "নেবেন না",
+  "growthDestinationInbox": "নতুন লিড ইনবক্স",
+  "growthDestinationRules": "নতুন লিড ইনবক্স → বিতরণ নিয়ম",
+  "growthModeMember": "একজন সদস্য",
+  "growthModeRoundRobin": "রাউন্ড-রবিন",
+  "growthModeByLoad": "যার কাজ কম",
+  "growthModeQueue": "শেয়ার্ড কিউ",
+  "growthRejectSpam": "স্প্যাম বা ভুয়া",
+  "growthRejectWrongNumber": "ভুল নম্বর",
+  "growthRejectNotInterested": "আগ্রহ নেই",
+  "growthRejectDuplicate": "আগেই লিড আছে",
+  "growthRejectOutOfArea": "আমাদের এলাকার বাইরে",
+  "growthSegmentOverdue": "মেয়াদ পার পাওনা",
+  "growthSegmentCustomers": "সব গ্রাহক",
+  "growthSegmentDealers": "সব ডিলার",
+  "growthSegmentHotLeads": "হট লিড",
+  "growthSegmentInterested": "আগ্রহী লিড",
+  "growthSegmentOpenLeads": "সব চালু লিড",
+  "growthAudienceEveryone": "সবাই",
+  "growthAudienceSales": "বিক্রয় টিম",
+  "growthAudienceField": "ফিল্ড টিম",
+  "growthAudienceLeads": "টিম লিড",
+  "growthRoleOwner": "মালিক",
+  "growthRoleAdmin": "অ্যাডমিন",
+  "growthRoleTeamLead": "টিম লিড",
+  "growthChannelsTitle": "চ্যানেল",
+  "growthChannelsSubtitle": "গ্রোথ অ্যাড-অন",
+  "growthChannelsNote": "Nexzen-এর যাচাইকৃত Meta অ্যাপের মাধ্যমে আপনার নিজের পেজ ও নম্বর যুক্ত হয়; কোনো ডেভেলপার সেটআপ লাগে না।",
+  "growthChannelsLeadsTotal": "চ্যানেল থেকে লিড",
+  "growthChannelsLeadsWeek": "এই সপ্তাহে",
+  "growthChannelLeadsAll": "এ পর্যন্ত লিড",
+  "growthChannelForms": "{count}টি ফর্ম",
+  "@growthChannelForms": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthChannelLeads": "{count} লিড",
+  "@growthChannelLeads": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthChannelWithPage": "পেজের সাথে",
+  "growthChannelConnected": "যুক্ত",
+  "growthChannelSoon": "শীঘ্রই",
+  "growthChannelSoonHint": "রিলিজ ২-এ আসছে",
+  "growthChannelGetCode": "কোড নিন",
+  "growthChannelConnect": "যুক্ত করুন",
+  "growthChannelDisconnect": "বিচ্ছিন্ন করুন",
+  "growthChannelDisconnected": "চ্যানেল বিচ্ছিন্ন হয়েছে",
+  "growthChannelConnectedDone": "চ্যানেল যুক্ত হয়েছে",
+  "growthChannelCodeAdded": "কোড বসিয়েছি",
+  "growthChannelTurnOn": "ফর্ম চালু করুন",
+  "growthChannelCopyCode": "কোড কপি করুন",
+  "growthChannelCopyLink": "লিংক কপি করুন",
+  "growthCopied": "কপি হয়েছে",
+  "growthChannelWebsiteHint": "কন্টাক্ট পেজে </body> এর আগে এই কোডটি বসান। প্রতিটি এনকোয়ারি নতুন লিডে আসবে।",
+  "growthChannelHostedHint": "আপনার লোগোসহ তৈরি এনকোয়ারি ফর্ম। লিংকটি Facebook, এসএমএস বা QR কোডে শেয়ার করুন।",
+  "growthChannelEmailHint": "এই ঠিকানায় আসা এনকোয়ারি পড়ে নতুন লিডে যোগ করা হবে।",
+  "growthChannelGenericHint": "লিড পেতে এই চ্যানেলটি যুক্ত করুন।",
+  "growthFacebookTitle": "Facebook লিড ফর্ম",
+  "growthFacebookStepSignIn": "সাইন ইন",
+  "growthFacebookStepPage": "পেজ",
+  "growthFacebookStepForms": "ফর্ম",
+  "growthFacebookStepFields": "ঘর",
+  "growthFacebookSignInTitle": "আপনার Facebook পেজ যুক্ত করুন",
+  "growthFacebookSignInBody": "যে Facebook অ্যাকাউন্ট পেজটি চালায় সেটি দিয়ে সাইন ইন করুন। SalesRoot শুধু লিড ফর্ম পড়ে; কখনো পোস্ট করে না।",
+  "growthFacebookSignInPoint1": "ফর্মের নতুন লিড এক মিনিটের মধ্যে আসে",
+  "growthFacebookSignInPoint2": "পেজের সাথে Messenger ও Instagram DM-ও আসে",
+  "growthFacebookSignInPoint3": "এই স্ক্রিন থেকে যেকোনো সময় বিচ্ছিন্ন করা যায়",
+  "growthFacebookContinue": "Facebook দিয়ে এগিয়ে যান",
+  "growthFacebookPickPage": "একটি পেজ বেছে নিন",
+  "growthFacebookPageMeta": "অ্যাডমিন: {name} · {count} ফলোয়ার",
+  "@growthFacebookPageMeta": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthFacebookPageAdmin": "পেজ · অ্যাডমিন: {name} · টোকেন ঠিক আছে",
+  "@growthFacebookPageAdmin": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "growthFacebookTokenExpired": "অ্যাক্সেসের মেয়াদ শেষ; আবার সাইন ইন করুন",
+  "growthFacebookForms": "লিড ফর্ম",
+  "growthFacebookNoForms": "এই পেজে কোনো লিড ফর্ম নেই",
+  "growthFacebookNoFormsBody": "Meta Ads Manager-এ একটি লিড ফর্ম বানিয়ে আবার আসুন।",
+  "growthFacebookCampaign": "ক্যাম্পেইন: {name}",
+  "@growthFacebookCampaign": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "growthFacebookMapFields": "ঘর মেলান",
+  "growthFacebookTurnOnForm": "প্রশ্ন মেলাতে অন্তত একটি ফর্ম চালু করুন।",
+  "growthFacebookDestination": "নতুন লিড যাবে",
+  "growthFacebookConnect": "যুক্ত করুন",
+  "growthFacebookConnectedDone": "Facebook লিড ফর্ম যুক্ত হয়েছে",
+  "growthFacebookSaved": "Facebook সেটিং সেভ হয়েছে",
+  "growthFacebookDisconnect": "এই পেজ বিচ্ছিন্ন করুন",
+  "growthFacebookDisconnectTitle": "পেজ বিচ্ছিন্ন করবেন?",
+  "growthFacebookDisconnectBody": "নতুন ফর্ম লিড ও Messenger চ্যাট আসা বন্ধ হবে। আগের লিডগুলো থাকবে।",
+  "growthInboxTitle": "নতুন লিড",
+  "growthInboxAverage": "প্রথম উত্তরের গড় সময়: {count} মিনিট",
+  "@growthInboxAverage": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthInboxUnassigned": "বরাদ্দহীন",
+  "growthInboxMine": "আমার",
+  "growthInboxLateFilter": "অপেক্ষায় >১৫ মি.",
+  "growthInboxMatchesExisting": "আগের রেকর্ডের সাথে নম্বর মিলেছে",
+  "growthInboxNewTag": "নতুন",
+  "growthInboxLateTag": "দেরি",
+  "growthInboxDuplicateTag": "একই?",
+  "growthInboxAssignedTag": "বরাদ্দ: {name}",
+  "@growthInboxAssignedTag": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "growthInboxAcceptedTag": "গৃহীত",
+  "growthInboxRejectedTag": "বাতিল",
+  "growthInboxEmpty": "অপেক্ষায় কোনো নতুন লিড নেই",
+  "growthInboxEmptyBody": "Facebook ফর্ম, WhatsApp ও ওয়েবসাইটের লিড প্রথমে এখানে আসে।",
+  "growthInboxConnectChannels": "চ্যানেল যুক্ত করুন",
+  "growthInboxLeadTitle": "নতুন লিড",
+  "growthInboxAccept": "মূল তালিকায় নিন",
+  "growthInboxAssign": "বরাদ্দ দিন",
+  "growthInboxAssignTo": "কাকে দেবেন",
+  "growthInboxAssigned": "{name}-কে বরাদ্দ দেওয়া হয়েছে",
+  "@growthInboxAssigned": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "growthInboxReject": "বাতিল",
+  "growthInboxRejectWhy": "কেন বাতিল করছেন?",
+  "growthInboxRejected": "{name} বাতিল হয়েছে",
+  "@growthInboxRejected": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "growthInboxForm": "ফর্ম",
+  "growthInboxCampaign": "ক্যাম্পেইন",
+  "growthInboxInterest": "জানতে চেয়েছেন",
+  "growthInboxConsent": "সম্মতি",
+  "growthInboxConsentYes": "হ্যাঁ · {time}",
+  "@growthInboxConsentYes": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "growthInboxMetaId": "Meta আইডি",
+  "growthInboxReceived": "এসেছে",
+  "growthInboxWaiting": "অপেক্ষা {time}। {minutes} মিনিটের মধ্যে উত্তর দিন।",
+  "@growthInboxWaiting": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "growthInboxAssignedTo": "দায়িত্বে {name}",
+  "@growthInboxAssignedTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "growthInboxAssignedByRule": "“{rule}” নিয়মে দায়িত্বে {name}",
+  "@growthInboxAssignedByRule": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "rule": {
+        "type": "String"
+      }
+    }
+  },
+  "growthInboxAcceptedNote": "মূল লিড তালিকায় নেওয়া হয়েছে · {name}",
+  "@growthInboxAcceptedNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "growthInboxRejectedNote": "এই লিডটি বাতিল করা হয়েছে।",
+  "growthInboxNoDuplicate": "এই নম্বরে আগের কোনো লিড বা গ্রাহক নেই।",
+  "growthInboxDuplicateLead": "এই নম্বরে আগেই একটি চালু লিড আছে",
+  "growthInboxDuplicateContact": "এই নম্বরটি একজন কনট্যাক্টের",
+  "growthInboxDuplicateCustomer": "আগের গ্রাহকের সাথে নম্বর মিলেছে",
+  "growthInboxOpen": "খুলুন",
+  "growthMemberOnLeave": "ছুটিতে",
+  "growthMemberLoad": "{count}টি চালু লিড",
+  "@growthMemberLoad": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthAcceptAssignTo": "দায়িত্বে",
+  "growthAcceptStage": "ধাপ",
+  "growthAcceptContact": "প্রতিষ্ঠান / কনট্যাক্ট",
+  "growthAcceptNewContact": "নতুন কনট্যাক্ট তৈরি হবে",
+  "growthAcceptLinkTo": "{name}-এর সাথে যুক্ত",
+  "@growthAcceptLinkTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "growthAcceptFollowUp": "প্রথম ফলো-আপ",
+  "growthAcceptFollowUpWhen": "আজ · কল · ১৫ মিনিটের মধ্যে",
+  "growthAcceptConfirm": "গ্রহণ করুন",
+  "growthAcceptDone": "{name} গৃহীত হয়েছে। লিডের বাকি তথ্য দিন।",
+  "@growthAcceptDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "growthAcceptByRule": "নিয়ম অনুযায়ী → {name}",
+  "@growthAcceptByRule": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "growthAcceptByRuleShort": "নিয়ম অনুযায়ী",
+  "growthAcceptByRuleHint": "বিতরণ নিয়ম অনুযায়ী ঠিক হবে",
+  "growthAcceptChecking": "নিয়ম দেখা হচ্ছে…",
+  "growthAcceptMember": "টিম সদস্য",
+  "growthRulesTitle": "বিতরণ নিয়ম",
+  "growthRulesOn": "বিতরণ নিয়ম চালু",
+  "growthRulesOnHint": "বন্ধ থাকলে সব লিড শেয়ার্ড কিউতে",
+  "growthRulesOrder": "নিয়ম (প্রথম মিল জিতবে)",
+  "growthRulesTest": "পরীক্ষা",
+  "growthRulesTestTitle": "পরীক্ষা: শেষ {count} লিড",
+  "@growthRulesTestTitle": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRulesTestRule": "নিয়ম {number}",
+  "@growthRulesTestRule": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRulesEmpty": "এখনো কোনো নিয়ম নেই",
+  "growthRulesEmptyBody": "নিয়ম না থাকলে সব নতুন লিড শেয়ার্ড কিউতে অপেক্ষা করে।",
+  "growthRuleNew": "নতুন নিয়ম",
+  "growthRuleTitle": "নিয়ম",
+  "growthRuleNumbered": "{number}. {name}",
+  "@growthRuleNumbered": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRuleOn": "চালু",
+  "growthRuleOff": "বন্ধ",
+  "growthRuleTurnedOn": "“{name}” চালু হয়েছে",
+  "@growthRuleTurnedOn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRuleTurnedOff": "“{name}” বন্ধ হয়েছে",
+  "@growthRuleTurnedOff": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRuleAny": "যেকোনো",
+  "growthRuleNobody": "এখনো কেউ না",
+  "growthRuleIfSource": "উৎস = {value}",
+  "@growthRuleIfSource": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRuleIfArea": "এলাকা = {value}",
+  "@growthRuleIfArea": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRuleIfForm": "ফর্ম = {value}",
+  "@growthRuleIfForm": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRuleEveryLead": "বাকি সব লিড",
+  "growthRuleToMember": "→ {name}",
+  "@growthRuleToMember": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRuleRoundRobin": "{count} জনে রাউন্ড-রবিন",
+  "@growthRuleRoundRobin": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRuleByLoad": "{count} জনের মধ্যে যার কাজ কম",
+  "@growthRuleByLoad": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRuleCheckedInShort": "শুধু চেক-ইন থাকা",
+  "growthRuleEscalate": "{count} মিনিটে টিম লিডকে জানাও",
+  "@growthRuleEscalate": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRuleName": "নিয়মের নাম",
+  "growthRuleNameHint": "যেমন উত্তরা ও মিরপুর → ঢাকা উত্তর",
+  "growthRuleNameTaken": "এই নামে আরেকটি নিয়ম আছে",
+  "growthRuleIf": "যদি",
+  "growthRuleThen": "তাহলে",
+  "growthRuleSchedule": "সময় ও সীমা",
+  "growthRuleSource": "উৎস",
+  "growthRuleForm": "ফর্ম / ক্যাম্পেইন",
+  "growthRuleAssign": "বরাদ্দ",
+  "growthRuleMember": "সদস্য",
+  "growthRuleMembers": "সদস্য ({count})",
+  "@growthRuleMembers": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRuleMembersRequired": "অন্তত একজন সদস্য বেছে নিন",
+  "growthRuleCheckedIn": "শুধু চেক-ইন থাকা সদস্য",
+  "growthRuleSkipLeave": "ছুটিতে থাকলে বাদ",
+  "growthRuleFallback": "কেউ না থাকলে",
+  "growthRuleNoResponse": "উত্তর না হলে",
+  "growthRuleNoEscalation": "জানানোর দরকার নেই",
+  "growthRuleEscalateTo": "{count} মিনিট → টিম লিডকে জানাও",
+  "@growthRuleEscalateTo": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRuleDays": "দিন",
+  "growthRuleHours": "সময়",
+  "growthRuleAllDay": "সারাদিন",
+  "growthRuleBetween": "{from} – {to}",
+  "@growthRuleBetween": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRuleCap": "সদস্যপ্রতি দৈনিক সীমা",
+  "growthRuleNoCap": "সীমা নেই",
+  "growthRuleCapValue": "দিনে {count}টি লিড",
+  "@growthRuleCapValue": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthRuleEnabled": "নিয়ম চালু",
+  "growthRuleSaved": "নিয়ম সেভ হয়েছে",
+  "growthRuleDeleted": "নিয়ম মুছে ফেলা হয়েছে",
+  "growthRuleDeleteTitle": "নিয়মটি মুছবেন?",
+  "growthRuleDeleteBody": "এই নিয়মের লিডগুলো পরের নিয়মে যাবে।",
+  "growthModeMemberHint": "সবসময় একই জন",
+  "growthModeRoundRobinHint": "পালা করে একে একে",
+  "growthModeByLoadHint": "যার চালু লিড সবচেয়ে কম",
+  "growthModeQueueHint": "টিমের যে কেউ নিতে পারবে",
+  "growthMemberCheckedIn": "চেক-ইন · {count}টি চালু লিড",
+  "@growthMemberCheckedIn": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthDaySat": "শনি",
+  "growthDaySun": "রবি",
+  "growthDayMon": "সোম",
+  "growthDayTue": "মঙ্গল",
+  "growthDayWed": "বুধ",
+  "growthDayThu": "বৃহঃ",
+  "growthDayFri": "শুক্র",
+  "growthMessagesTitle": "ইনবক্স",
+  "growthMessagesEmpty": "এখানে কোনো কথোপকথন নেই",
+  "growthMessagesEmptyBody": "গ্রাহকদের WhatsApp, Messenger ও এসএমএস উত্তর এখানে দেখা যাবে।",
+  "growthMessagesYou": "আপনি: {text}",
+  "@growthMessagesYou": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "growthMessagesYouShort": "আপনি",
+  "growthMessagesUnknown": "অজানা নম্বর",
+  "growthMessagesNewLead": "নতুন লিড?",
+  "growthMessagesAssigned": "বরাদ্দ: {name}",
+  "@growthMessagesAssigned": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "growthMessagesReadOnly": "আপনি এই কথোপকথন পড়তে পারবেন। উত্তর দিতে টিম লিডকে বলুন।",
+  "growthMessagesCustomer": "গ্রাহক",
+  "growthMessagesLead": "লিড",
+  "growthMessagesCreateLead": "লিড বানান",
+  "growthMessagesDue": "পাওনা {amount}",
+  "@growthMessagesDue": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "growthMessagesSuggested": "প্রস্তাবিত উত্তর: “{text}”",
+  "@growthMessagesSuggested": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "growthMessagesUse": "ব্যবহার",
+  "growthMessagesPdf": "PDF",
+  "growthMessagesWindowOpen": "২৪ ঘণ্টার জানালা খোলা: {time} পর্যন্ত মুক্ত উত্তর; পরে টেমপ্লেট লাগবে।",
+  "@growthMessagesWindowOpen": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "growthMessagesWindowClosed": "২৪ ঘণ্টার জানালা বন্ধ। অনুমোদিত টেমপ্লেট দিয়ে উত্তর দিন।",
+  "growthMessagesReplyOn": "{channel}-এ উত্তর দিন",
+  "@growthMessagesReplyOn": {
+    "placeholders": {
+      "channel": {
+        "type": "String"
+      }
+    }
+  },
+  "growthMessagesPickTemplate": "অনুমোদিত টেমপ্লেট বেছে নিন",
+  "growthMessagesTemplates": "টেমপ্লেট ও দ্রুত উত্তর",
+  "growthMessagesApproved": "অনুমোদিত টেমপ্লেট · {text}",
+  "@growthMessagesApproved": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "growthMessagesAttach": "সংযুক্ত করুন",
+  "growthMessagesAttachQuotation": "কোটেশন",
+  "growthMessagesAttachQuotationHint": "কোটেশন থেকে বেছে নিন বা বানান",
+  "growthMessagesAttachPriceList": "ডিলার দামের তালিকা (PDF)",
+  "growthMessagesAttachPriceListHint": "চলতি দামের তালিকা পাঠাবে",
+  "growthCampaignsTitle": "ক্যাম্পেইন",
+  "growthCampaignsEmpty": "এখনো কোনো ক্যাম্পেইন নেই",
+  "growthCampaignsEmptyBody": "একসাথে অনেক গ্রাহককে অফার, দামের তালিকা বা পেমেন্ট রিমাইন্ডার পাঠান।",
+  "growthCampaignsSmsCredits": "এসএমএস ক্রেডিট",
+  "growthCampaignsBuyMore": "কিনুন",
+  "growthCampaignsEmailMonth": "ইমেইল (এ মাস)",
+  "growthCampaignsBulkSms": "বাল্ক এসএমএস",
+  "growthCampaignsBulkEmail": "বাল্ক ইমেইল",
+  "growthCampaignOf": "{used} / {total}",
+  "@growthCampaignOf": {
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignSms": "এসএমএস",
+  "growthCampaignEmail": "ইমেইল",
+  "growthCampaignTitleLine": "{name} · {channel}",
+  "@growthCampaignTitleLine": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "channel": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignPeople": "{count} জন · {segment}",
+  "@growthCampaignPeople": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "segment": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignCount": "{count} জন",
+  "@growthCampaignCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignSent": "{count} জন",
+  "@growthCampaignSent": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignDelivered": "{percent} পৌঁছেছে",
+  "@growthCampaignDelivered": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignReplies": "{count} উত্তর",
+  "@growthCampaignReplies": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignLeads": "{count} লিড",
+  "@growthCampaignLeads": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignOpened": "{percent} খুলেছে",
+  "@growthCampaignOpened": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignDoneTag": "শেষ",
+  "growthCampaignScheduledTag": "নির্ধারিত",
+  "growthCampaignSendingTag": "যাচ্ছে",
+  "growthCampaignCancelledTag": "বাতিল",
+  "growthCampaignTo": "কাদের",
+  "growthSmsLengthBangla": "{used} (বাংলা: প্রতি এসএমএসে {limit})",
+  "@growthSmsLengthBangla": {
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "growthSmsLengthEnglish": "{used} (ইংরেজি: প্রতি এসএমএসে {limit})",
+  "@growthSmsLengthEnglish": {
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "growthSmsTemplate": "টেমপ্লেট",
+  "growthSmsNoTemplate": "টেমপ্লেট ছাড়া",
+  "growthSmsMessage": "মেসেজ",
+  "growthSmsMessageHint": "এসএমএস লিখুন। নিচের ঘরে চাপ দিয়ে নাম-বিল বসান।",
+  "growthSmsCharacters": "অক্ষর",
+  "growthSmsPerPerson": "প্রতি জনে এসএমএস",
+  "growthSmsCredits": "মোট ক্রেডিট",
+  "growthSmsSender": "সেন্ডার",
+  "growthSmsShort": "ক্রেডিট কম: দরকার {needed}, আছে {have}।",
+  "@growthSmsShort": {
+    "placeholders": {
+      "needed": {
+        "type": "String"
+      },
+      "have": {
+        "type": "String"
+      }
+    }
+  },
+  "growthSmsBuyCredits": "ক্রেডিট কিনুন",
+  "growthSmsSendNow": "এখনই পাঠান",
+  "growthSmsOrSchedule": "না হলে সময় ঠিক করুন",
+  "growthSmsSchedule": "সময়",
+  "growthSmsExcludeDnc": "“যোগাযোগ করবেন না” বাদ",
+  "growthSmsTest": "নিজেকে টেস্ট",
+  "growthSmsTestSent": "আপনার নম্বরে টেস্ট এসএমএস গেছে",
+  "growthSmsWriteFirst": "আগে মেসেজ লিখুন",
+  "growthSmsSendTo": "{count} জনকে পাঠান",
+  "@growthSmsSendTo": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthSmsScheduleFor": "{count} জনকে নির্ধারণ",
+  "@growthSmsScheduleFor": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthSmsScheduled": "{count} জনের জন্য নির্ধারিত",
+  "@growthSmsScheduled": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthSmsSent": "{count} জনকে পাঠানো হয়েছে",
+  "@growthSmsSent": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthSmsNotEnough": "এসএমএস ক্রেডিট কম। পাঠাতে আরও কিনুন।",
+  "growthEmailSubject": "বিষয়",
+  "growthEmailSubjectHint": "যেমন নভেম্বরের দামের তালিকা ও ঈদ অফার",
+  "growthEmailBody": "ইমেইল",
+  "growthEmailBodyHint": "প্রিয় গ্রাহক, …",
+  "growthEmailAttach": "ফাইল যোগ",
+  "growthEmailOrderButton": "“অর্ডার দিন” বোতাম",
+  "growthEmailPlaceOrder": "অর্ডার দিন",
+  "growthEmailTracking": "ট্র্যাকিং",
+  "growthEmailTrackingHint": "খোলা ও ক্লিক",
+  "growthEmailFrom": "প্রেরক",
+  "growthEmailLimit": "এ মাসের সীমা",
+  "growthEmailPreview": "প্রিভিউ",
+  "growthEmailNoSubject": "এখনো বিষয় নেই",
+  "growthEmailNoBody": "আপনার ইমেইল এখানে দেখা যাবে।",
+  "growthEmailSampleName": "রহিম",
+  "growthEmailSampleCompany": "রহিম এন্টারপ্রাইজ",
+  "growthEmailSent": "{count} জনকে ইমেইল পাঠানো হয়েছে",
+  "@growthEmailSent": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignKpiSent": "পাঠানো",
+  "growthCampaignKpiDelivered": "পৌঁছেছে",
+  "growthCampaignKpiReplies": "উত্তর",
+  "growthCampaignKpiLeads": "লিড",
+  "growthCampaignKpiOpened": "খুলেছে",
+  "growthCampaignKpiClicks": "ক্লিক",
+  "growthCampaignRepliesByHour": "ঘণ্টা অনুযায়ী উত্তর",
+  "growthCampaignOpensByHour": "ঘণ্টা অনুযায়ী খোলা",
+  "growthCampaignHour": "{count}ঘ",
+  "@growthCampaignHour": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignLeadsFromReplies": "উত্তর থেকে লিড · {count}",
+  "@growthCampaignLeadsFromReplies": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignNoReplies": "এখনো উত্তর আসেনি",
+  "growthCampaignNoRepliesBody": "যে উত্তর থেকে লিড বা কাজ হয় তা এখানে দেখা যাবে।",
+  "growthCampaignShowLess": "কম দেখান",
+  "growthCampaignReplyLead": "“{text}” → লিড তৈরি",
+  "@growthCampaignReplyLead": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignReplyTask": "“{text}” → কাজ তৈরি",
+  "@growthCampaignReplyTask": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignFailed": "ব্যর্থ · {count}",
+  "@growthCampaignFailed": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignFailedSplit": "ভুল নম্বর {wrong} · বন্ধ {off}",
+  "@growthCampaignFailedSplit": {
+    "placeholders": {
+      "wrong": {
+        "type": "String"
+      },
+      "off": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignTapRetry": "বন্ধ নম্বরে আবার পাঠাতে চাপুন",
+  "growthCampaignWrongNumbersHint": "ভুল নম্বরগুলো কনট্যাক্টে ঠিক করুন",
+  "growthCampaignRetry": "আবার পাঠান",
+  "growthCampaignRetryTitle": "বন্ধ নম্বরে আবার পাঠাবেন?",
+  "growthCampaignRetryBody": "{count}টি নম্বর বন্ধ ছিল। আবার পাঠাতে আবার ক্রেডিট লাগবে।",
+  "@growthCampaignRetryBody": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignRetried": "আরও {count} জনের কাছে পৌঁছেছে",
+  "@growthCampaignRetried": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignScheduledFor": "যাবে {time}",
+  "@growthCampaignScheduledFor": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCampaignCancel": "ক্যাম্পেইন বাতিল",
+  "growthCampaignCancelTitle": "ক্যাম্পেইনটি বাতিল করবেন?",
+  "growthCampaignCancelSmsBody": "কিছু পাঠানো হবে না, ক্রেডিট ব্যালেন্সে ফেরত আসবে।",
+  "growthCampaignCancelEmailBody": "কিছু পাঠানো হবে না।",
+  "growthCampaignCancelled": "ক্যাম্পেইন বাতিল হয়েছে",
+  "growthCampaignCancelledSms": "পাঠানোর আগেই ক্যাম্পেইনটি বাতিল হয়েছে। ক্রেডিট ফেরত দেওয়া হয়েছে।",
+  "growthCampaignCancelledEmail": "পাঠানোর আগেই ক্যাম্পেইনটি বাতিল হয়েছে।",
+  "growthCreditsTitle": "এসএমএস ক্রেডিট",
+  "growthCreditsLead": "সেন্ডার আইডি “{sender}” · সব অপারেটর · ক্রেডিটের মেয়াদ নেই",
+  "@growthCreditsLead": {
+    "placeholders": {
+      "sender": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCreditsEach": "৳ {price}/টি",
+  "@growthCreditsEach": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCreditsBalance": "বর্তমান ব্যালেন্স",
+  "growthCreditsUsed": "এ মাসে ব্যবহার",
+  "growthCreditsAverage": "গড় বাংলা এসএমএস",
+  "growthCreditsAverageValue": "{count} ক্রেডিট",
+  "@growthCreditsAverageValue": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCreditsRule": "বাংলা এসএমএস ৭০ অক্ষরে ১ ক্রেডিট; ইংরেজি ১৬০ অক্ষরে ১।",
+  "growthCreditsBuy": "{count} কিনুন · {price}",
+  "@growthCreditsBuy": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCreditsConfirmTitle": "{count} এসএমএস ক্রেডিট কিনবেন?",
+  "@growthCreditsConfirmTitle": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCreditsConfirmBody": "আপনার প্ল্যানের কার্ড বা bKash থেকে {price} কাটা হবে।",
+  "@growthCreditsConfirmBody": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCreditsPay": "{price} দিন",
+  "@growthCreditsPay": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "growthCreditsDone": "ক্রেডিট যোগ হয়েছে। ব্যালেন্স: {count}",
+  "@growthCreditsDone": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthNoticesTitle": "নোটিশ",
+  "growthNoticesEmpty": "এখনো কোনো নোটিশ নেই",
+  "growthNoticesEmptyBody": "ছুটি, দাম বদল ও টিমের নিয়ম এখানে দেখা যাবে।",
+  "growthNoticeNew": "নতুন নোটিশ",
+  "growthNoticeTitle": "নোটিশ",
+  "growthNoticeAcknowledge": "স্বীকার করুন",
+  "growthNoticeAckShort": "স্বীকার করতে হবে",
+  "growthNoticeReadTag": "পড়েছেন",
+  "growthNoticeAcknowledgedTag": "স্বীকার করেছেন",
+  "growthNoticeAcknowledgeAction": "পড়েছি, ঠিক আছে",
+  "growthNoticeAcknowledged": "ধন্যবাদ, স্বীকার করা হয়েছে",
+  "growthNoticePinnedUntil": "{date} পর্যন্ত হোমে পিন করা",
+  "@growthNoticePinnedUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "growthNoticeDeleteTitle": "নোটিশটি মুছবেন?",
+  "growthNoticeDeleteBody": "যাদের পাঠানো হয়েছিল সবার কাছ থেকে মুছে যাবে।",
+  "growthNoticeDeleted": "নোটিশ মুছে ফেলা হয়েছে",
+  "growthNoticeReadOf": "পড়েছেন {read} / {total}",
+  "@growthNoticeReadOf": {
+    "placeholders": {
+      "read": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "growthNoticeAckCount": "স্বীকার {count}",
+  "@growthNoticeAckCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthNoticeNotRead": "পড়েননি",
+  "growthNoticeRead": "পড়েছেন",
+  "growthNoticeAcked": "স্বীকার",
+  "growthNoticeEveryoneRead": "সবাই পড়েছেন",
+  "growthNoticeNobodyYet": "এখনো কেউ না",
+  "growthNoticeWaitingOn": "{count} জন বাকি",
+  "@growthNoticeWaitingOn": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthNoticeRemind": "মনে করিয়ে দিন",
+  "growthNoticeRemindAll": "সবাইকে মনে করান",
+  "growthNoticeReminded": "{count} জনকে মনে করানো হয়েছে",
+  "@growthNoticeReminded": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthNoticeAckedAt": "স্বীকার করেছেন {time}",
+  "@growthNoticeAckedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "growthNoticeReadAt": "পড়েছেন {time}",
+  "@growthNoticeReadAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "growthNoticeRemindedAt": "মনে করানো হয়েছে {time}",
+  "@growthNoticeRemindedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "growthNoticeOffline": "অফলাইন {count} দিন",
+  "@growthNoticeOffline": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthNoticeActiveToday": "আজ সক্রিয়",
+  "growthNoticeActiveYesterday": "শেষ সক্রিয় গতকাল",
+  "growthNoticeActiveDays": "শেষ সক্রিয় {count} দিন আগে",
+  "@growthNoticeActiveDays": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthNoticeTitleField": "শিরোনাম",
+  "growthNoticeTitleHint": "যেমন ঈদের ছুটি ও অফিসের সময়",
+  "growthNoticeBody": "নোটিশ",
+  "growthNoticeBodyHint": "সবার কী জানা দরকার?",
+  "growthNoticeAudience": "কাদের",
+  "growthNoticeAudienceCount": "{audience} ({count})",
+  "@growthNoticeAudienceCount": {
+    "placeholders": {
+      "audience": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthNoticeRequiresAck": "স্বীকার করতে হবে",
+  "growthNoticePush": "পুশ নোটিফিকেশন",
+  "growthNoticeSms": "এসএমএসও পাঠান",
+  "growthNoticePin": "হোমে পিন করুন",
+  "growthNoticePinDays": "{count} দিন",
+  "@growthNoticePinDays": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthNoticeAttach": "ফাইল যোগ",
+  "growthNoticePhoto": "ছবি",
+  "growthNoticeFileSize": "{count} KB",
+  "@growthNoticeFileSize": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "growthNoticePublish": "পাঠান",
+  "growthNoticePublished": "নোটিশ পাঠানো হয়েছে",
+  "growthNoticeSmsShort": "এই দলের জন্য এসএমএস ক্রেডিট কম। এসএমএস বন্ধ করুন বা ক্রেডিট কিনুন।"
+}
