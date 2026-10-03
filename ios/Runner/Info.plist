@@ -102,5 +102,7 @@
 	<string>SalesRoot turns your speech into text for task notes.</string>
 	<string>SalesRoot uses the camera to take photos for team chat and team files.</string>
 	<string>SalesRoot opens your photos so you can share them in team chat and team files.</string>
+	<string>SalesRoot uses the camera to photograph bills, attachments and customer issues.</string>
+	<string>SalesRoot lets you attach bills and photos from your library.</string>
 </dict>
 </plist>
