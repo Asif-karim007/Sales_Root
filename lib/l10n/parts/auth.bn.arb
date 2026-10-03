@@ -1,0 +1,227 @@
+{
+  "@@locale": "bn",
+  "authTagline": "লিড ধরুন।\nফলো-আপ করুন।\nবিক্রি বাড়ান।",
+  "authWelcomeChooseBn": "ভাষা বেছে নিন",
+  "authWelcomeChooseEn": "Choose your language",
+  "authLanguageBangla": "বাংলা",
+  "authLanguageEnglish": "English",
+  "authWelcomeCreate": "নতুন অ্যাকাউন্ট খুলুন",
+  "authWelcomeSignIn": "লগইন করুন",
+  "authWelcomeTerms": "চালিয়ে গেলে শর্তাবলি ও গোপনীয়তা নীতিতে সম্মতি দিচ্ছেন",
+  "authSignUpTitle": "সাইন আপ",
+  "authSignInTitle": "লগইন",
+  "authStep": "ধাপ {step}/{total}",
+  "@authStep": {
+    "placeholders": {
+      "step": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "authPhoneTitle": "আপনার মোবাইল নম্বর",
+  "authPhoneLead": "এই নম্বরে একটি ৬ সংখ্যার কোড পাঠানো হবে।",
+  "authPhoneLabel": "মোবাইল নম্বর",
+  "authPhoneHint": "1711 234 567",
+  "authPhoneInvalid": "সঠিক মোবাইল নম্বর দিন, যেমন ১৭১১ ২৩৪ ৫৬৭।",
+  "authReferralLabel": "রেফারেল কোড",
+  "authReferralHint": "যেমন RH4K9P",
+  "authReferralHelper": "লিংক বা Play Store থেকে এলে কোড নিজে থেকেই বসে। একটি নম্বর একবারই রেফার হতে পারে।",
+  "authReferralInvalid": "এই রেফারেল কোডটি সঠিক নয়। দেখে নিন বা খালি রাখুন।",
+  "authReferralUsed": "এই নম্বরে আগেই অ্যাকাউন্ট আছে, তাই রেফারেল কোড ব্যবহার করা যাবে না।",
+  "authReferralInvitedYou": "{name} আপনাকে আমন্ত্রণ করেছেন",
+  "@authReferralInvitedYou": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "authReferralReward": "কোড {code} · রেজিস্টার করলে {credit} ক্রেডিট ও {days} দিন বাড়তি ট্রায়াল",
+  "@authReferralReward": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "credit": {
+        "type": "String"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "authSendCode": "কোড পাঠান",
+  "authUseEmail": "ইমেইল দিয়ে খুলুন",
+  "authCodeTitle": "কোড লিখুন",
+  "authCodeSentTo": "{phone} নম্বরে পাঠানো হয়েছে।",
+  "@authCodeSentTo": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "authCodeChange": "বদলান",
+  "authCodeResendIn": "আবার পাঠান {time}",
+  "@authCodeResendIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "authCodeResend": "আবার পাঠান",
+  "authCodeCallMe": "কল করে শুনুন",
+  "authCodeResent": "নতুন কোড পাঠানো হয়েছে।",
+  "authCodeCalling": "কিছুক্ষণের মধ্যে কল করে কোড জানানো হবে।",
+  "authCodeWrong": "কোডটি ভুল। এসএমএস দেখে আবার লিখুন।",
+  "authPinTitle": "৪ সংখ্যার পিন দিন",
+  "authPinLead": "প্রতিবার লগইনে এই পিন লাগবে। জন্মদিন বা ১২৩৪ দেবেন না।",
+  "authPinConfirmTitle": "পিনটি আবার দিন",
+  "authPinConfirmLead": "নিশ্চিত করতে একই ৪টি সংখ্যা আবার লিখুন।",
+  "authPinWeak": "এই পিন সহজেই আন্দাজ করা যায়। অন্য পিন দিন।",
+  "authPinMismatch": "দুটি পিন মেলেনি। আবার পিন ঠিক করুন।",
+  "authNameTitle": "আপনার নাম",
+  "authNameLabel": "পুরো নাম",
+  "authNameHint": "করিম হোসেন",
+  "authNameRequired": "আপনার পুরো নাম লিখুন।",
+  "authWorkTitle": "আপনি কীভাবে কাজ করেন?",
+  "authWorkSolo": "একা বিক্রি করি",
+  "authWorkSoloSub": "নিজের কনট্যাক্ট ও লিড রাখব",
+  "authWorkTeam": "টিম চালাই",
+  "authWorkTeamSub": "সদস্য যোগ করব, সবার কাজ দেখব",
+  "authWorkJoining": "টিমে যোগ দিচ্ছি",
+  "authWorkJoiningSub": "ইনভাইট পেয়েছি",
+  "authWorkChangeLater": "পরে যেকোনো সময় বদলানো যাবে।",
+  "authInviteCodeLabel": "ইনভাইট কোড",
+  "authInviteCodeHint": "যেমন DS7Q2M",
+  "authInviteCodeRequired": "ইনভাইটের কোডটি লিখুন।",
+  "authInviteCodeInvalid": "এই ইনভাইট পাওয়া যায়নি। মেয়াদ শেষ হয়ে থাকতে পারে।",
+  "authGetStarted": "শুরু করুন",
+  "authIndustryAppBar": "সাজিয়ে নিন",
+  "authIndustryTitle": "কী ধরনের ব্যবসা?",
+  "authIndustryLead": "আপনার ব্যবসার মতো করে ফর্ম ও ধাপ সাজিয়ে দেব। বাদ দিলেও চলবে।",
+  "authIndustryTrading": "ট্রেডিং ও ডিস্ট্রিবিউশন",
+  "authIndustryRealEstate": "রিয়েল এস্টেট",
+  "authIndustryEducation": "শিক্ষা",
+  "authIndustryIt": "আইটি ও সার্ভিস",
+  "authIndustryManufacturing": "ম্যানুফ্যাকচারিং",
+  "authIndustryGeneral": "অন্য / সাধারণ",
+  "authIndustryUse": "এটাই",
+  "authTour1Title": "আপনার কনট্যাক্ট, সারাজীবনের সম্পদ",
+  "authTour1Body": "চাকরি বদলালেও লিড ও কনট্যাক্ট আপনার সাথে থাকবে। মালিক হলে টিমের ডেটা কোম্পানির সম্পদ।",
+  "authTour2Title": "কোনো ফলো-আপ বাদ যাবে না",
+  "authTour2Body": "আজ কাকে কল বা ভিজিট করতে হবে, রিমাইন্ডার মনে করিয়ে দেবে; নেট না থাকলেও।",
+  "authTour3Title": "লিড থেকে কালেকশন",
+  "authTour3Body": "কোটেশন পাঠান, অর্ডার দেখুন, টাকা তুলুন; পুরো টিম এক জায়গায়।",
+  "authTourNext": "পরের পাতা",
+  "authFeaturesAppBar": "SalesRoot কেন",
+  "authFeaturesTitle": "যা যা পাবেন",
+  "authFeatureVoice": "কথা বলে লিড যোগ",
+  "authFeatureCards": "ভিজিটিং কার্ড স্ক্যান",
+  "authFeatureReminders": "ফলো-আপ মনে করিয়ে দেওয়া",
+  "authFeatureOffline": "নেট ছাড়াও কাজ চলে",
+  "authFeatureTeam": "টিম, চ্যাট ও ভিজিট ট্র্যাকিং",
+  "authFeatureSales": "কোটেশন থেকে কালেকশন",
+  "authFeaturesFree": "ফ্রি দিয়ে শুরু করুন; পছন্দ হলে পরে আপগ্রেড।",
+  "authFeaturesGo": "শুরু করি",
+  "authTeamAppBar": "নতুন টিম",
+  "authTeamNameLabel": "টিমের নাম",
+  "authTeamNameHint": "Dhaka Sales",
+  "authTeamNameRequired": "টিমের একটি নাম দিন।",
+  "authTeamIndustryLabel": "ব্যবসার ধরন",
+  "authTeamCurrencyLabel": "মুদ্রা",
+  "authCurrency": "{code} ({symbol})",
+  "@authCurrency": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "symbol": {
+        "type": "String"
+      }
+    }
+  },
+  "authTeamFieldForce": "ফিল্ড ফোর্স অ্যাড-অন",
+  "authTeamFieldForceSub": "ভিজিট ও লাইভ ট্র্যাকিং, হাজিরা",
+  "authTeamGrowth": "গ্রোথ অ্যাড-অন",
+  "authTeamGrowthSub": "Facebook ও WhatsApp লিড",
+  "authTeamOwnerNote": "আপনি হবেন মালিক। সদস্য পরে যোগ করা যাবে।",
+  "authTeamCreate": "টিম তৈরি করুন",
+  "authTeamCreated": "{name} তৈরি হয়েছে",
+  "@authTeamCreated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "authInviteAppBar": "ইনভাইট",
+  "authInviteTitle": "{name} টিমে যোগ দিন",
+  "@authInviteTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "authInviteLead": "{inviter} আপনাকে {role} হিসেবে ডেকেছেন।",
+  "@authInviteLead": {
+    "placeholders": {
+      "inviter": {
+        "type": "String"
+      },
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "authRoleOwner": "মালিক",
+  "authRoleTeamLead": "টিম লিড",
+  "authRoleMember": "সদস্য",
+  "authInvitePointLeads": "টিমে তৈরি লিড টিমের সম্পদ; আপনার ব্যক্তিগত লিড আপনারই থাকবে",
+  "authInvitePointChats": "মালিক টিমের সব চ্যাট পড়তে পারেন",
+  "authInvitePointLocation": "ডিউটির সময়ে ভিজিটে লোকেশন ব্যবহার হবে (আপনার সম্মতিতে)",
+  "authInviteDecline": "না",
+  "authInviteJoin": "যোগ দিন",
+  "authInviteJoined": "আপনি {name} টিমে যোগ দিয়েছেন",
+  "@authInviteJoined": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "authUnlockAction": "লগইন",
+  "authUnlockForgot": "পিন ভুলে গেছি",
+  "authUnlockOtherAccount": "অন্য অ্যাকাউন্ট",
+  "authUnlockWrong": "ভুল পিন। আর {count} বার চেষ্টা করা যাবে।",
+  "@authUnlockWrong": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "authUnlockLockedOut": "অনেকবার ভুল পিন দেওয়া হয়েছে। মোবাইল নম্বর দিয়ে আবার লগইন করুন।",
+  "authEmailTitle": "আবার স্বাগতম",
+  "authEmailLabel": "ইমেইল",
+  "authEmailHint": "karim@example.com",
+  "authEmailInvalid": "সঠিক ইমেইল ঠিকানা দিন।",
+  "authEmailWrong": "ইমেইল বা পাসওয়ার্ড ভুল।",
+  "authPasswordLabel": "পাসওয়ার্ড",
+  "authPasswordRequired": "পাসওয়ার্ড দিন।",
+  "authPasswordShow": "পাসওয়ার্ড দেখান",
+  "authPasswordHide": "পাসওয়ার্ড লুকান",
+  "authEmailRemember": "লগইন থাকুন",
+  "authEmailForgot": "ভুলে গেছেন?",
+  "authOr": "অথবা",
+  "authEmailUsePhone": "মোবাইল নম্বর দিয়ে",
+  "authResetTitle": "পাসওয়ার্ড রিসেট",
+  "authResetLead": "নতুন পাসওয়ার্ড দিতে আপনার ইমেইলে একটি লিংক পাঠাব।",
+  "authResetSend": "লিংক পাঠান",
+  "authResetSent": "রিসেট লিংকের জন্য ইমেইল দেখুন।"
+}
