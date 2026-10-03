@@ -42,7 +42,16 @@ class SeedGraph {
       leads.where((l) => l.ownerId == ownerId).toList();
 
   /// A deterministic random source for a fixture, so reseeding is stable.
-  Random random(String salt) => Random(Object.hash(workspaceId, salt));
+  Random random(String salt) => Random(_stableHash('$workspaceId/$salt'));
+
+  /// FNV-1a: unlike `Object.hash`, the same across app launches.
+  static int _stableHash(String text) {
+    var hash = 0x811c9dc5;
+    for (final unit in text.codeUnits) {
+      hash = ((hash ^ unit) * 0x01000193) & 0x7fffffff;
+    }
+    return hash;
+  }
 
   DateTime daysAgo(int days, {int hour = 10, int minute = 0}) {
     final day = anchor.subtract(Duration(days: days));

@@ -17,7 +17,7 @@ The architecture comes from the SaleBee app at `/Users/dml-user/Documents/salebe
 | State / DI | `flutter_riverpod`, `riverpod_annotation`; dev: `riverpod_generator` | Riverpod 3, code-gen `@riverpod` only |
 | Routing | `go_router` | one router provider, guards = `redirect` |
 | HTTP | `dio`, `retrofit`; dev: `retrofit_generator` | same interceptor chain as SaleBee |
-| Codegen | dev: `build_runner` | `dart run build_runner build`. Never `--build-filter` (it deletes the other `.g.dart`) |
+| Codegen | dev: `build_runner` | `dart run build_runner build` (if it hangs at 0% CPU, `rm -rf .dart_tool/build` and rerun). Never `--build-filter` (it deletes the other `.g.dart`) |
 | Secure storage | `flutter_secure_storage` | session token, PIN hash |
 | Prefs | `shared_preferences` | language, experience level, last workspace. No `get_storage` |
 | Local DB | `sqflite` | offline cache + outbox (see *Offline*) |
