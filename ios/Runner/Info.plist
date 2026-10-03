@@ -24,6 +24,22 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>GMSApiKey</key>
+	<string>$(MAPS_API_KEY)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>SalesRoot uses the camera for visit and site photos.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>SalesRoot shares your location with your team during duty hours, only after you agree.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>SalesRoot shares your location with your team during duty hours, only after you agree.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>SalesRoot uses your location to check in at visits and record attendance.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SalesRoot lets you attach photos from your library to visits.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
