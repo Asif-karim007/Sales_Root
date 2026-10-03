@@ -85,5 +85,7 @@
 	<string>SalesRoot uses the microphone so you can dictate task notes.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>SalesRoot turns your speech into text for task notes.</string>
+	<string>SalesRoot uses the camera to take photos for team chat and team files.</string>
+	<string>SalesRoot opens your photos so you can share them in team chat and team files.</string>
 </dict>
 </plist>

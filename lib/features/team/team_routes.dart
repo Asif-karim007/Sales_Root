@@ -4,15 +4,27 @@ import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/access/module_access.dart';
 import 'package:salesroot/core/routing/guards.dart';
 import 'package:salesroot/core/routing/routes.dart';
-import 'package:salesroot/widgets/sr_coming_soon.dart';
+import 'package:salesroot/features/team/view/chat_info_screen.dart';
+import 'package:salesroot/features/team/view/chat_list_screen.dart';
+import 'package:salesroot/features/team/view/chat_oversight_screen.dart';
+import 'package:salesroot/features/team/view/chat_screen.dart';
+import 'package:salesroot/features/team/view/file_detail_screen.dart';
+import 'package:salesroot/features/team/view/files_screen.dart';
+import 'package:salesroot/features/team/view/invite_form_screen.dart';
+import 'package:salesroot/features/team/view/invite_sent_screen.dart';
+import 'package:salesroot/features/team/view/member_detail_screen.dart';
+import 'package:salesroot/features/team/view/new_chat_screen.dart';
+import 'package:salesroot/features/team/view/organogram_screen.dart';
+import 'package:salesroot/features/team/view/remove_member_screen.dart';
+import 'package:salesroot/features/team/view/team_screen.dart';
+import 'package:salesroot/features/team/view/upload_screen.dart';
 
 final teamBranch = StatefulShellBranch(
   routes: [
     GoRoute(
       path: Routes.team,
       redirect: requireAccess(AppModule.team),
-      builder: (context, state) =>
-          SrComingSoonScreen(title: state.matchedLocation),
+      builder: (context, state) => const TeamScreen(),
     ),
   ],
 );
@@ -21,79 +33,75 @@ final List<RouteBase> teamRoutes = [
   GoRoute(
     path: Routes.teamInvite,
     redirect: requireAccess(AppModule.team, ModuleRight.add),
-    builder: (context, state) =>
-        SrComingSoonScreen(title: state.matchedLocation),
+    builder: (context, state) => const InviteFormScreen(),
   ),
   GoRoute(
     path: Routes.teamInviteSent,
     redirect: requireAccess(AppModule.team, ModuleRight.add),
     builder: (context, state) =>
-        SrComingSoonScreen(title: state.matchedLocation),
+        InviteSentScreen(inviteId: _intQuery(state, 'id') ?? 0),
   ),
   GoRoute(
     path: Routes.member,
     redirect: requireAccess(AppModule.team),
-    builder: (context, state) =>
-        SrComingSoonScreen(title: state.matchedLocation),
+    builder: (context, state) => MemberDetailScreen(memberId: idParam(state)),
   ),
   GoRoute(
     path: Routes.memberRemove,
     redirect: requireAccess(AppModule.team, ModuleRight.delete),
-    builder: (context, state) =>
-        SrComingSoonScreen(title: state.matchedLocation),
+    builder: (context, state) => RemoveMemberScreen(memberId: idParam(state)),
   ),
   GoRoute(
     path: Routes.organogram,
     redirect: requireAccess(AppModule.team),
-    builder: (context, state) =>
-        SrComingSoonScreen(title: state.matchedLocation),
+    builder: (context, state) => const OrganogramScreen(),
   ),
   GoRoute(
     path: Routes.chats,
     redirect: requireAccess(AppModule.chat),
     builder: (context, state) =>
-        SrComingSoonScreen(title: state.matchedLocation),
+        ChatListScreen(leadId: _intQuery(state, 'leadId')),
   ),
   GoRoute(
     path: Routes.chatNew,
     redirect: requireAccess(AppModule.chat, ModuleRight.add),
-    builder: (context, state) =>
-        SrComingSoonScreen(title: state.matchedLocation),
+    builder: (context, state) => const NewChatScreen(),
   ),
   GoRoute(
     path: Routes.chatOversight,
     redirect: requireAccess(AppModule.chatOversight),
-    builder: (context, state) =>
-        SrComingSoonScreen(title: state.matchedLocation),
+    builder: (context, state) => const ChatOversightScreen(),
   ),
   GoRoute(
     path: Routes.chat,
     redirect: requireAccess(AppModule.chat),
-    builder: (context, state) =>
-        SrComingSoonScreen(title: state.matchedLocation),
+    builder: (context, state) => ChatScreen(threadId: idParam(state)),
   ),
   GoRoute(
     path: Routes.chatInfo,
     redirect: requireAccess(AppModule.chat),
-    builder: (context, state) =>
-        SrComingSoonScreen(title: state.matchedLocation),
+    builder: (context, state) => ChatInfoScreen(threadId: idParam(state)),
   ),
   GoRoute(
     path: Routes.files,
     redirect: requireAccess(AppModule.files),
-    builder: (context, state) =>
-        SrComingSoonScreen(title: state.matchedLocation),
+    builder: (context, state) => const FilesScreen(),
   ),
   GoRoute(
     path: Routes.fileUpload,
     redirect: requireAccess(AppModule.files, ModuleRight.add),
-    builder: (context, state) =>
-        SrComingSoonScreen(title: state.matchedLocation),
+    builder: (context, state) => UploadScreen(
+      folderId: _intQuery(state, 'folderId'),
+      replaceFileId: _intQuery(state, 'fileId'),
+      leadId: _intQuery(state, 'leadId'),
+    ),
   ),
   GoRoute(
     path: Routes.file,
     redirect: requireAccess(AppModule.files),
-    builder: (context, state) =>
-        SrComingSoonScreen(title: state.matchedLocation),
+    builder: (context, state) => FileDetailScreen(fileId: idParam(state)),
   ),
 ];
+
+int? _intQuery(GoRouterState state, String key) =>
+    int.tryParse(state.uri.queryParameters[key] ?? '');
