@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>SalesRoot uses the camera to take photos for team chat and team files.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SalesRoot opens your photos so you can share them in team chat and team files.</string>
 </dict>
 </plist>
