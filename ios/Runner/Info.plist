@@ -24,6 +24,17 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tel</string>
+		<string>sms</string>
+		<string>mailto</string>
+		<string>whatsapp</string>
+	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>SalesRoot uses the microphone so you can add leads and notes by speaking.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>SalesRoot turns what you say into lead details and notes.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

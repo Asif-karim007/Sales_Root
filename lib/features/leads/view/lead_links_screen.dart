@@ -1,0 +1,350 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:salesroot/core/access/access_providers.dart';
+import 'package:salesroot/core/access/app_module.dart';
+import 'package:salesroot/core/format/app_format.dart';
+import 'package:salesroot/core/locale/locale_provider.dart';
+import 'package:salesroot/core/routing/routes.dart';
+import 'package:salesroot/core/theme/app_text.dart';
+import 'package:salesroot/core/theme/sr_colors.dart';
+import 'package:salesroot/features/leads/models/lead.dart';
+import 'package:salesroot/features/leads/models/lead_input.dart';
+import 'package:salesroot/features/leads/models/lead_lookups.dart';
+import 'package:salesroot/features/leads/providers/lead_providers.dart';
+import 'package:salesroot/features/leads/view/widget/call_outcome_sheet.dart';
+import 'package:salesroot/features/leads/view/widget/lead_events.dart';
+import 'package:salesroot/features/leads/view/widget/lead_labels.dart';
+import 'package:salesroot/features/leads/view/widget/lead_launcher.dart';
+import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/widgets/widgets.dart';
+
+/// #29: the lead's company and contacts, and the other details.
+class LeadLinksScreen extends ConsumerWidget {
+  const LeadLinksScreen({super.key, required this.id});
+
+  static const _slot = 'links';
+
+  final int id;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final value = ref.watch(leadProvider(id));
+    final locale = ref.watch(appLocaleProvider);
+    ref.listen(leadSaveProvider(_slot), (_, next) {
+      if (next.isLoading) return;
+      if (next.hasError) {
+        showSrError(context, leadFailureText(l10n, next.error ?? ''));
+      } else if (next.value != null) {
+        showSrSuccess(context, l10n.leadsCompanyChanged);
+      }
+    });
+    return LeadCallWatcher(
+      child: SrScaffold(
+        appBar: SrAppBar(
+          title: value.value?.leadName ?? l10n.leadsDetailTitle,
+          subtitle: l10n.leadsLinksSubtitle,
+          actions: [
+            SrLanguageToggle(
+              isBangla: locale == bangla,
+              onChanged: (isBangla) => ref
+                  .read(appLocaleProvider.notifier)
+                  .set(isBangla ? bangla : english),
+            ),
+          ],
+        ),
+        body: SrAsyncView(
+          value: value,
+          onRetry: () => ref.invalidate(leadProvider(id)),
+          data: (context, lead) => _Body(lead: lead),
+        ),
+      ),
+    );
+  }
+}
+
+class _Body extends ConsumerWidget {
+  const _Body({required this.lead});
+
+  final Lead lead;
+
+  Future<void> _changeCompany(BuildContext context, WidgetRef ref) async {
+    final save = ref.read(leadSaveProvider(LeadLinksScreen._slot).notifier);
+    final lookups = await ref.read(leadLookupsProvider.future);
+    if (!context.mounted) return;
+    final picked = await showSrSheet<LeadLookupCompany>(
+      context: context,
+      builder: (context) => SrOptionSheet<LeadLookupCompany>(
+        title: context.l10n.leadsCompany,
+        options: lookups.companies,
+        labelOf: (c) => c.name,
+        subtitleOf: (c) => c.area?.of(context.fmt.isBangla),
+        withAvatar: true,
+        isSelected: (c) => c.id == lead.company?.id,
+      ),
+    );
+    if (picked == null || picked.id == lead.company?.id) return;
+    await save.edit(lead.id, LeadInput.fromLead(lead).withCompany(picked));
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final editable =
+        ref.watch(moduleAccessProvider(AppModule.lead)).canEdit && lead.canEdit;
+    final canAddContact = ref
+        .watch(moduleAccessProvider(AppModule.contact))
+        .canAdd;
+    final companyId = lead.company?.id;
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        SrMetrics.gutter,
+        16,
+        SrMetrics.gutter,
+        24,
+      ),
+      children: [
+        SrSectionHeader(
+          title: l10n.leadsCompany,
+          actionLabel: editable ? l10n.leadsChange : null,
+          onAction: editable ? () => _changeCompany(context, ref) : null,
+        ),
+        const SizedBox(height: 8),
+        _CompanyCard(
+          lead: lead,
+          onLink: editable ? () => _changeCompany(context, ref) : null,
+        ),
+        const SizedBox(height: 18),
+        SrSectionHeader(
+          title: l10n.leadsContactsOnLead,
+          actionLabel: canAddContact ? l10n.commonAdd : null,
+          onAction: canAddContact
+              ? () => context.push(
+                  companyId == null
+                      ? Routes.contactNew
+                      : '${Routes.contactNew}?companyId=$companyId',
+                )
+              : null,
+        ),
+        const SizedBox(height: 8),
+        _Contacts(lead: lead),
+        const SizedBox(height: 14),
+        SrNote(message: l10n.leadsLinksNote),
+        const SizedBox(height: 18),
+        SrSectionHeader(title: l10n.leadsOtherDetails),
+        const SizedBox(height: 8),
+        _Details(lead: lead),
+      ],
+    );
+  }
+}
+
+class _CompanyCard extends StatelessWidget {
+  const _CompanyCard({required this.lead, this.onLink});
+
+  final Lead lead;
+  final VoidCallback? onLink;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final fmt = context.fmt;
+    final company = lead.company;
+    if (company == null) {
+      return SrCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+        child: SrListRow(
+          title: l10n.leadsNoCompanyLinked,
+          subtitle: onLink == null ? null : l10n.leadsLinkCompany,
+          leading: const SrAvatar(icon: Icons.apartment_rounded),
+          onTap: onLink,
+        ),
+      );
+    }
+    final id = company.id;
+    return SrCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      child: SrListRow(
+        title: company.name,
+        subtitle: leadMeta([
+          company.industry,
+          company.area?.of(fmt.isBangla),
+          company.contactCount > 0
+              ? l10n.leadsContactCount(fmt.number(company.contactCount))
+              : null,
+        ]),
+        leading: SrAvatar(name: company.name),
+        trailing: SrTag(l10n.leadsCompanyTag),
+        chevron: id != null,
+        onTap: id == null ? null : () => context.push(Routes.companyFor(id)),
+      ),
+    );
+  }
+}
+
+class _Contacts extends ConsumerWidget {
+  const _Contacts({required this.lead});
+
+  final Lead lead;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final c = SrColors.of(context);
+    final contacts = lead.contacts;
+    if (contacts.isEmpty) {
+      return SrCard(
+        child: Text(l10n.leadsNoContactsLinked, style: AppText.meta(c.ink2)),
+      );
+    }
+    return SrCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      child: Column(
+        children: [
+          for (final (i, contact) in contacts.indexed)
+            _ContactRow(
+              lead: lead,
+              contact: contact,
+              divider: i < contacts.length - 1,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ContactRow extends ConsumerWidget {
+  const _ContactRow({
+    required this.lead,
+    required this.contact,
+    required this.divider,
+  });
+
+  final Lead lead;
+  final LeadContact contact;
+  final bool divider;
+
+  Future<void> _call(BuildContext context, WidgetRef ref, String phone) async {
+    final l10n = context.l10n;
+    final pending = ref.read(pendingCallProvider.notifier)
+      ..start(
+        PendingCall(
+          leadId: lead.id,
+          contactName: contact.name,
+          startedAt: DateTime.now(),
+        ),
+      );
+    if (await LeadLauncher.call(phone) || !context.mounted) return;
+    pending.take();
+    showSrError(context, l10n.leadsLaunchFailed);
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final c = SrColors.of(context);
+    final id = contact.id;
+    final phone = contact.mobile;
+    return SrListRow(
+      title: contact.name,
+      subtitle: leadMeta([
+        contact.designation,
+        contact.isPrimary ? l10n.leadsPrimary : null,
+      ]),
+      leading: SrAvatar(name: contact.name),
+      divider: divider,
+      trailing: phone == null
+          ? null
+          : SrIconButton(
+              icon: Icons.call_outlined,
+              compact: true,
+              color: c.accent,
+              tooltip: l10n.commonCall,
+              onTap: () => _call(context, ref, phone),
+            ),
+      onTap: id == null ? null : () => context.push(Routes.contactFor(id)),
+    );
+  }
+}
+
+class _Details extends StatelessWidget {
+  const _Details({required this.lead});
+
+  final Lead lead;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final fmt = context.fmt;
+    final bangla = fmt.isBangla;
+    final days = lead.daysInStage;
+    final created = lead.createdOn;
+    final lines = [
+      (l10n.leadsSource, lead.source?.name.of(bangla)),
+      (l10n.leadsOwner, lead.assignedTo?.name.of(bangla)),
+      (
+        l10n.leadsInStage,
+        days == null ? null : l10n.leadsDays(fmt.number(days)),
+      ),
+      (
+        l10n.leadsSharedWith,
+        lead.sharedWith.isEmpty
+            ? l10n.leadsNobody
+            : lead.sharedWith.map((p) => p.name.of(bangla)).join(', '),
+      ),
+      (l10n.leadsCreated, created == null ? null : fmt.date(created)),
+    ];
+    return SrCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Column(
+        children: [
+          for (final (i, (label, value)) in lines.indexed)
+            _Line(
+              label: label,
+              value: value ?? l10n.leadsNone,
+              divider: i < lines.length - 1,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The prototype's `.line`: a label on the left, a bold value on the right.
+class _Line extends StatelessWidget {
+  const _Line({
+    required this.label,
+    required this.value,
+    required this.divider,
+  });
+
+  final String label;
+  final String value;
+  final bool divider;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SrColors.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 9),
+      decoration: BoxDecoration(
+        border: divider ? Border(bottom: BorderSide(color: c.line)) : null,
+      ),
+      child: Row(
+        children: [
+          Text(label, style: AppText.body(c.ink2, size: 14)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: AppText.rowTitle(c.ink, size: 14),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
