@@ -37,6 +37,8 @@
 	<string>SalesRoot turns what you say into lead details and notes.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SalesRoot uses your photos so you can attach pictures and screenshots, for example to a support request.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

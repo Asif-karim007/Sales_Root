@@ -1,0 +1,389 @@
+{
+  "@@locale": "bn",
+  "supportFeedbackTitle": "মতামত",
+  "supportFeedbackQuestion": "SalesRoot কেমন লাগছে?",
+  "supportFeedbackStruggle": "কোন জায়গায় কষ্ট হয়?",
+  "supportFeedbackAreaLeads": "লিড যোগ",
+  "supportFeedbackAreaScan": "স্ক্যান",
+  "supportFeedbackAreaChat": "চ্যাট",
+  "supportFeedbackAreaReports": "রিপোর্ট",
+  "supportFeedbackAreaPayment": "পেমেন্ট",
+  "supportFeedbackAreaNothing": "কিছুই না",
+  "supportFeedbackMore": "আরও বলুন",
+  "supportFeedbackMoreHint": "কার্ড স্ক্যানে বাংলা নাম কখনো ভুল পড়ে।",
+  "supportFeedbackWantReply": "উত্তর চাই",
+  "supportFeedbackWantReplyBody": "সাপোর্ট টিম যোগাযোগ করবে",
+  "supportFeedbackScreenshot": "স্ক্রিনশট যোগ করুন",
+  "supportFeedbackDoneTitle": "ধন্যবাদ!",
+  "supportFeedbackDoneBody": "আপনার মতামত টিকিট #{number} হিসেবে জমা হয়েছে। উত্তর চাইলে ১ কর্মদিবসে জানাব।",
+  "@supportFeedbackDoneBody": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "supportRatingAwful": "খুব খারাপ",
+  "supportRatingPoor": "খারাপ",
+  "supportRatingOkay": "মোটামুটি",
+  "supportRatingGood": "ভালো",
+  "supportRatingLove": "দারুণ",
+  "supportPickFailed": "ছবি খোলা গেল না। সেটিংসে অনুমতি দিয়ে আবার চেষ্টা করুন।",
+  "supportRemoveAttachment": "সরান",
+  "supportCantOpen": "খোলা গেল না। আবার চেষ্টা করুন।",
+  "supportSurveyTitle": "একটা প্রশ্ন",
+  "supportSurveyQuotation": "কোটেশন বানানো কি সহজ ছিল?",
+  "supportSurveyLead": "লিড যোগ করা কি সহজ ছিল?",
+  "supportSurveyScan": "কার্ড স্ক্যান করা কি সহজ ছিল?",
+  "supportSurveyCollection": "টাকা জমা লেখা কি সহজ ছিল?",
+  "supportSurveyVisit": "চেক-ইন করা কি সহজ ছিল?",
+  "supportSurveyHelp": "উত্তর খুঁজে পাওয়া কি সহজ ছিল?",
+  "supportSurveyGeneric": "কাজটা কি সহজ ছিল?",
+  "supportSurveyHard": "কঠিন",
+  "supportSurveyOkay": "মোটামুটি",
+  "supportSurveyEasy": "সহজ",
+  "supportSurveyLimit": "১৪ দিনে একবারের বেশি জিজ্ঞেস করব না",
+  "supportSurveyThanks": "ধন্যবাদ — এতে আমরা আরও ভালো করতে পারব।",
+  "supportHelpTitle": "সাহায্য",
+  "supportHelpAskGuide": "AI গাইডকে জিজ্ঞেস করুন",
+  "supportHelpAskGuideHint": "“কীভাবে লিড যোগ করব?” বলুন বা লিখুন",
+  "supportHelpSearch": "সাহায্য খুঁজুন",
+  "supportHelpPopular": "জনপ্রিয় প্রশ্ন",
+  "supportHelpNoArticles": "এখনো কোনো সাহায্যের লেখা নেই",
+  "supportHelpContact": "সরাসরি যোগাযোগ",
+  "supportHelpSendRequest": "সাপোর্টের অনুরোধ পাঠান",
+  "supportHelpSendRequestSub": "উত্তর ৮ ঘণ্টায় · Team",
+  "supportHelpWhatsApp": "WhatsApp-এ কথা বলুন",
+  "supportHelpHours": "রবি–বৃহ ৯:০০–১৮:০০",
+  "supportHelpCall": "কল করুন",
+  "supportHelpPhone": "09611-000000",
+  "supportHelpMyRequests": "আমার অনুরোধ",
+  "supportHelpNoRequests": "আপনি এখনো কোনো অনুরোধ পাঠাননি।",
+  "supportHelpMoreRequests": "পুরোনো অনুরোধ দেখুন",
+  "supportHelpNoResults": "কোনো লেখা মেলেনি",
+  "supportHelpNoResultsBody": "অন্য শব্দে খুঁজুন, অথবা নিজের ভাষায় AI গাইডকে জিজ্ঞেস করুন।",
+  "supportHelpResults": "{count}টি লেখা",
+  "@supportHelpResults": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "supportHelpCatStart": "শুরু করা",
+  "supportHelpCatLeads": "লিড",
+  "supportHelpCatTasks": "কাজ",
+  "supportHelpCatField": "মাঠের কাজ",
+  "supportHelpCatSales": "বিক্রি ও টাকা",
+  "supportHelpCatTeam": "টিম",
+  "supportHelpCatAccount": "অ্যাকাউন্ট ও ডেটা",
+  "supportArticleTitle": "সাহায্য",
+  "supportArticleRead": "{minutes} মিনিটের পড়া",
+  "@supportArticleRead": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "supportArticleVideo": "ভিডিও {duration}",
+  "@supportArticleVideo": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "supportArticlePlay": "ভিডিও চালান",
+  "supportArticleHelpful": "এটা কি সাহায্য করল?",
+  "supportArticleYes": "হ্যাঁ",
+  "supportArticleNo": "না",
+  "supportArticleThanks": "জানানোর জন্য ধন্যবাদ।",
+  "supportGoAddLead": "লিড যোগ করুন",
+  "supportGoLeadVoice": "মুখে বলে লিড যোগ",
+  "supportGoLeads": "আমার লিড খুলুন",
+  "supportGoLogCall": "কল লগ করুন",
+  "supportGoScanCard": "কার্ড স্ক্যান করুন",
+  "supportGoNewTask": "কাজ তৈরি করুন",
+  "supportGoNewVisit": "ভিজিট শুরু করুন",
+  "supportGoAttendance": "হাজিরা খুলুন",
+  "supportGoNewQuotation": "কোটেশন বানান",
+  "supportGoNewCollection": "কালেকশন লিখুন",
+  "supportGoOutstanding": "বকেয়া দেখুন",
+  "supportGoInviteMember": "সদস্য আমন্ত্রণ",
+  "supportGoTeamChat": "চ্যাট খুলুন",
+  "supportGoOfflineSync": "সিঙ্কের অবস্থা দেখুন",
+  "supportGoLanguage": "ভাষা ও লেভেল",
+  "supportGoSecurity": "নিরাপত্তা সেটিংস",
+  "supportGoPlan": "আমার প্ল্যান দেখুন",
+  "supportGoDataSafety": "আমার তথ্য কীভাবে নিরাপদ",
+  "supportGoSupport": "সাপোর্টকে জিজ্ঞেস করুন",
+  "supportGoHelp": "সাহায্য খুঁজুন",
+  "supportGoAcademy": "একাডেমি খুলুন",
+  "supportFormTitle": "সাপোর্ট",
+  "supportFormKind": "কী ধরনের সমস্যা?",
+  "supportTicketCatQuestion": "প্রশ্ন",
+  "supportTicketCatBug": "সমস্যা",
+  "supportTicketCatBilling": "বিলিং",
+  "supportTicketCatData": "ডেটা",
+  "supportTicketCatSuggestion": "পরামর্শ",
+  "supportFormDescribe": "কী হয়েছে বলুন",
+  "supportFormDescribeHint": "কার্ড স্ক্যানে “মো. করিম” লেখা হচ্ছে “মো করিন”।",
+  "supportFormScreenshot": "স্ক্রিনশট",
+  "supportFormRecording": "স্ক্রিন রেকর্ড",
+  "supportFormConsent": "আমরা সাথে পাঠাব (আপনার সম্মতিতে)",
+  "supportFormScreenWas": "যে স্ক্রিনে ছিলেন: {screen}",
+  "@supportFormScreenWas": {
+    "placeholders": {
+      "screen": {
+        "type": "String"
+      }
+    }
+  },
+  "supportFormDevice": "অ্যাপ {version} · {device} · {system}",
+  "@supportFormDevice": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "device": {
+        "type": "String"
+      },
+      "system": {
+        "type": "String"
+      }
+    }
+  },
+  "supportFormDeviceLoading": "অ্যাপের ভার্সন ও ফোনের মডেল",
+  "supportFormWorkspace": "ওয়ার্কস্পেস: {name}",
+  "@supportFormWorkspace": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "supportFormReplyHow": "কীভাবে উত্তর দেব",
+  "supportChannelInApp": "শুধু অ্যাপে",
+  "supportChannelInAppSms": "অ্যাপে ও SMS-এ",
+  "supportChannelPhone": "ফোন করুন",
+  "supportFormSent": "অনুরোধ পাঠানো হয়েছে। এখানেই উত্তর দেব।",
+  "supportTicketTitle": "সাপোর্ট",
+  "supportTicketTeam": "SalesRoot সাপোর্ট টিম",
+  "supportTicketAgent": "{name} · SalesRoot",
+  "@supportTicketAgent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "supportTicketHeading": "#{number} · {subject}",
+  "@supportTicketHeading": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "supportTicketStatusOpen": "খোলা",
+  "supportTicketStatusReplied": "উত্তর এসেছে",
+  "supportTicketStatusResolved": "সমাধান হয়েছে",
+  "supportTicketTagReply": "উত্তর",
+  "supportTicketReplyWithin": "উত্তর {hours} ঘণ্টায়",
+  "@supportTicketReplyWithin": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "supportTicketResolved": "সমাধান হয়েছে",
+  "supportTicketStillIssue": "এখনো সমস্যা",
+  "supportTicketResolvedNote": "অনুরোধটির সমাধান হয়েছে। আবার হলে নিচে লিখুন, আমরা আবার খুলব।",
+  "supportTicketTyping": "{name} উত্তর লিখছেন…",
+  "@supportTicketTyping": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "supportTicketTypingTeam": "সাপোর্ট উত্তর লিখছে…",
+  "supportTicketReplyHint": "উত্তর লিখুন",
+  "supportTicketAttach": "স্ক্রিনশট যোগ করুন",
+  "supportGuideTitle": "SalesRoot গাইড",
+  "supportGuideSubtitle": "বাংলা বা English-এ বলুন",
+  "supportGuideGreeting": "আসসালামু আলাইকুম! আমি SalesRoot গাইড। অ্যাপে কোনো কাজ কীভাবে করবেন জিজ্ঞেস করুন, আমি ধাপগুলো দেখিয়ে দেব।",
+  "supportGuideTry": "এভাবে জিজ্ঞেস করুন",
+  "supportGuidePromptAddLead": "কীভাবে লিড যোগ করব?",
+  "supportGuidePromptScan": "কার্ড স্ক্যান কীভাবে করব?",
+  "supportGuidePromptStage": "প্রতিটি ধাপ মানে কী?",
+  "supportGuidePromptCollection": "কালেকশন কীভাবে লিখব?",
+  "supportGuidePromptOffline": "নেট ছাড়া কাজ করলে কী হয়?",
+  "supportGuidePromptTask": "করিম টেক্সটাইলসকে কাল দশটায় কল",
+  "supportGuideConfirm": "হ্যাঁ, বানাও",
+  "supportGuideDecline": "না",
+  "supportGuideDeclined": "ঠিক আছে, বানাব না।",
+  "supportGuideReadArticle": "পুরো লেখা পড়ুন",
+  "supportGuideWatch": "ভিডিও দেখব",
+  "supportGuideThinking": "খুঁজে দেখছি…",
+  "supportGuideInputHint": "প্রশ্ন লিখুন",
+  "supportGuideSafety": "AI কিছু লেখা বা পাঠানোর আগে সবসময় নিশ্চিত হয়ে নেয়। আপনি যা বলেন শুধু তা-ই পড়ে।",
+  "supportSafetyTitle": "তথ্যের নিরাপত্তা",
+  "supportSafetyHeadline": "আপনার তথ্য আপনারই",
+  "supportSafetyEncrypted": "এনক্রিপ্ট করা",
+  "supportSafetyEncryptedBody": "প্রতিটি ওয়ার্কস্পেসের আলাদা চাবি; ফোন নম্বর ও টাকার তথ্য সবসময় এনক্রিপ্টেড",
+  "supportSafetyPersonal": "ব্যক্তিগত মানে ব্যক্তিগত",
+  "supportSafetyPersonalBody": "আপনার ব্যক্তিগত ওয়ার্কস্পেসের লিড কোনো কোম্পানি দেখতে পায় না",
+  "supportSafetyLeave": "টিম ছাড়লে",
+  "supportSafetyLeaveBody": "টিমে তৈরি লিড টিমের; আপনার ব্যক্তিগত লিড ও কাজের রেকর্ড আপনার সাথে যায়",
+  "supportSafetyLocation": "লোকেশন",
+  "supportSafetyLocationBody": "শুধু ডিউটির সময়ে, চেক-ইন থাকলে, আপনার সম্মতিতে; কখনো বিক্রি হয় না",
+  "supportSafetyBackups": "ব্যাকআপ",
+  "supportSafetyBackupsBody": "প্রতিদিন; ৩৫ দিন রাখা হয়; মুছে ফেলা রেকর্ড ৩০ দিন ফেরানো যায়",
+  "supportSafetyDownload": "যেকোনো সময় ডাউনলোড",
+  "supportSafetyDownloadBody": "CSV ও ফাইল হিসেবে সব তথ্য নিন",
+  "supportSafetyExport": "আমার ডেটা ডাউনলোড",
+  "supportSafetyExportRequested": "ডাউনলোডের অনুরোধ গেছে",
+  "supportSafetyExportStarted": "আপনার ডেটা গুছানো হচ্ছে। সাধারণত এক ঘণ্টার মধ্যে লিংকসহ নোটিফিকেশন পাবেন।",
+  "supportSafetyPrivacy": "গোপনীয়তা নীতি",
+  "supportAcademyTitle": "সেলস একাডেমি",
+  "supportAcademyTip": "আজকের টিপ",
+  "supportAcademyTipMeta": "{duration} · বাংলা · ইংরেজি সাবটাইটেল",
+  "@supportAcademyTipMeta": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "supportAcademyCatCold": "কোল্ড কল",
+  "supportAcademyCatClosing": "ক্লোজিং",
+  "supportAcademyCatFollowUp": "ফলো-আপ",
+  "supportAcademyCatCareer": "ক্যারিয়ার",
+  "supportAcademyForYou": "আপনার জন্য",
+  "supportAcademyWhy": "কেন?",
+  "supportAcademyWhyTitle": "কেন এই পাঠগুলো?",
+  "supportAcademyWhyBody": "আপনার নিজের কাজ দেখে পাঠ বাছাই করি: এ সপ্তাহে হারানো লিড, ফলো-আপের অপেক্ষায় থাকা কোটেশন, আর শুরু করে শেষ না করা পাঠ। আপনার টিমের সাথে কিছুই শেয়ার হয় না।",
+  "supportAcademyNothingNew": "সব পাঠ দেখা হয়ে গেছে",
+  "supportAcademyNoLessons": "এখানে এখনো কোনো পাঠ নেই",
+  "supportAcademyMinutes": "{minutes} মিনিট",
+  "@supportAcademyMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "supportAcademyReasonLost": "আপনার {count}টি লিড এ সপ্তাহে হারিয়েছে",
+  "@supportAcademyReasonLost": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "supportAcademyReasonQuotes": "ফলো-আপের অপেক্ষায় কোটেশন",
+  "supportAcademyReasonContinue": "যেখানে থেমেছিলেন সেখান থেকে",
+  "supportAcademyNew": "নতুন",
+  "supportAcademyDone": "শেষ",
+  "supportAcademyCareer": "ক্যারিয়ার পথ",
+  "supportAcademyCareerProgress": "{total} পাঠ · {done}/{total} শেষ",
+  "@supportAcademyCareerProgress": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "done": {
+        "type": "String"
+      }
+    }
+  },
+  "supportLessonTitle": "পাঠ",
+  "supportLessonRemember": "মনে রাখুন",
+  "supportLessonQuiz": "ছোট্ট প্রশ্ন",
+  "supportLessonRight": "ঠিক বলেছেন",
+  "supportLessonNotQuite": "পুরোপুরি ঠিক না",
+  "supportLessonTryAgain": "পাঠটা আরেকবার দেখে আবার বেছে নিন।",
+  "supportLessonTryIt": "অ্যাপে করে দেখুন",
+  "supportLessonComplete": "শেষ করেছি",
+  "supportLessonCompleted": "পাঠ শেষ — খুব ভালো!",
+  "supportLessonBack": "একাডেমিতে ফিরুন",
+  "supportLessonQuizWrong": "পাঠ শেষ করতে প্রশ্নের সঠিক উত্তর দিন।",
+  "supportLessonLocked": "আগে ক্যারিয়ার পথের আগের ধাপটি শেষ করুন।",
+  "supportCareerTitle": "ক্যারিয়ার",
+  "supportCareerRecord": "আপনার কাজের রেকর্ড: {calls} কল · {visits} ভিজিট · {wins} বিক্রি",
+  "@supportCareerRecord": {
+    "placeholders": {
+      "calls": {
+        "type": "String"
+      },
+      "visits": {
+        "type": "String"
+      },
+      "wins": {
+        "type": "String"
+      }
+    }
+  },
+  "supportCareerNote": "এই রেকর্ড আপনার ব্যক্তিগত ওয়ার্কস্পেসে থাকে — চাকরি বদলালেও সাথে যায়।",
+  "supportCareerNow": "চলছে",
+  "supportCareerEmpty": "ক্যারিয়ার পথ এখনো তৈরি হয়নি",
+  "supportAboutTitle": "Nexzen",
+  "supportAboutWhere": "মিরপুর ডিওএইচএস, ঢাকা · ২০১৮ থেকে সফটওয়্যার",
+  "supportAboutBody": "আমরা বাংলাদেশের ব্যবসার জন্য সফটওয়্যার বানাই — বিক্রি, হিসাব ও কাজ সহজ করতে। SalesRoot আমাদের নিজেদের প্রোডাক্ট।",
+  "supportAboutProducts": "আমাদের প্রোডাক্ট",
+  "supportAboutSaleBee": "কর্পোরেট বিক্রয় টিমের জন্য CRM ও ফিল্ড ফোর্স",
+  "supportAboutErp": "হিসাব, ইনভেন্টরি, HR — মাঝারি ও বড় প্রতিষ্ঠানের জন্য",
+  "supportAboutSalesRoot": "এই অ্যাপ — ব্যক্তি, টিম ও SME-র জন্য",
+  "supportAboutServices": "সেবা",
+  "supportAboutCustom": "কাস্টম সফটওয়্যার",
+  "supportAboutCustomSub": "আপনার ব্যবসার মতো করে বানানো",
+  "supportAboutWebsite": "ওয়েবসাইট ডেভেলপমেন্ট",
+  "supportAboutWebsiteSub": "কর্পোরেট সাইট, ই-কমার্স",
+  "supportAboutTalk": "কথা বলতে চাই",
+  "supportAboutVersion": "SalesRoot {version} (বিল্ড {build})",
+  "@supportAboutVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "build": {
+        "type": "String"
+      }
+    }
+  },
+  "supportEnquiryTitle": "অনুরোধ",
+  "supportEnquiryNeed": "কী দরকার?",
+  "supportEnquiryKindCustom": "কাস্টম সফটওয়্যার",
+  "supportEnquiryKindWebsite": "ওয়েবসাইট",
+  "supportEnquiryKindErp": "ERP",
+  "supportEnquiryKindDemo": "ডেমো",
+  "supportEnquiryPickKind": "কী দরকার বেছে নিন।",
+  "supportEnquiryCompany": "প্রতিষ্ঠান",
+  "supportEnquiryCompanyHint": "Dhaka Sales Ltd.",
+  "supportEnquiryName": "নাম",
+  "supportEnquiryMobile": "মোবাইল",
+  "supportEnquiryMobileHint": "+880 1711 000 000",
+  "supportEnquiryMobileError": "পুরো মোবাইল নম্বর দিন।",
+  "supportEnquiryDetails": "সংক্ষেপে বলুন",
+  "supportEnquiryDetailsHint": "ডিলারদের জন্য অর্ডার নেওয়ার ওয়েবসাইট চাই, SalesRoot-এর সাথে যুক্ত।",
+  "supportEnquiryTime": "কখন কথা বলা যাবে",
+  "supportEnquiryTimeMorning": "সকাল ১০–১২টা",
+  "supportEnquiryTimeMidday": "দুপুর ১২–২টা",
+  "supportEnquiryTimeAfternoon": "বিকেল ২–৫টা",
+  "supportEnquiryTimeEvening": "সন্ধ্যা ৫–৭টা",
+  "supportEnquiryDoneTitle": "পেয়েছি!",
+  "supportEnquiryDoneBody": "Nexzen-এর একজন ১ কর্মদিবসে কল করবেন। রেফারেন্স #{reference}।",
+  "@supportEnquiryDoneBody": {
+    "placeholders": {
+      "reference": {
+        "type": "String"
+      }
+    }
+  }
+}
