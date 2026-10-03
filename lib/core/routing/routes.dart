@@ -203,10 +203,12 @@ abstract final class Routes {
   static bool isPublic(String location) =>
       location == welcome ||
       location.startsWith('/auth/') ||
+      location.startsWith('/onboarding/') ||
       location.startsWith('/invite/') ||
       location.startsWith('/r/');
 
-  /// Signed-in routes that continue onboarding.
+  /// Routes that stay open after sign-in, so sign-up can continue into them:
+  /// go to [tour] first, then call `signIn`.
   static bool isOnboarding(String location) =>
       location.startsWith('/onboarding/') || location.startsWith('/invite/');
 
