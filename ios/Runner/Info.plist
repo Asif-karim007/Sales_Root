@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>SalesRoot uses the camera to photograph bills, attachments and customer issues.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SalesRoot lets you attach bills and photos from your library.</string>
 </dict>
 </plist>
