@@ -42,7 +42,11 @@ void main() {
       final container = await tasksContainer();
       addTearDown(container.dispose);
 
-      final paged = await container.read(taskListProvider.future);
+      var paged = await container.read(taskListProvider.future);
+      while (paged.hasMore) {
+        await container.read(taskListProvider.notifier).loadMore();
+        paged = container.read(taskListProvider).requireValue;
+      }
       final days = {for (final t in paged.items) t.daysUntilDue};
 
       expect(paged.items, isNotEmpty);

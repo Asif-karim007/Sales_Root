@@ -35,23 +35,8 @@
 	<string>SalesRoot uses the microphone so you can add leads and notes by speaking.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>SalesRoot turns what you say into lead details and notes.</string>
-	<key>GMSApiKey</key>
-	<string>$(MAPS_API_KEY)</string>
-	<key>NSCameraUsageDescription</key>
-	<string>SalesRoot uses the camera for visit and site photos.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>SalesRoot shares your location with your team during duty hours, only after you agree.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>SalesRoot uses your location to check in at visits and record attendance.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>SalesRoot lets you attach photos from your library to visits.</string>
-	<key>UIBackgroundModes</key>
-		<string>location</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>SalesRoot uses your photos so you can attach pictures and screenshots, for example to a support request.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -96,13 +81,17 @@
 	<string>SalesRoot uses the camera to scan visiting cards and QR codes.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>SalesRoot reads a visiting card photo you pick from your library.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>SalesRoot uses the microphone so you can dictate task notes.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>SalesRoot turns your speech into text for task notes.</string>
-	<string>SalesRoot uses the camera to take photos for team chat and team files.</string>
-	<string>SalesRoot opens your photos so you can share them in team chat and team files.</string>
-	<string>SalesRoot uses the camera to photograph bills, attachments and customer issues.</string>
-	<string>SalesRoot lets you attach bills and photos from your library.</string>
+	<key>GMSApiKey</key>
+	<string>$(MAPS_API_KEY)</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>SalesRoot shares your location with your team during duty hours, only after you agree.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>SalesRoot shares your location with your team during duty hours, only after you agree.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>SalesRoot uses your location to check in at visits and record attendance.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 </dict>
 </plist>
