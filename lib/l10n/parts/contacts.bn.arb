@@ -1,0 +1,463 @@
+{
+  "@@locale": "bn",
+  "contactsTitle": "কনট্যাক্ট",
+  "contactsCompaniesTitle": "প্রতিষ্ঠান",
+  "contactsTabContacts": "কনট্যাক্ট",
+  "contactsTabCompanies": "প্রতিষ্ঠান",
+  "contactsPeopleCount": "{count, plural, other{{n} জন}}",
+  "@contactsPeopleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsCompanyCount": "{count, plural, other{{n}টি}}",
+  "@contactsCompanyCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsContactCount": "{count, plural, other{{n} কনট্যাক্ট}}",
+  "@contactsContactCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsLeadCount": "{count, plural, other{{n} লিড}}",
+  "@contactsLeadCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsImported": "{count, plural, =0{নতুন কেউ আসেনি — সবাই আগেই ছিলেন} other{{n} জন কনট্যাক্টে যোগ হয়েছেন}}",
+  "@contactsImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsSearchHint": "নাম, নম্বর বা প্রতিষ্ঠান",
+  "contactsCompanySearchHint": "প্রতিষ্ঠানের নাম, এলাকা বা নম্বর",
+  "contactsImportFromPhone": "ফোন থেকে আনুন",
+  "contactsScanCard": "কার্ড স্ক্যান",
+  "contactsGroupPrimary": "প্রধান",
+  "contactsGroupRecent": "নতুন যোগ",
+  "contactsIndependent": "নিজস্ব",
+  "contactsLetterAll": "A–Z",
+  "contactsLetterTitle": "নামের প্রথম অক্ষর",
+  "contactsLetterClear": "সব অক্ষর দেখান",
+  "contactsNoMatchTitle": "কিছু মেলেনি",
+  "contactsNoMatchBody": "অন্য নাম বা নম্বর দিয়ে খুঁজুন, অথবা ফিল্টার মুছুন।",
+  "contactsClearFilters": "ফিল্টার মুছুন",
+  "contactsEmptyTitle": "এখনো কোনো কনট্যাক্ট নেই",
+  "contactsEmptyBody": "যাদের সাথে কথা বলেন তাদের যোগ করুন, অথবা ফোন থেকে আনুন।",
+  "contactsAddContact": "কনট্যাক্ট যোগ করুন",
+  "contactsCompaniesEmptyTitle": "এখনো কোনো প্রতিষ্ঠান নেই",
+  "contactsCompaniesEmptyBody": "যেসব প্রতিষ্ঠানে বিক্রি করেন সেগুলো যোগ করুন।",
+  "contactsAddCompany": "প্রতিষ্ঠান যোগ করুন",
+  "contactsCustomer": "গ্রাহক",
+  "contactsCustomers": "গ্রাহক",
+  "contactsIndustry": "শিল্প",
+  "contactsArea": "এলাকা",
+  "contactsAllIndustries": "সব শিল্প",
+  "contactsAllAreas": "সব এলাকা",
+  "contactsWhatsApp": "WhatsApp",
+  "contactsSms": "SMS",
+  "contactsEmail": "ইমেইল",
+  "contactsVisit": "ভিজিট",
+  "contactsNote": "নোট",
+  "contactsWhatsAppNeedsMobile": "WhatsApp এর জন্য মোবাইল নম্বর লাগবে",
+  "contactsCannotOpen": "এই ফোনে এটি খোলার মতো অ্যাপ নেই",
+  "contactsLeadOpen": "চলছে",
+  "contactsLeadWon": "বিক্রি",
+  "contactsLeadLost": "হারানো",
+  "contactsDuplicateTitle": "একই তথ্য পাওয়া গেছে",
+  "contactsDuplicateContactBody": "এই নম্বরে আগেই একজন আছেন:",
+  "contactsDuplicateCompanyBody": "এই নাম বা নম্বরে আগেই একটি প্রতিষ্ঠান আছে:",
+  "contactsDuplicateOpenContact": "আগের কনট্যাক্ট খুলুন",
+  "contactsDuplicateOpenCompany": "আগের প্রতিষ্ঠান খুলুন",
+  "contactsDuplicateKeepSeparate": "আলাদা রাখুন",
+  "contactsCompany": "প্রতিষ্ঠান",
+  "contactsContact": "কনট্যাক্ট",
+  "contactsDeleteContactTitle": "কনট্যাক্ট মুছবেন?",
+  "contactsDeleteContactBody": "কনট্যাক্ট মুছে গেলেও তার লিড ও কাজ থেকে যাবে।",
+  "contactsDeleted": "কনট্যাক্ট মুছে ফেলা হয়েছে",
+  "contactsPrimaryContact": "প্রধান কনট্যাক্ট",
+  "contactsPrimary": "প্রধান",
+  "contactsMobile": "মোবাইল",
+  "contactsDesignation": "পদবি",
+  "contactsAddress": "ঠিকানা",
+  "contactsBirthday": "জন্মদিন",
+  "contactsSource": "উৎস",
+  "contactsAddedOn": "যোগ হয়েছে",
+  "contactsLeadsWithContact": "এই কনট্যাক্টের লিড",
+  "contactsLeadsWithContactCount": "এই কনট্যাক্টের লিড · {n}",
+  "@contactsLeadsWithContactCount": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsNewLead": "নতুন লিড",
+  "contactsNoLeads": "এখনো কোনো লিড নেই",
+  "contactsActivity": "কার্যক্রম",
+  "contactsNoActivity": "এখনো কোনো কল, মেসেজ বা ভিজিট নেই",
+  "contactsMinutes": "{n} মিনিট",
+  "@contactsMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsCustomer360": "গ্রাহক ৩৬০",
+  "contactsDocuments": "ডকুমেন্ট",
+  "contactsDeleteCompanyTitle": "প্রতিষ্ঠান মুছবেন?",
+  "contactsDeleteCompanyBody": "এর কনট্যাক্টরা থেকে যাবেন, শুধু প্রতিষ্ঠান থেকে আলাদা হবেন।",
+  "contactsCompanyDeleted": "প্রতিষ্ঠান মুছে ফেলা হয়েছে",
+  "contactsPrimarySet": "প্রধান কনট্যাক্ট বদলানো হয়েছে",
+  "contactsDetached": "প্রতিষ্ঠান থেকে সরানো হয়েছে",
+  "contactsCustomerSince": "গ্রাহক {year} থেকে",
+  "@contactsCustomerSince": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsTotalSales": "মোট বিক্রি",
+  "contactsOutstanding": "পাওনা",
+  "contactsOpenLeads": "খোলা লিড",
+  "contactsOpenMap": "ম্যাপে দেখুন",
+  "contactsPhone": "ফোন",
+  "contactsWebsite": "ওয়েবসাইট",
+  "contactsCreditLimit": "ক্রেডিট সীমা",
+  "contactsCreditTerms": "{amount} · {days} দিন",
+  "@contactsCreditTerms": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsAssignedTo": "দায়িত্বে",
+  "contactsCode": "কোড",
+  "contactsSetPrimary": "প্রধান কনট্যাক্ট করুন",
+  "contactsRemoveFromCompany": "প্রতিষ্ঠান থেকে সরান",
+  "contactsRemoveFromCompanyTitle": "{name} কে সরাবেন?",
+  "@contactsRemoveFromCompanyTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsRemoveFromCompanyBody": "কনট্যাক্ট মুছবে না, শুধু এই প্রতিষ্ঠানের তালিকা থেকে সরে যাবে।",
+  "contactsRemove": "সরান",
+  "contactsConcernPersons": "কনসার্ন পারসন · {n}",
+  "@contactsConcernPersons": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsNoPeople": "এখনো কোনো কনসার্ন পারসন নেই",
+  "contactsLeadsCount": "লিড · {n}",
+  "@contactsLeadsCount": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsQuotation": "কোটেশন",
+  "contactsNewContact": "নতুন কনট্যাক্ট",
+  "contactsEditContact": "কনট্যাক্ট এডিট",
+  "contactsFullForm": "পুরো ফর্ম",
+  "contactsName": "নাম",
+  "contactsNameHint": "যেমন: মো. করিম",
+  "contactsNameRequired": "নাম দিতে হবে",
+  "contactsMobileHint": "০১৭১১ ২৩৪ ৫৬৭",
+  "contactsMobileRequired": "মোবাইল নম্বর দিতে হবে",
+  "contactsMobileInvalid": "সঠিক মোবাইল নম্বর দিন (০১ দিয়ে শুরু, ১১ সংখ্যা)",
+  "contactsSecondMobile": "আরেকটি মোবাইল",
+  "contactsEmailHint": "name@company.com",
+  "contactsEmailInvalid": "সঠিক ইমেইল দিন",
+  "contactsAddressHint": "বাসা বা অফিসের ঠিকানা",
+  "contactsDesignationHint": "যেমন: ক্রয় ব্যবস্থাপক",
+  "contactsPickCompany": "প্রতিষ্ঠান বেছে নিন",
+  "contactsRemoveCompany": "প্রতিষ্ঠান সরান",
+  "contactsPickDate": "তারিখ বেছে নিন",
+  "contactsNoteHint": "যেমন: সকাল ১১টার পর কল দিলে ধরেন",
+  "contactsSaved": "কনট্যাক্ট সেভ হয়েছে",
+  "contactsNewCompany": "নতুন প্রতিষ্ঠান",
+  "contactsEditCompany": "প্রতিষ্ঠান এডিট",
+  "contactsCompanyName": "প্রতিষ্ঠানের নাম",
+  "contactsCompanyNameHint": "যেমন: করিম টেক্সটাইলস লি.",
+  "contactsCompanyNameRequired": "প্রতিষ্ঠানের নাম দিতে হবে",
+  "contactsCompanyPhoneHint": "মোবাইল বা ০২-৫৫০১২৩৪৫",
+  "contactsPhoneInvalid": "সঠিক ফোন নম্বর দিন",
+  "contactsPick": "বেছে নিন",
+  "contactsCompanyAddressHint": "বাড়ি, রোড, এলাকা",
+  "contactsWebsiteHint": "www.company.com.bd",
+  "contactsCompanyEmailHint": "info@company.com",
+  "contactsCurrency": "৳",
+  "contactsCreditLimitHint": "৩০০০০০",
+  "contactsCreditDays": "ক্রেডিট দিন",
+  "contactsCreditDaysHint": "৩০",
+  "contactsCompanyNoteHint": "যেমন: ছাদ ১২,০০০ বর্গফুট, নেট মিটারিং চান",
+  "contactsCompanySaved": "প্রতিষ্ঠান সেভ হয়েছে",
+  "contactsSelectedCount": "{n} জন বাছাই",
+  "@contactsSelectedCount": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsSelectAll": "সব নতুনদের বাছুন",
+  "contactsImportCount": "{n} জন আনুন",
+  "@contactsImportCount": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsAccessTitle": "কনট্যাক্ট দেখার অনুমতি দিন",
+  "contactsAccessBody": "ফোনবুক থেকে মানুষ বাছতে SalesRoot কে কনট্যাক্ট পড়ার অনুমতি দিন।",
+  "contactsAccessAction": "আবার চেষ্টা করুন",
+  "contactsImportPrivacy": "শুধু যাদের বেছে নেবেন তারাই আসবে; পুরো ফোনবুক কখনো আপলোড হয় না।",
+  "contactsImportSearchHint": "ফোনবুকে খুঁজুন",
+  "contactsImportNoMatch": "ফোনবুকে এই নামে বা নম্বরে কেউ নেই।",
+  "contactsExists": "আছে",
+  "contactsCustomer360Subtitle": "গ্রাহক ৩৬০ · সব এক জায়গায়",
+  "contactsCollected": "আদায়",
+  "contactsOverdue": "মেয়াদ পার",
+  "contactsTimelineMoney": "টাকা",
+  "contactsTimelineTalk": "কথা",
+  "contactsTimelineVisits": "ভিজিট",
+  "contactsTimelineDocuments": "ডকুমেন্ট",
+  "contactsTimelineEmpty": "এই ধরনের কিছু এখনো হয়নি",
+  "contactsValueLine": "আজীবন মূল্য {total} · খোলা ডিল {open} · {visits}টি ভিজিট",
+  "@contactsValueLine": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "open": {
+        "type": "String"
+      },
+      "visits": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsDeals": "ডিল",
+  "contactsQuotes": "কোটেশন",
+  "contactsOrders": "অর্ডার",
+  "contactsInvoices": "ইনভয়েস",
+  "contactsNothingYet": "এখনো কিছু নেই",
+  "contactsStatusSent": "পাঠানো",
+  "contactsStatusAccepted": "গৃহীত",
+  "contactsStatusProcessing": "প্রক্রিয়াধীন",
+  "contactsStatusDelivered": "ডেলিভারি হয়েছে",
+  "contactsStatusPaid": "পরিশোধিত",
+  "contactsStatusPartial": "আংশিক",
+  "contactsStatusUnpaid": "বাকি",
+  "contactsDueOn": "{amount} বাকি · {date}",
+  "@contactsDueOn": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsCollectPayment": "টাকা আদায়",
+  "contactsEventCollection": "কালেকশন {amount} · {method}",
+  "@contactsEventCollection": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "method": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsEventReceipt": "ইনভয়েস {invoice} · রসিদ পাঠানো",
+  "@contactsEventReceipt": {
+    "placeholders": {
+      "invoice": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsEventInvoice": "ইনভয়েস {number} · {amount}",
+  "@contactsEventInvoice": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsEventQuotation": "কোটেশন {number} · {amount}",
+  "@contactsEventQuotation": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsEventOrder": "অর্ডার {number} · {amount}",
+  "@contactsEventOrder": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsEventDelivered": "ডেলিভারি সম্পন্ন",
+  "contactsEventDeliveredBody": "অর্ডার {number}",
+  "@contactsEventDeliveredBody": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsEventWhatsApp": "WhatsApp · {n} মেসেজ",
+  "@contactsEventWhatsApp": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsReceipts": "রসিদ",
+  "contactsAgreements": "চুক্তি",
+  "contactsPhotos": "ছবি",
+  "contactsOtherDocuments": "অন্যান্য",
+  "contactsDeleteDocumentTitle": "ডকুমেন্ট মুছবেন?",
+  "contactsDeleteDocumentBody": "\"{title}\" মুছে গেলে আর ফেরত আনা যাবে না।",
+  "@contactsDeleteDocumentBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsOpen": "খুলুন",
+  "contactsUploaded": "ডকুমেন্ট আপলোড হয়েছে",
+  "contactsDocumentDeleted": "ডকুমেন্ট মুছে ফেলা হয়েছে",
+  "contactsUpload": "আপলোড",
+  "contactsNoDocumentsTitle": "কোনো ডকুমেন্ট নেই",
+  "contactsNoDocumentsBody": "কোটেশন, ইনভয়েস, চুক্তি বা সাইটের ছবি এখানে রাখুন।",
+  "contactsPdf": "PDF",
+  "contactsImage": "ছবি",
+  "contactsFile": "ফাইল",
+  "contactsSentBySms": "SMS ও PDF",
+  "contactsUploadedBy": "আপলোড: {name}",
+  "@contactsUploadedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsViewed": "দেখেছেন",
+  "contactsQuotationNumber": "কোটেশন {number}",
+  "@contactsQuotationNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsInvoiceNumber": "ইনভয়েস {number}",
+  "@contactsInvoiceNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsReceiptNumber": "রসিদ {number}",
+  "@contactsReceiptNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsSizeKb": "{n} KB",
+  "@contactsSizeKb": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsSizeMb": "{n} MB",
+  "@contactsSizeMb": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsPickFailed": "ফাইলটি খোলা গেল না",
+  "contactsTitleRequired": "একটি নাম দিন",
+  "contactsUploadTitle": "ডকুমেন্ট আপলোড",
+  "contactsPickFile": "ফাইল বেছে নিন",
+  "contactsPickFileHint": "PDF, ছবি বা অন্য ফাইল, ১০ MB পর্যন্ত",
+  "contactsTakePhoto": "ছবি তুলুন",
+  "contactsFromGallery": "গ্যালারি থেকে",
+  "contactsDocumentTitle": "ডকুমেন্টের নাম",
+  "contactsDocumentCategory": "ধরন",
+  "contactsInvoice": "ইনভয়েস",
+  "contactsReceipt": "রসিদ",
+  "contactsAgreement": "চুক্তি",
+  "contactsPhoto": "ছবি",
+  "contactsOtherDocument": "অন্যান্য"
+}
