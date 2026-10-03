@@ -1,0 +1,385 @@
+{
+  "@@locale": "bn",
+  "homeGreetingMorning": "শুভ সকাল",
+  "homeGreetingAfternoon": "শুভ দুপুর",
+  "homeGreetingEvening": "শুভ সন্ধ্যা",
+  "homeGreetingRole": "{greeting} · {role}",
+  "@homeGreetingRole": {
+    "placeholders": {
+      "greeting": {
+        "type": "String"
+      },
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "homeRoleOwner": "মালিক",
+  "homeRoleTeamLead": "টিম লিড",
+  "homeRoleMember": "সদস্য",
+  "homeRoleManager": "ম্যানেজার",
+  "homeWorkspaceSwitch": "ওয়ার্কস্পেস বদলান",
+  "homeWorkspaces": "ওয়ার্কস্পেস",
+  "homeWorkspacePersonal": "ব্যক্তিগত · {count} লিড",
+  "@homeWorkspacePersonal": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "homeWorkspaceTeam": "টিম · {role} · {count} জন",
+  "@homeWorkspaceTeam": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "homeWorkspaceSwitched": "{name}-এ চলে এসেছেন",
+  "@homeWorkspaceSwitched": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeCreateTeam": "নতুন টিম তৈরি",
+  "homeAiGuide": "AI গাইড",
+  "homeCallsToday": "আজকের কল",
+  "homeCallsYesterday": "গতকাল {count}",
+  "@homeCallsYesterday": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "homeFollowUpsDue": "ফলো-আপ বাকি",
+  "homeFollowUpsOverdue": "{count}টি দেরি",
+  "@homeFollowUpsOverdue": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "homeFollowUpsNoneOverdue": "দেরি নেই",
+  "homeVisits": "ভিজিট",
+  "homeRouteReady": "রুট তৈরি",
+  "homeNoVisits": "পরিকল্পনা নেই",
+  "homeOpenLeads": "খোলা লিড",
+  "homeNewLead": "নতুন লিড",
+  "homeByVoice": "কথা বলে লিড যোগ করুন",
+  "homeScanCard": "ভিজিটিং কার্ড স্ক্যান করুন",
+  "homeAgendaTitle": "আজ যা করতে হবে",
+  "homeAgendaCall": "কল",
+  "homeAgendaVisit": "ভিজিট",
+  "homeAgendaFollowUp": "ফলো-আপ",
+  "homeAgendaWhatsApp": "WhatsApp",
+  "homeAgendaMeeting": "মিটিং",
+  "homeAgendaTask": "কাজ",
+  "homeAgendaSilent": "{days} দিন কথা নেই",
+  "@homeAgendaSilent": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "homeAgendaReplyPending": "উত্তর বাকি",
+  "homeAgendaEmptyTitle": "আজ কোনো কাজ বাকি নেই",
+  "homeAgendaEmptyBody": "দিনের পরিকল্পনা করতে একটি কাজ যোগ করুন বা কল লগ করুন।",
+  "homeTagOverdue": "দেরি",
+  "homeTagNew": "নতুন",
+  "homeTagFollowUp": "ফলো-আপ",
+  "homeTagSent": "পাঠানো",
+  "homeTagLead": "লিড",
+  "homeTagContact": "কনট্যাক্ট",
+  "homeTagCompany": "প্রতিষ্ঠান",
+  "homeTagTask": "কাজ",
+  "homeTagDone": "সম্পন্ন",
+  "homeAiRateAhead": "এ সপ্তাহে আপনার কল-থেকে-মিটিং হার {mine}, টিমের গড় {team}। চালিয়ে যান!",
+  "@homeAiRateAhead": {
+    "placeholders": {
+      "mine": {
+        "type": "String"
+      },
+      "team": {
+        "type": "String"
+      }
+    }
+  },
+  "homeAiRateBehind": "এ সপ্তাহে আপনার কল-থেকে-মিটিং হার {mine}, টিমের গড় {team}। টিপস পেতে AI গাইডকে জিজ্ঞেস করুন।",
+  "@homeAiRateBehind": {
+    "placeholders": {
+      "mine": {
+        "type": "String"
+      },
+      "team": {
+        "type": "String"
+      }
+    }
+  },
+  "homeFirstJobsTitle": "প্রথম ৫টি কাজ",
+  "homeJobOpenAccount": "অ্যাকাউন্ট খোলা",
+  "homeJobAddLead": "প্রথম লিড যোগ করুন",
+  "homeJobLogCall": "একটি কল লগ করুন",
+  "homeJobFollowUp": "ফলো-আপ ঠিক করুন",
+  "homeJobScanCard": "একটি কার্ড স্ক্যান করুন",
+  "homeNoLeadsTitle": "এখনো কোনো লিড নেই",
+  "homeNoLeadsBody": "কথা বলে, কার্ড স্ক্যান করে বা ফোনের কনট্যাক্ট থেকে যোগ করুন",
+  "homeTrySample": "একটি নমুনা লিড দেখুন",
+  "homeAiNewHint": "আমি সাহায্য করতে পারি: বলুন “করিম টেক্সটাইলস নতুন লিড”",
+  "homeOpenDeals": "খোলা ডিল",
+  "homeTarget": "লক্ষ্য",
+  "homePipeline": "পাইপলাইন",
+  "homePipelineMine": "আমার লিড",
+  "homePipelineAll": "সব লিড",
+  "homeQuotationsAwaiting": "অপেক্ষায় থাকা কোটেশন",
+  "homeQuotationsEmpty": "উত্তরের অপেক্ষায় কোনো কোটেশন নেই",
+  "homeQuotationSentToday": "আজ পাঠানো",
+  "homeQuotationSentDaysAgo": "পাঠানো {days} দিন আগে",
+  "@homeQuotationSentDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "homeQuotationViewed": "দেখেছেন",
+  "homeTeamActivity": "টিমের কাজ",
+  "homeNoFollowUp": "ফলো-আপ নেই",
+  "homeTeamTarget": "টিম লক্ষ্য",
+  "homeMembersToday": "সদস্যরা আজ",
+  "homeMemberStats": "{calls} কল · {visits} ভিজিট · চেক-ইন {time}",
+  "@homeMemberStats": {
+    "placeholders": {
+      "calls": {
+        "type": "String"
+      },
+      "visits": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "homeMemberNotIn": "চেক-ইন হয়নি",
+  "homeStatusActive": "সক্রিয়",
+  "homeStatusLate": "দেরি",
+  "homeStatusAbsent": "অনুপস্থিত",
+  "homeNoMembersTitle": "এখনো টিমে কেউ নেই",
+  "homeNoMembersBody": "বিক্রয়কর্মীদের আমন্ত্রণ জানান, তাদের দিন এখানে দেখবেন।",
+  "homeInvite": "আমন্ত্রণ",
+  "homePendingApprovals": "অনুমোদন বাকি",
+  "homeNoApprovals": "অনুমোদনের কিছু বাকি নেই",
+  "homeApprovalLeave": "ছুটির আবেদন · {name} · {dates}",
+  "@homeApprovalLeave": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "dates": {
+        "type": "String"
+      }
+    }
+  },
+  "homeApprovalExpense": "খরচ · {name} · {amount}",
+  "@homeApprovalExpense": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSeeAllCount": "সব {count}টি দেখুন",
+  "@homeSeeAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "homeBusinessSummary": "ব্যবসার সারসংক্ষেপ",
+  "homePeriodMonth": "মাস",
+  "homeCollectionToday": "আজকের কালেকশন",
+  "homeCollectionMonth": "এ মাসের কালেকশন",
+  "homeAboveYesterday": "গতকালের চেয়ে {percent} বেশি",
+  "@homeAboveYesterday": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "homeBelowYesterday": "গতকালের চেয়ে {percent} কম",
+  "@homeBelowYesterday": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "homeAboveLastMonth": "গত মাসের চেয়ে {percent} বেশি",
+  "@homeAboveLastMonth": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "homeBelowLastMonth": "গত মাসের চেয়ে {percent} কম",
+  "@homeBelowLastMonth": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "homeCash": "নগদ",
+  "homeMobileMoney": "bKash / Nagad",
+  "homeBank": "ব্যাংক",
+  "homeReceivable": "মোট পাওনা",
+  "homeOverdueAmount": "মেয়াদ পার {amount}",
+  "@homeOverdueAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSalesMonth": "এ মাসের বিক্রি",
+  "homeOfTarget": "লক্ষ্যের {percent}",
+  "@homeOfTarget": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "homeTeamTodayLine": "টিম আজ · {calls} কল · {visits} ভিজিট · {leads} নতুন লিড · {present} উপস্থিত",
+  "@homeTeamTodayLine": {
+    "placeholders": {
+      "calls": {
+        "type": "String"
+      },
+      "visits": {
+        "type": "String"
+      },
+      "leads": {
+        "type": "String"
+      },
+      "present": {
+        "type": "String"
+      }
+    }
+  },
+  "homeTopSellers": "এ মাসে সেরা বিক্রয়",
+  "homeFullReport": "পুরো রিপোর্ট",
+  "homePlanLine": "{plan} প্ল্যান · {users} ব্যবহারকারী",
+  "@homePlanLine": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      },
+      "users": {
+        "type": "String"
+      }
+    }
+  },
+  "homeFieldForceOn": "ফিল্ড ফোর্স চালু",
+  "homeManage": "ব্যবস্থাপনা",
+  "homeSales": "এ মাসের বিক্রি",
+  "homeCollection": "কালেকশন",
+  "homeOverdue": "মেয়াদ পার",
+  "homeOverdueCustomers": "{count} গ্রাহক",
+  "@homeOverdueCustomers": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "homeForecast": "পূর্বাভাস · {month}",
+  "@homeForecast": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "homeWeighted": "ওজনযুক্ত",
+  "homeWeek": "সপ্তাহ {number}",
+  "@homeWeek": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "homePipe": "পাইপ",
+  "homeRisk": "ঝুঁকি",
+  "homeByDepartment": "বিভাগ অনুযায়ী",
+  "homeTeamOf": "{name}-এর টিম",
+  "@homeTeamOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeNeedsAttention": "মনোযোগ দরকার",
+  "homeStaleLeads": "{count}টি লিড ৭ দিনের বেশি ফলো-আপ ছাড়া",
+  "@homeStaleLeads": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "homeOverdueDays": "{name} {days} দিন মেয়াদ পার",
+  "@homeOverdueDays": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "homeNotCheckedIn": "{count} জন আজ চেক-ইন করেননি",
+  "@homeNotCheckedIn": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "homeAllClear": "এই মুহূর্তে মনোযোগ দেওয়ার মতো কিছু নেই।",
+  "homeNotificationsTitle": "নোটিফিকেশন",
+  "homeMarkAllRead": "সব পড়া",
+  "homeMarkedAllRead": "সব পড়া হয়েছে",
+  "homeFilterReminders": "রিমাইন্ডার",
+  "homeFilterTeam": "টিম",
+  "homeFilterNewLeads": "নতুন লিড",
+  "homeFilterBilling": "বিলিং",
+  "homeNotificationsEmpty": "নতুন কিছু নেই",
+  "homeNotificationsEmptyBody": "রিমাইন্ডার, মেনশন আর নতুন লিড এখানে দেখাবে।",
+  "homeSearchHint": "নাম, প্রতিষ্ঠান বা ফোন নম্বর",
+  "homeSearchLeads": "লিড",
+  "homeSearchContacts": "কনট্যাক্ট",
+  "homeSearchCompanies": "প্রতিষ্ঠান",
+  "homeSearchTasks": "কাজ",
+  "homeRecentSearches": "সাম্প্রতিক খোঁজ",
+  "homeSearchStartTitle": "সব জায়গায় খুঁজুন",
+  "homeSearchStartBody": "নাম, প্রতিষ্ঠান বা ফোন নম্বর দিয়ে লিড, কনট্যাক্ট, প্রতিষ্ঠান আর কাজ খুঁজুন।"
+}
