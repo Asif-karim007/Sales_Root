@@ -66,5 +66,13 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>SalesRoot uses the camera to scan visiting cards and QR codes.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SalesRoot reads a visiting card photo you pick from your library.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>SalesRoot uses the microphone so you can dictate task notes.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>SalesRoot turns your speech into text for task notes.</string>
 </dict>
 </plist>
