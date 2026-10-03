@@ -1,0 +1,718 @@
+{
+  "@@locale": "bn",
+  "salesTitle": "বিক্রি",
+  "salesModeEasy": "সহজ মোড",
+  "salesModeStandard": "স্ট্যান্ডার্ড মোড",
+  "salesModeAdvanced": "অ্যাডভান্সড মোড",
+  "salesNotifications": "নোটিফিকেশন",
+  "salesThisMonth": "এ মাসের বিক্রি",
+  "salesVsLastMonth": "গত মাসের তুলনায় {percent}",
+  "@salesVsLastMonth": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "salesOpenQuotes": "খোলা কোটেশন",
+  "salesOutstanding": "পাওনা",
+  "salesToDeliverCount": "ডেলিভারি বাকি {count}",
+  "@salesToDeliverCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "salesQuotations": "কোটেশন",
+  "salesQuotation": "কোটেশন",
+  "salesOrders": "অর্ডার",
+  "salesOrder": "অর্ডার",
+  "salesBills": "বিল",
+  "salesBill": "বিল",
+  "salesTaxInvoice": "ট্যাক্স ইনভয়েস",
+  "salesCollection": "কালেকশন",
+  "salesProductsTitle": "পণ্য ও সেবা",
+  "salesProductsEmpty": "কোনো পণ্য পাওয়া যায়নি",
+  "salesAllCount": "সব {count}",
+  "@salesAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "salesAwaitingReply": "উত্তরের অপেক্ষায়",
+  "salesAwaitingEmpty": "কোনো কোটেশন গ্রাহকের উত্তরের অপেক্ষায় নেই।",
+  "salesToDeliver": "ডেলিভারি বাকি",
+  "salesToDeliverEmpty": "সব অর্ডার ডেলিভারি হয়ে গেছে।",
+  "salesCollectionsDue": "আদায় বাকি",
+  "salesDuesEmpty": "এখন কোনো পাওনা বাকি নেই।",
+  "salesOrdersEmpty": "এখনো কোনো অর্ডার নেই",
+  "salesBillsEmpty": "এখনো কোনো বিল নেই",
+  "salesStatusDraft": "ড্রাফট",
+  "salesStatusSent": "পাঠানো",
+  "salesStatusViewed": "দেখেছেন",
+  "salesStatusAccepted": "গৃহীত",
+  "salesStatusRejected": "বাতিল",
+  "salesStatusExpired": "মেয়াদ শেষ",
+  "salesOrderConfirmed": "নিশ্চিত",
+  "salesOrderInProgress": "কাজ চলছে",
+  "salesOrderDelivered": "ডেলিভারি",
+  "salesOrderInvoiced": "বিল",
+  "salesCategorySolar": "সোলার",
+  "salesCategoryInverters": "ইনভার্টার",
+  "salesCategoryBatteries": "ব্যাটারি",
+  "salesCategoryAccessories": "এক্সেসরিজ",
+  "salesCategoryLighting": "লাইটিং",
+  "salesCategoryPumps": "পাম্প",
+  "salesCategoryServices": "সার্ভিস",
+  "salesUnitPiece": "পিস",
+  "salesUnitMetre": "মিটার",
+  "salesUnitPair": "জোড়া",
+  "salesUnitPerKw": "প্রতি kW",
+  "salesUnitSet": "সেট",
+  "salesUnitVisit": "ভিজিট",
+  "salesUnitYear": "বছর",
+  "salesUnitJob": "কাজ",
+  "salesUnitDay": "দিন",
+  "salesPriceListList": "লিস্ট",
+  "salesPriceListDealer": "ডিলার",
+  "salesPriceList": "দামের তালিকা",
+  "salesPriceListOf": "{list} দামের তালিকা",
+  "@salesPriceListOf": {
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "salesTermsFullAdvance": "পুরো টাকা অগ্রিম",
+  "salesTermsAdvance50": "৫০% অগ্রিম, বাকি ডেলিভারিতে",
+  "salesTermsAdvance50Split": "৫০% অগ্রিম, ৩৭.৫% ডেলিভারিতে, বাকি ইনস্টলেশন শেষে",
+  "salesTermsAdvance30": "৩০% অগ্রিম, ৫০% ডেলিভারিতে, ২০% ইনস্টলেশন শেষে",
+  "salesTermsOnDelivery": "পুরো টাকা ডেলিভারিতে",
+  "salesTermsCredit30": "বিলের পর ৩০ দিনের বাকি",
+  "salesChannelWhatsApp": "WhatsApp",
+  "salesChannelSms": "SMS লিংক",
+  "salesChannelSmsShort": "SMS",
+  "salesChannelEmail": "ইমেইল",
+  "salesChannelShare": "শেয়ার",
+  "salesMethodCash": "নগদ",
+  "salesMethodBkash": "bKash",
+  "salesMethodNagad": "Nagad",
+  "salesMethodBank": "ব্যাংক",
+  "salesMethodCheque": "চেক",
+  "salesMobileMoney": "bKash / Nagad",
+  "salesKindAdvance": "অগ্রিম",
+  "salesKindOnDelivery": "ডেলিভারিতে",
+  "salesKindAfterInstallation": "ইনস্টলেশন শেষে",
+  "salesKindOnBill": "বিলের পরে",
+  "salesOrdinal1": "১ম",
+  "salesOrdinal2": "২য়",
+  "salesOrdinal3": "৩য়",
+  "salesOrdinal4": "৪র্থ",
+  "salesOrdinalN": "{n}তম",
+  "@salesOrdinalN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "salesInstalmentOf": "{ordinal} কিস্তি",
+  "@salesInstalmentOf": {
+    "placeholders": {
+      "ordinal": {
+        "type": "String"
+      }
+    }
+  },
+  "salesAging0to30": "০–৩০ দিন",
+  "salesAging31to60": "৩১–৬০",
+  "salesAging61to90": "৬১–৯০",
+  "salesAging90plus": "৯০+",
+  "salesInstalmentPaid": "আদায়",
+  "salesInstalmentPartial": "আংশিক আদায়",
+  "salesInstalmentDue": "বাকি",
+  "salesInstalmentToday": "আজ",
+  "salesInstalmentOverdue": "মেয়াদ পার",
+  "salesPdfQuotation": "কোটেশন",
+  "salesPdfBill": "বিল",
+  "salesPdfTaxInvoice": "ট্যাক্স ইনভয়েস",
+  "salesPdfReceipt": "টাকা প্রাপ্তির রসিদ",
+  "salesPdfTo": "প্রতি:",
+  "salesPdfFooter": "SalesRoot দিয়ে তৈরি",
+  "salesPdfFailed": "PDF তৈরি করা গেল না। আবার চেষ্টা করুন।",
+  "salesColItem": "পণ্য",
+  "salesColQty": "পরিমাণ",
+  "salesColRate": "দর",
+  "salesColAmount": "মূল্য",
+  "salesSubtotal": "মোট",
+  "salesSubtotalItems": "মোট ({count} পণ্য)",
+  "@salesSubtotalItems": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDiscountPercent": "ছাড় {percent}",
+  "@salesDiscountPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "salesVatPercent": "ভ্যাট {percent}",
+  "@salesVatPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "salesTotal": "সর্বমোট",
+  "salesCollected": "আদায়",
+  "salesDue": "বাকি",
+  "salesValidTo": "মেয়াদ {date}",
+  "@salesValidTo": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDeliveryInDays": "{days} দিনে ডেলিভারি",
+  "@salesDeliveryInDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "salesAgainstOrder": "অর্ডার {order} বাবদ",
+  "@salesAgainstOrder": {
+    "placeholders": {
+      "order": {
+        "type": "String"
+      }
+    }
+  },
+  "salesInstalments": "কিস্তি",
+  "salesReceivedFrom": "পেলাম",
+  "salesAmount": "টাকার পরিমাণ",
+  "salesMethod": "মাধ্যম",
+  "salesAgainst": "বাবদ",
+  "salesBalanceDue": "বাকি রইল",
+  "salesReceivedBy": "গ্রহণ করলেন",
+  "salesSignature": "স্বাক্ষর",
+  "salesLineDiscount": "{percent} ছাড়",
+  "@salesLineDiscount": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "salesPrint": "প্রিন্ট",
+  "salesPickCustomer": "গ্রাহক বাছুন",
+  "salesSearchCustomer": "প্রতিষ্ঠান বা যোগাযোগ",
+  "salesDueAmountLabel": "বাকি {amount}",
+  "@salesDueAmountLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesOverdueDays": "{days} দিন মেয়াদ পার",
+  "@salesOverdueDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDueOn": "{date} তারিখে",
+  "@salesDueOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "salesVersion": "v{n}",
+  "@salesVersion": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "salesOrderMade": "অর্ডার {number} হয়েছে",
+  "@salesOrderMade": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "salesViewedTimes": "দেখেছেন {count} বার",
+  "@salesViewedTimes": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "salesStock": "স্টক {count}",
+  "@salesStock": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "salesSameInAllLists": "সব লিস্টে সমান",
+  "salesPaidInFull": "পরিশোধিত",
+  "salesBillsOldest": "{bills} বিল · সবচেয়ে পুরোনো {days} দিন",
+  "@salesBillsOldest": {
+    "placeholders": {
+      "bills": {
+        "type": "String"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "salesOverdue": "মেয়াদ পার",
+  "salesProductSearchHint": "পণ্য বা কোড",
+  "salesNoMatchFor": "“{term}” এর সাথে কিছু মেলেনি।",
+  "@salesNoMatchFor": {
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "salesUnit": "একক",
+  "salesVat": "ভ্যাট",
+  "salesStockLabel": "স্টকে আছে",
+  "salesNoStockKept": "স্টক রাখা হয় না (সার্ভিস)",
+  "salesInThisQuotation": "এই কোটেশনে ({count})",
+  "@salesInThisQuotation": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "salesSearchOrSay": "পণ্য খুঁজুন বা বলুন",
+  "salesPickCustomerHint": "কোন প্রতিষ্ঠানের জন্য কোটেশন, বাছুন",
+  "salesCustomer": "গ্রাহক",
+  "salesLess": "একটি কম",
+  "salesMore": "একটি বেশি",
+  "salesQuantity": "পরিমাণ",
+  "salesVoiceUnavailable": "এই ফোনে ভয়েস ইনপুট নেই।",
+  "salesVoiceSearch": "পণ্যের নাম বলুন",
+  "salesPaymentTerms": "পেমেন্টের শর্ত",
+  "salesDelivery": "ডেলিভারি",
+  "salesWithinDays": "{days} দিনের মধ্যে",
+  "@salesWithinDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDiscount": "ছাড়",
+  "salesValidUntil": "মেয়াদ",
+  "salesNotePrinted": "নোট (কোটেশনে দেখাবে)",
+  "salesLineDiscounts": "পণ্য ও আলাদা ছাড়",
+  "salesLineDiscountLabel": "এই পণ্যে ছাড়",
+  "salesRemoveLineHint": "পরিমাণ ০ রেখে সেভ করলে পণ্যটি বাদ যাবে।",
+  "salesNewNumber": "নতুন",
+  "salesQuotationShareText": "কোটেশন {number}, মোট {amount}। সংযুক্ত PDF দেখুন।",
+  "@salesQuotationShareText": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesQuotationNumber": "কোটেশন {number}",
+  "@salesQuotationNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "salesPreviewPdf": "PDF",
+  "salesHowToSend": "কীভাবে পাঠাবেন",
+  "salesSendNote": "কোটেশন PDF হিসেবে যাবে; শেয়ার থেকে WhatsApp, নম্বর বা ইমেইল বাছুন।",
+  "salesDraftSaved": "ড্রাফট সেভ হয়েছে",
+  "salesStepItems": "পণ্য",
+  "salesStepTerms": "পরিমাণ ও ছাড়",
+  "salesStepReview": "দেখে পাঠান",
+  "salesReviewTitle": "দেখে পাঠান",
+  "salesNewVersionTitle": "নতুন ভার্সন",
+  "salesNewQuotation": "নতুন কোটেশন",
+  "salesItemsSummary": "{count}টি পণ্য · {amount}",
+  "@salesItemsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDraft": "ড্রাফট",
+  "salesSaveDraft": "ড্রাফট রাখুন",
+  "salesSendOn": "{channel}-এ পাঠান",
+  "@salesSendOn": {
+    "placeholders": {
+      "channel": {
+        "type": "String"
+      }
+    }
+  },
+  "salesQuotationsEmpty": "এখানে কোনো কোটেশন নেই",
+  "salesQuotationsEmptyBody": "তিন ধাপে বানিয়ে WhatsApp-এ পাঠান।",
+  "salesAcceptTitle": "গ্রাহক রাজি হয়েছেন?",
+  "salesAcceptBody": "কোটেশন গৃহীত হবে এবং কিস্তির সময়সূচিসহ একটি অর্ডার খুলবে।",
+  "salesAcceptOnlyBody": "কোটেশন গৃহীত হবে। অর্ডার যিনি দেখেন তিনি অর্ডার খুলবেন।",
+  "salesConvertToOrder": "অর্ডার বানান",
+  "salesMarkAccepted": "গৃহীত করুন",
+  "salesDuplicate": "কপি করুন",
+  "salesSendAgain": "আবার পাঠান",
+  "salesMarkRejected": "বাতিল হিসেবে রাখুন",
+  "salesDeleteDraft": "ড্রাফট মুছুন",
+  "salesDeleteDraftBody": "ড্রাফটটি একেবারে মুছে যাবে।",
+  "salesOrderCreated": "অর্ডার {number} তৈরি হয়েছে",
+  "@salesOrderCreated": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "salesQuotationNowStatus": "কোটেশন এখন {status}",
+  "@salesQuotationNowStatus": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDraftDeleted": "ড্রাফট মুছে ফেলা হয়েছে",
+  "salesByOwner": "{name}",
+  "@salesByOwner": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "salesViewedNote": "গ্রাহক দেখেছেন: {count} বার · শেষবার {when}",
+  "@salesViewedNote": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "salesOpenOrder": "অর্ডার দেখুন",
+  "salesNewVersion": "নতুন ভার্সন",
+  "salesBillCreated": "বিল {number} তৈরি হয়েছে",
+  "@salesBillCreated": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "salesScheduleSaved": "কিস্তির সময়সূচি সেভ হয়েছে",
+  "salesOpenQuotation": "কোটেশন দেখুন",
+  "salesRecordCollection": "কালেকশন লিখুন",
+  "salesPaymentSchedule": "পেমেন্টের সময়সূচি",
+  "salesDeliverySection": "ডেলিভারি",
+  "salesOrderTitle": "অর্ডার {number} · {amount}",
+  "@salesOrderTitle": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesFromQuotation": "{company} · কোটেশন {number} থেকে",
+  "@salesFromQuotation": {
+    "placeholders": {
+      "company": {
+        "type": "String"
+      },
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDeliveredOn": "ডেলিভারি",
+  "salesProof": "প্রমাণ",
+  "salesPhotoCount": "{count}টি ছবি",
+  "@salesPhotoCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "salesSigned": "স্বাক্ষর আছে",
+  "salesNote": "নোট",
+  "salesLogDelivery": "ডেলিভারি লগ",
+  "salesOpenBill": "বিল দেখুন",
+  "salesCreateBill": "বিল তৈরি",
+  "salesCollectedAmount": "{amount} আদায়",
+  "@salesCollectedAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesTaka": "৳",
+  "salesScheduleTotal": "অর্ডারের মোট {amount}",
+  "@salesScheduleTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesAddInstalment": "কিস্তি যোগ করুন",
+  "salesScheduleBalanced": "কিস্তিগুলো মোটের সমান।",
+  "salesScheduleLeft": "{amount} এখনো কোনো কিস্তিতে নেই",
+  "@salesScheduleLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesSignatureHint": "গ্রাহককে আঙুল দিয়ে স্বাক্ষর করতে বলুন।",
+  "salesSignHere": "এখানে স্বাক্ষর করুন",
+  "salesAddPhoto": "ছবি যোগ করুন",
+  "salesTakePhoto": "ছবি তুলুন",
+  "salesFromGallery": "গ্যালারি থেকে",
+  "salesDeliverySaved": "ডেলিভারি সেভ হয়েছে",
+  "salesDeliveryTitle": "ডেলিভারি সম্পন্ন",
+  "salesChecklist": "ডেলিভারি দেওয়া পণ্য",
+  "salesDateTime": "তারিখ ও সময়",
+  "salesPhotoOrSignature": "ছবি বা স্বাক্ষর",
+  "salesCreateBillNow": "এখনই বিল তৈরি করুন",
+  "salesCreateBillNowHint": "সেভ করলেই অর্ডারের বিল হবে",
+  "salesBillShareText": "বিল {number}: বাকি {amount}। সংযুক্ত PDF দেখুন।",
+  "@salesBillShareText": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesBillReminderText": "প্রিয় {company}, বিল {number}-এ {amount} বাকি আছে। বিল সংযুক্ত করা হলো। ধন্যবাদ।",
+  "@salesBillReminderText": {
+    "placeholders": {
+      "company": {
+        "type": "String"
+      },
+      "number": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesBillNote": "এই ওয়ার্কস্পেসে “বিল” দেখানো হচ্ছে; ট্যাক্স ইনভয়েস চালু করতে সেটিংসে যান।",
+  "salesSettings": "সেটিংস",
+  "salesSend": "পাঠান",
+  "salesPdf": "PDF",
+  "salesTaxInvoiceNumber": "ট্যাক্স ইনভয়েস {number}",
+  "@salesTaxInvoiceNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "salesBillNumber": "বিল {number}",
+  "@salesBillNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "salesCompanyOrder": "{company} · অর্ডার {order}",
+  "@salesCompanyOrder": {
+    "placeholders": {
+      "company": {
+        "type": "String"
+      },
+      "order": {
+        "type": "String"
+      }
+    }
+  },
+  "salesItemsAndServices": "পণ্য ও সেবা",
+  "salesOutstandingTitle": "পাওনা",
+  "salesRecordACollection": "কালেকশন লিখুন",
+  "salesCollectionToday": "আজকের কালেকশন",
+  "salesAboveYesterday": "গতকালের চেয়ে {percent} বেশি",
+  "@salesAboveYesterday": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "salesBelowYesterday": "গতকালের চেয়ে {percent} কম",
+  "@salesBelowYesterday": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "salesReceivable": "মোট পাওনা",
+  "salesOverdueAmount": "মেয়াদ পার {amount}",
+  "@salesOverdueAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesDueToday": "আজ বাকি",
+  "salesCustomerCount": "{count} গ্রাহক",
+  "@salesCustomerCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "salesCollectedThisMonth": "এ মাসে আদায়",
+  "salesCollectToday": "আজ আদায় করতে হবে",
+  "salesAllOutstanding": "সব পাওনা",
+  "salesRecentCollections": "সাম্প্রতিক কালেকশন",
+  "salesCollectionsEmpty": "এখনো কোনো কালেকশন নেই",
+  "salesApplyTo": "কোন পাওনায় জমা হবে",
+  "salesCollectionSaved": "কালেকশন সেভ হয়েছে",
+  "salesSaveAndSendReceipt": "সেভ ও রসিদ পাঠান",
+  "salesPickDebtorHint": "কে টাকা দিলেন, বাছুন",
+  "salesNothingDue": "এই গ্রাহকের কোনো পাওনা নেই",
+  "salesDueSummary": "পাওনা {amount} · {count} কিস্তি বাকি",
+  "@salesDueSummary": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "salesEnterAmount": "টাকার পরিমাণ লিখুন",
+  "salesChange": "বদলান",
+  "salesNothingToApply": "পাওনায় জমা করতে টাকার পরিমাণ লিখুন।",
+  "salesOldestFirst": "পুরোনোটা আগে",
+  "salesUnallocated": "{amount} বাছাই করা পাওনার চেয়ে বেশি",
+  "@salesUnallocated": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesPhotoOfCheque": "চেকের ছবি",
+  "salesPhotoOfSlip": "স্লিপের ছবি",
+  "salesPhotoAdded": "ছবি যোগ হয়েছে",
+  "salesTrxId": "TrxID",
+  "salesTrxIdHint": "যেমন BKX7H2K9Q1",
+  "salesSenderNumber": "যে নম্বর থেকে পাঠানো",
+  "salesBankName": "ব্যাংক",
+  "salesReference": "রেফারেন্স",
+  "salesChequeNumber": "চেক নম্বর",
+  "salesChequeDate": "চেকের তারিখ",
+  "salesPickDate": "তারিখ বাছুন",
+  "salesReceiptShareText": "টাকা প্রাপ্তির রসিদ {number}: {company} থেকে {amount} পেলাম। ধন্যবাদ।",
+  "@salesReceiptShareText": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "company": {
+        "type": "String"
+      }
+    }
+  },
+  "salesReceipt": "রসিদ",
+  "salesBackToHome": "হোমে ফিরুন",
+  "salesRecordAnother": "আরেকটি লিখুন",
+  "salesAmountRecorded": "{amount} জমা হয়েছে",
+  "@salesAmountRecorded": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesReceiptSmsSent": "রসিদ {number} · এসএমএস পাঠানো হয়েছে",
+  "@salesReceiptSmsSent": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "salesReceiptNumber": "রসিদ {number}",
+  "@salesReceiptNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "salesMoneyReceipt": "টাকা প্রাপ্তির রসিদ",
+  "salesOutstandingTotal": "মোট পাওনা {amount}",
+  "@salesOutstandingTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "salesMine": "আমার",
+  "salesByCustomer": "গ্রাহক অনুযায়ী",
+  "salesNothingOutstanding": "কোনো পাওনা নেই"
+}
