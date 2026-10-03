@@ -1,0 +1,17 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - lib/l10n/generated/**
+  errors:
+    unnecessary_null_comparison: error
+    dead_code: error
+    unnecessary_non_null_assertion: error
+
+linter:
+  rules:
+    always_use_package_imports: true
+    prefer_const_constructors: true
+    prefer_final_locals: true
+    avoid_print: true

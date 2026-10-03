@@ -1,0 +1,36 @@
+/// The SalesRoot design system.
+library;
+
+export 'package:salesroot/widgets/sr_avatar.dart';
+export 'package:salesroot/widgets/sr_border.dart';
+export 'package:salesroot/widgets/sr_button.dart';
+export 'package:salesroot/widgets/sr_card.dart';
+export 'package:salesroot/widgets/sr_charts.dart';
+export 'package:salesroot/widgets/sr_chat_bubble.dart';
+export 'package:salesroot/widgets/sr_chips.dart';
+export 'package:salesroot/widgets/sr_coming_soon.dart';
+export 'package:salesroot/widgets/sr_date_picker.dart';
+export 'package:salesroot/widgets/sr_deferred.dart';
+export 'package:salesroot/widgets/sr_dialog.dart';
+export 'package:salesroot/widgets/sr_failure.dart';
+export 'package:salesroot/widgets/sr_file_viewer.dart';
+export 'package:salesroot/widgets/sr_keyboard_dismiss.dart';
+export 'package:salesroot/widgets/sr_kpi.dart';
+export 'package:salesroot/widgets/sr_language_toggle.dart';
+export 'package:salesroot/widgets/sr_list_row.dart';
+export 'package:salesroot/widgets/sr_lookup_picker.dart';
+export 'package:salesroot/widgets/sr_note.dart';
+export 'package:salesroot/widgets/sr_picker.dart';
+export 'package:salesroot/widgets/sr_pin_pad.dart';
+export 'package:salesroot/widgets/sr_progress.dart';
+export 'package:salesroot/widgets/sr_scaffold.dart';
+export 'package:salesroot/widgets/sr_scroll.dart';
+export 'package:salesroot/widgets/sr_segmented.dart';
+export 'package:salesroot/widgets/sr_sheet.dart';
+export 'package:salesroot/widgets/sr_snackbar.dart';
+export 'package:salesroot/widgets/sr_states.dart';
+export 'package:salesroot/widgets/sr_strips.dart';
+export 'package:salesroot/widgets/sr_tab_bar.dart';
+export 'package:salesroot/widgets/sr_tab_stack.dart';
+export 'package:salesroot/widgets/sr_text_field.dart';
+export 'package:salesroot/widgets/sr_timeline.dart';

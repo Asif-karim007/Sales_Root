@@ -1,0 +1,106 @@
+{
+  "@@locale": "bn",
+  "appName": "SalesRoot",
+  "commonOk": "ঠিক আছে",
+  "commonCancel": "বাতিল",
+  "commonSave": "সেভ করুন",
+  "commonDone": "হয়ে গেছে",
+  "commonNext": "পরের ধাপ",
+  "commonBack": "ফিরে যান",
+  "commonSkip": "এখন না",
+  "commonClose": "বন্ধ করুন",
+  "commonEdit": "এডিট",
+  "commonDelete": "মুছে ফেলুন",
+  "commonConfirm": "নিশ্চিত করুন",
+  "commonRetry": "আবার চেষ্টা করুন",
+  "commonSearch": "খুঁজুন",
+  "commonSeeAll": "সব দেখুন",
+  "commonAll": "সব",
+  "commonFilter": "ফিল্টার",
+  "commonClear": "মুছুন",
+  "commonApply": "প্রয়োগ করুন",
+  "commonAdd": "যোগ করুন",
+  "commonSend": "পাঠান",
+  "commonShare": "শেয়ার",
+  "commonCall": "কল",
+  "commonMore": "আরও",
+  "commonOptional": "ঐচ্ছিক",
+  "commonRequired": "এটি দিতে হবে",
+  "commonToday": "আজ",
+  "commonYesterday": "গতকাল",
+  "commonTomorrow": "আগামীকাল",
+  "commonThisWeek": "এই সপ্তাহ",
+  "commonThisMonth": "এই মাস",
+  "commonComingSoon": "এই স্ক্রিনটি তৈরি হচ্ছে",
+  "errorGeneric": "কিছু একটা ভুল হয়েছে। আবার চেষ্টা করুন।",
+  "errorOffline": "ইন্টারনেট সংযোগ নেই",
+  "errorOfflineBody": "সংযোগ ফিরলে আবার চেষ্টা করুন। ফোনে রাখা তথ্য দেখা যাবে।",
+  "errorTimeout": "অনুরোধে বেশি সময় লাগছে। আবার চেষ্টা করুন।",
+  "errorSessionExpired": "আপনার সেশন শেষ হয়েছে। আবার সাইন ইন করুন।",
+  "errorForbidden": "এটি করার অনুমতি আপনার নেই।",
+  "errorNotFound": "এই তথ্যটি আর নেই।",
+  "noAccessTitle": "এখানে ঢোকার অনুমতি নেই",
+  "noAccessBody": "আপনার ভূমিকায় এই অংশটি খোলা নেই। দরকার হলে মালিককে বলুন।",
+  "planLockedTitle": "এটি আপনার প্ল্যানে নেই",
+  "planLockedBody": "এই ফিচারের জন্য অ্যাড-অন বা বড় প্ল্যান দরকার।",
+  "planLockedAction": "প্ল্যান দেখুন",
+  "emptyGeneric": "এখনো কিছু নেই",
+  "sessionExpiredTitle": "সেশন শেষ",
+  "moneyLakh": "লাখ",
+  "moneyCrore": "কোটি",
+  "relativeJustNow": "এইমাত্র",
+  "relativeMinutes": "{count} মিনিট আগে",
+  "@relativeMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "relativeHours": "{count} ঘণ্টা আগে",
+  "@relativeHours": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "relativeDays": "{count} দিন আগে",
+  "@relativeDays": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "navHome": "হোম",
+  "navLeads": "লিড",
+  "navTasks": "কাজ",
+  "navSales": "বিক্রি",
+  "navTeam": "টিম",
+  "navMore": "আরও",
+  "navAdd": "যোগ করুন",
+  "languageBangla": "বাংলা",
+  "languageEnglish": "English",
+  "dsSearchEmptyTitle": "কিছু পাওয়া যায়নি",
+  "dsSearchEmptyBody": "অন্য শব্দ দিয়ে খুঁজে দেখুন।",
+  "dsSelectedCount": "{count}টি বাছাই করা",
+  "@dsSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "dsNoResponseTitle": "সার্ভার থেকে সাড়া মিলছে না",
+  "dsNoResponseBody": "সংযোগ দেখে আবার চেষ্টা করুন।",
+  "dsFileTitle": "ফাইল",
+  "dsFileNoPreview": "এই ফাইলটি এখানে দেখা যাবে না",
+  "dsFileNoPreviewBody": "অন্য অ্যাপে খুলতে শেয়ার করুন।",
+  "dsFileLoadFailed": "ফাইলটি আনা যায়নি।",
+  "dsFileOpenBrowser": "ব্রাউজারে খুলুন",
+  "dsKeypadBackspace": "একটি সংখ্যা মুছুন",
+  "dsLoading": "লোড হচ্ছে",
+  "dsLangShortBangla": "বাং",
+  "dsLangShortEnglish": "EN"
+}
