@@ -1,6 +1,6 @@
 # SalesRoot: project status and next steps
 
-Last updated: 2026-10-04. Read this together with `CLAUDE.md` (rules and architecture) and `docs/design_system.md` (Sr* widget API).
+Last updated: 2026-10-04. Read this together with `docs/design_system.md` (Sr* widget API).
 
 ## 1. Where things stand
 
@@ -14,13 +14,12 @@ Last updated: 2026-10-04. Read this together with `CLAUDE.md` (rules and archite
   - an iOS build (`pod install` and `flutter build ios` have never been run).
 
 ### Uncommitted at the moment of writing
-These four changes are on disk but not committed, and tests haven't been re-run since:
+These changes are on disk but not committed, and tests haven't been re-run since:
 
 | File | Change |
 |---|---|
 | `pubspec.yaml`, `pubspec.lock` | `permission_handler` pinned to `^12.0.3`, because 13 needs Android compileSdk 37. SaleBee pins it for the same reason. |
 | `android/app/build.gradle.kts` | Core library desugaring enabled + `desugar_jdk_libs:2.1.5`, because `flutter_local_notifications` requires it. |
-| `CLAUDE.md` | Known platform gaps, the test container setup, and the AppText presets. |
 
 **First task:** run `flutter test --concurrency=2` (the full suite at default concurrency was killed for memory once), then commit.
 
@@ -129,7 +128,7 @@ Features couldn't import each other, so each built its own copy of the same help
 - **Language pill wired to `appLocaleProvider`:** a copy in nearly every feature (`HrLanguageToggle`, `GrowthLanguageAction`, `SupportLanguagePill`, `TeamLanguageToggle`, `FfLanguageToggle`, `LanguageAction`…). Goes to one `SrLocaleToggle`.
 - **The prototype's `.line` and `.trow` rows:** `InfoLines`, `HrLine`, `GrowthInfoLine`, `FfInfoLine`, `InfoCard`; `ToggleRow`, `SwitchRow`, `FfToggleRow`, `GrowthToggleRow`, `SupportToggleRow`. Goes to `SrInfoLine` / `SrToggleRow`.
 - **Failure → snackbar, with 402 → upgrade:** `failureText`, `showHrFailure`, `showSalesFailure`, `runGrowthAction`, `showFailure`. Goes to `core/` (needs l10n).
-- **Launching contact apps:** `ContactLauncher`, `LeadLauncher`, `external_links.dart` (tel/sms/wa.me/mailto/maps). Goes to `core/utils/contact_launcher.dart`, which CLAUDE.md already names.
+- **Launching contact apps:** `ContactLauncher`, `LeadLauncher`, `external_links.dart` (tel/sms/wa.me/mailto/maps). Goes to `core/utils/contact_launcher.dart`.
 - **Bangladeshi phone handling:** `BdPhone`, `growthPhone`, `normalizePhone`. Goes to `core/format/bd_phone.dart`, plus grouped display in `AppFormat.phone`.
 - **Speech-to-text:** `LeadDictation`, `DictationButton`, `FfVoiceButton`. Goes to `widgets/sr_dictation.dart`.
 - **Gemini client:** tasks and support each have their own copy. Goes to one `core/ai/gemini_client.dart`.
@@ -172,7 +171,7 @@ This all disappears when the real API arrives. If a coherent demo is needed befo
 - **Pipelines:** settings owns the stage config but leads reads its own stages. Unify them when the API arrives.
 
 ### E. Wiring the real API (when you receive it)
-Follow **CLAUDE.md → Data: fake now, API later → Wiring a real API**, one feature at a time:
+One feature at a time:
 1. `<name>_api.dart` (Retrofit).
 2. `api_<name>_repository.dart` implementing the same interface, with `apiRequest`.
 3. Add the feature to `liveFeatures` in `core/config/data_mode.dart`, and switch its repository provider.

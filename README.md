@@ -8,4 +8,4 @@ tool/gen.sh            # merge ARB parts, gen-l10n, build_runner
 flutter run --dart-define-from-file=secrets.json
 ```
 
-Copy `secrets.example.json` to `secrets.json` first. All data is fake until each feature's API is wired; see `CLAUDE.md`. The developer menu is at the bottom of More in debug builds.
+Copy `secrets.example.json` to `secrets.json` first. All data is fake until each feature's API is wired; see `docs/STATUS.md`. The developer menu is at the bottom of More in debug builds.
