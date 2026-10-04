@@ -21,7 +21,7 @@ import 'package:salesroot/features/field_force/view/widget/ff_language_toggle.da
 import 'package:salesroot/features/field_force/view/widget/field_force_gate.dart';
 import 'package:salesroot/features/field_force/view/widget/minute_builder.dart';
 import 'package:salesroot/features/field_force/view/widget/worked_ring.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #131 attendance: today's punch with worked time, this month's counts,

@@ -16,7 +16,7 @@ import 'package:salesroot/features/leads/providers/lead_providers.dart';
 import 'package:salesroot/features/leads/view/widget/lead_dictation.dart';
 import 'package:salesroot/features/leads/view/widget/lead_labels.dart';
 import 'package:salesroot/features/leads/view/widget/lead_save_flow.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 enum _Phase { listening, unheard, unavailable, confirm }

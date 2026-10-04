@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/features/growth/models/campaign.dart';
 import 'package:salesroot/features/growth/view/widget/growth_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// "To: overdue customers · 19 people", picked from the server's segments.

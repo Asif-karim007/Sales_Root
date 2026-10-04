@@ -9,7 +9,7 @@ import 'package:salesroot/features/settings/providers/settings_providers.dart';
 import 'package:salesroot/features/settings/view/widget/change_pin_sheet.dart';
 import 'package:salesroot/features/settings/view/widget/settings_widgets.dart';
 import 'package:salesroot/features/settings/view/widget/sign_out_sheet.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #88: PIN, biometrics, signed-in devices and sign-in history.

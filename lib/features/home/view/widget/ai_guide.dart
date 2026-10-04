@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 /// The round AI button (`.aibtn`) floating above the tab bar.
 class AiGuideButton extends StatelessWidget {

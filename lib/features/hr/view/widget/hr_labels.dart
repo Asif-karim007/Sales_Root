@@ -6,7 +6,7 @@ import 'package:salesroot/features/hr/models/expense.dart';
 import 'package:salesroot/features/hr/models/leave.dart';
 import 'package:salesroot/features/hr/models/payroll.dart';
 import 'package:salesroot/features/hr/models/ticket.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The words and tones HR screens use for server codes.

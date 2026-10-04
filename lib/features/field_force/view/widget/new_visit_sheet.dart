@@ -8,7 +8,7 @@ import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/features/field_force/models/visit.dart';
 import 'package:salesroot/features/field_force/providers/visit_providers.dart';
 import 'package:salesroot/features/field_force/view/widget/voice_button.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// What the new-visit sheet decided: the planned visit, and whether to check

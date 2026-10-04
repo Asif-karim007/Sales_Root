@@ -5,7 +5,7 @@ import 'package:salesroot/core/format/app_date_utils.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/features/team/models/chat.dart';
 import 'package:salesroot/features/team/view/widget/team_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 extension ChatLabels on BuildContext {

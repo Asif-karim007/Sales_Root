@@ -7,7 +7,7 @@ import 'package:salesroot/features/field_force/providers/visit_providers.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_format.dart';
 import 'package:salesroot/features/field_force/view/widget/photo_capture.dart';
 import 'package:salesroot/features/field_force/view/widget/voice_button.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #123 farcheckin: beyond the radius the check-in needs a reason and a

@@ -11,7 +11,7 @@ import 'package:salesroot/features/leads/models/lead.dart';
 import 'package:salesroot/features/leads/models/lead_input.dart';
 import 'package:salesroot/features/leads/view/widget/lead_events.dart';
 import 'package:salesroot/features/leads/view/widget/lead_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Reacts to a lead form's save: opens the saved lead, offers the duplicate

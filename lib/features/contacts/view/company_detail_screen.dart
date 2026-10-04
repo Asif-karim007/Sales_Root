@@ -21,7 +21,7 @@ import 'package:salesroot/features/contacts/view/widget/contacts_header.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_sheets.dart';
 import 'package:salesroot/features/contacts/view/widget/detail_parts.dart';
 import 'package:salesroot/features/contacts/view/widget/info_lines.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #47: a company with its concern persons, leads, address and money.

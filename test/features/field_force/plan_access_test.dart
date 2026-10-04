@@ -8,7 +8,7 @@ import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/theme/app_theme.dart';
 import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/features/field_force/view/widget/field_force_gate.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 import 'field_force_harness.dart';

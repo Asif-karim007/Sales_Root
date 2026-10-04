@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/features/home/models/home_summary.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Lead counts per pipeline stage as bars against the fullest stage. The

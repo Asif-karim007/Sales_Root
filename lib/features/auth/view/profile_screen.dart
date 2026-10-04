@@ -14,7 +14,7 @@ import 'package:salesroot/features/auth/view/widget/auth_failure.dart';
 import 'package:salesroot/features/auth/view/widget/auth_intro.dart';
 import 'package:salesroot/features/auth/view/widget/auth_language_toggle.dart';
 import 'package:salesroot/features/auth/view/widget/sign_up_steps.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #5: the user's name and how they work. Joining a team asks for the

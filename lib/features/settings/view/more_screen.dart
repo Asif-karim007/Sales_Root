@@ -17,7 +17,7 @@ import 'package:salesroot/features/settings/providers/more_providers.dart';
 import 'package:salesroot/features/settings/providers/settings_providers.dart';
 import 'package:salesroot/features/settings/view/widget/more_labels.dart';
 import 'package:salesroot/features/settings/view/widget/settings_widgets.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #84: who you are, then every module you can open, grouped.

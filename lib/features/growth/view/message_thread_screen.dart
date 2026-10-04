@@ -14,7 +14,7 @@ import 'package:salesroot/features/growth/view/widget/growth_labels.dart';
 import 'package:salesroot/features/growth/view/widget/inbox_actions.dart';
 import 'package:salesroot/features/growth/view/widget/thread_composer.dart';
 import 'package:salesroot/features/growth/view/widget/thread_parts.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #142 A conversation with a customer. Messages stream in; the customer

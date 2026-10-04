@@ -20,7 +20,7 @@ import 'package:salesroot/features/contacts/view/widget/contacts_header.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_sheets.dart';
 import 'package:salesroot/features/contacts/view/widget/detail_parts.dart';
 import 'package:salesroot/features/contacts/view/widget/info_lines.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #45: one contact with quick actions, their company, leads and activity.

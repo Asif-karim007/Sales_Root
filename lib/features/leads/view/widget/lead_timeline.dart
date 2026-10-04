@@ -6,7 +6,7 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/leads/models/lead.dart';
 import 'package:salesroot/features/leads/models/lead_activity.dart';
 import 'package:salesroot/features/leads/view/widget/lead_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The lead's history, newest first, in the prototype's `.tl` style.

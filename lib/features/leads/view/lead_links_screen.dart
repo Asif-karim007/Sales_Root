@@ -17,7 +17,7 @@ import 'package:salesroot/features/leads/view/widget/call_outcome_sheet.dart';
 import 'package:salesroot/features/leads/view/widget/lead_events.dart';
 import 'package:salesroot/features/leads/view/widget/lead_labels.dart';
 import 'package:salesroot/features/leads/view/widget/lead_launcher.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #29: the lead's company and contacts, and the other details.

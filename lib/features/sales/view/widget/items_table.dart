@@ -6,7 +6,7 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/sales/models/sales_line.dart';
 import 'package:salesroot/features/sales/models/sales_math.dart';
 import 'package:salesroot/features/sales/view/sales_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 /// The prototype's `.qtable`: item, quantity and line amount.
 class ItemsTable extends StatelessWidget {

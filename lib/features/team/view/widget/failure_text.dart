@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The message to show for a failed call, preferring our own wording for

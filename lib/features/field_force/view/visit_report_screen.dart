@@ -16,7 +16,7 @@ import 'package:salesroot/features/field_force/service/csv_export.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_format.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_language_toggle.dart';
 import 'package:salesroot/features/field_force/view/widget/field_force_gate.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #129 visitreport: planned against done per period and member, and the

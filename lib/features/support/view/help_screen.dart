@@ -17,7 +17,7 @@ import 'package:salesroot/features/support/providers/ticket_providers.dart';
 import 'package:salesroot/features/support/support_links.dart';
 import 'package:salesroot/features/support/view/widget/support_labels.dart';
 import 'package:salesroot/features/support/view/widget/support_language_pill.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #108 help and support: the AI guide, search, categories, contact and the

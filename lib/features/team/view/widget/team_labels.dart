@@ -5,7 +5,7 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/features/team/models/member.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 extension TeamLabels on BuildContext {

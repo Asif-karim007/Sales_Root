@@ -16,7 +16,7 @@ import 'package:salesroot/features/hr/models/leave.dart';
 import 'package:salesroot/features/hr/models/payroll.dart';
 import 'package:salesroot/features/hr/providers/payroll_providers.dart';
 import 'package:salesroot/features/hr/view/payslip_pdf.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 import 'hr_test_utils.dart';
 

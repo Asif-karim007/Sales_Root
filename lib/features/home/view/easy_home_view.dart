@@ -11,7 +11,7 @@ import 'package:salesroot/features/home/view/widget/agenda_card.dart';
 import 'package:salesroot/features/home/view/widget/ai_guide.dart';
 import 'package:salesroot/features/home/view/widget/home_scroll_view.dart';
 import 'package:salesroot/features/home/view/widget/quick_actions.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #13: the Easy home — today's calls, follow-ups and visits, quick adds and

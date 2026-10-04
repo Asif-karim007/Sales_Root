@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/features/field_force/models/attendance.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 /// Field-force units: distances, durations and wall-clock times.
 extension FieldForceFormat on BuildContext {

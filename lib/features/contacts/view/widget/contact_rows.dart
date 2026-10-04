@@ -11,7 +11,7 @@ import 'package:salesroot/features/contacts/models/company.dart';
 import 'package:salesroot/features/contacts/models/contact.dart';
 import 'package:salesroot/features/contacts/models/linked_records.dart';
 import 'package:salesroot/features/contacts/view/widget/contact_launcher.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// A contact in a list: who, where they work, and quick call / WhatsApp.

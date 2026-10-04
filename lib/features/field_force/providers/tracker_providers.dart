@@ -22,7 +22,7 @@ import 'package:salesroot/features/field_force/service/tracker_messages.dart';
 import 'package:salesroot/features/field_force/service/tracker_permissions.dart';
 import 'package:salesroot/features/field_force/service/tracker_runner.dart';
 import 'package:salesroot/features/field_force/service/tracker_task_handler.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 part 'tracker_providers.g.dart';
 

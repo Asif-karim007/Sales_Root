@@ -1,5 +1,5 @@
-arb-dir: lib/l10n
+arb-dir: lib/translations
 template-arb-file: app_bn.arb
-output-dir: lib/l10n/generated
+output-dir: lib/translations/generated
 output-localization-file: app_localizations.dart
 nullable-getter: false

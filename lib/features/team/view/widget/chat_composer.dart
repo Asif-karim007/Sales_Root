@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:salesroot/features/team/models/chat.dart';
 import 'package:salesroot/features/team/providers/chat_providers.dart';
 import 'package:salesroot/features/team/view/widget/attach_sheet.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Attach, type and send, under an open thread.

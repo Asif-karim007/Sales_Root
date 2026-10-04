@@ -15,7 +15,7 @@ import 'package:salesroot/features/sales/view/sales_links.dart';
 import 'package:salesroot/features/sales/view/widget/paged_footer.dart';
 import 'package:salesroot/features/sales/view/widget/sales_failure.dart';
 import 'package:salesroot/features/sales/view/widget/sales_rows.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #63: what customers owe, by age of the bill, and who owes it.

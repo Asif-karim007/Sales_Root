@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:salesroot/features/tasks/models/task.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 extension TaskTypeStyle on TaskType {
   IconData get icon => switch (this) {

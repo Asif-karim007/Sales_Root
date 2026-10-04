@@ -11,7 +11,7 @@ import 'package:salesroot/features/field_force/service/oem_helper.dart';
 import 'package:salesroot/features/field_force/service/tracker_machine.dart';
 import 'package:salesroot/features/field_force/service/tracker_permissions.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_language_toggle.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #126 trackingstopped: why sharing stopped and how to fix it on this phone.

@@ -12,7 +12,7 @@ import 'package:salesroot/features/tasks/providers/scan_providers.dart';
 import 'package:salesroot/features/tasks/view/widget/card_frame.dart';
 import 'package:salesroot/features/tasks/view/widget/scan_empty.dart';
 import 'package:salesroot/features/tasks/view/widget/tasks_language_toggle.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #40 `scanreview`: the fields read off the card, editable, with the ones

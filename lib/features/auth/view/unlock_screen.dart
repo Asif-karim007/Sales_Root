@@ -15,7 +15,7 @@ import 'package:salesroot/features/auth/view/widget/auth_language_toggle.dart';
 import 'package:salesroot/features/auth/view/widget/auth_link.dart';
 import 'package:salesroot/features/auth/view/widget/brand.dart';
 import 'package:salesroot/features/auth/view/widget/shake.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #11: the PIN in front of a restored session. Five wrong tries sign out.

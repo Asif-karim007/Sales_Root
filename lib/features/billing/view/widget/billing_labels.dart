@@ -6,7 +6,7 @@ import 'package:salesroot/features/billing/models/billing_catalog.dart';
 import 'package:salesroot/features/billing/models/checkout.dart';
 import 'package:salesroot/features/billing/models/subscription.dart';
 import 'package:salesroot/features/billing/models/usage.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 /// Joins the parts of a meta line the way the prototype does.
 String joinDot(Iterable<String> parts) =>

@@ -13,7 +13,7 @@ import 'package:salesroot/features/sales/view/widget/amount_lines.dart';
 import 'package:salesroot/features/sales/view/widget/paged_footer.dart';
 import 'package:salesroot/features/sales/view/widget/sales_rows.dart';
 import 'package:salesroot/features/sales/view/widget/search_box.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #51: the catalogue with category chips, list or dealer prices and search

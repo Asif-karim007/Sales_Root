@@ -9,7 +9,7 @@ import 'package:salesroot/features/growth/models/notice.dart';
 import 'package:salesroot/features/growth/providers/notice_providers.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
 import 'package:salesroot/features/growth/view/widget/notice_text.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #148 The notice board.

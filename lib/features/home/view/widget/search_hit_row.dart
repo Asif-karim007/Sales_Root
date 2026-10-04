@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/features/home/models/search_result.dart';
 import 'package:salesroot/features/home/providers/search_providers.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// One search result; opening it saves the search to the recent list.

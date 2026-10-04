@@ -14,7 +14,7 @@ import 'package:salesroot/features/team/view/widget/info_card.dart';
 import 'package:salesroot/features/team/view/widget/team_labels.dart';
 import 'package:salesroot/features/team/view/widget/team_language_toggle.dart';
 import 'package:salesroot/features/team/view/widget/failure_text.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #71 `removemember`: hand the member's work to someone, then remove them.

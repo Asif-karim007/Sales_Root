@@ -15,7 +15,7 @@ import 'package:salesroot/features/settings/providers/sync_providers.dart';
 import 'package:salesroot/features/settings/view/widget/level_labels.dart';
 import 'package:salesroot/features/settings/view/widget/settings_widgets.dart';
 import 'package:salesroot/features/settings/view/widget/sign_out_sheet.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #85: personal, workspace and account settings.

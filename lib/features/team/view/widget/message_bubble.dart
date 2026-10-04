@@ -13,7 +13,7 @@ import 'package:salesroot/features/team/providers/chat_providers.dart';
 import 'package:salesroot/features/team/view/widget/chat_labels.dart';
 import 'package:salesroot/features/team/view/widget/external_links.dart';
 import 'package:salesroot/features/team/view/widget/team_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// One message: the bubble, what it carries and, for mine, its delivery

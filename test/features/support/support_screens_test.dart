@@ -12,7 +12,7 @@ import 'package:salesroot/core/locale/locale_provider.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_theme.dart';
 import 'package:salesroot/features/support/support_routes.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 import 'support_test_container.dart';

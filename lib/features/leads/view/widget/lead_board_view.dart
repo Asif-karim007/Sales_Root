@@ -17,7 +17,7 @@ import 'package:salesroot/features/leads/providers/lead_providers.dart';
 import 'package:salesroot/features/leads/view/widget/lead_events.dart';
 import 'package:salesroot/features/leads/view/widget/lead_labels.dart';
 import 'package:salesroot/features/leads/view/widget/move_stage_sheet.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #22: a column per stage. Long-press a card and drop it on another column

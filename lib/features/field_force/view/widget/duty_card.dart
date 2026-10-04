@@ -12,7 +12,7 @@ import 'package:salesroot/features/field_force/view/widget/ff_format.dart';
 import 'package:salesroot/features/field_force/view/widget/minute_builder.dart';
 import 'package:salesroot/features/field_force/view/widget/tracking_status_sheet.dart';
 import 'package:salesroot/features/field_force/view/widget/worked_ring.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The visits screen's duty card: worked time, the attendance punch and

@@ -11,7 +11,7 @@ import 'package:salesroot/features/auth/providers/invite_providers.dart';
 import 'package:salesroot/features/auth/view/widget/auth_failure.dart';
 import 'package:salesroot/features/auth/view/widget/auth_language_toggle.dart';
 import 'package:salesroot/features/auth/view/widget/industry_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #9: a new team workspace with the user as owner, then switched to.

@@ -5,7 +5,7 @@ import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/growth/models/distribution_rule.dart';
 import 'package:salesroot/features/growth/models/inbox_lead.dart';
 import 'package:salesroot/features/growth/view/widget/growth_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 /// Names and labels a rule's conditions and actions are written with.
 class RuleVocabulary {

@@ -6,7 +6,7 @@ import 'package:salesroot/core/locale/locale_provider.dart';
 import 'package:salesroot/core/routing/app_router.dart';
 import 'package:salesroot/core/session/session_provider.dart';
 import 'package:salesroot/core/theme/app_theme.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 class App extends ConsumerStatefulWidget {

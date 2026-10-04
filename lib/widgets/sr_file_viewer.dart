@@ -6,7 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:salesroot/core/theme/sr_colors.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/sr_button.dart';
 import 'package:salesroot/widgets/sr_scaffold.dart';
 import 'package:salesroot/widgets/sr_states.dart';

@@ -16,7 +16,7 @@ import 'package:salesroot/features/growth/view/widget/accept_lead_sheet.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
 import 'package:salesroot/features/growth/view/widget/growth_labels.dart';
 import 'package:salesroot/features/growth/view/widget/inbox_actions.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #137 One new lead; with [openAccept] (#138) the accept sheet opens as

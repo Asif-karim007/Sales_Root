@@ -6,7 +6,7 @@ import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/features/sales/models/collection.dart';
 import 'package:salesroot/features/sales/providers/collection_providers.dart';
 import 'package:salesroot/features/sales/view/sales_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The method chips and the fields each method needs: a TrxID for bKash and

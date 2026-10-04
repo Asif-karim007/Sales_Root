@@ -12,7 +12,7 @@ import 'package:salesroot/features/leads/view/widget/lead_dictation.dart';
 import 'package:salesroot/features/leads/view/widget/lead_events.dart';
 import 'package:salesroot/features/leads/view/widget/lead_labels.dart';
 import 'package:salesroot/features/leads/view/widget/lead_launcher.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Starts a call to [lead]'s contact and remembers it, so [LeadCallWatcher]

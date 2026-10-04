@@ -14,7 +14,7 @@ import 'package:salesroot/features/hr/view/widget/hr_feedback.dart';
 import 'package:salesroot/features/hr/view/widget/hr_labels.dart';
 import 'package:salesroot/features/hr/view/widget/hr_language_toggle.dart';
 import 'package:salesroot/features/hr/view/widget/hr_line.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The ticket after it is raised: SLA, details, the thread and its status.

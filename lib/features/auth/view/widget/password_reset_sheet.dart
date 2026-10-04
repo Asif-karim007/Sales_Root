@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:salesroot/features/auth/providers/auth_providers.dart';
 import 'package:salesroot/features/auth/view/widget/auth_failure.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 Future<void> showPasswordResetSheet(BuildContext context, String email) =>

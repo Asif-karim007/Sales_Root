@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/session/session_provider.dart';
 import 'package:salesroot/features/settings/providers/sync_providers.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Confirms sign-out, warning about changes still waiting on this phone.

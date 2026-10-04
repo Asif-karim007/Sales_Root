@@ -17,7 +17,7 @@ import 'package:salesroot/features/sales/view/sales_labels.dart';
 import 'package:salesroot/features/sales/view/widget/collection_fields.dart';
 import 'package:salesroot/features/sales/view/widget/customer_picker.dart';
 import 'package:salesroot/features/sales/view/widget/sales_failure.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #61: records money received, by any method, against the customer's

@@ -20,7 +20,7 @@ import 'package:salesroot/features/leads/view/widget/lead_labels.dart';
 import 'package:salesroot/features/leads/view/widget/lead_launcher.dart';
 import 'package:salesroot/features/leads/view/widget/lead_timeline.dart';
 import 'package:salesroot/features/leads/view/widget/move_stage_sheet.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #28: one lead — stage, contact actions, deal, next task and timeline.

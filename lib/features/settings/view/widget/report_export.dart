@@ -11,7 +11,7 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/locale/locale_provider.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/settings/models/report_models.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 String productCategoryLabel(AppLocalizations l10n, String category) =>
     switch (category) {

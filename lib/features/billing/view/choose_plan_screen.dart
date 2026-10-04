@@ -20,7 +20,7 @@ import 'package:salesroot/features/billing/view/widget/billing_bits.dart';
 import 'package:salesroot/features/billing/view/widget/billing_labels.dart';
 import 'package:salesroot/features/billing/view/widget/limit_header.dart';
 import 'package:salesroot/features/billing/view/widget/plan_option_card.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #99 Choose a plan. With [quota] it opens on #98, the limit that was hit.

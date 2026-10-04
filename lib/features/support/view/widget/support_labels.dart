@@ -3,7 +3,7 @@ import 'package:salesroot/features/support/models/help_article.dart';
 import 'package:salesroot/features/support/models/lesson.dart';
 import 'package:salesroot/features/support/models/support_forms.dart';
 import 'package:salesroot/features/support/models/support_ticket.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 extension SupportLabels on AppLocalizations {
   String destination(AppDestination destination) => switch (destination) {

@@ -12,7 +12,7 @@ import 'package:salesroot/features/home/models/home_summary.dart';
 import 'package:salesroot/features/home/view/widget/ai_guide.dart';
 import 'package:salesroot/features/home/view/widget/home_scroll_view.dart';
 import 'package:salesroot/features/home/view/widget/quick_actions.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The lead the "Try a sample lead" link pre-fills the full form with.

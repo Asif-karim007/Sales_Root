@@ -12,7 +12,7 @@ import 'package:salesroot/features/tasks/view/widget/reminder_options.dart';
 import 'package:salesroot/features/tasks/view/widget/task_feedback.dart';
 import 'package:salesroot/features/tasks/view/widget/tasks_language_toggle.dart';
 import 'package:salesroot/features/tasks/view/widget/toggle_row.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #38 `privateevent`: a private event on the user's own calendar. Opens on

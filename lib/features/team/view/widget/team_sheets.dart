@@ -12,7 +12,7 @@ import 'package:salesroot/features/team/models/invite.dart';
 import 'package:salesroot/features/team/providers/team_providers.dart';
 import 'package:salesroot/features/team/view/widget/failure_text.dart';
 import 'package:salesroot/features/team/view/widget/team_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #66 `rolepick`: the roles and what each may do. Pops with the chosen

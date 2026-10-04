@@ -13,7 +13,7 @@ import 'package:salesroot/features/support/view/widget/support_done_sheet.dart';
 import 'package:salesroot/features/support/view/widget/support_failure.dart';
 import 'package:salesroot/features/support/view/widget/support_labels.dart';
 import 'package:salesroot/features/support/view/widget/support_language_pill.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #118 a custom software, website, ERP or demo enquiry to Nexzen.

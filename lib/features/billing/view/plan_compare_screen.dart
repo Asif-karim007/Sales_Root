@@ -13,7 +13,7 @@ import 'package:salesroot/features/billing/models/billing_overview.dart';
 import 'package:salesroot/features/billing/providers/billing_providers.dart';
 import 'package:salesroot/features/billing/view/widget/billing_bits.dart';
 import 'package:salesroot/features/billing/view/widget/billing_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #97 What the next plan adds. [target] is a plan code; the next plan up is

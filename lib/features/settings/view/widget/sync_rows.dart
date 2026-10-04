@@ -8,7 +8,7 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/settings/models/sync_models.dart';
 import 'package:salesroot/features/settings/providers/sync_providers.dart';
 import 'package:salesroot/features/settings/view/widget/settings_widgets.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 String megabytes(BuildContext context, int bytes) {

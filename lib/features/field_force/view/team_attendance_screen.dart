@@ -18,7 +18,7 @@ import 'package:salesroot/features/field_force/view/widget/correction_sheet.dart
 import 'package:salesroot/features/field_force/view/widget/ff_count_tile.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_language_toggle.dart';
 import 'package:salesroot/features/field_force/view/widget/field_force_gate.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #133 attendteam: the team's attendance today, this week or this month,

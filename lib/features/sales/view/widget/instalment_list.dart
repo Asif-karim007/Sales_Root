@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/features/sales/models/instalment.dart';
 import 'package:salesroot/features/sales/view/sales_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// A payment schedule: each instalment with its date, amount and whether it

@@ -15,7 +15,7 @@ import 'package:salesroot/features/team/providers/chat_providers.dart';
 import 'package:salesroot/features/team/view/widget/chat_labels.dart';
 import 'package:salesroot/features/team/view/widget/paged_list.dart';
 import 'package:salesroot/features/team/view/widget/team_language_toggle.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #73 `chatlist`: groups, direct chats and lead threads. With [leadId] it

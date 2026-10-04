@@ -4,7 +4,7 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/billing/models/referral.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 /// The prototype's `.steps` for referral milestones: reached ones filled,
 /// with what each one pays underneath.

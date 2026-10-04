@@ -6,7 +6,7 @@ import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// New lead, by voice and card scan, as far as the user may add them.

@@ -10,7 +10,7 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/billing/models/referral.dart';
 import 'package:salesroot/features/billing/providers/referral_providers.dart';
 import 'package:salesroot/features/billing/view/widget/billing_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Opens #184 and reports the saved invite.

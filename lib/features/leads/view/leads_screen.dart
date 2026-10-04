@@ -22,7 +22,7 @@ import 'package:salesroot/features/leads/view/widget/lead_card.dart';
 import 'package:salesroot/features/leads/view/widget/lead_events.dart';
 import 'package:salesroot/features/leads/view/widget/lead_filter_sheet.dart';
 import 'package:salesroot/features/leads/view/widget/lead_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #21, the Leads tab: "My leads" as cards with chips, or "Pipeline" as the

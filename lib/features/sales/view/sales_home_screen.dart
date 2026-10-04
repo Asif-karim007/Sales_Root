@@ -20,7 +20,7 @@ import 'package:salesroot/features/sales/view/sales_links.dart';
 import 'package:salesroot/features/sales/view/widget/list_sheets.dart';
 import 'package:salesroot/features/sales/view/widget/sales_rows.dart';
 import 'package:salesroot/features/sales/view/widget/sales_tile.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #50: this month's sales, open quotations, what to deliver and collect.

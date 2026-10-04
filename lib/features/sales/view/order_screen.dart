@@ -17,7 +17,7 @@ import 'package:salesroot/features/sales/view/widget/button_row.dart';
 import 'package:salesroot/features/sales/view/widget/instalment_list.dart';
 import 'package:salesroot/features/sales/view/widget/sales_failure.dart';
 import 'package:salesroot/features/sales/view/widget/schedule_sheet.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #57: the order, where it stands, and its instalment schedule.

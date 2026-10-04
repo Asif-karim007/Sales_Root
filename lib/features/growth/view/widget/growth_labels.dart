@@ -6,7 +6,7 @@ import 'package:salesroot/features/growth/models/inbox_lead.dart';
 import 'package:salesroot/features/growth/models/lead_channel.dart';
 import 'package:salesroot/features/growth/models/message_thread.dart';
 import 'package:salesroot/features/growth/models/notice.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 extension InboxSourceLabel on InboxSource {
   String label(AppLocalizations l10n) => switch (this) {

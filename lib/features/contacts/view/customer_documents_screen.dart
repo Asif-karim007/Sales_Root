@@ -15,7 +15,7 @@ import 'package:salesroot/features/contacts/view/widget/contacts_header.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_sheets.dart';
 import 'package:salesroot/features/contacts/view/widget/document_upload_sheet.dart';
 import 'package:salesroot/features/contacts/view/widget/paged_scroll_view.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 const _filters = [

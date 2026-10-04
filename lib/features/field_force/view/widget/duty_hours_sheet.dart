@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:salesroot/features/field_force/models/tracking.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_format.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The working week in Bangladesh order, as `DateTime.weekday` values.

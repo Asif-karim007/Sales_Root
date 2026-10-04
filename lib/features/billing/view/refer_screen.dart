@@ -17,7 +17,7 @@ import 'package:salesroot/features/billing/view/widget/billing_bits.dart';
 import 'package:salesroot/features/billing/view/widget/invite_sheet.dart';
 import 'package:salesroot/features/billing/view/widget/referral_widgets.dart';
 import 'package:salesroot/features/billing/view/widget/reward_sheet.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #183 Refer & earn. [openInvite] opens #184 on arrival.

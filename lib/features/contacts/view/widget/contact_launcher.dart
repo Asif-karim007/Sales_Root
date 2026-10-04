@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:salesroot/features/contacts/models/bd_phone.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Opens the dialer, WhatsApp, SMS, mail, maps or the browser, and says so

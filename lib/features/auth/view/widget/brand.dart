@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 /// The sprout logo and the app name, as on the splash and the PIN screen.
 class AuthBrand extends StatelessWidget {

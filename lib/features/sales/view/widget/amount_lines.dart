@@ -5,7 +5,7 @@ import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/sales/models/sales_math.dart';
 import 'package:salesroot/features/sales/view/sales_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 /// The prototype's `.line`: a label and an amount; [strong] is the total row
 /// with a hairline above it.

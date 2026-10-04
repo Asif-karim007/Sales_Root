@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 /// One line for a snackbar about [error].
 String failureText(BuildContext context, Object error) {

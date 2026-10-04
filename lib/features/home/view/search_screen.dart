@@ -9,7 +9,7 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/home/models/search_result.dart';
 import 'package:salesroot/features/home/providers/search_providers.dart';
 import 'package:salesroot/features/home/view/widget/search_hit_row.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #20: one box over leads, contacts, companies and tasks. Results arrive as

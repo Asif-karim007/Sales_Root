@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 
 import 'package:salesroot/core/format/app_date_utils.dart';
 import 'package:salesroot/core/format/digits.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 /// Every number, amount and date shown on screen goes through here, so Bangla
 /// gets Bangla digits and lakh/crore.

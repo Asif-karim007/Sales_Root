@@ -16,7 +16,7 @@ import 'package:salesroot/features/sales/view/widget/quote_items_step.dart';
 import 'package:salesroot/features/sales/view/widget/quote_review_step.dart';
 import 'package:salesroot/features/sales/view/widget/quote_terms_step.dart';
 import 'package:salesroot/features/sales/view/widget/sales_failure.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #52–54: a new quotation (or a copy, or the next version) in three steps.

@@ -8,7 +8,7 @@ import 'package:salesroot/features/support/support_links.dart';
 import 'package:salesroot/features/support/view/widget/support_done_sheet.dart';
 import 'package:salesroot/features/support/view/widget/support_failure.dart';
 import 'package:salesroot/features/support/view/widget/support_language_pill.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #113 how the user's data is protected, with a data export.

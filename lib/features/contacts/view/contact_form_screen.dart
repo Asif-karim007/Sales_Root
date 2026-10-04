@@ -17,7 +17,7 @@ import 'package:salesroot/features/contacts/providers/contacts_providers.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_feedback.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_header.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_sheets.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Values a new contact starts with, from the route's query.

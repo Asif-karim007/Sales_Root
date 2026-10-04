@@ -34,7 +34,7 @@ import 'package:salesroot/features/tasks/view/scan_review_screen.dart';
 import 'package:salesroot/features/tasks/view/task_detail_screen.dart';
 import 'package:salesroot/features/tasks/view/task_form_screen.dart';
 import 'package:salesroot/features/tasks/view/tasks_screen.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 void main() {
   group('task tabs', () {

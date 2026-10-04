@@ -3,7 +3,7 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   exclude:
     - build/**
-    - lib/l10n/generated/**
+    - lib/translations/generated/**
   errors:
     unnecessary_null_comparison: error
     dead_code: error

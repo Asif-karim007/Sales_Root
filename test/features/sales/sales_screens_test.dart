@@ -10,7 +10,7 @@ import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/features/sales/data/sales_ledger.dart';
 import 'package:salesroot/features/sales/models/sales_order.dart';
 import 'package:salesroot/features/sales/view/sales_links.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 import 'sales_test_helpers.dart';
 

@@ -16,7 +16,7 @@ import 'package:salesroot/features/sales/view/widget/customer_picker.dart';
 import 'package:salesroot/features/sales/view/widget/paged_footer.dart';
 import 'package:salesroot/features/sales/view/widget/search_box.dart';
 import 'package:salesroot/features/sales/view/widget/voice_search_button.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #52: the customer and price list, then products with quantities. The

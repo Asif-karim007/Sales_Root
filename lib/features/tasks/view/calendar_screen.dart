@@ -16,7 +16,7 @@ import 'package:salesroot/features/tasks/view/widget/month_grid.dart';
 import 'package:salesroot/features/tasks/view/widget/task_feedback.dart';
 import 'package:salesroot/features/tasks/view/widget/task_row.dart';
 import 'package:salesroot/features/tasks/view/widget/tasks_language_toggle.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Where the private-event form opens: new on [day], or editing [id].

@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
-/// Merges `lib/l10n/parts/<area>.<locale>.arb` into `lib/l10n/app_<locale>.arb`.
+/// Merges `lib/translations/parts/<area>.<locale>.arb` into `lib/translations/app_<locale>.arb`.
 /// Each feature owns one part per locale, so features never edit the same file.
 void main() {
   final parts =
-      Directory('lib/l10n/parts')
+      Directory('lib/translations/parts')
           .listSync()
           .whereType<File>()
           .where((f) => f.path.endsWith('.arb'))
@@ -44,7 +44,7 @@ void main() {
   const encoder = JsonEncoder.withIndent('  ');
   for (final entry in merged.entries) {
     File(
-      'lib/l10n/app_${entry.key}.arb',
+      'lib/translations/app_${entry.key}.arb',
     ).writeAsStringSync('${encoder.convert(entry.value)}\n');
   }
   stdout.writeln('Merged ${parts.length} ARB parts, ${bn.length} keys.');

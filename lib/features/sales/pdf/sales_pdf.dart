@@ -11,7 +11,7 @@ import 'package:salesroot/features/sales/models/sales_math.dart';
 import 'package:salesroot/features/sales/models/sales_order.dart';
 import 'package:salesroot/features/sales/models/sales_party.dart';
 import 'package:salesroot/features/sales/view/sales_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 /// Builds the quotation, bill and receipt PDFs in the app's language, set in
 /// the bundled Anek Bangla so Bangla text and ৳ render.

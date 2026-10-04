@@ -4,7 +4,7 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/features/growth/models/campaign.dart';
 import 'package:salesroot/features/growth/models/sms_count.dart';
 import 'package:salesroot/features/growth/view/widget/growth_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 String campaignChannelLabel(AppLocalizations l10n, CampaignChannel channel) =>

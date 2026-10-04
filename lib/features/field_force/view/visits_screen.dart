@@ -16,7 +16,7 @@ import 'package:salesroot/features/field_force/view/widget/ff_language_toggle.da
 import 'package:salesroot/features/field_force/view/widget/field_force_gate.dart';
 import 'package:salesroot/features/field_force/view/widget/new_visit_sheet.dart';
 import 'package:salesroot/features/field_force/view/widget/visit_row.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #120 visits: the duty card, today's numbers and today's visit list.

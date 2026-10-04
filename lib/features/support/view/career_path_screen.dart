@@ -9,7 +9,7 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/support/models/lesson.dart';
 import 'package:salesroot/features/support/providers/academy_providers.dart';
 import 'package:salesroot/features/support/view/widget/support_language_pill.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #116 the career path from sales executive to team lead, step by step.

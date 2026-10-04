@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:salesroot/features/field_force/view/widget/voice_button.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// A note typed or dictated; pops with the text, or null when cancelled.

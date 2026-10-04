@@ -8,7 +8,7 @@ import 'package:salesroot/features/growth/models/message_thread.dart';
 import 'package:salesroot/features/growth/providers/messages_providers.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
 import 'package:salesroot/features/growth/view/widget/growth_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Attach, type or pick a template, send. Once WhatsApp's 24-hour window

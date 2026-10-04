@@ -18,7 +18,7 @@ import 'package:salesroot/features/home/view/widget/failure_text.dart';
 import 'package:salesroot/features/home/view/widget/home_header.dart';
 import 'package:salesroot/features/home/view/widget/home_scroll_view.dart';
 import 'package:salesroot/features/home/view/widget/home_skeleton.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The Home tab: the shared header over the home that fits the workspace,

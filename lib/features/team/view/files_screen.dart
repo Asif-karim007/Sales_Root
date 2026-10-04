@@ -14,7 +14,7 @@ import 'package:salesroot/features/team/view/widget/file_widgets.dart';
 import 'package:salesroot/features/team/view/widget/paged_list.dart';
 import 'package:salesroot/features/team/view/widget/team_labels.dart';
 import 'package:salesroot/features/team/view/widget/team_language_toggle.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #81 `teamfiles`: folders, the files in them and how much space is used.

@@ -11,7 +11,7 @@ import 'package:salesroot/features/settings/models/csv_import.dart';
 import 'package:salesroot/features/settings/providers/import_providers.dart';
 import 'package:salesroot/features/settings/view/widget/import_mapping.dart';
 import 'package:salesroot/features/settings/view/widget/settings_widgets.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #91: pick a CSV, map its columns to lead fields, check duplicates and

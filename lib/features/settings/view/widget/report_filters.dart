@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/features/settings/models/report_models.dart';
 import 'package:salesroot/features/settings/providers/report_providers.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// `October 2026`, or `1 Sep – 15 Oct 2026` for other periods.

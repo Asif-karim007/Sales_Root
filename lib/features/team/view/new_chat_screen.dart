@@ -11,7 +11,7 @@ import 'package:salesroot/features/team/providers/team_providers.dart';
 import 'package:salesroot/features/team/view/widget/member_row.dart';
 import 'package:salesroot/features/team/view/widget/team_language_toggle.dart';
 import 'package:salesroot/features/team/view/widget/failure_text.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #78 `newchat`: a direct chat with one person, or a named group.

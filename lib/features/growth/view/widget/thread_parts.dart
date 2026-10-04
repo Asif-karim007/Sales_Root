@@ -8,7 +8,7 @@ import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/growth/models/message_thread.dart';
 import 'package:salesroot/features/growth/providers/messages_providers.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The conversation, newest at the bottom: who it is, the messages, a

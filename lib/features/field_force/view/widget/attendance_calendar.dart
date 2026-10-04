@@ -6,7 +6,7 @@ import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/field_force/models/attendance.dart';
 import 'package:salesroot/features/field_force/view/widget/duty_hours_sheet.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 /// Fill and ink for a day's status, as the prototype's calendar draws it.
 (Color, Color) attendanceColors(SrColors c, AttendanceStatus status) =>

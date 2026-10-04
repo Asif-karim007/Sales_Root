@@ -8,7 +8,7 @@ import 'package:salesroot/features/support/providers/support_form_providers.dart
 import 'package:salesroot/features/support/view/widget/emoji_choice.dart';
 import 'package:salesroot/features/support/view/widget/support_failure.dart';
 import 'package:salesroot/features/support/view/widget/support_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The moments other features pass to [showMomentSurvey].

@@ -14,7 +14,7 @@ import 'package:salesroot/features/contacts/view/widget/contact_rows.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_header.dart';
 import 'package:salesroot/features/contacts/view/widget/customer_timeline.dart';
 import 'package:salesroot/features/contacts/view/widget/detail_parts.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #48: everything about one customer — money, deals, documents, visits and

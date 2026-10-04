@@ -17,7 +17,7 @@ import 'package:salesroot/features/auth/view/splash_screen.dart';
 import 'package:salesroot/features/auth/view/tour_screen.dart';
 import 'package:salesroot/features/auth/view/unlock_screen.dart';
 import 'package:salesroot/features/auth/view/welcome_screen.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 import 'auth_test_setup.dart';
 

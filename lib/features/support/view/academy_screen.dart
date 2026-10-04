@@ -10,7 +10,7 @@ import 'package:salesroot/features/support/models/lesson.dart';
 import 'package:salesroot/features/support/providers/academy_providers.dart';
 import 'package:salesroot/features/support/view/widget/support_labels.dart';
 import 'package:salesroot/features/support/view/widget/support_language_pill.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #114 the sales academy: today's tip, lessons for the user and the career

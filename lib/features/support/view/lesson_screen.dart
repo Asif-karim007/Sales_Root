@@ -12,7 +12,7 @@ import 'package:salesroot/features/support/providers/academy_providers.dart';
 import 'package:salesroot/features/support/view/widget/support_failure.dart';
 import 'package:salesroot/features/support/view/widget/support_language_pill.dart';
 import 'package:salesroot/features/support/view/widget/support_rows.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #115 one lesson: the content, a key-points card, a one-question quiz and

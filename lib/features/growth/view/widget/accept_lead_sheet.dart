@@ -7,7 +7,7 @@ import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/features/growth/models/inbox_lead.dart';
 import 'package:salesroot/features/growth/providers/inbox_providers.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #138 Accept an inbox lead into the main list, then open the lead form

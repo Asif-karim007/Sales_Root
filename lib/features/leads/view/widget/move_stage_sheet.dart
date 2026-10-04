@@ -7,7 +7,7 @@ import 'package:salesroot/features/leads/models/lead.dart';
 import 'package:salesroot/features/leads/models/lead_stage.dart';
 import 'package:salesroot/features/leads/providers/lead_providers.dart';
 import 'package:salesroot/features/leads/view/widget/lost_reason_sheet.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Runs #30 → #31 → save: pick a stage (or take [to]), give a reason when

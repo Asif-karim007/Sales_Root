@@ -7,7 +7,7 @@ import 'package:salesroot/features/auth/models/sign_up_profile.dart';
 import 'package:salesroot/features/auth/providers/auth_providers.dart';
 import 'package:salesroot/features/auth/view/widget/auth_intro.dart';
 import 'package:salesroot/features/auth/view/widget/auth_language_toggle.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #8: what the app offers. "Let's go" continues to a pending invitation,

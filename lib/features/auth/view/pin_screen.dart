@@ -11,7 +11,7 @@ import 'package:salesroot/features/auth/providers/pin_providers.dart';
 import 'package:salesroot/features/auth/view/widget/auth_intro.dart';
 import 'package:salesroot/features/auth/view/widget/auth_language_toggle.dart';
 import 'package:salesroot/features/auth/view/widget/shake.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #4: choose a 4-digit PIN, then type it again to confirm.

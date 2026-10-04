@@ -14,7 +14,7 @@ import 'package:salesroot/features/field_force/providers/tracking_providers.dart
 import 'package:salesroot/features/field_force/service/tracker_machine.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_format.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_language_toggle.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #125 consent: the member agrees to live tracking during duty hours, then

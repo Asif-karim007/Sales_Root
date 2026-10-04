@@ -9,7 +9,7 @@ import 'package:salesroot/features/team/view/chat_list_screen.dart';
 import 'package:salesroot/features/team/view/widget/chat_labels.dart';
 import 'package:salesroot/features/team/view/widget/paged_list.dart';
 import 'package:salesroot/features/team/view/widget/team_language_toggle.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #80 `oversight`: every chat in the workspace, read as the owner.

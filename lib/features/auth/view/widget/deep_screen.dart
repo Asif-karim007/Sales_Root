@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/auth/view/widget/brand.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The prototype's `.splash`: deep green, the roots drawing, the brand and

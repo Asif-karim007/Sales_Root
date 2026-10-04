@@ -26,7 +26,7 @@ import 'package:salesroot/features/leads/view/widget/lead_card.dart';
 import 'package:salesroot/features/leads/view/widget/lead_filter_sheet.dart';
 import 'package:salesroot/features/leads/view/widget/lead_timeline.dart';
 import 'package:salesroot/features/leads/view/widget/move_stage_sheet.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 const _full = ModuleAccess(
   canView: true,

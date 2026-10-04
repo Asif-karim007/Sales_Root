@@ -10,7 +10,7 @@ import 'package:salesroot/features/billing/providers/referral_providers.dart';
 import 'package:salesroot/features/billing/view/widget/billing_bits.dart';
 import 'package:salesroot/features/billing/view/widget/billing_labels.dart';
 import 'package:salesroot/features/billing/view/widget/referral_widgets.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #185 My referrals with status filters, and the team leaderboard.

@@ -11,7 +11,7 @@ import 'package:salesroot/features/billing/view/widget/billing_labels.dart';
 import 'package:salesroot/features/billing/view/widget/milestone_track.dart';
 import 'package:salesroot/features/billing/view/widget/referral_widgets.dart';
 import 'package:salesroot/features/billing/view/widget/reward_sheet.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #186 Credit wallet: balance, what expires, milestones and transactions.

@@ -10,7 +10,7 @@ import 'package:salesroot/features/sales/models/product.dart';
 import 'package:salesroot/features/sales/models/quotation.dart';
 import 'package:salesroot/features/sales/models/sales_order.dart';
 import 'package:salesroot/features/sales/view/sales_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Today, Yesterday or `4 Oct`.

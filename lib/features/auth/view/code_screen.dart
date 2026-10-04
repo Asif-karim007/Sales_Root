@@ -17,7 +17,7 @@ import 'package:salesroot/features/auth/view/widget/auth_intro.dart';
 import 'package:salesroot/features/auth/view/widget/auth_language_toggle.dart';
 import 'package:salesroot/features/auth/view/widget/auth_link.dart';
 import 'package:salesroot/features/auth/view/widget/shake.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #3: the 6-digit SMS code, checked as soon as the last digit is typed.

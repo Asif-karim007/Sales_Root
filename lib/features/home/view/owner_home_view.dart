@@ -12,7 +12,7 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/home/models/home_summary.dart';
 import 'package:salesroot/features/home/models/money_summary.dart';
 import 'package:salesroot/features/home/view/widget/home_scroll_view.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #155: the owner's money dashboard — collection today or this month,

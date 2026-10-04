@@ -12,7 +12,7 @@ import 'package:salesroot/features/growth/models/lead_channel.dart';
 import 'package:salesroot/features/growth/providers/sources_providers.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
 import 'package:salesroot/features/growth/view/widget/growth_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Details of a non-Facebook channel: its embed code or link, and connect or

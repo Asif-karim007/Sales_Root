@@ -5,7 +5,7 @@ import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/tasks/models/task.dart';
 import 'package:salesroot/features/tasks/view/widget/task_type_style.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The lead when the title does not already name it, then "Quotation ·

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:salesroot/features/leads/providers/lead_providers.dart';
 import 'package:salesroot/features/leads/view/widget/lead_board_view.dart';
 import 'package:salesroot/features/leads/view/widget/lead_filter_sheet.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #22 on its own route, for links from outside the Leads tab.

@@ -7,7 +7,7 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/hr/models/payroll.dart';
 import 'package:salesroot/features/hr/view/widget/hr_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 /// Builds the payslip as an A4 PDF in Anek Bangla and opens the share sheet.
 Future<void> sharePayslipPdf({

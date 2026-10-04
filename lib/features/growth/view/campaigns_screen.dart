@@ -12,7 +12,7 @@ import 'package:salesroot/features/growth/models/campaign.dart';
 import 'package:salesroot/features/growth/providers/campaign_providers.dart';
 import 'package:salesroot/features/growth/view/widget/campaign_text.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #143 Campaigns with the SMS and email balance.

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/features/leads/providers/lead_providers.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The text for a failed lead request: our own words for the common cases,

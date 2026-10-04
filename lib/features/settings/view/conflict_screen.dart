@@ -11,7 +11,7 @@ import 'package:salesroot/features/settings/models/sync_models.dart';
 import 'package:salesroot/features/settings/providers/sync_providers.dart';
 import 'package:salesroot/features/settings/view/widget/settings_widgets.dart';
 import 'package:salesroot/features/settings/view/widget/sync_rows.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #93: for each field changed on both sides, keep the phone's value or the

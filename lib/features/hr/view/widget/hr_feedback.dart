@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/routing/routes.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Explains why a save failed: a plan limit opens the upgrade sheet, anything

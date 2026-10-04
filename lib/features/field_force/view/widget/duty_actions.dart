@@ -9,7 +9,7 @@ import 'package:salesroot/features/field_force/providers/attendance_providers.da
 import 'package:salesroot/features/field_force/providers/tracker_providers.dart';
 import 'package:salesroot/features/field_force/service/tracker_machine.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_format.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Starts the duty day, then live tracking: straight away when it is set up,

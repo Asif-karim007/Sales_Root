@@ -19,7 +19,7 @@ import 'package:salesroot/features/sales/view/widget/button_row.dart';
 import 'package:salesroot/features/sales/view/widget/pdf_sheet.dart';
 import 'package:salesroot/features/sales/view/widget/quotation_doc_card.dart';
 import 'package:salesroot/features/sales/view/widget/sales_failure.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #62: the money receipt, to share, keep as PDF or print.

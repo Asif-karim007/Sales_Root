@@ -16,7 +16,7 @@ import 'package:salesroot/features/support/view/widget/support_failure.dart';
 import 'package:salesroot/features/support/view/widget/support_labels.dart';
 import 'package:salesroot/features/support/view/widget/support_language_pill.dart';
 import 'package:salesroot/features/support/view/widget/support_rows.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #109 a help article: steps, a tip, a "try it" link and "did this help?".

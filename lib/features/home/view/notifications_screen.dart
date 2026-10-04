@@ -13,7 +13,7 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/home/models/app_notification.dart';
 import 'package:salesroot/features/home/providers/notification_providers.dart';
 import 'package:salesroot/features/home/view/widget/failure_text.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #19: notifications grouped by day, filtered by kind; a tap marks one read

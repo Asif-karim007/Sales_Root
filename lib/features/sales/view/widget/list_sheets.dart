@@ -8,7 +8,7 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/sales/providers/order_providers.dart';
 import 'package:salesroot/features/sales/view/widget/paged_footer.dart';
 import 'package:salesroot/features/sales/view/widget/sales_rows.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Orders, or those still to deliver, in a sheet; a row opens the order.

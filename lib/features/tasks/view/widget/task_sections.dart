@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/features/tasks/models/task.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 class TaskSection {
   const TaskSection(this.title, this.tasks);

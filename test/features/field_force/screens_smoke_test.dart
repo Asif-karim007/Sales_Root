@@ -19,7 +19,7 @@ import 'package:salesroot/features/field_force/view/tracking_settings_screen.dar
 import 'package:salesroot/features/field_force/view/visit_progress_screen.dart';
 import 'package:salesroot/features/field_force/view/visit_report_screen.dart';
 import 'package:salesroot/features/field_force/view/visits_screen.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 import 'field_force_harness.dart';
 

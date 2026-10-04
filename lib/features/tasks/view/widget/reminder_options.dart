@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:salesroot/core/format/app_format.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 const reminderChoices = [10, 15, 30, 60, 120, 1440];

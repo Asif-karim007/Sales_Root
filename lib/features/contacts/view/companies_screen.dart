@@ -16,7 +16,7 @@ import 'package:salesroot/features/contacts/view/widget/contact_rows.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_feedback.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_header.dart';
 import 'package:salesroot/features/contacts/view/widget/paged_scroll_view.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #46: the companies the team sells to, with customer, industry and area

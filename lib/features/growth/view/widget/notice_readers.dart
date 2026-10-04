@@ -7,7 +7,7 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/growth/models/notice.dart';
 import 'package:salesroot/features/growth/providers/notice_providers.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Read and acknowledgement counts, and who still has to see the notice.

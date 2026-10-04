@@ -20,7 +20,7 @@ import 'package:salesroot/features/field_force/view/widget/visit_summary.dart';
 import 'package:salesroot/features/field_force/view/widget/visit_tiles.dart';
 import 'package:salesroot/features/field_force/view/widget/minute_builder.dart';
 import 'package:salesroot/features/field_force/view/widget/voice_button.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #124 visitprogress: the running visit — timer, notes, photos, samples —

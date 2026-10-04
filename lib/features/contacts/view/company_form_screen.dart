@@ -17,7 +17,7 @@ import 'package:salesroot/features/contacts/providers/companies_providers.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_feedback.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_header.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_sheets.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// New and edit company, in the lead form's style. [id] 0 creates.

@@ -8,7 +8,7 @@ import 'package:salesroot/features/sales/models/sales_party.dart';
 import 'package:salesroot/features/sales/view/sales_labels.dart';
 import 'package:salesroot/features/sales/view/widget/amount_lines.dart';
 import 'package:salesroot/features/sales/view/widget/items_table.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The quotation as the customer sees it: letterhead, items, totals and

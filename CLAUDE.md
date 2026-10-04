@@ -4,6 +4,8 @@ Bilingual (Bangla-first, English) field-sales CRM for small and mid-size Banglad
 The screens are specified in the prototype: https://claude.ai/artifact/3qKdFkFDfr2A6RXAFd9sCc
 (193 screens; read it with the Artifact tool, `action: "read"`, never WebFetch). Each screen has a slot id (`welcome`, `leads`, `quote1`…), and this file refers to screens as `#<n> <slotId>`.
 
+**Start here:** `docs/STATUS.md` has the current state, demo logins and the prioritised next-work list.
+
 **Current phase: the full app on fake data.** The backend exists but its API hasn't been handed over yet. Build every feature end to end against in-memory fake repositories (see *Data: fake now, API later*), so that wiring the real API later only changes the `data/` folder of each feature.
 
 The architecture comes from the SaleBee app at `/Users/dml-user/Documents/salebee_new`. That is the **reference implementation**: when this file says "port X", open the SaleBee file, keep its behaviour and visual result, and replace GetX with Riverpod. Don't copy its legacy parts (listed under *Don't carry over*).
@@ -21,7 +23,7 @@ The architecture comes from the SaleBee app at `/Users/dml-user/Documents/salebe
 | Secure storage | `flutter_secure_storage` | session token, PIN hash |
 | Prefs | `shared_preferences` | language, experience level, last workspace. No `get_storage` |
 | Local DB | `sqflite` | offline cache + outbox (see *Offline*) |
-| i18n | `flutter_localizations`, `intl`, gen-l10n (ARB) | `lib/l10n/app_bn.arb` (template), `app_en.arb` |
+| i18n | `flutter_localizations`, `intl`, gen-l10n (ARB) | `lib/translations/app_bn.arb` (template), `app_en.arb` |
 | Firebase | `firebase_core`, `firebase_messaging`, `flutter_local_notifications` | push + local |
 | Maps / location | `google_maps_flutter`, `geolocator`, `geocoding` | Field Force |
 | Background tracking | `flutter_foreground_task`, `sensors_plus`, `battery_plus`, `device_info_plus` | port SaleBee `features/tracker` |
@@ -51,7 +53,7 @@ lib/
     theme/                  sr_colors.dart, app_text.dart, app_theme.dart
     format/                 money.dart (৳, lakh/crore), digits.dart (Bangla/Latin), app_date_utils.dart
     utils/                  debug_log.dart, json_fields.dart, contact_launcher.dart, file_opener.dart
-  l10n/                     app_bn.arb, app_en.arb  (generated code: flutter gen-l10n)
+  translations/             app_bn.arb, app_en.arb  (generated code: flutter gen-l10n)
   widgets/                  sr_*.dart — the design system
   features/<name>/
     data/                   <name>_repository.dart (abstract), fake_<name>_repository.dart, <name>_fixtures.dart
@@ -91,13 +93,13 @@ Riverpod replaces GetX's controllers, bindings, services, `Obx` and `Get.find`.
 - **Render `AsyncValue`** with `switch` or `.when` into `SrSkeleton…` / `SrErrorState` / `SrEmptyState`. Never a bare `CircularProgressIndicator`. Keep previous data while refreshing (`skipLoadingOnRefresh`).
 - **Side effects** (snackbars, navigation after save) happen in `ref.listen` inside the widget, never inside the notifier. Notifiers never take a `BuildContext` or `WidgetRef`.
 - **Retry:** Riverpod 3 retries failed providers automatically. `main.dart` sets `ProviderScope(retry: …)` to retry only offline (0) and 502/503/504, up to 3 times; any other `ApiFailure` shows at once.
-- **Tests:** notifiers are tested with `ProviderContainer(overrides: [...])` over the fake repository (latency off via `devSettingsProvider`). Each feature gets a test file for its notifier.
+- **Tests:** notifiers are tested with `ProviderContainer(retry: (_, _) => null, overrides: [...])` over the fake repository (latency off via `devSettingsProvider`). Without `retry: null`, a failing `.future` retries forever and the test hangs. Each feature has `test/features/<f>/`. Don't assert on which items land on page 1; page through.
 
 ## Core building blocks (already built — use, don't re-create)
 
 | Need | Use |
 |---|---|
-| Strings | `context.l10n.x` (`package:salesroot/l10n/l10n.dart`). Keys live in `lib/l10n/parts/<area>.bn.arb` + `<area>.en.arb`, one pair per feature, keys prefixed with the area (`leadsTitle`). Run `tool/gen.sh` (merge parts → gen-l10n → build_runner). Never edit `app_bn.arb`/`app_en.arb` directly. |
+| Strings | `context.l10n.x` (`package:salesroot/translations/translations.dart`). Keys live in `lib/translations/parts/<area>.bn.arb` + `<area>.en.arb`, one pair per feature, keys prefixed with the area (`leadsTitle`). Run `tool/gen.sh` (merge parts → gen-l10n → build_runner). Never edit `app_bn.arb`/`app_en.arb` directly. |
 | Numbers, ৳, dates | `context.fmt` (`core/format/app_format.dart`): `number`, `money`, `moneyCompact` (lakh/crore), `percent`, `phone`, `date`, `dayMonth`, `weekdayDate`, `monthYear`, `time`, `dayTime`, `relative`, `digits`. |
 | Bilingual server labels | `LocalizedName` (`Name` + `NameBn`) in `core/utils/json_fields.dart`, `.of(isBangla)`. |
 | JSON readers | `jsonInt/jsonDouble/jsonBool/jsonDate/jsonUtc/jsonList/jsonInts/jsonStrings/jsonObject`. |
@@ -217,8 +219,14 @@ height: button 50 (sm 40, lg 56) · field 50 · list row min 60 · icon button 4
 
 - Colours **only** from `SrColors`, a `ThemeExtension` with `light` and `dark`. The prototype is light-only, so derive dark values and keep the same token names. Text styles **only** from `core/theme/app_text.dart`.
 - Never hard-code a hex value or an ad-hoc `TextStyle` in a screen.
-- Font: **Anek Bangla** 400/500/600/700 for both scripts, bundled as an asset (not google_fonts at runtime). Port SaleBee's `AppText` presets (`pageTitle`, `sectionTitle`, `rowTitle`, `body`, `meta`, `fieldLabel`, `metric`, `button`, `input`) and its Bangla adjustments (weight step-down, no letter-spacing, taller line height).
+- Font: **Anek Bangla** 400/500/600/700 for both scripts, bundled as an asset (not google_fonts at runtime). `AppText` presets: `hero`, `pageTitle`, `sectionTitle`, `rowTitle`, `body`, `lead`, `meta`, `label`, `fieldLabel`, `metric`, `button`, `input`, `chip`, `caption`. Anek Bangla covers both scripts, so there are no per-language adjustments. Glyphs it lacks (`→`, `↔`, `●`) fall back to a system font; prefer icons.
 - Bangla is the default locale. In Bangla, **digits are Bangla** and money uses **lakh/crore** (`৳ 18.6 lakh` / `৳ ১৮.৬ লাখ`). In English, digits are Latin. Every number, money amount and date shown goes through `core/format/`.
+
+## Known platform gaps
+- **PDF + Bangla:** the `pdf` package does not shape Bangla conjuncts. `features/billing/pdf/billing_pdf.dart` (`PdfText`) draws Bangla lines with Flutter and embeds them as images; reuse it for other PDFs.
+- **Not in pubspec yet:** a device-contacts reader (`flutter_contacts`, #44 runs on a fake source), `local_auth` (biometric toggle is stored only), text-to-speech (read aloud), and a QR scanner (QR goes through Gemini). Each sits behind an interface, so adding the package means one new implementation.
+- **iOS background tracking:** uses geolocator plus a timer. SaleBee's native significant-change plugin isn't ported, and the Podfile still needs `PERMISSION_LOCATION=1`/`PERMISSION_NOTIFICATIONS=1` for permission_handler.
+- **Firebase:** not initialised until `google-services.json` / `GoogleService-Info.plist` exist.
 
 ## Offline and sync
 
@@ -275,7 +283,7 @@ Build **all** steps, in this order, on fake data. Each step should end runnable,
 
 | # | Feature folder | Prototype screens | Port from SaleBee |
 |---|---|---|---|
-| 0 | `core/*`, `widgets/`, `l10n/` | tokens, nav, sheets (#13, #17, #23) | dio_client, api_exception, v2_request, json_fields, sb_*.dart, app_text, debug_log, app_date_utils |
+| 0 | `core/*`, `widgets/`, `translations/` | tokens, nav, sheets (#13, #17, #23) | dio_client, api_exception, v2_request, json_fields, sb_*.dart, app_text, debug_log, app_date_utils |
 | 1 | `auth`, `onboarding` | #1–12 | auth flow, session store, session expiry |
 | 2 | `shell`, `home`, `notifications`, `search`, `workspace` | #13–20, #155–156 | modules/shell, permitted_menu_service, module_guard |
 | 3 | `leads` | #21–33 (list, board, filter, quick/voice/full form, duplicate, detail, stage, lost reason, call outcome, activity) | modules/lead, edit_lead, follow_up |

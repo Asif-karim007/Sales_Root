@@ -6,7 +6,7 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/features/billing/models/invoice.dart';
 import 'package:salesroot/features/billing/pdf/billing_pdf.dart';
 import 'package:salesroot/features/billing/view/widget/billing_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 extension InvoiceLabels on BuildContext {

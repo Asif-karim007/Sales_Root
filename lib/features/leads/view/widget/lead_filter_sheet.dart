@@ -14,7 +14,7 @@ import 'package:salesroot/features/leads/models/lead_query.dart';
 import 'package:salesroot/features/leads/models/lead_stage.dart';
 import 'package:salesroot/features/leads/providers/lead_providers.dart';
 import 'package:salesroot/features/leads/view/widget/lead_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #23: stage, owner (team leads and owners only), source, temperature,

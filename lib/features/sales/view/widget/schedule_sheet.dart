@@ -9,7 +9,7 @@ import 'package:salesroot/features/sales/models/instalment.dart';
 import 'package:salesroot/features/sales/models/sales_order.dart';
 import 'package:salesroot/features/sales/providers/order_providers.dart';
 import 'package:salesroot/features/sales/view/sales_labels.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 Future<void> showScheduleSheet(BuildContext context, SalesOrder order) =>

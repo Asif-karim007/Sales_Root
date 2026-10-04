@@ -1,5 +1,5 @@
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 /// A snackbar line for a failed auth request that has no field to point at.
 String authFailureText(AppLocalizations l10n, Object error) => switch (error) {

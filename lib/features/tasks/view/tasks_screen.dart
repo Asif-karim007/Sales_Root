@@ -17,7 +17,7 @@ import 'package:salesroot/features/tasks/view/widget/task_filter_sheet.dart';
 import 'package:salesroot/features/tasks/view/widget/task_row.dart';
 import 'package:salesroot/features/tasks/view/widget/task_sections.dart';
 import 'package:salesroot/features/tasks/view/widget/tasks_language_toggle.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #34 `tasks`: the task list with Today / Overdue / This week / All / Done.

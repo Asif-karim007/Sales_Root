@@ -16,7 +16,7 @@ import 'package:salesroot/features/growth/view/widget/audience_field.dart';
 import 'package:salesroot/features/growth/view/widget/campaign_text.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
 import 'package:salesroot/features/growth/view/widget/merge_tags.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #144 Write a bulk SMS: audience, message with segment counting, credit

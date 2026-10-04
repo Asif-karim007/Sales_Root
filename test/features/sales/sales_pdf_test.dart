@@ -14,7 +14,7 @@ import 'package:salesroot/features/sales/models/quotation.dart';
 import 'package:salesroot/features/sales/models/sales_order.dart';
 import 'package:salesroot/features/sales/models/sales_party.dart';
 import 'package:salesroot/features/sales/pdf/sales_pdf.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 import 'sales_test_helpers.dart';
 

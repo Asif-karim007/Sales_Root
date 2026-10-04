@@ -15,7 +15,7 @@ import 'package:salesroot/features/growth/providers/campaign_providers.dart';
 import 'package:salesroot/features/growth/view/widget/audience_field.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
 import 'package:salesroot/features/growth/view/widget/merge_tags.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #145 Write a bulk email to a segment, with an attachment and an order

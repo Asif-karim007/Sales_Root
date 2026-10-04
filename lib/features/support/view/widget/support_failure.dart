@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 /// A one-line explanation of [error] for a snackbar.
 String supportFailureText(BuildContext context, Object? error) {

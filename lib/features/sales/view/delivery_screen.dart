@@ -16,7 +16,7 @@ import 'package:salesroot/features/sales/providers/order_providers.dart';
 import 'package:salesroot/features/sales/view/sales_labels.dart';
 import 'package:salesroot/features/sales/view/widget/sales_failure.dart';
 import 'package:salesroot/features/sales/view/widget/signature_sheet.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #58: delivery or service completion: what went out, proof, and who took

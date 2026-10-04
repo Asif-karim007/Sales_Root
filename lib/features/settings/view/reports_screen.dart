@@ -13,7 +13,7 @@ import 'package:salesroot/features/settings/providers/report_providers.dart';
 import 'package:salesroot/features/settings/view/widget/report_export.dart';
 import 'package:salesroot/features/settings/view/widget/report_filters.dart';
 import 'package:salesroot/features/settings/view/widget/settings_widgets.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #94: outcomes and new leads for the period, and the detailed reports.

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:salesroot/features/auth/models/sign_up_profile.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 
 extension IndustryTemplateLabels on IndustryTemplate {
   String label(AppLocalizations l10n) => switch (this) {

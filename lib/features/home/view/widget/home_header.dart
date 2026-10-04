@@ -10,7 +10,7 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/core/workspace/workspace_providers.dart';
 import 'package:salesroot/features/home/providers/notification_providers.dart';
 import 'package:salesroot/features/home/view/workspace_switch_sheet.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Morning until noon, afternoon until five, evening after.

@@ -18,7 +18,7 @@ import 'package:salesroot/features/tasks/view/widget/scan_beam.dart';
 import 'package:salesroot/features/tasks/view/widget/scan_limit_sheet.dart';
 import 'package:salesroot/features/tasks/view/widget/task_feedback.dart';
 import 'package:salesroot/features/tasks/view/widget/tasks_language_toggle.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #39 `scancapture`: photograph a visiting card (or pick one), or a QR code.

@@ -18,7 +18,7 @@ import 'package:salesroot/features/tasks/providers/task_providers.dart';
 import 'package:salesroot/features/tasks/view/widget/scan_empty.dart';
 import 'package:salesroot/features/tasks/view/widget/task_feedback.dart';
 import 'package:salesroot/features/tasks/view/widget/tasks_language_toggle.dart';
-import 'package:salesroot/l10n/l10n.dart';
+import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #42 `qrresult`: a QR code that is not a contact card.
