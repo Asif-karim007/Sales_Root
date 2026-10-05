@@ -1,24 +1,18 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/features/settings/data/csv_parser.dart';
-import 'package:salesroot/features/settings/data/fake_import_repository.dart';
-import 'package:salesroot/features/settings/data/import_repository.dart';
+import 'package:salesroot/features/settings/data/settings_repositories.dart';
 import 'package:salesroot/features/settings/models/csv_import.dart';
 
 part 'import_providers.g.dart';
-
-@Riverpod(keepAlive: true)
-ImportRepository importRepository(Ref ref) =>
-    FakeImportRepository(ref.watch(fakeBackendProvider));
 
 class CsvImportState {
   const CsvImportState({
     this.table,
     this.mapping = const [],
-    this.duplicates = const AsyncData(<int>{}),
-    this.job,
+    this.check = const AsyncData(null),
+    this.result,
     this.failure,
     this.starting = false,
     this.unreadable = false,
@@ -26,15 +20,16 @@ class CsvImportState {
 
   final CsvTable? table;
 
-  /// The lead field each column fills, by column.
+  /// The customer field each column fills, by column.
   final List<ImportField> mapping;
 
-  /// Rows whose mobile is already saved or appears earlier in the file.
-  final AsyncValue<Set<int>> duplicates;
-  final ImportJob? job;
+  /// The server's dry run of the mapped rows; null until the required
+  /// columns are mapped.
+  final AsyncValue<ImportResult?> check;
+  final ImportResult? result;
   final ApiFailure? failure;
 
-  /// The import was asked for and its job hasn't reported yet.
+  /// The import was asked for and the server hasn't answered yet.
   final bool starting;
 
   /// The picked file had no header row.
@@ -48,20 +43,48 @@ class CsvImportState {
   bool get canStart =>
       (table?.rows.isNotEmpty ?? false) &&
       missing.isEmpty &&
-      job == null &&
+      result == null &&
       !starting;
+
+  /// Rows whose phone appears on an earlier row of the file.
+  Set<int> get repeatedRows {
+    final table = this.table;
+    final column = mapping.indexOf(ImportField.phone);
+    if (table == null || column < 0) return const {};
+    final seen = <String>{};
+    return {
+      for (var i = 0; i < table.rows.length; i++)
+        if (normalizePhone(table.rows[i][column]) case final phone
+            when phone.isNotEmpty && !seen.add(phone))
+          i,
+    };
+  }
+
+  /// The mapped rows as the server takes them.
+  List<Map<String, String>> get rows {
+    final table = this.table;
+    if (table == null) return const [];
+    return [
+      for (final row in table.rows)
+        {
+          for (var c = 0; c < mapping.length; c++)
+            if (mapping[c] != ImportField.skip && row[c].trim().isNotEmpty)
+              mapping[c].wire: row[c].trim(),
+        },
+    ];
+  }
 
   CsvImportState copyWith({
     List<ImportField>? mapping,
-    AsyncValue<Set<int>>? duplicates,
-    ImportJob? job,
+    AsyncValue<ImportResult?>? check,
+    ImportResult? result,
     ApiFailure? failure,
     bool? starting,
   }) => CsvImportState(
     table: table,
     mapping: mapping ?? this.mapping,
-    duplicates: duplicates ?? this.duplicates,
-    job: job ?? this.job,
+    check: check ?? this.check,
+    result: result ?? this.result,
     failure: failure,
     starting: starting ?? this.starting,
   );
@@ -84,88 +107,58 @@ class CsvImportNotifier extends _$CsvImportNotifier {
       mapping.add(mapping.contains(field) ? ImportField.skip : field);
     }
     state = CsvImportState(table: table, mapping: mapping);
-    await _checkDuplicates();
+    await _check();
   }
 
   /// Points [column] at [field]; a field fills one column at most.
   Future<void> map(int column, ImportField field) async {
-    final mapping = [
-      for (var i = 0; i < state.mapping.length; i++)
-        i == column
-            ? field
-            : field != ImportField.skip && state.mapping[i] == field
-            ? ImportField.skip
-            : state.mapping[i],
-    ];
-    final mobileMoved =
-        mapping.indexOf(ImportField.mobile) !=
-        state.mapping.indexOf(ImportField.mobile);
-    state = state.copyWith(mapping: mapping);
-    if (mobileMoved) await _checkDuplicates();
+    state = state.copyWith(
+      mapping: [
+        for (var i = 0; i < state.mapping.length; i++)
+          i == column
+              ? field
+              : field != ImportField.skip && state.mapping[i] == field
+              ? ImportField.skip
+              : state.mapping[i],
+      ],
+    );
+    await _check();
   }
 
   Future<void> start() async {
-    final table = state.table;
-    if (table == null || !state.canStart) return;
-    final mapping = state.mapping;
-    final request = ImportRequest(
-      fileName: table.fileName,
-      rows: [
-        for (final row in table.rows)
-          {
-            for (var c = 0; c < mapping.length; c++)
-              if (mapping[c] != ImportField.skip)
-                mapping[c].wire: row[c].trim(),
-          },
-      ],
-    );
+    if (!state.canStart) return;
     state = state.copyWith(starting: true);
     try {
-      await for (final job
-          in ref.read(importRepositoryProvider).importLeads(request)) {
-        if (!ref.mounted) return;
-        state = state.copyWith(job: job);
-      }
+      final result = await ref
+          .read(importRepositoryProvider)
+          .commit(state.rows);
+      if (!ref.mounted) return;
+      state = state.copyWith(result: result, starting: false);
     } on ApiFailure catch (failure) {
       if (!ref.mounted) return;
-      state = CsvImportState(
-        table: state.table,
-        mapping: state.mapping,
-        duplicates: state.duplicates,
-        failure: failure,
-      );
+      state = state.copyWith(failure: failure, starting: false);
     }
   }
 
   void reset() => state = const CsvImportState();
 
-  Future<void> _checkDuplicates() async {
+  Future<void> _check() async {
     final table = state.table;
-    final column = state.mapping.indexOf(ImportField.mobile);
-    if (table == null || column < 0) {
-      state = state.copyWith(duplicates: const AsyncData(<int>{}));
+    if (table == null || table.rows.isEmpty || state.missing.isNotEmpty) {
+      state = state.copyWith(check: const AsyncData(null));
       return;
     }
-    final phones = [for (final row in table.rows) normalizePhone(row[column])];
-    state = state.copyWith(duplicates: const AsyncLoading());
+    final mapping = state.mapping;
+    state = state.copyWith(check: const AsyncLoading());
     try {
-      final known = await ref.read(importRepositoryProvider).knownPhones([
-        for (final p in phones)
-          if (p.isNotEmpty) p,
-      ]);
-      if (!ref.mounted) return;
-      final seen = <String>{};
-      state = state.copyWith(
-        duplicates: AsyncData({
-          for (var i = 0; i < phones.length; i++)
-            if (phones[i].isNotEmpty &&
-                (known.contains(phones[i]) || !seen.add(phones[i])))
-              i,
-        }),
-      );
+      final result = await ref
+          .read(importRepositoryProvider)
+          .preview(state.rows);
+      if (!ref.mounted || state.mapping != mapping) return;
+      state = state.copyWith(check: AsyncData(result));
     } on ApiFailure catch (failure, stack) {
-      if (!ref.mounted) return;
-      state = state.copyWith(duplicates: AsyncError(failure, stack));
+      if (!ref.mounted || state.mapping != mapping) return;
+      state = state.copyWith(check: AsyncError(failure, stack));
     }
   }
 }

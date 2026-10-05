@@ -1,0 +1,99 @@
+{
+ "range": {
+  "preset": "custom",
+  "from": "2026-05-01",
+  "to": "2026-10-05",
+  "group": "month",
+  "buckets": [
+   "2026-05",
+   "2026-06",
+   "2026-07",
+   "2026-08",
+   "2026-09",
+   "2026-10"
+  ],
+  "days": 158
+ },
+ "summary": {
+  "won": 0,
+  "wonAmount": 0,
+  "avgDeal": 0,
+  "orderAmount": 112900.0
+ },
+ "trend": [
+  {
+   "bucket": "2026-05",
+   "won": 0,
+   "wonAmount": 0,
+   "orders": 0,
+   "orderAmount": 0,
+   "quotes": 0,
+   "quotesAccepted": 0
+  },
+  {
+   "bucket": "2026-06",
+   "won": 0,
+   "wonAmount": 0,
+   "orders": 0,
+   "orderAmount": 0,
+   "quotes": 0,
+   "quotesAccepted": 0
+  },
+  {
+   "bucket": "2026-07",
+   "won": 0,
+   "wonAmount": 0,
+   "orders": 0,
+   "orderAmount": 0,
+   "quotes": 0,
+   "quotesAccepted": 0
+  },
+  {
+   "bucket": "2026-08",
+   "won": 0,
+   "wonAmount": 0,
+   "orders": 0,
+   "orderAmount": 0,
+   "quotes": 0,
+   "quotesAccepted": 0
+  },
+  {
+   "bucket": "2026-09",
+   "won": 0,
+   "wonAmount": 0,
+   "orders": 0,
+   "orderAmount": 0,
+   "quotes": 0,
+   "quotesAccepted": 0
+  },
+  {
+   "bucket": "2026-10",
+   "won": 0,
+   "wonAmount": 0,
+   "orders": 2,
+   "orderAmount": 112900.0,
+   "quotes": 3,
+   "quotesAccepted": 1
+  }
+ ],
+ "breakdowns": {
+  "byPerson": [],
+  "byProduct": [
+   {
+    "key": "Detergent 1kg (carton of 12)",
+    "deals": 1,
+    "qty": 47.619,
+    "amount": 100000.0
+   },
+   {
+    "key": "[test] Soap",
+    "deals": 1,
+    "qty": 3.0,
+    "amount": 12900.0
+   }
+  ],
+  "byArea": [],
+  "bySource": [],
+  "byCustomer": []
+ }
+}

@@ -16,13 +16,11 @@ import 'package:salesroot/widgets/widgets.dart';
 String importFieldLabel(AppLocalizations l10n, ImportField field) =>
     switch (field) {
       ImportField.name => l10n.settingsImportFieldName,
-      ImportField.mobile => l10n.settingsImportFieldMobile,
-      ImportField.company => l10n.settingsImportFieldCompany,
+      ImportField.phone => l10n.settingsImportFieldPhone,
       ImportField.email => l10n.settingsImportFieldEmail,
-      ImportField.designation => l10n.settingsImportFieldDesignation,
-      ImportField.stage => l10n.settingsImportFieldStage,
-      ImportField.value => l10n.settingsImportFieldValue,
-      ImportField.source => l10n.settingsImportFieldSource,
+      ImportField.area => l10n.settingsImportFieldArea,
+      ImportField.address => l10n.settingsImportFieldAddress,
+      ImportField.district => l10n.settingsImportFieldDistrict,
       ImportField.note => l10n.settingsImportFieldNote,
       ImportField.skip => l10n.settingsImportFieldSkip,
     };
@@ -93,8 +91,8 @@ class ImportMapping extends ConsumerWidget {
           ),
         ),
       if (table.rows.isNotEmpty && missing.isEmpty) ...[
-        state.duplicates.when(
-          data: (rows) => rows.isEmpty
+        state.check.when(
+          data: (result) => result == null || result.duplicates == 0
               ? SrNote(
                   icon: Icons.check_circle_outline_rounded,
                   message: l10n.settingsImportNoDuplicates,
@@ -103,7 +101,7 @@ class ImportMapping extends ConsumerWidget {
                   tone: SrNoteTone.gold,
                   icon: Icons.content_copy_rounded,
                   message: l10n.settingsImportDuplicateRows(
-                    context.fmt.number(rows.length),
+                    context.fmt.number(result.duplicates),
                   ),
                 ),
           loading: () => SrNote(
@@ -208,7 +206,7 @@ class _Preview extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final c = SrColors.of(context);
-    final duplicates = state.duplicates.value ?? const <int>{};
+    final repeated = state.repeatedRows;
     String? cell(int row, ImportField field) {
       final column = state.mapping.indexOf(field);
       if (column < 0) return null;
@@ -224,15 +222,14 @@ class _Preview extends StatelessWidget {
           SrListRow(
             title: cell(i, ImportField.name) ?? l10n.settingsImportNoName,
             subtitle: [
-              ?cell(i, ImportField.mobile),
-              ?cell(i, ImportField.company),
-              ?cell(i, ImportField.stage),
+              ?cell(i, ImportField.phone),
+              ?cell(i, ImportField.area),
             ].join(' · '),
             leading: Text(
               context.fmt.number(i + 1),
               style: AppText.meta(c.ink3),
             ),
-            trailing: duplicates.contains(i)
+            trailing: repeated.contains(i)
                 ? SrTag(l10n.settingsImportDuplicate, tone: SrTone.gold)
                 : null,
           ),

@@ -6,11 +6,8 @@ import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/locale/locale_provider.dart';
-import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/routing/routes.dart';
-import 'package:salesroot/core/session/session_provider.dart';
 import 'package:salesroot/core/workspace/workspace_providers.dart';
-import 'package:salesroot/features/settings/providers/settings_providers.dart';
 import 'package:salesroot/features/settings/providers/sync_providers.dart';
 import 'package:salesroot/features/settings/view/widget/level_labels.dart';
 import 'package:salesroot/features/settings/view/widget/settings_widgets.dart';
@@ -116,7 +113,6 @@ class _WorkspaceGroup extends ConsumerWidget {
         if (fields.visible)
           SrListRow(
             title: l10n.settingsFormFields,
-            subtitle: fields.canEdit ? null : l10n.settingsViewOnly,
             leading: const RowIcon(Icons.dynamic_form_outlined),
             chevron: true,
             onTap: () => context.push(Routes.settingsFormFields),
@@ -140,11 +136,11 @@ class _WorkspaceGroup extends ConsumerWidget {
   }
 }
 
-class _AccountGroup extends ConsumerWidget {
+class _AccountGroup extends StatelessWidget {
   const _AccountGroup();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     return SrRowGroup(
       title: l10n.settingsAccount,
@@ -157,56 +153,7 @@ class _AccountGroup extends ConsumerWidget {
             builder: (_) => const SignOutSheet(),
           ),
         ),
-        SrListRow(
-          title: l10n.settingsDeleteAccount,
-          subtitle: l10n.settingsDeleteAccountHint,
-          leading: const RowIcon(
-            Icons.delete_outline_rounded,
-            tone: SrAvatarTone.danger,
-          ),
-          onTap: () => _delete(context, ref),
-        ),
       ],
     );
-  }
-
-  Future<void> _delete(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final confirmed = await showSrSheet<bool>(
-      context: context,
-      builder: (sheet) => SrConfirmSheet(
-        title: l10n.settingsDeleteTitle,
-        message: l10n.settingsDeleteBody,
-        icon: Icons.delete_outline_rounded,
-        tone: SrTone.err,
-        destructive: true,
-        bullets: [
-          SrSheetBullet(
-            icon: Icons.schedule_rounded,
-            text: l10n.settingsDeleteGrace,
-          ),
-          SrSheetBullet(
-            icon: Icons.login_rounded,
-            text: l10n.settingsDeleteUndo,
-          ),
-        ],
-        primaryLabel: l10n.settingsDeleteConfirm,
-        onPrimary: () => Navigator.of(sheet).pop(true),
-      ),
-    );
-    if (confirmed != true || !context.mounted) return;
-    final session = ref.read(sessionProvider.notifier);
-    try {
-      await showSrLoader(
-        context,
-        ref.read(settingsRepositoryProvider).requestAccountDeletion(),
-      );
-      if (!context.mounted) return;
-      showSrSuccess(context, l10n.settingsDeleteDone);
-      await session.signOut();
-    } on ApiFailure catch (failure) {
-      if (!context.mounted) return;
-      showSrError(context, failure.message);
-    }
   }
 }

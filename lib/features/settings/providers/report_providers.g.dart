@@ -8,53 +8,6 @@ part of 'report_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-
-@ProviderFor(reportRepository)
-final reportRepositoryProvider = ReportRepositoryProvider._();
-
-final class ReportRepositoryProvider
-    extends
-        $FunctionalProvider<
-          ReportRepository,
-          ReportRepository,
-          ReportRepository
-        >
-    with $Provider<ReportRepository> {
-  ReportRepositoryProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'reportRepositoryProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$reportRepositoryHash();
-
-  @$internal
-  @override
-  $ProviderElement<ReportRepository> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  ReportRepository create(Ref ref) {
-    return reportRepository(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ReportRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ReportRepository>(value),
-    );
-  }
-}
-
-String _$reportRepositoryHash() => r'17a6ea1a7a9b921c8bf1f64948e18c3849005562';
-
 /// Whether the user may switch to team-wide numbers.
 
 @ProviderFor(canSeeTeamReports)

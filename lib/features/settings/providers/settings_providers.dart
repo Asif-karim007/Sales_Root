@@ -1,30 +1,21 @@
+import 'dart:convert';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/core/storage/prefs_provider.dart';
+import 'package:salesroot/core/utils/json_fields.dart';
+import 'package:salesroot/core/workspace/workspace_providers.dart';
 import 'package:salesroot/features/settings/data/config_repository.dart';
-import 'package:salesroot/features/settings/data/fake_config_repository.dart';
-import 'package:salesroot/features/settings/data/fake_settings_repository.dart';
-import 'package:salesroot/features/settings/data/settings_repository.dart';
+import 'package:salesroot/features/settings/data/settings_repositories.dart';
 import 'package:salesroot/features/settings/models/device_session.dart';
 import 'package:salesroot/features/settings/models/form_field_config.dart';
 import 'package:salesroot/features/settings/models/notification_prefs.dart';
 import 'package:salesroot/features/settings/models/pipeline.dart';
 
 part 'settings_providers.g.dart';
-
-@Riverpod(keepAlive: true)
-SettingsRepository settingsRepository(Ref ref) => FakeSettingsRepository(
-  ref.watch(fakeBackendProvider),
-  ref.watch(sharedPreferencesProvider),
-);
-
-@Riverpod(keepAlive: true)
-ConfigRepository configRepository(Ref ref) =>
-    FakeConfigRepository(ref.watch(fakeBackendProvider));
 
 /// `2.0.0 (12)`.
 @riverpod
@@ -92,78 +83,32 @@ class DevicePrefsNotifier extends _$DevicePrefsNotifier {
   }
 }
 
+/// The notification choices for the current workspace, kept on the phone.
 @riverpod
 class NotificationPrefsNotifier extends _$NotificationPrefsNotifier {
-  @override
-  Future<NotificationPrefs> build() =>
-      ref.watch(settingsRepositoryProvider).notificationPrefs();
+  String get _key =>
+      'settings/notifications/${ref.read(currentWorkspaceProvider)?.id ?? ''}';
 
-  /// Shows [next] at once and rolls back if the server refuses it.
-  Future<void> save(NotificationPrefs next) async {
-    final previous = state.value;
-    state = AsyncData(next);
-    try {
-      final saved = await ref
-          .read(settingsRepositoryProvider)
-          .saveNotificationPrefs(next);
-      if (!ref.mounted) return;
-      state = AsyncData(saved);
-    } on ApiFailure {
-      if (ref.mounted && previous != null) state = AsyncData(previous);
-      rethrow;
-    }
+  @override
+  NotificationPrefs build() {
+    ref.watch(currentWorkspaceProvider.select((w) => w?.id));
+    final saved = ref.watch(sharedPreferencesProvider).getString(_key);
+    return saved == null
+        ? NotificationPrefs.defaults
+        : NotificationPrefs.fromJson(jsonMap(saved));
+  }
+
+  void save(NotificationPrefs next) {
+    ref
+        .read(sharedPreferencesProvider)
+        .setString(_key, jsonEncode(next.toJson()));
+    state = next;
   }
 }
 
 @riverpod
-class DevicesNotifier extends _$DevicesNotifier {
-  @override
-  Future<List<DeviceSession>> build() =>
-      ref.watch(settingsRepositoryProvider).devices();
-
-  Future<void> remove(int id) async {
-    await ref.read(settingsRepositoryProvider).removeDevice(id);
-    if (!ref.mounted) return;
-    final current = state.value ?? const <DeviceSession>[];
-    state = AsyncData([
-      for (final d in current)
-        if (d.id != id) d,
-    ]);
-  }
-
-  Future<void> signOutOthers() async {
-    await ref.read(settingsRepositoryProvider).signOutOtherDevices();
-    if (!ref.mounted) return;
-    final current = state.value ?? const <DeviceSession>[];
-    state = AsyncData([
-      for (final d in current)
-        if (d.isCurrent) d,
-    ]);
-  }
-}
-
-@riverpod
-class LoginHistoryNotifier extends _$LoginHistoryNotifier {
-  @override
-  Future<Paged<LoginEvent>> build() async =>
-      Paged.first(await ref.watch(settingsRepositoryProvider).loginHistory(1));
-
-  Future<void> loadMore() async {
-    final current = state.value;
-    if (current == null || !current.hasMore || current.isLoadingMore) return;
-    state = AsyncData(current.loadingMore());
-    try {
-      final next = await ref
-          .read(settingsRepositoryProvider)
-          .loginHistory(current.page + 1);
-      if (!ref.mounted) return;
-      state = AsyncData(current.append(next));
-    } on ApiFailure catch (failure) {
-      if (!ref.mounted) return;
-      state = AsyncData(current.failedMore(failure));
-    }
-  }
-}
+Future<List<DeviceSession>> devices(Ref ref) =>
+    ref.watch(settingsRepositoryProvider).devices();
 
 @riverpod
 class PipelinesNotifier extends _$PipelinesNotifier {
@@ -173,46 +118,39 @@ class PipelinesNotifier extends _$PipelinesNotifier {
 
   ConfigRepository get _repo => ref.read(configRepositoryProvider);
 
-  Future<void> addStage(int pipelineId, StageInput input) =>
-      _apply(_repo.addStage(pipelineId, input));
+  Future<void> addStage(String pipelineId, StageInput input) async {
+    await _repo.addStage(pipelineId, input);
+    await _reload();
+  }
 
-  Future<void> editStage(int pipelineId, int stageId, StageInput input) =>
-      _apply(_repo.editStage(pipelineId, stageId, input));
-
-  Future<void> deleteStage(int pipelineId, int stageId) =>
-      _apply(_repo.deleteStage(pipelineId, stageId));
+  Future<void> editStage(String stageId, StageInput input) async {
+    await _repo.editStage(stageId, input);
+    await _reload();
+  }
 
   /// Moves the open stage at [from] to [to] at once, and rolls back if the
   /// server refuses.
-  Future<void> moveStage(int pipelineId, int from, int to) async {
+  Future<void> moveStage(String pipelineId, int from, int to) async {
     final pipelines = state.value;
     if (pipelines == null) return;
     final pipeline = pipelines.firstWhere((p) => p.id == pipelineId);
     final open = [...pipeline.openStages];
-    final moved = open.removeAt(from);
-    open.insert(to, moved);
-    _put(
-      Pipeline(
-        id: pipeline.id,
-        name: pipeline.name,
-        isDefault: pipeline.isDefault,
-        stages: [...open, ...pipeline.stages.where((s) => !s.isOpen)],
-      ),
-    );
+    open.insert(to, open.removeAt(from));
+    final moved = pipeline.withOpenOrder(open);
+    _put(moved);
     try {
-      await _apply(
-        _repo.reorderStages(pipelineId, [for (final s in open) s.id]),
-      );
+      await _repo.reorderStages([for (final s in moved.stages) s.id]);
     } on ApiFailure {
       if (ref.mounted) _put(pipeline);
       rethrow;
     }
   }
 
-  Future<void> _apply(Future<Pipeline> request) async {
-    final pipeline = await request;
+  Future<void> _reload() async {
     if (!ref.mounted) return;
-    _put(pipeline);
+    final pipelines = await _repo.pipelines();
+    if (!ref.mounted) return;
+    state = AsyncData(pipelines);
   }
 
   void _put(Pipeline pipeline) {
@@ -224,17 +162,5 @@ class PipelinesNotifier extends _$PipelinesNotifier {
 }
 
 @riverpod
-class FormFieldsNotifier extends _$FormFieldsNotifier {
-  @override
-  Future<List<FormFieldConfig>> build(FormKind form) =>
-      ref.watch(configRepositoryProvider).formFields(form);
-
-  Future<void> save(int id, FormFieldInput input) async {
-    final saved = await ref
-        .read(configRepositoryProvider)
-        .saveFormField(id, input);
-    if (!ref.mounted) return;
-    final current = state.value ?? const <FormFieldConfig>[];
-    state = AsyncData([for (final f in current) f.id == id ? saved : f]);
-  }
-}
+Future<List<FormFieldConfig>> formFields(Ref ref, FormKind form) =>
+    ref.watch(configRepositoryProvider).formFields(form);

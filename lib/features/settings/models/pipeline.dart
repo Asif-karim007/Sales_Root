@@ -1,18 +1,6 @@
-import 'package:salesroot/core/access/experience_level.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 
-enum StageKind {
-  open('Open'),
-  won('Won'),
-  lost('Lost');
-
-  const StageKind(this.wire);
-
-  final String wire;
-
-  static StageKind fromWire(String? value) =>
-      values.firstWhere((k) => k.wire == value, orElse: () => StageKind.open);
-}
+enum StageKind { open, won, lost }
 
 class PipelineStage {
   const PipelineStage({
@@ -20,33 +8,37 @@ class PipelineStage {
     required this.name,
     required this.winPercent,
     required this.kind,
-    required this.minLevel,
-    this.requiresQuotation = false,
-    this.requiresReason = false,
+    required this.showInEasy,
+    required this.universalStep,
+    this.requiredFields = const [],
   });
 
-  final int id;
+  final String id;
   final LocalizedName name;
   final int winPercent;
   final StageKind kind;
+  final bool showInEasy;
 
-  /// The lowest experience level that shows this stage.
-  final ExperienceLevel minLevel;
-  final bool requiresQuotation;
-  final bool requiresReason;
+  /// The step of the universal sales flow this stage stands for.
+  final int universalStep;
+
+  /// Lead fields that must be filled before a lead enters the stage.
+  final List<String> requiredFields;
 
   bool get isOpen => kind == StageKind.open;
 
   factory PipelineStage.fromJson(Map<String, dynamic> json) => PipelineStage(
-    id: jsonInt(json['Id']) ?? 0,
-    name: LocalizedName.fromJson(json),
-    winPercent: jsonInt(json['WinPercent']) ?? 0,
-    kind: StageKind.fromWire(json['Kind'] as String?),
-    minLevel:
-        ExperienceLevel.fromWire(json['MinLevel'] as String?) ??
-        ExperienceLevel.easy,
-    requiresQuotation: jsonBool(json['RequiresQuotation']),
-    requiresReason: jsonBool(json['RequiresReason']),
+    id: jsonId(json['id']) ?? '',
+    name: LocalizedName.pair(json),
+    winPercent: jsonInt(json['probability']) ?? 0,
+    kind: jsonBool(json['isWon'])
+        ? StageKind.won
+        : jsonBool(json['isLost'])
+        ? StageKind.lost
+        : StageKind.open,
+    showInEasy: jsonBool(json['showInEasy']),
+    universalStep: jsonInt(json['universalStep']) ?? 1,
+    requiredFields: jsonStrings(json['requiredFields']),
   );
 }
 
@@ -58,42 +50,79 @@ class Pipeline {
     required this.stages,
   });
 
-  final int id;
-  final LocalizedName name;
+  final String id;
+  final String name;
   final bool isDefault;
+
+  /// In board order.
   final List<PipelineStage> stages;
 
   List<PipelineStage> get openStages => stages.where((s) => s.isOpen).toList();
 
-  factory Pipeline.fromJson(Map<String, dynamic> json) => Pipeline(
-    id: jsonInt(json['Id']) ?? 0,
-    name: LocalizedName.fromJson(json),
-    isDefault: jsonBool(json['IsDefault']),
-    stages: jsonList(json['Stages'], PipelineStage.fromJson),
-  );
+  /// `GET workspaces/pipelines`: `{pipelines: […], stages: […]}`, the stages
+  /// of every pipeline in one list with their `pipelineId` and `sortOrder`.
+  static List<Pipeline> listFromJson(Map<String, dynamic> json) {
+    final stages = jsonList(json['stages'], (s) => s)
+      ..sort(
+        (a, b) => (jsonInt(a['sortOrder']) ?? 0).compareTo(
+          jsonInt(b['sortOrder']) ?? 0,
+        ),
+      );
+    return [
+      for (final p in jsonList(json['pipelines'], (p) => p))
+        Pipeline(
+          id: jsonId(p['id']) ?? '',
+          name: p['name'] as String? ?? '',
+          isDefault: jsonBool(p['isDefault']),
+          stages: [
+            for (final s in stages)
+              if (jsonId(s['pipelineId']) == jsonId(p['id']))
+                PipelineStage.fromJson(s),
+          ],
+        ),
+    ];
+  }
+
+  /// The same pipeline with its open stages in [open]'s order; won and lost
+  /// stages keep their places.
+  Pipeline withOpenOrder(List<PipelineStage> open) {
+    final next = open.iterator;
+    return Pipeline(
+      id: id,
+      name: name,
+      isDefault: isDefault,
+      stages: [
+        for (final stage in stages)
+          if (stage.isOpen) (next..moveNext()).current else stage,
+      ],
+    );
+  }
 }
 
-/// A new or edited stage.
+/// A new or edited stage: `StageRequest`.
 class StageInput {
   const StageInput({
-    required this.name,
+    required this.nameEn,
     required this.nameBn,
     required this.winPercent,
-    required this.minLevel,
-    this.requiresQuotation = false,
+    required this.showInEasy,
+    required this.universalStep,
+    this.requiredFields = const [],
   });
 
-  final String name;
+  final String nameEn;
   final String nameBn;
   final int winPercent;
-  final ExperienceLevel minLevel;
-  final bool requiresQuotation;
+  final bool showInEasy;
+  final int universalStep;
+  final List<String> requiredFields;
 
   Map<String, dynamic> toJson() => {
-    'Name': name.trim(),
-    'NameBn': nameBn.trim(),
-    'WinPercent': winPercent,
-    'MinLevel': minLevel.wire,
-    'RequiresQuotation': requiresQuotation,
+    'nameEn': nameEn.trim(),
+    'nameBn': nameBn.trim(),
+    'universalStep': universalStep,
+    'showInEasy': showInEasy,
+    'probability': winPercent,
+    'requiredFields': requiredFields,
   };
 }

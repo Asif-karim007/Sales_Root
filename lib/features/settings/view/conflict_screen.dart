@@ -19,7 +19,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class ConflictScreen extends ConsumerStatefulWidget {
   const ConflictScreen({super.key, required this.id});
 
-  final int id;
+  final String id;
 
   @override
   ConsumerState<ConflictScreen> createState() => _ConflictScreenState();
@@ -39,9 +39,18 @@ class _ConflictScreenState extends ConsumerState<ConflictScreen> {
     } on ApiFailure catch (failure) {
       if (!mounted) return;
       setState(() => _saving = false);
+      if (failure.isConflict) {
+        ref
+          ..invalidate(syncConflictProvider(widget.id))
+          ..invalidate(conflictChoicesProvider(widget.id));
+      }
       showSrError(
         context,
-        failure.isOffline ? l10n.settingsConflictOffline : failure.message,
+        failure.isOffline
+            ? l10n.settingsConflictOffline
+            : failure.isConflict
+            ? l10n.settingsConflictChanged
+            : failure.message,
       );
     }
   }
@@ -84,7 +93,7 @@ class _ConflictScreenState extends ConsumerState<ConflictScreen> {
             for (final field in conflict.fields) ...[
               const SizedBox(height: 16),
               if (multi) ...[
-                SrSectionHeader(title: field.label.of(context.fmt.isBangla)),
+                SrSectionHeader(title: conflictFieldLabel(l10n, field.field)),
                 const SizedBox(height: 8),
               ],
               _FieldChoice(
@@ -119,10 +128,10 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final bangla = context.fmt.isBangla;
     final route = switch (conflict.entity) {
-      SyncEntity.lead => Routes.leadFor(conflict.entityId),
-      SyncEntity.contact => Routes.contactFor(conflict.entityId),
+      SyncEntity.lead => Routes.leadFor(conflict.id),
+      SyncEntity.contact => Routes.contactFor(conflict.id),
+      SyncEntity.company => Routes.companyFor(conflict.id),
       _ => null,
     };
     return SrCard(
@@ -131,7 +140,9 @@ class _RecordCard extends StatelessWidget {
         title: conflict.title,
         subtitle: [
           entityLabel(l10n, conflict.entity),
-          conflict.fields.map((f) => f.label.of(bangla)).join(', '),
+          conflict.fields
+              .map((f) => conflictFieldLabel(l10n, f.field))
+              .join(', '),
         ].join(' · '),
         leading: SrAvatar(name: conflict.title),
         chevron: route != null,
@@ -165,7 +176,7 @@ class _FieldChoice extends StatelessWidget {
       children: [
         _VersionCard(
           title: l10n.settingsConflictPhone,
-          value: conflictValue(context, field.kind, local),
+          value: conflictValue(context, field.kind, local.value),
           meta: _meta(context, local.at, l10n.settingsConflictYou),
           large: large,
           selected: chosen == ConflictSide.local,
@@ -176,8 +187,8 @@ class _FieldChoice extends StatelessWidget {
         const SizedBox(height: 10),
         _VersionCard(
           title: l10n.settingsConflictServer,
-          value: conflictValue(context, field.kind, server),
-          meta: _meta(context, server.at, server.by),
+          value: conflictValue(context, field.kind, server.value),
+          meta: _meta(context, server.at, null),
           large: large,
           selected: chosen == ConflictSide.server,
           primary: chosen == ConflictSide.server,
@@ -188,8 +199,8 @@ class _FieldChoice extends StatelessWidget {
     );
   }
 
-  static String _meta(BuildContext context, DateTime? at, String by) =>
-      [if (at != null) context.fmt.dayTime(at), by].join(' · ');
+  static String _meta(BuildContext context, DateTime? at, String? by) =>
+      [if (at != null) context.fmt.dayTime(at), ?by].join(' · ');
 }
 
 class _VersionCard extends StatelessWidget {

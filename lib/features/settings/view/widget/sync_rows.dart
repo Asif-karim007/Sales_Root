@@ -11,41 +11,45 @@ import 'package:salesroot/features/settings/view/widget/settings_widgets.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-String megabytes(BuildContext context, int bytes) {
-  final mb = bytes / megabyte;
-  return context.l10n.settingsSyncMb(
-    context.fmt.number(mb, decimals: mb < 10 && mb > 0 ? 1 : 0),
-  );
-}
-
-/// A conflicting value as the user reads it: money in ৳, a stage by name.
+/// A conflicting value as the user reads it: money in ৳, a date by day.
 String conflictValue(
   BuildContext context,
   ConflictValueKind kind,
-  ConflictVersion version,
+  String value,
 ) {
   final fmt = context.fmt;
-  final label = version.label;
-  if (label != null) return label.of(fmt.isBangla);
   return switch (kind) {
-    ConflictValueKind.money => fmt.money(num.tryParse(version.value) ?? 0),
-    ConflictValueKind.date => switch (DateTime.tryParse(version.value)) {
-      final DateTime date => fmt.date(date),
-      null => version.value,
+    ConflictValueKind.money => fmt.money(num.tryParse(value) ?? 0),
+    ConflictValueKind.date => switch (DateTime.tryParse(value)) {
+      final DateTime date => fmt.date(date.toLocal()),
+      null => value,
     },
-    _ => version.value,
+    ConflictValueKind.text => value,
   };
 }
+
+/// A synced field by name; fields without a label show their server key.
+String conflictFieldLabel(AppLocalizations l10n, String field) =>
+    switch (field) {
+      'title' => l10n.settingsSyncFieldTitle,
+      'name' => l10n.settingsSyncFieldName,
+      'amount' => l10n.settingsSyncFieldAmount,
+      'phone' => l10n.settingsSyncFieldPhone,
+      'note' || 'notes' => l10n.settingsSyncFieldNote,
+      'dueAt' => l10n.settingsSyncFieldDue,
+      _ => field,
+    };
 
 String entityLabel(AppLocalizations l10n, SyncEntity entity) =>
     switch (entity) {
       SyncEntity.lead => l10n.settingsEntityLead,
       SyncEntity.contact => l10n.settingsEntityContact,
+      SyncEntity.company => l10n.settingsEntityCompany,
       SyncEntity.task => l10n.settingsEntityTask,
-      SyncEntity.callLog => l10n.settingsEntityCallLog,
-      SyncEntity.note => l10n.settingsEntityNote,
+      SyncEntity.activity => l10n.settingsEntityActivity,
       SyncEntity.visit => l10n.settingsEntityVisit,
       SyncEntity.expense => l10n.settingsEntityExpense,
+      SyncEntity.other => l10n.settingsEntityOther,
     };
 
 class SyncStatusCard extends StatelessWidget {
@@ -95,6 +99,8 @@ class SyncStatusCard extends StatelessWidget {
           );
     final details = [
       if (lastSync != null) l10n.settingsSyncLast(fmt.relative(lastSync)),
+      if (snapshot.received > 0)
+        l10n.settingsSyncReceived(fmt.number(snapshot.received)),
       ?network,
     ].join(' · ');
     return SrCard(
@@ -134,7 +140,6 @@ class ConflictList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final bangla = context.fmt.isBangla;
     return SrRowGroup(
       title: conflicts.length == 1
           ? l10n.settingsSyncOneConflict
@@ -147,7 +152,9 @@ class ConflictList extends StatelessWidget {
             title: conflict.title,
             subtitle: [
               entityLabel(l10n, conflict.entity),
-              conflict.fields.map((f) => f.label.of(bangla)).join(', '),
+              conflict.fields
+                  .map((f) => conflictFieldLabel(l10n, f.field))
+                  .join(', '),
             ].join(' · '),
             leading: const RowIcon(
               Icons.call_split_rounded,
@@ -215,7 +222,7 @@ class OutboxList extends ConsumerWidget {
       context: context,
       builder: (sheet) => SrConfirmSheet(
         title: l10n.settingsSyncFailedTitle,
-        message: item.error ?? '',
+        message: item.error?.of(context.fmt.isBangla) ?? '',
         icon: Icons.error_outline_rounded,
         tone: SrTone.err,
         primaryLabel: l10n.commonRetry,
@@ -242,13 +249,12 @@ class ResolvedList extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
-    final bangla = context.fmt.isBangla;
     return SrRowGroup(
       title: l10n.settingsSyncResolved,
       rows: [
         for (final r in history)
           SrListRow(
-            title: '${r.title} · ${r.label.of(bangla)}',
+            title: '${r.title} · ${conflictFieldLabel(l10n, r.field)}',
             subtitle: l10n.settingsSyncResolvedLine(
               conflictValue(context, r.kind, r.kept),
               conflictValue(context, r.kind, r.discarded),

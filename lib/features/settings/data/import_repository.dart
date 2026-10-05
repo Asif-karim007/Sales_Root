@@ -1,12 +1,10 @@
 import 'package:salesroot/features/settings/models/csv_import.dart';
 
+/// Imports customers from a sheet: one map per row, keyed by
+/// [ImportField.wire].
 abstract interface class ImportRepository {
-  /// The ones among [phones] (see `normalizePhone`) already saved for a
-  /// contact.
-  Future<Set<String>> knownPhones(List<String> phones);
+  /// Checks [rows] without saving anything.
+  Future<ImportResult> preview(List<Map<String, String>> rows);
 
-  /// Starts an import job and reports its progress until it is done. Rows
-  /// whose number is already saved are imported and flagged as duplicates;
-  /// rows without a name or mobile fail.
-  Stream<ImportJob> importLeads(ImportRequest request);
+  Future<ImportResult> commit(List<Map<String, String>> rows);
 }

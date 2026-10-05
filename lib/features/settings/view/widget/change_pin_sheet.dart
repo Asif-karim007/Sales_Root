@@ -41,7 +41,7 @@ class _ChangePinSheetState extends ConsumerState<ChangePinSheet> {
     setState(() => _step = hasPin ? _Step.current : _Step.fresh);
   }
 
-  int get _userId => ref.read(sessionProvider).value?.userId ?? 0;
+  String get _userId => ref.read(sessionProvider).value?.userId ?? '';
 
   void _digit(int digit) {
     if (_busy || _entry.length >= _length) return;

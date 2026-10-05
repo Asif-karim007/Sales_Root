@@ -4,15 +4,15 @@ import 'package:salesroot/core/utils/json_fields.dart';
 /// A kind of push notification. [module] hides the switch from users who
 /// can't see that module.
 enum NotificationTopic {
-  reminders('Reminders', AppModule.task),
-  assignments('Assignments', AppModule.lead),
-  chat('Chat', AppModule.chat),
-  newLeads('NewLeads', AppModule.inbox),
-  inbox('Inbox', AppModule.inbox),
-  approvals('Approvals', AppModule.approvals),
-  notices('Notices', AppModule.notice),
-  billing('Billing', AppModule.billing),
-  academy('Academy', null);
+  reminders('reminders', AppModule.task),
+  assignments('assignments', AppModule.lead),
+  chat('chat', AppModule.chat),
+  newLeads('newLeads', AppModule.inbox),
+  inbox('inbox', AppModule.inbox),
+  approvals('approvals', AppModule.approvals),
+  notices('notices', AppModule.notice),
+  billing('billing', AppModule.billing),
+  academy('academy', null);
 
   const NotificationTopic(this.wire, this.module);
 
@@ -27,6 +27,7 @@ enum NotificationTopic {
   }
 }
 
+/// Kept on the phone: the server has no notification settings yet.
 class NotificationPrefs {
   const NotificationPrefs({
     required this.topics,
@@ -45,26 +46,43 @@ class NotificationPrefs {
   final int quietFromMinute;
   final int quietToMinute;
 
+  static const defaults = NotificationPrefs(
+    topics: {
+      NotificationTopic.reminders,
+      NotificationTopic.assignments,
+      NotificationTopic.chat,
+      NotificationTopic.newLeads,
+      NotificationTopic.inbox,
+      NotificationTopic.notices,
+      NotificationTopic.billing,
+    },
+    digestMinute: 9 * 60,
+    quietEnabled: true,
+    quietFromMinute: 22 * 60,
+    quietToMinute: 7 * 60,
+  );
+
   bool isOn(NotificationTopic topic) => topics.contains(topic);
 
   factory NotificationPrefs.fromJson(Map<String, dynamic> json) =>
       NotificationPrefs(
         topics: {
-          for (final wire in jsonStrings(json['Topics']))
+          for (final wire in jsonStrings(json['topics']))
             ?NotificationTopic.fromWire(wire),
         },
-        digestMinute: jsonInt(json['DigestMinute']) ?? 9 * 60,
-        quietEnabled: jsonBool(json['QuietEnabled']),
-        quietFromMinute: jsonInt(json['QuietFromMinute']) ?? 22 * 60,
-        quietToMinute: jsonInt(json['QuietToMinute']) ?? 7 * 60,
+        digestMinute: jsonInt(json['digestMinute']) ?? defaults.digestMinute,
+        quietEnabled: jsonBool(json['quietEnabled']),
+        quietFromMinute:
+            jsonInt(json['quietFromMinute']) ?? defaults.quietFromMinute,
+        quietToMinute: jsonInt(json['quietToMinute']) ?? defaults.quietToMinute,
       );
 
   Map<String, dynamic> toJson() => {
-    'Topics': [for (final topic in topics) topic.wire],
-    'DigestMinute': digestMinute,
-    'QuietEnabled': quietEnabled,
-    'QuietFromMinute': quietFromMinute,
-    'QuietToMinute': quietToMinute,
+    'topics': [for (final topic in topics) topic.wire],
+    'digestMinute': digestMinute,
+    'quietEnabled': quietEnabled,
+    'quietFromMinute': quietFromMinute,
+    'quietToMinute': quietToMinute,
   };
 
   NotificationPrefs copyWith({

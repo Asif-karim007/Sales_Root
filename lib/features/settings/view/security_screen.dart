@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/core/paging/paged.dart';
+import 'package:salesroot/core/session/session_provider.dart';
+import 'package:salesroot/features/settings/data/settings_repositories.dart';
 import 'package:salesroot/features/settings/models/device_session.dart';
 import 'package:salesroot/features/settings/providers/settings_providers.dart';
 import 'package:salesroot/features/settings/view/widget/change_pin_sheet.dart';
@@ -12,7 +13,7 @@ import 'package:salesroot/features/settings/view/widget/sign_out_sheet.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #88: PIN, biometrics, signed-in devices and sign-in history.
+/// #88: PIN, biometrics and the devices signed in to the account.
 class SecurityScreen extends ConsumerWidget {
   const SecurityScreen({super.key});
 
@@ -24,44 +25,27 @@ class SecurityScreen extends ConsumerWidget {
         title: l10n.settingsSecurityTitle,
         actions: const [LanguageAction()],
       ),
-      body: NotificationListener<ScrollNotification>(
-        onNotification: (n) {
-          if (n.metrics.extentAfter < 300) {
-            ref.read(loginHistoryProvider.notifier).loadMore();
-          }
-          return false;
-        },
-        child: RefreshIndicator(
-          onRefresh: () async {
-            ref
-              ..invalidate(devicesProvider)
-              ..invalidate(loginHistoryProvider);
-            await ref.read(devicesProvider.future);
-          },
-          child: ListView(
-            padding: screenPadding,
-            physics: const AlwaysScrollableScrollPhysics(),
-            children: [
-              const _UnlockGroup(),
-              const SizedBox(height: 18),
-              const _DevicesSection(),
-              const SizedBox(height: 18),
-              SrSectionHeader(title: l10n.settingsLoginHistory),
-              const SizedBox(height: 8),
-              const _LoginHistory(),
-              const SizedBox(height: 18),
-              SrButton(
-                label: l10n.settingsSignOut,
-                icon: Icons.logout_rounded,
-                variant: SrButtonVariant.danger,
-                expand: true,
-                onPressed: () => showSrSheet<void>(
-                  context: context,
-                  builder: (_) => const SignOutSheet(),
-                ),
+      body: RefreshIndicator(
+        onRefresh: () => ref.refresh(devicesProvider.future),
+        child: ListView(
+          padding: screenPadding,
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            const _UnlockGroup(),
+            const SizedBox(height: 18),
+            const _DevicesSection(),
+            const SizedBox(height: 18),
+            SrButton(
+              label: l10n.settingsSignOut,
+              icon: Icons.logout_rounded,
+              variant: SrButtonVariant.danger,
+              expand: true,
+              onPressed: () => showSrSheet<void>(
+                context: context,
+                builder: (_) => const SignOutSheet(),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -141,43 +125,42 @@ class _DeviceList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final others = devices.where((d) => !d.isCurrent).length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SrRowGroup(rows: [for (final d in devices) _DeviceRow(device: d)]),
-        if (others > 0) ...[
+        if (devices.length > 1) ...[
           const SizedBox(height: 10),
           SrButton(
-            label: l10n.settingsDevicesSignOutOthers,
+            label: l10n.settingsDevicesSignOutAll,
             variant: SrButtonVariant.secondary,
             icon: Icons.phonelink_erase_rounded,
             expand: true,
-            onPressed: () => _signOutOthers(context, ref),
+            onPressed: () => _signOutAll(context, ref),
           ),
         ],
       ],
     );
   }
 
-  Future<void> _signOutOthers(BuildContext context, WidgetRef ref) async {
+  Future<void> _signOutAll(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
     final ok = await showSrConfirm(
       context,
-      title: l10n.settingsDevicesSignOutOthers,
-      message: l10n.settingsDevicesSignOutOthersBody,
-      confirmLabel: l10n.settingsDevicesSignOutOthersConfirm,
+      title: l10n.settingsDevicesSignOutAll,
+      message: l10n.settingsDevicesSignOutAllBody,
+      confirmLabel: l10n.settingsDevicesSignOutAllConfirm,
       icon: Icons.phonelink_erase_rounded,
       destructive: true,
     );
     if (!ok || !context.mounted) return;
+    final session = ref.read(sessionProvider.notifier);
     try {
       await showSrLoader(
         context,
-        ref.read(devicesProvider.notifier).signOutOthers(),
+        ref.read(settingsRepositoryProvider).signOutEverywhere(),
       );
-      if (!context.mounted) return;
-      showSrSuccess(context, l10n.settingsDevicesSignedOut);
+      await session.signOut();
     } on ApiFailure catch (failure) {
       if (!context.mounted) return;
       showSrError(context, failure.message);
@@ -185,128 +168,26 @@ class _DeviceList extends ConsumerWidget {
   }
 }
 
-class _DeviceRow extends ConsumerWidget {
+class _DeviceRow extends StatelessWidget {
   const _DeviceRow({required this.device});
 
   final DeviceSession device;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     final lastActive = device.lastActiveAt;
-    final when = device.isCurrent
-        ? l10n.settingsDeviceNow
-        : lastActive == null
-        ? null
-        : context.fmt.dayTime(lastActive);
     return SrListRow(
-      title: device.name,
-      subtitle: [device.location, ?when].join(' · '),
+      title: device.name.isEmpty ? l10n.settingsDeviceUnknown : device.name,
+      subtitle: [
+        if (device.appVersion case final version?) context.fmt.digits(version),
+        if (lastActive != null) context.fmt.dayTime(lastActive),
+      ].join(' · '),
       leading: RowIcon(switch (device.kind) {
         DeviceKind.android => Icons.phone_android_rounded,
         DeviceKind.ios => Icons.phone_iphone_rounded,
         DeviceKind.web => Icons.laptop_chromebook_rounded,
-      }, tone: device.isCurrent ? SrAvatarTone.accent : SrAvatarTone.neutral),
-      trailing: device.isCurrent
-          ? SrTag(l10n.settingsDeviceThis, tone: SrTone.ok)
-          : SrButton(
-              label: l10n.settingsDeviceRemove,
-              size: SrButtonSize.sm,
-              variant: SrButtonVariant.secondary,
-              onPressed: () => _remove(context, ref),
-            ),
-    );
-  }
-
-  Future<void> _remove(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final ok = await showSrConfirm(
-      context,
-      title: l10n.settingsDeviceRemoveTitle(device.name),
-      message: l10n.settingsDeviceRemoveBody,
-      confirmLabel: l10n.settingsDeviceRemove,
-      icon: Icons.phonelink_erase_rounded,
-      destructive: true,
-    );
-    if (!ok || !context.mounted) return;
-    try {
-      await ref.read(devicesProvider.notifier).remove(device.id);
-    } on ApiFailure catch (failure) {
-      if (!context.mounted) return;
-      showSrError(context, failure.message);
-    }
-  }
-}
-
-class _LoginHistory extends ConsumerWidget {
-  const _LoginHistory();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return AsyncSection(
-      value: ref.watch(loginHistoryProvider),
-      onRetry: () => ref.invalidate(loginHistoryProvider),
-      skeletonRows: 4,
-      data: (context, page) => _LoginList(page: page),
-    );
-  }
-}
-
-class _LoginList extends ConsumerWidget {
-  const _LoginList({required this.page});
-
-  final Paged<LoginEvent> page;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final failure = page.loadMoreError;
-    if (page.isEmpty) {
-      return SrCard(child: SrEmptyState(title: l10n.settingsLoginEmpty));
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SrRowGroup(rows: [for (final e in page.items) _LoginRow(event: e)]),
-        if (page.isLoadingMore)
-          const Padding(
-            padding: EdgeInsets.only(top: 10),
-            child: SrSkeletonRow(),
-          ),
-        if (failure != null) ...[
-          const SizedBox(height: 10),
-          SrErrorState(
-            error: failure,
-            compact: true,
-            onRetry: () => ref.read(loginHistoryProvider.notifier).loadMore(),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _LoginRow extends StatelessWidget {
-  const _LoginRow({required this.event});
-
-  final LoginEvent event;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final at = event.at;
-    return SrListRow(
-      title: at == null
-          ? event.device
-          : l10n.settingsLoginAt(context.fmt.dayTime(at), event.device),
-      subtitle: switch (event.method) {
-        LoginMethod.pin => l10n.settingsLoginPin,
-        LoginMethod.face => l10n.settingsLoginFace,
-        LoginMethod.fingerprint => l10n.settingsLoginFingerprint,
-        LoginMethod.otp => l10n.settingsLoginOtp,
-        LoginMethod.passwordOtp => l10n.settingsLoginPasswordOtp,
-      },
-      leading: const RowIcon(Icons.login_rounded),
+      }),
     );
   }
 }

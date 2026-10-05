@@ -1,17 +1,11 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
 import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/core/workspace/workspace_providers.dart';
-import 'package:salesroot/features/settings/data/fake_report_repository.dart';
-import 'package:salesroot/features/settings/data/report_repository.dart';
+import 'package:salesroot/features/settings/data/settings_repositories.dart';
 import 'package:salesroot/features/settings/models/report_models.dart';
 
 part 'report_providers.g.dart';
-
-@Riverpod(keepAlive: true)
-ReportRepository reportRepository(Ref ref) =>
-    FakeReportRepository(ref.watch(fakeBackendProvider));
 
 /// Whether the user may switch to team-wide numbers.
 @riverpod

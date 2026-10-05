@@ -59,16 +59,31 @@ class ReportQuery {
       from.month == to.month &&
       DateTime(to.year, to.month + 1, 0).day == to.day;
 
-  Map<String, dynamic> toQuery() => {
-    'Scope': scope == ReportScope.team ? 'Team' : 'Mine',
-    'From': dayString(from),
-    'To': dayString(to),
+  /// The period as the report endpoints take it; [memberId] narrows the
+  /// numbers to one member.
+  Map<String, dynamic> toQuery({String? memberId}) => {
+    ...switch (range) {
+      ReportRange.thisMonth => const {'preset': 'this_month'},
+      ReportRange.lastMonth => const {'preset': 'last_month'},
+      ReportRange.thisQuarter => const {'preset': 'this_quarter'},
+      ReportRange.custom => period(from, to),
+    },
+    if (scope == ReportScope.mine) 'ownerId': memberId,
+  };
+
+  /// A custom period, both days included.
+  static Map<String, dynamic> period(DateTime from, DateTime to) => {
+    'preset': 'custom',
+    'from': dayString(from),
+    'to': dayString(to),
   };
 
   /// `2026-10-04`.
   static String dayString(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }
+
+int _amount(dynamic value) => jsonDouble(value)?.round() ?? 0;
 
 class SourceStat {
   const SourceStat({
@@ -81,10 +96,11 @@ class SourceStat {
   final int leads;
   final int won;
 
+  /// A `bySource` row of `reports/conversion`.
   factory SourceStat.fromJson(Map<String, dynamic> json) => SourceStat(
-    source: json['Source'] as String? ?? '',
-    leads: jsonInt(json['Leads']) ?? 0,
-    won: jsonInt(json['Won']) ?? 0,
+    source: json['key'] as String? ?? '',
+    leads: jsonInt(json['newLeads']) ?? 0,
+    won: jsonInt(json['won']) ?? 0,
   );
 }
 
@@ -102,8 +118,10 @@ class ReportOverview {
   final int lost;
   final int open;
 
-  /// Eight weeks, oldest first, ending with the period's last week.
+  /// Up to eight weeks, oldest first, ending with the period's last week.
   final List<int> weeklyNewLeads;
+
+  /// Most leads first.
   final List<SourceStat> sources;
 
   double get winRate => won + lost == 0 ? 0 : won / (won + lost);
@@ -117,13 +135,30 @@ class ReportOverview {
     return (after - before) / before;
   }
 
-  factory ReportOverview.fromJson(Map<String, dynamic> json) => ReportOverview(
-    won: jsonInt(json['Won']) ?? 0,
-    lost: jsonInt(json['Lost']) ?? 0,
-    open: jsonInt(json['Open']) ?? 0,
-    weeklyNewLeads: jsonInts(json['WeeklyNewLeads']),
-    sources: jsonList(json['Sources'], SourceStat.fromJson),
-  );
+  /// `reports/conversion` for the period, and the same report by week for
+  /// the eight weeks up to its end.
+  factory ReportOverview.fromJson(
+    Map<String, dynamic> period, {
+    required Map<String, dynamic> weeks,
+  }) {
+    final summary = jsonMap(period['summary']);
+    final trend = [
+      for (final bucket in jsonList(weeks['trend'], (b) => b))
+        jsonInt(bucket['newLeads']) ?? 0,
+    ];
+    return ReportOverview(
+      won: jsonInt(summary['won']) ?? 0,
+      lost: jsonInt(summary['lost']) ?? 0,
+      open: jsonInt(summary['open']) ?? 0,
+      weeklyNewLeads: trend.length > 8
+          ? trend.sublist(trend.length - 8)
+          : trend,
+      sources: jsonList(
+        jsonMap(period['breakdowns'])['bySource'],
+        SourceStat.fromJson,
+      )..sort((a, b) => b.leads.compareTo(a.leads)),
+    );
+  }
 }
 
 class MonthValue {
@@ -132,48 +167,48 @@ class MonthValue {
   final DateTime month;
   final int value;
 
+  /// A `trend` row of a report grouped by month: `{bucket: "2026-07"}`.
   factory MonthValue.fromJson(Map<String, dynamic> json) => MonthValue(
-    month: DateTime.tryParse(json['Month'] as String? ?? '') ?? DateTime(2000),
-    value: jsonInt(json['Value']) ?? 0,
+    month: DateTime.tryParse('${json['bucket'] ?? ''}-01') ?? DateTime(2000),
+    value: _amount(json['wonAmount']),
   );
 }
 
 class MemberSales {
   const MemberSales({
-    required this.memberId,
     required this.name,
     required this.leads,
     required this.won,
     required this.wonValue,
-    required this.openValue,
+    this.memberId,
   });
 
-  final int memberId;
-  final LocalizedName name;
+  final String? memberId;
+  final String name;
   final int leads;
   final int won;
   final int wonValue;
-  final int openValue;
 
+  /// A `byPerson` row of `reports/conversion`.
   factory MemberSales.fromJson(Map<String, dynamic> json) => MemberSales(
-    memberId: jsonInt(json['MemberId']) ?? 0,
-    name: LocalizedName.fromJson(json),
-    leads: jsonInt(json['Leads']) ?? 0,
-    won: jsonInt(json['Won']) ?? 0,
-    wonValue: jsonInt(json['WonValue']) ?? 0,
-    openValue: jsonInt(json['OpenValue']) ?? 0,
+    memberId: jsonId(json['id']),
+    name: json['key'] as String? ?? '',
+    leads: jsonInt(json['newLeads']) ?? 0,
+    won: jsonInt(json['won']) ?? 0,
+    wonValue: _amount(json['wonAmount']),
   );
 }
 
-class CategorySales {
-  const CategorySales({required this.category, required this.value});
+class ProductSales {
+  const ProductSales({required this.product, required this.value});
 
-  final String category;
+  final String product;
   final int value;
 
-  factory CategorySales.fromJson(Map<String, dynamic> json) => CategorySales(
-    category: json['Category'] as String? ?? '',
-    value: jsonInt(json['Value']) ?? 0,
+  /// A `byProduct` row of `reports/sales`.
+  factory ProductSales.fromJson(Map<String, dynamic> json) => ProductSales(
+    product: json['key'] as String? ?? '',
+    value: _amount(json['amount']),
   );
 }
 
@@ -184,7 +219,7 @@ class SalesReport {
     required this.target,
     required this.months,
     required this.members,
-    required this.categories,
+    required this.products,
   });
 
   /// Won value in the period.
@@ -194,20 +229,46 @@ class SalesReport {
   final int previousTotal;
   final int target;
   final List<MonthValue> months;
+
+  /// Most won first.
   final List<MemberSales> members;
-  final List<CategorySales> categories;
+
+  /// Most sold first.
+  final List<ProductSales> products;
 
   double? get growth =>
       previousTotal == 0 ? null : (total - previousTotal) / previousTotal;
 
   double get targetShare => target == 0 ? 0 : total / target;
 
-  factory SalesReport.fromJson(Map<String, dynamic> json) => SalesReport(
-    total: jsonInt(json['Total']) ?? 0,
-    previousTotal: jsonInt(json['PreviousTotal']) ?? 0,
-    target: jsonInt(json['Target']) ?? 0,
-    months: jsonList(json['Months'], MonthValue.fromJson),
-    members: jsonList(json['Members'], MemberSales.fromJson),
-    categories: jsonList(json['Categories'], CategorySales.fromJson),
+  /// `reports/sales` for the period, the period before and the months up to
+  /// it; `reports/targets` and `reports/conversion` for the period. With
+  /// [memberId] the target is that member's own.
+  factory SalesReport.fromJson({
+    required Map<String, dynamic> sales,
+    required Map<String, dynamic> previous,
+    required Map<String, dynamic> months,
+    required Map<String, dynamic> targets,
+    required Map<String, dynamic> conversion,
+    String? memberId,
+  }) => SalesReport(
+    total: _amount(jsonMap(sales['summary'])['wonAmount']),
+    previousTotal: _amount(jsonMap(previous['summary'])['wonAmount']),
+    target: memberId == null
+        ? _amount(jsonMap(targets['summary'])['sales_target'])
+        : _amount(
+            jsonList(jsonMap(targets['breakdowns'])['byPerson'], (p) => p)
+                .where((p) => jsonId(p['id']) == memberId)
+                .firstOrNull?['salesTarget'],
+          ),
+    months: jsonList(months['trend'], MonthValue.fromJson),
+    members: jsonList(
+      jsonMap(conversion['breakdowns'])['byPerson'],
+      MemberSales.fromJson,
+    )..sort((a, b) => b.wonValue.compareTo(a.wonValue)),
+    products: jsonList(
+      jsonMap(sales['breakdowns'])['byProduct'],
+      ProductSales.fromJson,
+    )..sort((a, b) => b.value.compareTo(a.value)),
   );
 }

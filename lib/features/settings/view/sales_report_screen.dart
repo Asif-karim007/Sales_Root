@@ -80,9 +80,9 @@ class _SalesBody extends StatelessWidget {
     final growth = report.growth;
     final members = report.members.where((m) => m.wonValue > 0).toList();
     final maxMember = members.isEmpty ? 0 : members.first.wonValue;
-    final maxCategory = report.categories.isEmpty
+    final maxProduct = report.products.isEmpty
         ? 0
-        : report.categories.first.value;
+        : report.products.first.value;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -150,7 +150,7 @@ class _SalesBody extends StatelessWidget {
               children: [
                 for (final m in members.take(6)) ...[
                   SrBarRow(
-                    label: m.name.of(fmt.isBangla).split(' ').first,
+                    label: m.name.split(' ').first,
                     value: m.wonValue.toDouble(),
                     max: maxMember.toDouble(),
                     valueWidth: 76,
@@ -162,21 +162,21 @@ class _SalesBody extends StatelessWidget {
             ),
           ),
         ],
-        if (report.categories.isNotEmpty) ...[
+        if (report.products.isNotEmpty) ...[
           const SizedBox(height: 18),
           SrSectionHeader(title: l10n.settingsReportByProduct),
           const SizedBox(height: 8),
           SrCard(
             child: Column(
               children: [
-                for (final cat in report.categories) ...[
+                for (final product in report.products) ...[
                   SrBarRow(
-                    label: productCategoryLabel(l10n, cat.category),
-                    value: cat.value.toDouble(),
-                    max: maxCategory.toDouble(),
+                    label: product.product,
+                    value: product.value.toDouble(),
+                    max: maxProduct.toDouble(),
                     color: c.gold,
                     valueWidth: 76,
-                    valueLabel: fmt.moneyCompact(cat.value),
+                    valueLabel: fmt.moneyCompact(product.value),
                   ),
                   const SizedBox(height: 10),
                 ],
@@ -253,7 +253,7 @@ class _MemberTable extends StatelessWidget {
           ),
           for (final m in members)
             row([
-              m.name.of(fmt.isBangla),
+              m.name,
               fmt.number(m.leads),
               fmt.number(m.won),
               fmt.moneyCompact(m.wonValue),
@@ -297,14 +297,13 @@ class _ExportSheet extends StatelessWidget {
 
   Future<void> _share(BuildContext context, {required bool csv}) async {
     final l10n = context.l10n;
-    final bangla = context.fmt.isBangla;
     final navigator = Navigator.of(context);
     final name = 'sales-${ReportQuery.dayString(query.from)}';
     try {
       if (csv) {
         await shareFile(
           '$name.csv',
-          csvBytes(salesReportRows(l10n, query, report, bangla)),
+          csvBytes(salesReportRows(l10n, query, report)),
           'text/csv',
         );
       } else {

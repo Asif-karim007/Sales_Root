@@ -1,17 +1,12 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
 import 'package:salesroot/core/storage/prefs_provider.dart';
-import 'package:salesroot/features/settings/data/fake_sync_repository.dart';
+import 'package:salesroot/features/settings/data/settings_repositories.dart';
 import 'package:salesroot/features/settings/data/sync_repository.dart';
 import 'package:salesroot/features/settings/models/sync_models.dart';
 
 part 'sync_providers.g.dart';
-
-@Riverpod(keepAlive: true)
-SyncRepository syncRepository(Ref ref) =>
-    FakeSyncRepository(ref.watch(fakeBackendProvider));
 
 @riverpod
 class SyncNotifier extends _$SyncNotifier {
@@ -26,22 +21,22 @@ class SyncNotifier extends _$SyncNotifier {
     state = AsyncData(snapshot);
   }
 
-  Future<void> discard(int outboxId) async {
+  Future<void> discard(String outboxId) async {
     await _repo.discard(outboxId);
     await _reload();
   }
 
+  /// Reloads also when the server finds the record changed again, so the
+  /// new conflict shows.
   Future<void> resolve(
-    int conflictId,
+    String conflictId,
     Map<String, ConflictSide> choices,
   ) async {
-    await _repo.resolve(conflictId, choices);
-    await _reload();
-  }
-
-  Future<void> clearCache() async {
-    await _repo.clearCache();
-    await _reload();
+    try {
+      await _repo.resolve(conflictId, choices);
+    } finally {
+      await _reload();
+    }
   }
 
   Future<void> _reload() async {
@@ -53,14 +48,14 @@ class SyncNotifier extends _$SyncNotifier {
 }
 
 @riverpod
-Future<SyncConflict> syncConflict(Ref ref, int id) =>
+Future<SyncConflict> syncConflict(Ref ref, String id) =>
     ref.watch(syncRepositoryProvider).conflict(id);
 
 /// The side picked for each field of conflict [id], keyed by field.
 @riverpod
 class ConflictChoicesNotifier extends _$ConflictChoicesNotifier {
   @override
-  Map<String, ConflictSide> build(int id) => const {};
+  Map<String, ConflictSide> build(String id) => const {};
 
   void choose(String field, ConflictSide side) =>
       state = {...state, field: side};
