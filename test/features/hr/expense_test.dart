@@ -1,23 +1,25 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:salesroot/core/dev/dev_settings.dart';
-import 'package:salesroot/core/format/app_date_utils.dart';
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
-import 'package:salesroot/features/hr/data/expense_fixtures.dart';
+import 'package:salesroot/features/hr/data/hr_repositories.dart';
 import 'package:salesroot/features/hr/models/expense.dart';
 import 'package:salesroot/features/hr/providers/expense_providers.dart';
 
-import 'hr_test_utils.dart';
+import '../../helpers/api_stub.dart';
+import 'hr_test_setup.dart';
 
 void main() {
-  final types = [for (final row in expenseTypeRows) ExpenseType.fromJson(row)];
+  final categories = [
+    for (final row in fixture('hr_expense_categories') as List)
+      ExpenseType.fromJson(row as Map<String, dynamic>),
+  ];
 
-  group('expense draft', () {
-    final today = DateTime(2026, 10, 4, 0, 13);
+  group('draft', () {
+    final today = DateTime(2026, 10, 5, 0, 5);
 
     test('category, amount and date are required', () {
-      expect(const ExpenseDraft().errors(types, today), {
+      expect(const ExpenseDraft().errors(categories, today), {
         ExpenseField.type,
         ExpenseField.amount,
         ExpenseField.date,
@@ -25,189 +27,192 @@ void main() {
     });
 
     test('tomorrow is a future date; any time today is not', () {
-      const draft = ExpenseDraft(typeId: mobileTypeId, amount: 300);
-
-      expect(draft.copyWith(date: DateTime(2026, 10, 5)).errors(types, today), {
-        ExpenseField.futureDate,
-      });
-      expect(
-        draft
-            .copyWith(date: DateTime(2026, 10, 4, 23, 59))
-            .errors(types, today),
-        isEmpty,
-      );
+      final draft = ExpenseDraft(typeId: travelId, amount: 100, date: today);
+      expect(draft.errors(categories, today), isEmpty);
+      final tomorrow = draft.copyWith(date: DateTime(2026, 10, 6));
+      expect(tomorrow.errors(categories, today), {ExpenseField.futureDate});
     });
 
     test('a receipt is needed above the category limit', () {
-      final draft = ExpenseDraft(
-        typeId: travelTypeId,
-        amount: 1500,
-        date: DateTime(2026, 10, 4),
-      );
-
-      expect(draft.errors(types, today), {ExpenseField.receipt});
+      final travel = ExpenseDraft(typeId: travelId, amount: 600, date: today);
+      expect(travel.errors(categories, today), {ExpenseField.receipt});
       expect(
-        draft.copyWith(receipts: ['/tmp/bill.jpg']).errors(types, today),
+        travel.copyWith(amount: () => 500).errors(categories, today),
         isEmpty,
       );
-    });
-
-    test('the title is the category name and blanks are left out', () {
-      final body = ExpenseDraft(
-        typeId: travelTypeId,
-        amount: 850,
-        date: DateTime(2026, 10, 4),
-        from: 'Uttara',
-      ).toInput(types).toJson();
-
-      expect(body['Title'], 'Travel');
-      expect(body['IncurredOn'], '2026-10-04');
-      expect(body.containsKey('EndLocation'), isFalse);
-      expect(body.containsKey('Description'), isFalse);
+      final mobile = ExpenseDraft(typeId: mobileId, amount: 50, date: today);
+      expect(mobile.errors(categories, today), {ExpenseField.receipt});
     });
   });
 
-  group('expense repository', () {
-    test('the list pages 20 at a time', () async {
-      final container = await hrContainer();
-      keep(container, expenseListProvider);
+  group('parsing', () {
+    test('claims and totals read the real JSON', () async {
+      final container = await hrContainer(hrStub());
+      listenTo(container, expenseListProvider);
 
-      final first = await container.read(expenseListProvider.future);
-      expect(first.items, hasLength(20));
-      expect(first.hasMore, isTrue);
-
-      await container.read(expenseListProvider.notifier).loadMore();
-      final second = container.read(expenseListProvider).value;
-      expect(second?.items.length, first.totalCount);
-      expect(second?.hasMore, isFalse);
-    });
-
-    test('a future date is refused by the server', () async {
-      final container = await hrContainer();
-      final tomorrow = AppDateUtils.dateOnly(
-        DateTime.now(),
-      ).add(const Duration(days: 1));
-
-      await expectLater(
-        container
-            .read(expenseRepositoryProvider)
-            .create(
-              ExpenseInput(
-                title: 'Mobile',
-                expenseTypeId: mobileTypeId,
-                incurredOn: tomorrow,
-                claimedAmount: 300,
-              ),
-            ),
-        throwsA(
-          isA<ApiFailure>().having(
-            (f) => f.fieldError('IncurredOn'),
-            'IncurredOn',
-            'Expense date cannot be a future date.',
-          ),
-        ),
-      );
-    });
-
-    test('missing fields are a 400 naming them', () async {
-      final container = await hrContainer();
-
-      await expectLater(
-        container
-            .read(expenseRepositoryProvider)
-            .create(
-              const ExpenseInput(
-                title: null,
-                expenseTypeId: null,
-                incurredOn: null,
-                claimedAmount: null,
-              ),
-            ),
-        throwsA(
-          isA<ApiFailure>()
-              .having((f) => f.statusCode, 'status', 400)
-              .having(
-                (f) => f.fieldErrors.keys,
-                'fields',
-                containsAll(['Title', 'ExpenseTypeId', 'IncurredOn']),
-              ),
-        ),
-      );
-    });
-
-    test('a visit link prefills the route and travel', () async {
-      final container = await hrContainer();
-      final form = expenseFormProvider(3);
-      keep(container, form);
-
-      final state = await container.read(form.future);
-
-      expect(state.draft.visit?.id, 3);
-      expect(state.draft.typeId, travelTypeId);
-      expect(state.draft.from, isNotEmpty);
-      expect(state.draft.to, state.draft.visit?.endLocation);
-    });
-
-    test('submitting files a pending claim in the list', () async {
-      final container = await hrContainer();
-      keep(container, expenseListProvider);
-      final form = expenseFormProvider(null);
-      keep(container, form);
-      await container.read(form.future);
-
-      container
-          .read(form.notifier)
-          .edit(
-            (d) => d.copyWith(
-              typeId: mobileTypeId,
-              amount: () => 350,
-              note: 'Recharge',
-            ),
-          );
-      await container.read(form.notifier).submit();
-
-      final claim = container.read(form).value?.submission.value;
-      expect(claim?.stage, ExpenseStage.pending);
-      final list = await container.read(expenseListProvider.future);
-      expect(list.items.first.id, claim?.id);
-      expect(list.facets['StatusCounts']?['pending'], 4);
-    });
-
-    test('a receipt needs storage, so a full plan is a 402', () async {
-      final container = await hrContainer();
-      container
-          .read(devSettingsProvider.notifier)
-          .update((s) => s.copyWith(quotaReached: true));
-
-      await expectLater(
-        container
-            .read(expenseRepositoryProvider)
-            .create(
-              ExpenseInput(
-                title: 'Travel',
-                expenseTypeId: travelTypeId,
-                incurredOn: DateTime.now(),
-                claimedAmount: 1500,
-                attachments: const [ExpenseAttachment(name: 'bill.jpg')],
-              ),
-            ),
-        throwsA(isA<ApiFailure>().having((f) => f.isQuota, 'quota', true)),
-      );
-    });
-
-    test('a member can withdraw a pending claim', () async {
-      final container = await hrContainer(role: WorkspaceRole.member);
-      final repository = container.read(expenseRepositoryProvider);
-      final pending = await repository.list(
-        const ExpenseQuery(stage: ExpenseStage.pending),
-      );
-      final claim = pending.items.first;
+      final paged = await container.read(expenseListProvider.future);
+      final claim = paged.items.first;
+      expect(claim.cost, 120);
+      expect(claim.stage, ExpenseStage.pending);
+      expect(claim.typeCode, 'travel');
+      expect(claim.typeName.bn, 'যাতায়াত');
+      expect(claim.expenseDate, DateTime(2026, 10, 5));
+      expect(claim.visitId, visitId);
       expect(claim.canWithdraw, isTrue);
+      expect(paged.facets[expenseTotalsFacet]?['pending'], 220);
+    });
 
-      final withdrawn = await repository.withdraw(claim.id);
+    test('an approved claim with a payout reads as paid', () {
+      final row = (fixtureMap('hr_expenses')['items'] as List).first as Map;
+      final paid = ExpenseClaim.fromJson({
+        ...row.cast<String, dynamic>(),
+        'status': 'approved',
+        'paidAt': '2026-10-06T10:00:00Z',
+      });
+      expect(paid.stage, ExpenseStage.paid);
+      expect(paid.canWithdraw, isFalse);
+    });
 
-      expect(withdrawn.stage, ExpenseStage.withdrawn);
-      expect(withdrawn.canWithdraw, isFalse);
+    test('the status chip filters the list', () async {
+      final stub = hrStub();
+      final container = await hrContainer(stub);
+      listenTo(container, expenseListProvider);
+      container
+          .read(expenseStageFilterProvider.notifier)
+          .set(ExpenseStage.approved);
+
+      await container.read(expenseListProvider.future);
+
+      expect(
+        stub.last('GET', 'hr/expenses')?.queryParameters['status'],
+        'approved',
+      );
+    });
+  });
+
+  group('form', () {
+    late ProviderContainer container;
+
+    Future<ExpenseFormNotifier> openForm(ApiStub stub, {String? visit}) async {
+      container = await hrContainer(stub);
+      listenTo(container, expenseFormProvider(visit));
+      await container.read(expenseFormProvider(visit).future);
+      return container.read(expenseFormProvider(visit).notifier);
+    }
+
+    ExpenseFormState? formState([String? visit]) =>
+        container.read(expenseFormProvider(visit)).value;
+
+    test('the lookups list categories, my visits and the approver', () async {
+      final stub = hrStub();
+      await openForm(stub);
+
+      final lookups = formState()?.lookups;
+      expect(lookups?.types, hasLength(7));
+      expect(lookups?.visits.single.id, visitId);
+      expect(lookups?.approverName, 'Rumpa Sarker');
+      expect(
+        stub.last('GET', 'visits')?.queryParameters['membershipId'],
+        rafiId,
+      );
+    });
+
+    test('a visit link starts on travel and is sent with the claim', () async {
+      final stub = hrStub();
+      final form = await openForm(stub, visit: visitId);
+      expect(formState(visitId)?.draft.typeId, travelId);
+
+      form.edit(
+        (d) => d.copyWith(
+          amount: () => 120,
+          date: DateTime(2026, 10, 5),
+          note: ' CNG to the shop ',
+        ),
+      );
+      await form.submit();
+
+      expect(formState(visitId)?.submission.value, isNotEmpty);
+      expect(stub.lastBody('POST', 'hr/expenses'), {
+        'categoryId': travelId,
+        'amount': 120.0,
+        'spentOn': '2026-10-05',
+        'note': 'CNG to the shop',
+        'visitId': visitId,
+      });
+    });
+
+    test('a receipt is uploaded and its key sent', () async {
+      final stub = hrStub();
+      final form = await openForm(stub);
+      form.edit(
+        (d) => d.copyWith(
+          typeId: travelId,
+          amount: () => 900,
+          date: DateTime(2026, 10, 5),
+          receipt: () => photoFile(),
+        ),
+      );
+
+      await form.submit();
+
+      expect(
+        stub.lastBody('POST', 'hr/expenses')['receiptKey'],
+        fixtureMap('hr_uploaded')['key'],
+      );
+    });
+
+    test('the server asking for a receipt is a field error', () async {
+      final stub = hrStub()
+        ..on(
+          'POST',
+          'hr/expenses',
+          fixture('hr_expense_receipt_required'),
+          status: 422,
+        );
+      final form = await openForm(stub);
+      form.edit(
+        (d) => d.copyWith(
+          typeId: travelId,
+          amount: () => 100,
+          date: DateTime(2026, 10, 5),
+        ),
+      );
+
+      await form.submit();
+
+      expect(
+        formState()?.submission.error,
+        isA<ApiFailure>().having(
+          (f) => f.fieldErrors['receiptKey'],
+          'receipt',
+          isNotNull,
+        ),
+      );
+    });
+  });
+
+  test('withdrawing deletes the claim', () async {
+    final stub = hrStub();
+    final container = await hrContainer(stub);
+    listenTo(container, expenseWithdrawProvider);
+
+    await container.read(expenseWithdrawProvider.notifier).withdraw('x1');
+
+    expect(stub.last('DELETE', 'hr/expenses/{id}')?.path, 'hr/expenses/x1');
+    expect(container.read(expenseWithdrawProvider).value, 'x1');
+  });
+
+  test('the second page asks from offset 20', () async {
+    final stub = hrStub();
+    final container = await hrContainer(stub);
+
+    await container
+        .read(expenseRepositoryProvider)
+        .list(const ExpenseQuery(page: 2));
+
+    expect(stub.last('GET', 'hr/expenses')?.queryParameters, {
+      'offset': 20,
+      'limit': 20,
     });
   });
 }

@@ -1,50 +1,55 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
-import 'package:salesroot/features/hr/data/fake_payroll_repository.dart';
-import 'package:salesroot/features/hr/data/payroll_repository.dart';
+import 'package:salesroot/features/hr/data/hr_repositories.dart';
 import 'package:salesroot/features/hr/models/payroll.dart';
 
 part 'payroll_providers.g.dart';
 
-@Riverpod(keepAlive: true)
-PayrollRepository payrollRepository(Ref ref) =>
-    FakePayrollRepository(ref.watch(fakeBackendProvider));
-
-/// Issued months, newest first; [employeeId] null is the signed-in employee.
+/// Issued payslips, newest first; [employeeId] null is the signed-in
+/// employee.
 @riverpod
-Future<List<DateTime>> payslipMonths(Ref ref, int? employeeId) =>
-    ref.watch(payrollRepositoryProvider).payslipMonths(employeeId: employeeId);
+Future<List<PayslipRef>> payslips(Ref ref, String? employeeId) =>
+    ref.watch(payrollRepositoryProvider).payslips(employeeId: employeeId);
 
-/// The month picked on the payslip screen; null follows the newest issued.
+/// The payslip picked on the payslip screen; null follows the newest.
 @riverpod
-class PayslipMonthNotifier extends _$PayslipMonthNotifier {
+class PayslipPickNotifier extends _$PayslipPickNotifier {
   @override
-  DateTime? build(int? employeeId) => null;
+  String? build(String? employeeId) => null;
 
-  void set(DateTime month) => state = month;
+  void set(String id) => state = id;
 }
 
 @riverpod
-Future<Payslip?> payslip(Ref ref, int? employeeId, DateTime month) =>
-    ref.watch(payrollRepositoryProvider).payslip(month, employeeId: employeeId);
+Future<Payslip?> payslip(Ref ref, String? employeeId, String id) async {
+  final refs = await ref.watch(payslipsProvider(employeeId).future);
+  final picked = refs.where((r) => r.id == id).firstOrNull;
+  if (picked == null) return null;
+  return ref
+      .watch(payrollRepositoryProvider)
+      .payslip(picked, employeeId: employeeId);
+}
 
 @riverpod
-Future<EmployeeCard> employeeCard(Ref ref, int? employeeId) =>
+Future<EmployeeCard> employeeCard(Ref ref, String? employeeId) =>
     ref.watch(payrollRepositoryProvider).employeeCard(employeeId: employeeId);
 
 /// Saving the salary structure from the card's edit sheet.
 @riverpod
 class SalaryEditNotifier extends _$SalaryEditNotifier {
   @override
-  AsyncValue<EmployeeCard?> build() => const AsyncData(null);
+  AsyncValue<bool> build() => const AsyncData(false);
 
-  Future<void> save(int employeeId, SalaryInput input) async {
-    if (state.isLoading) return;
+  Future<void> save(EmployeeCard card, SalaryInput input) async {
+    final current = card.salary;
+    if (state.isLoading || current == null) return;
     state = const AsyncLoading();
-    final result = await AsyncValue.guard(
-      () => ref.read(payrollRepositoryProvider).saveSalary(employeeId, input),
-    );
+    final result = await AsyncValue.guard(() async {
+      await ref
+          .read(payrollRepositoryProvider)
+          .saveSalary(card.employeeId, current, input);
+      return true;
+    });
     if (!ref.mounted) return;
     state = result;
     if (!result.hasValue) return;

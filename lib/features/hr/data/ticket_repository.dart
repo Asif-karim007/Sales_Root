@@ -2,16 +2,15 @@ import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/features/hr/models/ticket.dart';
 
 abstract interface class TicketRepository {
-  /// Companies matching [term] by name or area, 20 per page.
+  /// Companies matching [term] by name, 20 per page.
   Future<PageResult<TicketCustomer>> searchCustomers(String term, int page);
 
-  Future<List<TicketProduct>> products();
-
+  /// Raises the ticket, attaches its photos and returns it.
   Future<Ticket> create(TicketInput input);
 
-  Future<Ticket> get(int id);
+  Future<Ticket> get(String id);
 
-  Future<Ticket> setStatus(int id, TicketStatus status);
+  Future<void> setStatus(String id, TicketStatus status);
 
-  Future<Ticket> reply(int id, String text);
+  Future<void> reply(String id, String text);
 }

@@ -8,12 +8,15 @@ part of 'support_form_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// True once the feedback is sent.
 
 @ProviderFor(FeedbackSubmitNotifier)
 final feedbackSubmitProvider = FeedbackSubmitNotifierProvider._();
 
+/// True once the feedback is sent.
 final class FeedbackSubmitNotifierProvider
-    extends $AsyncNotifierProvider<FeedbackSubmitNotifier, FeedbackReceipt?> {
+    extends $AsyncNotifierProvider<FeedbackSubmitNotifier, bool> {
+  /// True once the feedback is sent.
   FeedbackSubmitNotifierProvider._()
     : super(
         from: null,
@@ -34,21 +37,21 @@ final class FeedbackSubmitNotifierProvider
 }
 
 String _$feedbackSubmitNotifierHash() =>
-    r'8a0796db8772fdb941e9fdfa81d6cc4411629fd0';
+    r'd708ea1e14acfac4aac678349065a72b883f97ea';
 
-abstract class _$FeedbackSubmitNotifier
-    extends $AsyncNotifier<FeedbackReceipt?> {
-  FutureOr<FeedbackReceipt?> build();
+/// True once the feedback is sent.
+
+abstract class _$FeedbackSubmitNotifier extends $AsyncNotifier<bool> {
+  FutureOr<bool> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref =
-        this.ref as $Ref<AsyncValue<FeedbackReceipt?>, FeedbackReceipt?>;
+    final ref = this.ref as $Ref<AsyncValue<bool>, bool>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<FeedbackReceipt?>, FeedbackReceipt?>,
-              AsyncValue<FeedbackReceipt?>,
+              AnyNotifier<AsyncValue<bool>, bool>,
+              AsyncValue<bool>,
               Object?,
               Object?
             >;
@@ -56,11 +59,15 @@ abstract class _$FeedbackSubmitNotifier
   }
 }
 
+/// True once the enquiry is sent.
+
 @ProviderFor(EnquirySubmitNotifier)
 final enquirySubmitProvider = EnquirySubmitNotifierProvider._();
 
+/// True once the enquiry is sent.
 final class EnquirySubmitNotifierProvider
-    extends $AsyncNotifierProvider<EnquirySubmitNotifier, EnquiryReceipt?> {
+    extends $AsyncNotifierProvider<EnquirySubmitNotifier, bool> {
+  /// True once the enquiry is sent.
   EnquirySubmitNotifierProvider._()
     : super(
         from: null,
@@ -81,60 +88,11 @@ final class EnquirySubmitNotifierProvider
 }
 
 String _$enquirySubmitNotifierHash() =>
-    r'3035a58c9bd7795c0ab37cad64ff65321bbe5d1b';
+    r'6925068b356666a6494552cf4b14b44e7b277e3b';
 
-abstract class _$EnquirySubmitNotifier extends $AsyncNotifier<EnquiryReceipt?> {
-  FutureOr<EnquiryReceipt?> build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<EnquiryReceipt?>, EnquiryReceipt?>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<AsyncValue<EnquiryReceipt?>, EnquiryReceipt?>,
-              AsyncValue<EnquiryReceipt?>,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
+/// True once the enquiry is sent.
 
-/// True once the data export has been requested.
-
-@ProviderFor(DataExportNotifier)
-final dataExportProvider = DataExportNotifierProvider._();
-
-/// True once the data export has been requested.
-final class DataExportNotifierProvider
-    extends $AsyncNotifierProvider<DataExportNotifier, bool> {
-  /// True once the data export has been requested.
-  DataExportNotifierProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'dataExportProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$dataExportNotifierHash();
-
-  @$internal
-  @override
-  DataExportNotifier create() => DataExportNotifier();
-}
-
-String _$dataExportNotifierHash() =>
-    r'ccd48ae1525baa27c034ed7ffd748f3ce90adb74';
-
-/// True once the data export has been requested.
-
-abstract class _$DataExportNotifier extends $AsyncNotifier<bool> {
+abstract class _$EnquirySubmitNotifier extends $AsyncNotifier<bool> {
   FutureOr<bool> build();
   @$mustCallSuper
   @override

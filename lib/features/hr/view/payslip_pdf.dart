@@ -17,7 +17,8 @@ Future<void> sharePayslipPdf({
   required String workspace,
 }) async {
   final bytes = await buildPayslipPdf(slip, l10n, fmt, workspace);
-  final month = '${slip.year}-${slip.month.toString().padLeft(2, '0')}';
+  final period = slip.period;
+  final month = '${period.year}-${period.month.toString().padLeft(2, '0')}';
   await Printing.sharePdf(bytes: bytes, filename: 'payslip-$month.pdf');
 }
 
@@ -74,11 +75,8 @@ Future<Uint8List> buildPayslipPdf(
             strong: true,
           ),
           pw.SizedBox(height: 16),
-          _row(
-            l10n.hrPayslipPresent,
-            '${fmt.number(slip.presentDays)} / ${fmt.number(slip.workingDays)}',
-            palette,
-          ),
+          if (presentText(slip, fmt) case final present?)
+            _row(l10n.hrPayslipPresent, present, palette),
           _row(l10n.hrPayslipPaidVia, payoutText(slip, fmt), palette),
         ],
       ),
@@ -94,6 +92,14 @@ String payoutText(Payslip slip, AppFormat fmt) {
     [slip.payoutMethod, slip.payoutAccount].whereType<String>().join(' '),
     if (paidOn != null) fmt.dayMonth(paidOn),
   ].where((part) => part.isNotEmpty).join(' · ');
+}
+
+/// "22 / 26", or null when the slip has no attendance.
+String? presentText(Payslip slip, AppFormat fmt) {
+  final present = slip.presentDays;
+  final working = slip.workingDays;
+  if (present == null || working == null) return null;
+  return '${fmt.number(present)} / ${fmt.number(working)}';
 }
 
 class _Palette {
@@ -147,7 +153,10 @@ pw.Widget _header(
               ),
               pw.SizedBox(height: 2),
               pw.Text(
-                [slip.employeeName.of(fmt.isBangla), ?designation].join(' · '),
+                [
+                  if (slip.employeeName.isNotEmpty) slip.employeeName,
+                  ?designation,
+                ].join(' · '),
                 style: pw.TextStyle(fontSize: 11, color: palette.muted),
               ),
             ],

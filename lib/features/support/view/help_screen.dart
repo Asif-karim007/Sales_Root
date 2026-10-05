@@ -296,25 +296,15 @@ class _MyRequestsSection extends ConsumerWidget {
           value: tickets,
           loading: (_) => const SrSkeletonList(count: 2, shrinkWrap: true),
           onRetry: () => ref.invalidate(myTicketsProvider),
-          isEmpty: (page) => page.isEmpty,
+          isEmpty: (list) => list.isEmpty,
           empty: (_) => SrCard(
             child: Text(
               l10n.supportHelpNoRequests,
               style: AppText.meta(SrColors.of(context).ink2),
             ),
           ),
-          data: (_, page) => SrRowGroup(
-            rows: [
-              for (final ticket in page.items) _TicketRow(ticket: ticket),
-              if (page.hasMore)
-                SrListRow(
-                  title: l10n.supportHelpMoreRequests,
-                  leading: const SrAvatar(icon: Icons.expand_more_rounded),
-                  onTap: page.isLoadingMore
-                      ? null
-                      : () => ref.read(myTicketsProvider.notifier).loadMore(),
-                ),
-            ],
+          data: (_, list) => SrRowGroup(
+            rows: [for (final ticket in list) _TicketRow(ticket: ticket)],
           ),
         ),
       ],

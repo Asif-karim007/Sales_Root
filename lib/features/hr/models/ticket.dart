@@ -2,30 +2,31 @@ import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/hr/models/hr_json.dart';
 
 enum TicketStatus {
-  open('Open'),
-  inProgress('InProgress'),
-  onHold('OnHold'),
-  resolved('Resolved');
+  fresh('new'),
+  open('open'),
+  waiting('waiting'),
+  resolved('resolved'),
+  closed('closed');
 
   const TicketStatus(this.wire);
 
   final String wire;
 
   static TicketStatus fromWire(String? value) =>
-      values.firstWhere((s) => s.wire == value, orElse: () => open);
+      values.firstWhere((s) => s.wire == value, orElse: () => fresh);
 }
 
 enum TicketPriority {
-  low('Low', slaHours: 72),
-  medium('Medium', slaHours: 24),
-  high('High', slaHours: 4),
-  urgent('Urgent', slaHours: 2);
+  low('low', slaHours: 72),
+  medium('normal', slaHours: 8),
+  high('high', slaHours: 4),
+  urgent('urgent', slaHours: 2);
 
   const TicketPriority(this.wire, {required this.slaHours});
 
   final String wire;
 
-  /// How soon the first fix is due.
+  /// How soon the first response is due.
   final int slaHours;
 
   static TicketPriority fromWire(String? value) =>
@@ -33,11 +34,11 @@ enum TicketPriority {
 }
 
 enum TicketIssue {
-  problem('Problem'),
-  installation('Installation'),
-  warranty('Warranty'),
-  billing('Billing'),
-  other('Other');
+  problem('problem'),
+  installation('installation'),
+  warranty('warranty'),
+  billing('billing'),
+  other('other');
 
   const TicketIssue(this.wire);
 
@@ -49,43 +50,16 @@ enum TicketIssue {
 
 /// A company a ticket can be raised for.
 class TicketCustomer {
-  const TicketCustomer({
-    required this.id,
-    required this.name,
-    this.area,
-    this.phone,
-    this.leadId,
-  });
+  const TicketCustomer({required this.id, required this.name, this.area});
 
-  final int id;
+  final String id;
   final String name;
-  final LocalizedName? area;
-  final String? phone;
-
-  /// The customer's lead, for planning a visit.
-  final int? leadId;
+  final String? area;
 
   factory TicketCustomer.fromJson(Map<String, dynamic> json) => TicketCustomer(
-    id: jsonInt(json['Id']) ?? 0,
-    name: json['Name'] as String? ?? '',
-    area: jsonLocalized(json['Area'], json['AreaBn']),
-    phone: json['Phone'] as String?,
-    leadId: jsonInt(json['LeadId']),
-  );
-}
-
-/// A product a ticket can be about.
-class TicketProduct {
-  const TicketProduct({required this.id, required this.name, this.code});
-
-  final int id;
-  final String name;
-  final String? code;
-
-  factory TicketProduct.fromJson(Map<String, dynamic> json) => TicketProduct(
-    id: jsonInt(json['Id']) ?? 0,
-    name: json['Name'] as String? ?? '',
-    code: json['Code'] as String?,
+    id: jsonId(json['id']) ?? '',
+    name: json['name'] as String? ?? '',
+    area: json['area'] as String?,
   );
 }
 
@@ -99,16 +73,16 @@ class TicketMessage {
 
   final String text;
 
-  /// Written by our side rather than the customer.
+  /// Written by our team rather than the customer.
   final bool mine;
   final String? authorName;
   final DateTime? at;
 
   factory TicketMessage.fromJson(Map<String, dynamic> json) => TicketMessage(
-    text: json['Text'] as String? ?? '',
-    mine: jsonBool(json['FromTeam']),
-    authorName: json['AuthorName'] as String?,
-    at: jsonDate(json['At']),
+    text: json['body'] as String? ?? '',
+    mine: json['authorMembershipId'] != null,
+    authorName: json['authorName'] as String?,
+    at: jsonDate(json['createdAt']),
   );
 }
 
@@ -118,63 +92,67 @@ class Ticket {
     required this.id,
     required this.code,
     required this.title,
-    required this.customerId,
-    required this.customerName,
     required this.issue,
     required this.priority,
     required this.status,
-    this.slaMinutesLeft,
-    this.productName,
+    this.customerId,
+    this.customerName,
+    this.slaHours,
+    this.slaBreached = false,
     this.assigneeName,
     this.openedAt,
     this.source,
-    this.leadId,
-    this.photos = const [],
     this.messages = const [],
   });
 
-  final int id;
+  final String id;
 
-  /// `T-0088`
+  /// `TKT-2026-00002`
   final String code;
   final String title;
-  final int customerId;
-  final String customerName;
+  final String? customerId;
+  final String? customerName;
   final TicketIssue issue;
   final TicketPriority priority;
   final TicketStatus status;
 
-  /// Worked out by the server; negative once the SLA is breached, null once
-  /// resolved.
-  final int? slaMinutesLeft;
-  final String? productName;
-  final LocalizedName? assigneeName;
+  /// Hours from opening to the resolve deadline, as the server set it.
+  final int? slaHours;
+  final bool slaBreached;
+  final String? assigneeName;
   final DateTime? openedAt;
 
-  /// `FieldVisit`, `WhatsApp` or `Phone`.
+  /// `field_visit`, `whatsapp` or `phone`.
   final String? source;
-  final int? leadId;
-  final List<String> photos;
   final List<TicketMessage> messages;
 
-  factory Ticket.fromJson(Map<String, dynamic> json) => Ticket(
-    id: jsonInt(json['Id']) ?? 0,
-    code: json['Code'] as String? ?? '',
-    title: json['Title'] as String? ?? '',
-    customerId: jsonInt(json['CustomerId']) ?? 0,
-    customerName: json['CustomerName'] as String? ?? '',
-    issue: TicketIssue.fromWire(json['IssueType'] as String?),
-    priority: TicketPriority.fromWire(json['Priority'] as String?),
-    status: TicketStatus.fromWire(json['Status'] as String?),
-    slaMinutesLeft: jsonInt(json['SlaMinutesLeft']),
-    productName: json['ProductName'] as String?,
-    assigneeName: jsonLocalized(json['AssigneeName'], json['AssigneeNameBn']),
-    openedAt: jsonDate(json['OpenedAt']),
-    source: json['Source'] as String?,
-    leadId: jsonInt(json['LeadId']),
-    photos: jsonStrings(json['Photos']),
-    messages: jsonList(json['Messages'], TicketMessage.fromJson),
-  );
+  /// `{ticket, messages}` as `GET tickets/{id}` sends it.
+  factory Ticket.fromJson(Map<String, dynamic> json) {
+    final ticket = jsonMap(json['ticket']);
+    final opened = jsonDate(ticket['createdAt']);
+    final due = jsonDate(ticket['slaResolveDue']);
+    return Ticket(
+      id: jsonId(ticket['id']) ?? '',
+      code: ticket['number'] as String? ?? '',
+      title: ticket['subject'] as String? ?? '',
+      customerId: jsonId(ticket['companyId']),
+      customerName: ticket['companyName'] as String?,
+      issue: TicketIssue.fromWire(ticket['type'] as String?),
+      priority: TicketPriority.fromWire(ticket['priority'] as String?),
+      status: TicketStatus.fromWire(ticket['status'] as String?),
+      slaHours: opened == null || due == null
+          ? null
+          : due.difference(opened).inHours,
+      slaBreached: jsonBool(ticket['slaBreach']),
+      assigneeName: ticket['assigneeName'] as String?,
+      openedAt: opened,
+      source: ticket['source'] as String?,
+      messages: [
+        for (final message in jsonList(json['messages'], (m) => m))
+          if (message['isInternal'] != true) TicketMessage.fromJson(message),
+      ],
+    );
+  }
 }
 
 /// What the new-ticket form sends.
@@ -184,29 +162,31 @@ class TicketInput {
     required this.title,
     required this.issue,
     required this.priority,
-    this.productId,
     this.description,
     this.photos = const [],
   });
 
-  final int? customerId;
+  final String? customerId;
   final String? title;
   final TicketIssue? issue;
   final TicketPriority priority;
-  final int? productId;
   final String? description;
+
+  /// Local paths, uploaded once the ticket exists.
   final List<String> photos;
 
   Map<String, dynamic> toJson() => {
-    'CustomerId': customerId,
-    'Title': trimmedOrNull(title),
-    'IssueType': issue?.wire,
-    'Priority': priority.wire,
-    'ProductId': productId,
-    'Description': trimmedOrNull(description),
-    'Photos': photos.isEmpty ? null : photos,
+    'subject': trimmedOrNull(title),
+    'type': issue?.wire,
+    'priority': priority.wire,
+    'companyId': customerId,
+    'body': trimmedOrNull(description),
+    'source': ticketSourceFieldVisit,
   }..removeWhere((_, value) => value == null);
 }
+
+/// The source of a ticket a rep raises from the field.
+const String ticketSourceFieldVisit = 'field_visit';
 
 enum TicketField { customer, title, issue, description }
 
@@ -217,7 +197,6 @@ class TicketDraft {
     this.title = '',
     this.issue,
     this.priority = TicketPriority.medium,
-    this.productId,
     this.description = '',
     this.photos = const [],
   });
@@ -226,7 +205,6 @@ class TicketDraft {
   final String title;
   final TicketIssue? issue;
   final TicketPriority priority;
-  final int? productId;
   final String description;
 
   /// Local paths of the photos.
@@ -244,9 +222,8 @@ class TicketDraft {
     title: title,
     issue: issue,
     priority: priority,
-    productId: productId,
     description: description,
-    photos: [for (final path in photos) path.split('/').last],
+    photos: photos,
   );
 
   TicketDraft copyWith({
@@ -254,7 +231,6 @@ class TicketDraft {
     String? title,
     TicketIssue? issue,
     TicketPriority? priority,
-    int? Function()? productId,
     String? description,
     List<String>? photos,
   }) => TicketDraft(
@@ -262,7 +238,6 @@ class TicketDraft {
     title: title ?? this.title,
     issue: issue ?? this.issue,
     priority: priority ?? this.priority,
-    productId: productId != null ? productId() : this.productId,
     description: description ?? this.description,
     photos: photos ?? this.photos,
   );

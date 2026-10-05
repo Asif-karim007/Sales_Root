@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/format/app_format.dart';
-import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/hr/models/approval.dart';
 import 'package:salesroot/features/hr/providers/approvals_providers.dart';
-import 'package:salesroot/features/hr/view/widget/expense_widgets.dart';
 import 'package:salesroot/features/hr/view/widget/hr_feedback.dart';
 import 'package:salesroot/features/hr/view/widget/hr_labels.dart';
 import 'package:salesroot/features/hr/view/widget/hr_language_toggle.dart';
 import 'package:salesroot/features/hr/view/widget/hr_paged_list.dart';
-import 'package:salesroot/features/hr/view/widget/leave_widgets.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
@@ -35,10 +31,8 @@ class _ApprovalsScreenState extends ConsumerState<ApprovalsScreen> {
       ref.read(approvalActionsProvider.notifier);
 
   Future<void> _approve(ApprovalItem item) {
-    setState(() => _busy = item.key);
-    return _actions.decide(
-      ApprovalDecision(kind: item.kind, id: item.id, approve: true),
-    );
+    setState(() => _busy = item.id);
+    return _actions.decide(ApprovalDecision(id: item.id, approve: true));
   }
 
   Future<void> _reject(ApprovalItem item) async {
@@ -47,14 +41,9 @@ class _ApprovalsScreenState extends ConsumerState<ApprovalsScreen> {
       builder: (_) => const _RejectSheet(),
     );
     if (reason == null || !mounted) return;
-    setState(() => _busy = item.key);
+    setState(() => _busy = item.id);
     await _actions.decide(
-      ApprovalDecision(
-        kind: item.kind,
-        id: item.id,
-        approve: false,
-        reason: reason,
-      ),
+      ApprovalDecision(id: item.id, approve: false, reason: reason),
     );
   }
 
@@ -76,7 +65,7 @@ class _ApprovalsScreenState extends ConsumerState<ApprovalsScreen> {
     final l10n = context.l10n;
     switch (next) {
       case AsyncData(value: final ApprovalOutcome outcome):
-        final waiting = outcome.item?.state == ApprovalState.pending;
+        final waiting = outcome.item?.isPending ?? false;
         showSrSuccess(context, switch (outcome) {
           _ when waiting => l10n.hrApprovalSentToManager,
           ApprovalOutcome(approved: false) => l10n.hrRejectedOne,
@@ -107,7 +96,7 @@ class _ApprovalsScreenState extends ConsumerState<ApprovalsScreen> {
         ? const <ApprovalItem>[]
         : [
             for (final item in list.value?.items ?? const <ApprovalItem>[])
-              if (item.state == ApprovalState.pending) item,
+              if (item.isPending) item,
           ];
 
     ref.listen(approvalActionsProvider, (_, next) => _onOutcome(next));
@@ -147,15 +136,14 @@ class _ApprovalsScreenState extends ConsumerState<ApprovalsScreen> {
         ),
         data: (context, paged) => HrPagedList<ApprovalItem>(
           paged: paged,
-          onLoadMore: () => ref.read(approvalListProvider.notifier).loadMore(),
           onRefresh: () async {
             ref.invalidate(approvalListProvider);
             await ref.read(approvalListProvider.future);
           },
           itemBuilder: (context, item) => _ApprovalCard(
             item: item,
-            canDecide: canApprove && item.state == ApprovalState.pending,
-            busy: working && _busy == item.key,
+            canDecide: canApprove && item.isPending,
+            busy: working && _busy == item.id,
             enabled: !working,
             onApprove: () => _approve(item),
             onReject: () => _reject(item),
@@ -201,35 +189,14 @@ class _ApprovalCard extends StatelessWidget {
   final VoidCallback onApprove;
   final VoidCallback onReject;
 
-  void _open(BuildContext context) {
-    final leave = item.leave;
-    final expense = item.expense;
-    final companyId = item.collection?.companyId;
-    if (leave != null) {
-      showSrSheet<void>(
-        context: context,
-        builder: (_) => LeaveDetailSheet(request: leave),
-      );
-    } else if (expense != null) {
-      showSrSheet<void>(
-        context: context,
-        builder: (_) => ExpenseDetailSheet(claim: expense),
-      );
-    } else if (companyId != null) {
-      context.push(Routes.customerFor(companyId));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
-    final fmt = context.fmt;
-    final name = item.employeeName.of(fmt.isBangla);
+    final name = item.employeeName;
 
     return SrCard(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      onTap: () => _open(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -247,10 +214,7 @@ class _ApprovalCard extends StatelessWidget {
                       style: AppText.rowTitle(c.ink),
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      approvalSummary(context, item),
-                      style: AppText.meta(c.ink2),
-                    ),
+                    Text(approvalSummary(item), style: AppText.meta(c.ink2)),
                   ],
                 ),
               ),
@@ -282,52 +246,17 @@ class _ApprovalCard extends StatelessWidget {
     ApprovalKind.leave => SrTone.accent,
     ApprovalKind.expense => SrTone.warn,
     ApprovalKind.collection => SrTone.ok,
+    ApprovalKind.other => SrTone.info,
   };
 }
 
 /// The one-line description under the requester's name.
-String approvalSummary(BuildContext context, ApprovalItem item) {
-  final l10n = context.l10n;
-  final fmt = context.fmt;
-  final leave = item.leave;
-  final expense = item.expense;
-  final collection = item.collection;
-  if (leave != null) {
-    final reason = leave.reason;
-    final cover = leave.coverName;
-    return [
-      leave.leaveType.of(fmt.isBangla),
-      leaveRange(fmt, leave),
-      fmt.days(leave.noOfDays),
-      if (reason != null && reason.isNotEmpty) reason,
-      if (leave.isPending && cover != null)
-        l10n.hrApprovalCover(cover.of(fmt.isBangla)),
-    ].join(' · ');
-  }
-  if (expense != null) {
-    final description = expense.description;
-    final prospect = expense.prospectName;
-    return [
-      '${expense.typeName.of(fmt.isBangla)} ${fmt.money(expense.cost)}',
-      if (description != null && description.isNotEmpty) description,
-      if (expense.personCount > 1)
-        l10n.hrApprovalPeople(fmt.number(expense.personCount)),
-      if (expense.attachments.isNotEmpty) l10n.hrApprovalBill,
-      if (expense.visitId != null && prospect != null)
-        l10n.hrApprovalVisit(prospect),
-      if (expense.isPending && expense.approvalStep > 1)
-        l10n.hrApprovalLeadApproved,
-    ].join(' · ');
-  }
-  if (collection != null) {
-    return [
-      fmt.money(collection.amount),
-      l10n.collectionMethod(collection.method),
-      collection.companyName,
-      if (collection.hasSlip) l10n.hrApprovalSlip,
-    ].join(' · ');
-  }
-  return '';
+String approvalSummary(ApprovalItem item) {
+  final reason = item.reason;
+  return [
+    if (item.summary.isNotEmpty) item.summary,
+    if (reason != null && reason.isNotEmpty) reason,
+  ].join(' · ');
 }
 
 class _DecisionButtons extends StatelessWidget {
@@ -380,10 +309,10 @@ class _Decided extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
-    final by = item.decidedByName;
+    final by = item.approverName;
     final note = item.decisionNote;
     final parts = [
-      if (by != null) l10n.hrApprovalDecidedBy(by.of(context.fmt.isBangla)),
+      if (by != null) l10n.hrApprovalDecidedBy(by),
       if (note != null && note.isNotEmpty) note,
     ];
     if (parts.isEmpty) return const SizedBox.shrink();

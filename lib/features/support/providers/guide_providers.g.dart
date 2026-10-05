@@ -8,52 +8,45 @@ part of 'guide_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Gemini when the build has `GEMINI_API_KEY`, the keyword matcher otherwise.
 
-@ProviderFor(guideRepository)
-final guideRepositoryProvider = GuideRepositoryProvider._();
+@ProviderFor(guideStatus)
+final guideStatusProvider = GuideStatusProvider._();
 
-/// Gemini when the build has `GEMINI_API_KEY`, the keyword matcher otherwise.
-
-final class GuideRepositoryProvider
+final class GuideStatusProvider
     extends
-        $FunctionalProvider<GuideRepository, GuideRepository, GuideRepository>
-    with $Provider<GuideRepository> {
-  /// Gemini when the build has `GEMINI_API_KEY`, the keyword matcher otherwise.
-  GuideRepositoryProvider._()
+        $FunctionalProvider<
+          AsyncValue<GuideStatus>,
+          GuideStatus,
+          FutureOr<GuideStatus>
+        >
+    with $FutureModifier<GuideStatus>, $FutureProvider<GuideStatus> {
+  GuideStatusProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'guideRepositoryProvider',
-        isAutoDispose: false,
+        name: r'guideStatusProvider',
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$guideRepositoryHash();
+  String debugGetCreateSourceHash() => _$guideStatusHash();
 
   @$internal
   @override
-  $ProviderElement<GuideRepository> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+  $FutureProviderElement<GuideStatus> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
   @override
-  GuideRepository create(Ref ref) {
-    return guideRepository(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(GuideRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<GuideRepository>(value),
-    );
+  FutureOr<GuideStatus> create(Ref ref) {
+    return guideStatus(ref);
   }
 }
 
-String _$guideRepositoryHash() => r'a2aaf38184312fd3d8ccb6ab08fcc2b975659011';
+String _$guideStatusHash() => r'3e3ef8f7ad3c4b0c2f901483e30cfda862c69357';
 
 @ProviderFor(GuideChatNotifier)
 final guideChatProvider = GuideChatNotifierProvider._();
@@ -87,7 +80,7 @@ final class GuideChatNotifierProvider
   }
 }
 
-String _$guideChatNotifierHash() => r'55d32f159e7619b1a0c3bcf05f2725af6d7ec0ef';
+String _$guideChatNotifierHash() => r'c524a59dc97f098bc1f6e843f0df787b89050ff6';
 
 abstract class _$GuideChatNotifier extends $Notifier<GuideChat> {
   GuideChat build();

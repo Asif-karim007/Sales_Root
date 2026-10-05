@@ -27,14 +27,13 @@ class EnquiryScreen extends ConsumerStatefulWidget {
 }
 
 class _EnquiryScreenState extends ConsumerState<EnquiryScreen> {
-  static const _fields = ['Kind', 'Company', 'Name', 'Mobile', 'Details'];
-
   late EnquiryKind? _kind = widget.kind;
   final _company = TextEditingController();
   final _name = TextEditingController();
   final _mobile = TextEditingController();
   final _details = TextEditingController();
   CallWindow _window = CallWindow.midday;
+  bool _showErrors = false;
 
   @override
   void initState() {
@@ -72,26 +71,31 @@ class _EnquiryScreenState extends ConsumerState<EnquiryScreen> {
     setState(() => _window = picked);
   }
 
-  void _send() => ref
-      .read(enquirySubmitProvider.notifier)
-      .submit(
-        EnquiryInput(
-          kind: _kind,
-          company: _company.text,
-          name: _name.text,
-          mobile: _mobile.text,
-          details: _details.text,
-          callWindow: _window,
-        ),
-      );
+  EnquiryInput get _input => EnquiryInput(
+    kind: _kind,
+    company: _company.text,
+    name: _name.text,
+    mobile: _mobile.text,
+    details: _details.text,
+    callWindow: _window,
+  );
 
-  Future<void> _done(EnquiryReceipt receipt) async {
+  void _send() {
+    final input = _input;
+    if (input.errors.isNotEmpty) {
+      setState(() => _showErrors = true);
+      return;
+    }
+    ref.read(enquirySubmitProvider.notifier).submit(input);
+  }
+
+  Future<void> _done() async {
     final l10n = context.l10n;
     final router = GoRouter.of(context);
     await showSupportDoneSheet(
       context,
       title: l10n.supportEnquiryDoneTitle,
-      message: l10n.supportEnquiryDoneBody(receipt.reference),
+      message: l10n.supportEnquiryDoneBody,
     );
     if (router.canPop()) router.pop();
   }
@@ -100,14 +104,11 @@ class _EnquiryScreenState extends ConsumerState<EnquiryScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final submit = ref.watch(enquirySubmitProvider);
-    final error = submit.error;
-    String? fieldError(String field) => supportFieldError(error, field);
+    final errors = _showErrors ? _input.errors : const <EnquiryField>{};
     ref.listen(enquirySubmitProvider, (_, next) {
-      final receipt = next.value;
-      if (receipt != null) {
-        _done(receipt);
-      } else if (next.hasError &&
-          _fields.every((f) => supportFieldError(next.error, f) == null)) {
+      if (next.value == true) {
+        _done();
+      } else if (next.hasError) {
         showSrError(context, supportFailureText(context, next.error));
       }
     });
@@ -141,7 +142,7 @@ class _EnquiryScreenState extends ConsumerState<EnquiryScreen> {
                   ),
               ],
             ),
-            if (fieldError('Kind') != null) ...[
+            if (errors.contains(EnquiryField.kind)) ...[
               const SizedBox(height: 6),
               SrNote(
                 tone: SrNoteTone.err,
@@ -153,7 +154,9 @@ class _EnquiryScreenState extends ConsumerState<EnquiryScreen> {
               controller: _company,
               label: l10n.supportEnquiryCompany,
               hint: l10n.supportEnquiryCompanyHint,
-              error: fieldError('Company') == null ? null : l10n.commonRequired,
+              error: errors.contains(EnquiryField.company)
+                  ? l10n.commonRequired
+                  : null,
               textCapitalization: TextCapitalization.words,
               textInputAction: TextInputAction.next,
             ),
@@ -161,7 +164,9 @@ class _EnquiryScreenState extends ConsumerState<EnquiryScreen> {
             SrTextField(
               controller: _name,
               label: l10n.supportEnquiryName,
-              error: fieldError('Name') == null ? null : l10n.commonRequired,
+              error: errors.contains(EnquiryField.name)
+                  ? l10n.commonRequired
+                  : null,
               textCapitalization: TextCapitalization.words,
               textInputAction: TextInputAction.next,
             ),
@@ -175,9 +180,9 @@ class _EnquiryScreenState extends ConsumerState<EnquiryScreen> {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9+ \-]')),
               ],
-              error: fieldError('Mobile') == null
-                  ? null
-                  : l10n.supportEnquiryMobileError,
+              error: errors.contains(EnquiryField.mobile)
+                  ? l10n.supportEnquiryMobileError
+                  : null,
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 14),
@@ -185,7 +190,9 @@ class _EnquiryScreenState extends ConsumerState<EnquiryScreen> {
               controller: _details,
               label: l10n.supportEnquiryDetails,
               hint: l10n.supportEnquiryDetailsHint,
-              error: fieldError('Details') == null ? null : l10n.commonRequired,
+              error: errors.contains(EnquiryField.details)
+                  ? l10n.commonRequired
+                  : null,
               multiline: true,
               maxLength: 1000,
               textCapitalization: TextCapitalization.sentences,

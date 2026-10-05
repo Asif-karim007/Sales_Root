@@ -4,13 +4,15 @@ import 'package:salesroot/features/hr/models/leave.dart';
 abstract interface class LeaveRepository {
   Future<LeaveLookups> lookups();
 
-  /// The balances of the signed-in employee, or of [employeeId].
-  Future<List<LeaveBalance>> balances({int? employeeId});
+  /// The signed-in employee's balances this year.
+  Future<List<LeaveBalance>> balances();
 
+  /// The signed-in employee's requests, newest first.
   Future<PageResult<LeaveRequest>> list(LeaveQuery query);
 
-  Future<LeaveRequest> create(LeaveInput input);
+  /// Sends the request and returns its id.
+  Future<String> create(LeaveInput input);
 
   /// Takes back a request that is still pending.
-  Future<void> withdraw(int id);
+  Future<void> withdraw(String id);
 }

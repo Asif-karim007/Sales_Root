@@ -35,6 +35,8 @@ class SupportFormScreen extends ConsumerStatefulWidget {
 }
 
 class _SupportFormScreenState extends ConsumerState<SupportFormScreen> {
+  static const _descriptionField = 'body';
+
   final _description = TextEditingController();
   late TicketCategory _category = widget.category ?? TicketCategory.question;
   ReplyChannel _channel = ReplyChannel.inAppSms;
@@ -93,15 +95,15 @@ class _SupportFormScreenState extends ConsumerState<SupportFormScreen> {
             description: _description.text,
             channel: _channel,
             attachments: _attachments,
+            appVersion: _sendDevice ? diagnostics?.appVersion : null,
             diagnostics: {
-              if (_sendScreen && from != null) 'Screen': from,
+              if (_sendScreen && from != null) 'screen': from,
               if (_sendDevice && diagnostics != null) ...{
-                'AppVersion': diagnostics.appVersion,
-                'Device': diagnostics.device,
-                'System': diagnostics.system,
+                'device': diagnostics.device,
+                'system': diagnostics.system,
               },
               if (_sendWorkspace && workspace != null)
-                'Workspace': workspace.name,
+                'workspace': workspace.name,
             },
           ),
         );
@@ -118,7 +120,7 @@ class _SupportFormScreenState extends ConsumerState<SupportFormScreen> {
         showSrSuccess(context, l10n.supportFormSent);
         context.pushReplacement(Routes.supportTicketFor(ticket.id));
       } else if (next.hasError &&
-          supportFieldError(next.error, 'Description') == null) {
+          supportFieldError(next.error, _descriptionField) == null) {
         showSrError(context, supportFailureText(context, next.error));
       }
     });
@@ -157,7 +159,7 @@ class _SupportFormScreenState extends ConsumerState<SupportFormScreen> {
               controller: _description,
               label: l10n.supportFormDescribe,
               hint: l10n.supportFormDescribeHint,
-              error: supportFieldError(submit.error, 'Description'),
+              error: supportFieldError(submit.error, _descriptionField),
               multiline: true,
               maxLength: 2000,
               textCapitalization: TextCapitalization.sentences,

@@ -33,7 +33,7 @@ final List<RouteBase> hrRoutes = [
     path: Routes.expenseNew,
     redirect: requireAccess(AppModule.expense, ModuleRight.add),
     builder: (context, state) =>
-        ExpenseClaimScreen(visitId: _intQuery(state, 'visitId')),
+        ExpenseClaimScreen(visitId: _query(state, 'visitId')),
   ),
   GoRoute(
     path: Routes.approvals,
@@ -44,7 +44,7 @@ final List<RouteBase> hrRoutes = [
     path: Routes.payslip,
     redirect: requireAccess(AppModule.payroll),
     builder: (context, state) =>
-        PayslipScreen(employeeId: _intQuery(state, 'memberId')),
+        PayslipScreen(employeeId: _query(state, 'memberId')),
   ),
   GoRoute(
     path: Routes.ticketNew,
@@ -55,9 +55,9 @@ final List<RouteBase> hrRoutes = [
     path: Routes.employeeCard,
     redirect: requireAccess(AppModule.payroll),
     builder: (context, state) =>
-        EmployeeCardScreen(employeeId: _intQuery(state, 'memberId')),
+        EmployeeCardScreen(employeeId: _query(state, 'memberId')),
   ),
 ];
 
-int? _intQuery(GoRouterState state, String key) =>
-    int.tryParse(state.uri.queryParameters[key] ?? '');
+String? _query(GoRouterState state, String key) =>
+    state.uri.queryParameters[key];

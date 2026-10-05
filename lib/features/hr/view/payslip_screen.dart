@@ -24,12 +24,12 @@ import 'package:salesroot/widgets/widgets.dart';
 class PayslipScreen extends ConsumerWidget {
   const PayslipScreen({super.key, this.employeeId});
 
-  final int? employeeId;
+  final String? employeeId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final months = ref.watch(payslipMonthsProvider(employeeId));
+    final slips = ref.watch(payslipsProvider(employeeId));
 
     return SrScaffold(
       appBar: SrAppBar(
@@ -37,17 +37,17 @@ class PayslipScreen extends ConsumerWidget {
         actions: const [HrLanguageToggle()],
       ),
       body: SrAsyncView(
-        value: months,
-        onRetry: () => ref.invalidate(payslipMonthsProvider(employeeId)),
+        value: slips,
+        onRetry: () => ref.invalidate(payslipsProvider(employeeId)),
         loading: (_) => const SrSkeletonList(count: 6),
         isEmpty: (list) => list.isEmpty,
         empty: (_) => const _NotIssued(),
         data: (context, list) {
-          final picked = ref.watch(payslipMonthProvider(employeeId));
+          final picked = ref.watch(payslipPickProvider(employeeId));
           return _MonthPayslip(
             employeeId: employeeId,
-            months: list,
-            month: picked ?? list.first,
+            slips: list,
+            picked: list.where((s) => s.id == picked).firstOrNull ?? list.first,
           );
         },
       ),
@@ -74,32 +74,32 @@ class _NotIssued extends StatelessWidget {
 class _MonthPayslip extends ConsumerWidget {
   const _MonthPayslip({
     required this.employeeId,
-    required this.months,
-    required this.month,
+    required this.slips,
+    required this.picked,
   });
 
-  final int? employeeId;
-  final List<DateTime> months;
-  final DateTime month;
+  final String? employeeId;
+  final List<PayslipRef> slips;
+  final PayslipRef picked;
 
   Future<void> _pickMonth(BuildContext context, WidgetRef ref) async {
     final fmt = context.fmt;
-    final picked = await showSrSheet<DateTime>(
+    final chosen = await showSrSheet<PayslipRef>(
       context: context,
-      builder: (_) => SrOptionSheet<DateTime>(
+      builder: (_) => SrOptionSheet<PayslipRef>(
         title: context.l10n.hrPayslipPickMonth,
-        options: months,
-        labelOf: fmt.monthYear,
-        isSelected: (m) => m == month,
+        options: slips,
+        labelOf: (s) => fmt.monthYear(s.period),
+        isSelected: (s) => s.id == picked.id,
       ),
     );
-    if (picked == null) return;
-    ref.read(payslipMonthProvider(employeeId).notifier).set(picked);
+    if (chosen == null) return;
+    ref.read(payslipPickProvider(employeeId).notifier).set(chosen.id);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider = payslipProvider(employeeId, month);
+    final provider = payslipProvider(employeeId, picked.id);
     final slip = ref.watch(provider);
 
     return SrAsyncView(
@@ -112,7 +112,7 @@ class _MonthPayslip extends ConsumerWidget {
           ? const _NotIssued()
           : _PayslipBody(
               slip: value,
-              onPickMonth: months.length > 1
+              onPickMonth: slips.length > 1
                   ? () => _pickMonth(context, ref)
                   : null,
             ),
@@ -197,12 +197,8 @@ class _PayslipBodyState extends ConsumerState<_PayslipBody> {
         const SizedBox(height: 12),
         HrLineCard(
           lines: [
-            HrLine(
-              label: l10n.hrPayslipPresent,
-              value:
-                  '${fmt.number(slip.presentDays)} / ${fmt.number(slip.workingDays)}',
-              small: true,
-            ),
+            if (presentText(slip, fmt) case final present?)
+              HrLine(label: l10n.hrPayslipPresent, value: present, small: true),
             HrLine(
               label: l10n.hrPayslipPaidVia,
               value: payoutText(slip, fmt),
@@ -287,7 +283,7 @@ class _NetCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   [
-                    slip.employeeName.of(fmt.isBangla),
+                    if (slip.employeeName.isNotEmpty) slip.employeeName,
                     ?designation,
                   ].join(' · '),
                   style: AppText.meta(c.ink2),

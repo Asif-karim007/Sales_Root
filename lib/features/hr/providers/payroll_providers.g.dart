@@ -8,106 +8,61 @@ part of 'payroll_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Issued payslips, newest first; [employeeId] null is the signed-in
+/// employee.
 
-@ProviderFor(payrollRepository)
-final payrollRepositoryProvider = PayrollRepositoryProvider._();
+@ProviderFor(payslips)
+final payslipsProvider = PayslipsFamily._();
 
-final class PayrollRepositoryProvider
+/// Issued payslips, newest first; [employeeId] null is the signed-in
+/// employee.
+
+final class PayslipsProvider
     extends
         $FunctionalProvider<
-          PayrollRepository,
-          PayrollRepository,
-          PayrollRepository
+          AsyncValue<List<PayslipRef>>,
+          List<PayslipRef>,
+          FutureOr<List<PayslipRef>>
         >
-    with $Provider<PayrollRepository> {
-  PayrollRepositoryProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'payrollRepositoryProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$payrollRepositoryHash();
-
-  @$internal
-  @override
-  $ProviderElement<PayrollRepository> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  PayrollRepository create(Ref ref) {
-    return payrollRepository(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(PayrollRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<PayrollRepository>(value),
-    );
-  }
-}
-
-String _$payrollRepositoryHash() => r'0bca44db84e4a053d22dcc01c740e5ac13bed7f5';
-
-/// Issued months, newest first; [employeeId] null is the signed-in employee.
-
-@ProviderFor(payslipMonths)
-final payslipMonthsProvider = PayslipMonthsFamily._();
-
-/// Issued months, newest first; [employeeId] null is the signed-in employee.
-
-final class PayslipMonthsProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<DateTime>>,
-          List<DateTime>,
-          FutureOr<List<DateTime>>
-        >
-    with $FutureModifier<List<DateTime>>, $FutureProvider<List<DateTime>> {
-  /// Issued months, newest first; [employeeId] null is the signed-in employee.
-  PayslipMonthsProvider._({
-    required PayslipMonthsFamily super.from,
-    required int? super.argument,
+    with $FutureModifier<List<PayslipRef>>, $FutureProvider<List<PayslipRef>> {
+  /// Issued payslips, newest first; [employeeId] null is the signed-in
+  /// employee.
+  PayslipsProvider._({
+    required PayslipsFamily super.from,
+    required String? super.argument,
   }) : super(
          retry: null,
-         name: r'payslipMonthsProvider',
+         name: r'payslipsProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$payslipMonthsHash();
+  String debugGetCreateSourceHash() => _$payslipsHash();
 
   @override
   String toString() {
-    return r'payslipMonthsProvider'
+    return r'payslipsProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  $FutureProviderElement<List<DateTime>> $createElement(
+  $FutureProviderElement<List<PayslipRef>> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<List<DateTime>> create(Ref ref) {
-    final argument = this.argument as int?;
-    return payslipMonths(ref, argument);
+  FutureOr<List<PayslipRef>> create(Ref ref) {
+    final argument = this.argument as String?;
+    return payslips(ref, argument);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is PayslipMonthsProvider && other.argument == argument;
+    return other is PayslipsProvider && other.argument == argument;
   }
 
   @override
@@ -116,75 +71,77 @@ final class PayslipMonthsProvider
   }
 }
 
-String _$payslipMonthsHash() => r'67a32a2d06ac2c7e1e95a835e5a438ed5049ac22';
+String _$payslipsHash() => r'95d1d9446050bc2597293433eb6e02bea08e578f';
 
-/// Issued months, newest first; [employeeId] null is the signed-in employee.
+/// Issued payslips, newest first; [employeeId] null is the signed-in
+/// employee.
 
-final class PayslipMonthsFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<List<DateTime>>, int?> {
-  PayslipMonthsFamily._()
+final class PayslipsFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<PayslipRef>>, String?> {
+  PayslipsFamily._()
     : super(
         retry: null,
-        name: r'payslipMonthsProvider',
+        name: r'payslipsProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  /// Issued months, newest first; [employeeId] null is the signed-in employee.
+  /// Issued payslips, newest first; [employeeId] null is the signed-in
+  /// employee.
 
-  PayslipMonthsProvider call(int? employeeId) =>
-      PayslipMonthsProvider._(argument: employeeId, from: this);
+  PayslipsProvider call(String? employeeId) =>
+      PayslipsProvider._(argument: employeeId, from: this);
 
   @override
-  String toString() => r'payslipMonthsProvider';
+  String toString() => r'payslipsProvider';
 }
 
-/// The month picked on the payslip screen; null follows the newest issued.
+/// The payslip picked on the payslip screen; null follows the newest.
 
-@ProviderFor(PayslipMonthNotifier)
-final payslipMonthProvider = PayslipMonthNotifierFamily._();
+@ProviderFor(PayslipPickNotifier)
+final payslipPickProvider = PayslipPickNotifierFamily._();
 
-/// The month picked on the payslip screen; null follows the newest issued.
-final class PayslipMonthNotifierProvider
-    extends $NotifierProvider<PayslipMonthNotifier, DateTime?> {
-  /// The month picked on the payslip screen; null follows the newest issued.
-  PayslipMonthNotifierProvider._({
-    required PayslipMonthNotifierFamily super.from,
-    required int? super.argument,
+/// The payslip picked on the payslip screen; null follows the newest.
+final class PayslipPickNotifierProvider
+    extends $NotifierProvider<PayslipPickNotifier, String?> {
+  /// The payslip picked on the payslip screen; null follows the newest.
+  PayslipPickNotifierProvider._({
+    required PayslipPickNotifierFamily super.from,
+    required String? super.argument,
   }) : super(
          retry: null,
-         name: r'payslipMonthProvider',
+         name: r'payslipPickProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$payslipMonthNotifierHash();
+  String debugGetCreateSourceHash() => _$payslipPickNotifierHash();
 
   @override
   String toString() {
-    return r'payslipMonthProvider'
+    return r'payslipPickProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  PayslipMonthNotifier create() => PayslipMonthNotifier();
+  PayslipPickNotifier create() => PayslipPickNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(DateTime? value) {
+  Override overrideWithValue(String? value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<DateTime?>(value),
+      providerOverride: $SyncValueProvider<String?>(value),
     );
   }
 
   @override
   bool operator ==(Object other) {
-    return other is PayslipMonthNotifierProvider && other.argument == argument;
+    return other is PayslipPickNotifierProvider && other.argument == argument;
   }
 
   @override
@@ -193,54 +150,54 @@ final class PayslipMonthNotifierProvider
   }
 }
 
-String _$payslipMonthNotifierHash() =>
-    r'555fc234ce607e7140ef6316fb297b70dac4df9d';
+String _$payslipPickNotifierHash() =>
+    r'e23b80dcfd56a7daa2ca1005b2806869921a8478';
 
-/// The month picked on the payslip screen; null follows the newest issued.
+/// The payslip picked on the payslip screen; null follows the newest.
 
-final class PayslipMonthNotifierFamily extends $Family
+final class PayslipPickNotifierFamily extends $Family
     with
         $ClassFamilyOverride<
-          PayslipMonthNotifier,
-          DateTime?,
-          DateTime?,
-          DateTime?,
-          int?
+          PayslipPickNotifier,
+          String?,
+          String?,
+          String?,
+          String?
         > {
-  PayslipMonthNotifierFamily._()
+  PayslipPickNotifierFamily._()
     : super(
         retry: null,
-        name: r'payslipMonthProvider',
+        name: r'payslipPickProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  /// The month picked on the payslip screen; null follows the newest issued.
+  /// The payslip picked on the payslip screen; null follows the newest.
 
-  PayslipMonthNotifierProvider call(int? employeeId) =>
-      PayslipMonthNotifierProvider._(argument: employeeId, from: this);
+  PayslipPickNotifierProvider call(String? employeeId) =>
+      PayslipPickNotifierProvider._(argument: employeeId, from: this);
 
   @override
-  String toString() => r'payslipMonthProvider';
+  String toString() => r'payslipPickProvider';
 }
 
-/// The month picked on the payslip screen; null follows the newest issued.
+/// The payslip picked on the payslip screen; null follows the newest.
 
-abstract class _$PayslipMonthNotifier extends $Notifier<DateTime?> {
-  late final _$args = ref.$arg as int?;
-  int? get employeeId => _$args;
+abstract class _$PayslipPickNotifier extends $Notifier<String?> {
+  late final _$args = ref.$arg as String?;
+  String? get employeeId => _$args;
 
-  DateTime? build(int? employeeId);
+  String? build(String? employeeId);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<DateTime?, DateTime?>;
+    final ref = this.ref as $Ref<String?, String?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<DateTime?, DateTime?>,
-              DateTime?,
+              AnyNotifier<String?, String?>,
+              String?,
               Object?,
               Object?
             >;
@@ -257,7 +214,7 @@ final class PayslipProvider
     with $FutureModifier<Payslip?>, $FutureProvider<Payslip?> {
   PayslipProvider._({
     required PayslipFamily super.from,
-    required (int?, DateTime) super.argument,
+    required (String?, String) super.argument,
   }) : super(
          retry: null,
          name: r'payslipProvider',
@@ -283,7 +240,7 @@ final class PayslipProvider
 
   @override
   FutureOr<Payslip?> create(Ref ref) {
-    final argument = this.argument as (int?, DateTime);
+    final argument = this.argument as (String?, String);
     return payslip(ref, argument.$1, argument.$2);
   }
 
@@ -298,10 +255,10 @@ final class PayslipProvider
   }
 }
 
-String _$payslipHash() => r'f56a9b4c96bab86fb3d8e518b1e1ed0c96ed8a7b';
+String _$payslipHash() => r'afa6d734695930ecc333b64b54700f93ab9d35d4';
 
 final class PayslipFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Payslip?>, (int?, DateTime)> {
+    with $FunctionalFamilyOverride<FutureOr<Payslip?>, (String?, String)> {
   PayslipFamily._()
     : super(
         retry: null,
@@ -311,8 +268,8 @@ final class PayslipFamily extends $Family
         isAutoDispose: true,
       );
 
-  PayslipProvider call(int? employeeId, DateTime month) =>
-      PayslipProvider._(argument: (employeeId, month), from: this);
+  PayslipProvider call(String? employeeId, String id) =>
+      PayslipProvider._(argument: (employeeId, id), from: this);
 
   @override
   String toString() => r'payslipProvider';
@@ -331,7 +288,7 @@ final class EmployeeCardProvider
     with $FutureModifier<EmployeeCard>, $FutureProvider<EmployeeCard> {
   EmployeeCardProvider._({
     required EmployeeCardFamily super.from,
-    required int? super.argument,
+    required String? super.argument,
   }) : super(
          retry: null,
          name: r'employeeCardProvider',
@@ -358,7 +315,7 @@ final class EmployeeCardProvider
 
   @override
   FutureOr<EmployeeCard> create(Ref ref) {
-    final argument = this.argument as int?;
+    final argument = this.argument as String?;
     return employeeCard(ref, argument);
   }
 
@@ -373,10 +330,10 @@ final class EmployeeCardProvider
   }
 }
 
-String _$employeeCardHash() => r'cd8cdd7cfd748356369c899470558b2193b0bfb1';
+String _$employeeCardHash() => r'905016eaa71c071b106c7efb12b927512d32e0fb';
 
 final class EmployeeCardFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<EmployeeCard>, int?> {
+    with $FunctionalFamilyOverride<FutureOr<EmployeeCard>, String?> {
   EmployeeCardFamily._()
     : super(
         retry: null,
@@ -386,7 +343,7 @@ final class EmployeeCardFamily extends $Family
         isAutoDispose: true,
       );
 
-  EmployeeCardProvider call(int? employeeId) =>
+  EmployeeCardProvider call(String? employeeId) =>
       EmployeeCardProvider._(argument: employeeId, from: this);
 
   @override
@@ -400,7 +357,7 @@ final salaryEditProvider = SalaryEditNotifierProvider._();
 
 /// Saving the salary structure from the card's edit sheet.
 final class SalaryEditNotifierProvider
-    extends $NotifierProvider<SalaryEditNotifier, AsyncValue<EmployeeCard?>> {
+    extends $NotifierProvider<SalaryEditNotifier, AsyncValue<bool>> {
   /// Saving the salary structure from the card's edit sheet.
   SalaryEditNotifierProvider._()
     : super(
@@ -421,32 +378,30 @@ final class SalaryEditNotifierProvider
   SalaryEditNotifier create() => SalaryEditNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AsyncValue<EmployeeCard?> value) {
+  Override overrideWithValue(AsyncValue<bool> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<AsyncValue<EmployeeCard?>>(value),
+      providerOverride: $SyncValueProvider<AsyncValue<bool>>(value),
     );
   }
 }
 
 String _$salaryEditNotifierHash() =>
-    r'd8d0cccc769cedcd643840f9031f4fea874cd1ce';
+    r'9bebd906ace01eb63ee2171ded94f39d55389a29';
 
 /// Saving the salary structure from the card's edit sheet.
 
-abstract class _$SalaryEditNotifier
-    extends $Notifier<AsyncValue<EmployeeCard?>> {
-  AsyncValue<EmployeeCard?> build();
+abstract class _$SalaryEditNotifier extends $Notifier<AsyncValue<bool>> {
+  AsyncValue<bool> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref =
-        this.ref as $Ref<AsyncValue<EmployeeCard?>, AsyncValue<EmployeeCard?>>;
+    final ref = this.ref as $Ref<AsyncValue<bool>, AsyncValue<bool>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<EmployeeCard?>, AsyncValue<EmployeeCard?>>,
-              AsyncValue<EmployeeCard?>,
+              AnyNotifier<AsyncValue<bool>, AsyncValue<bool>>,
+              AsyncValue<bool>,
               Object?,
               Object?
             >;

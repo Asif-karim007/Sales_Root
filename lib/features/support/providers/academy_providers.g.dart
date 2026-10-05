@@ -141,7 +141,7 @@ final class LessonProvider
     with $FutureModifier<Lesson>, $FutureProvider<Lesson> {
   LessonProvider._({
     required LessonFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'lessonProvider',
@@ -167,7 +167,7 @@ final class LessonProvider
 
   @override
   FutureOr<Lesson> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return lesson(ref, argument);
   }
 
@@ -182,10 +182,10 @@ final class LessonProvider
   }
 }
 
-String _$lessonHash() => r'8585c0320937987f1b0c5d5517dcadb650e461a1';
+String _$lessonHash() => r'899be76f146fdaa80fc2a2ef319a92208c6c6124';
 
 final class LessonFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Lesson>, int> {
+    with $FunctionalFamilyOverride<FutureOr<Lesson>, String> {
   LessonFamily._()
     : super(
         retry: null,
@@ -195,7 +195,7 @@ final class LessonFamily extends $Family
         isAutoDispose: true,
       );
 
-  LessonProvider call(int id) => LessonProvider._(argument: id, from: this);
+  LessonProvider call(String id) => LessonProvider._(argument: id, from: this);
 
   @override
   String toString() => r'lessonProvider';
@@ -362,7 +362,7 @@ final class LessonCompleteNotifierProvider
   /// Completes lesson [id]; holds the finished lesson once saved.
   LessonCompleteNotifierProvider._({
     required LessonCompleteNotifierFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'lessonCompleteProvider',
@@ -398,7 +398,7 @@ final class LessonCompleteNotifierProvider
 }
 
 String _$lessonCompleteNotifierHash() =>
-    r'84b01fb086cef06c9f5b342cd2462b889cbb51e1';
+    r'7bd1bdabf78fd371887d380355bda8ed92056a91';
 
 /// Completes lesson [id]; holds the finished lesson once saved.
 
@@ -409,7 +409,7 @@ final class LessonCompleteNotifierFamily extends $Family
           AsyncValue<Lesson?>,
           Lesson?,
           FutureOr<Lesson?>,
-          int
+          String
         > {
   LessonCompleteNotifierFamily._()
     : super(
@@ -422,7 +422,7 @@ final class LessonCompleteNotifierFamily extends $Family
 
   /// Completes lesson [id]; holds the finished lesson once saved.
 
-  LessonCompleteNotifierProvider call(int id) =>
+  LessonCompleteNotifierProvider call(String id) =>
       LessonCompleteNotifierProvider._(argument: id, from: this);
 
   @override
@@ -432,10 +432,10 @@ final class LessonCompleteNotifierFamily extends $Family
 /// Completes lesson [id]; holds the finished lesson once saved.
 
 abstract class _$LessonCompleteNotifier extends $AsyncNotifier<Lesson?> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  FutureOr<Lesson?> build(int id);
+  FutureOr<Lesson?> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

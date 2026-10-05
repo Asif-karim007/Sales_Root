@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:salesroot/core/format/app_format.dart';
-import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/support/models/guide.dart';
@@ -47,11 +45,7 @@ class _AiGuideScreenState extends ConsumerState<AiGuideScreen> {
     super.dispose();
   }
 
-  void _ask(String text) {
-    ref
-        .read(guideChatProvider.notifier)
-        .ask(text, appInBangla: context.fmt.isBangla);
-  }
+  void _ask(String text) => ref.read(guideChatProvider.notifier).ask(text);
 
   void _send() {
     final text = _input.text;
@@ -116,10 +110,12 @@ class _AiGuideScreenState extends ConsumerState<AiGuideScreen> {
               SrErrorState(
                 error: failure,
                 compact: true,
-                onRetry: () => ref
-                    .read(guideChatProvider.notifier)
-                    .retry(appInBangla: context.fmt.isBangla),
+                onRetry: () => ref.read(guideChatProvider.notifier).retry(),
               ),
+            if (chat.conversationId != null &&
+                !chat.thinking &&
+                chat.failure == null)
+              _RateRow(rated: chat.rated),
             const SizedBox(height: 12),
             Text(
               l10n.supportGuideSafety,
@@ -133,13 +129,14 @@ class _AiGuideScreenState extends ConsumerState<AiGuideScreen> {
   }
 }
 
-class _GuideTitle extends StatelessWidget {
+class _GuideTitle extends ConsumerWidget {
   const _GuideTitle();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
+    final rules = ref.watch(guideStatusProvider).value?.enabled == false;
 
     return Row(
       children: [
@@ -161,7 +158,7 @@ class _GuideTitle extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
-                l10n.supportGuideSubtitle,
+                rules ? l10n.supportGuideRulesMode : l10n.supportGuideSubtitle,
                 style: AppText.meta(c.ink2, size: 12),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -217,7 +214,6 @@ class _AnswerActions extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final notifier = ref.read(guideChatProvider.notifier);
-    final articleId = answer.articleId;
     final buttons = <Widget>[
       if (answer.kind == GuideAnswerKind.confirm) ...[
         for (final action in answer.actions)
@@ -246,18 +242,6 @@ class _AnswerActions extends ConsumerWidget {
                 : SrButtonVariant.secondary,
             size: SrButtonSize.sm,
             onPressed: () => context.push(action.location),
-          ),
-        if (articleId != null)
-          SrButton(
-            label: answer.hasVideo
-                ? l10n.supportGuideWatch
-                : l10n.supportGuideReadArticle,
-            icon: answer.hasVideo
-                ? Icons.play_circle_outline_rounded
-                : Icons.menu_book_outlined,
-            variant: SrButtonVariant.secondary,
-            size: SrButtonSize.sm,
-            onPressed: () => context.push(Routes.helpArticleFor(articleId)),
           ),
       ],
     ];
@@ -339,6 +323,43 @@ class _Prompt extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// "Did this help?" with a thumb up and down, then a thank-you.
+class _RateRow extends ConsumerWidget {
+  const _RateRow({required this.rated});
+
+  final bool rated;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = SrColors.of(context);
+    final l10n = context.l10n;
+    final notifier = ref.read(guideChatProvider.notifier);
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          rated ? l10n.supportGuideRated : l10n.supportGuideRateAsk,
+          style: AppText.meta(c.ink2, size: 12),
+        ),
+        if (!rated) ...[
+          const SizedBox(width: 4),
+          SrIconButton(
+            icon: Icons.thumb_up_outlined,
+            tooltip: l10n.supportGuideRateUp,
+            onTap: () => notifier.rate(helpful: true),
+          ),
+          SrIconButton(
+            icon: Icons.thumb_down_outlined,
+            tooltip: l10n.supportGuideRateDown,
+            onTap: () => notifier.rate(helpful: false),
+          ),
+        ],
+      ],
     );
   }
 }

@@ -25,9 +25,7 @@ class ExpenseListScreen extends ConsumerWidget {
     ExpenseStage.pending,
     ExpenseStage.approved,
     ExpenseStage.paid,
-    ExpenseStage.returned,
     ExpenseStage.rejected,
-    ExpenseStage.withdrawn,
   ];
 
   @override
@@ -36,7 +34,6 @@ class ExpenseListScreen extends ConsumerWidget {
     final canAdd = ref.watch(moduleAccessProvider(AppModule.expense)).canAdd;
     final list = ref.watch(expenseListProvider);
     final filter = ref.watch(expenseStageFilterProvider);
-    final counts = list.value?.facets[expenseFacets.first] ?? const {};
     void add() => context.push(Routes.expenseNew);
 
     return SrScaffold(
@@ -55,12 +52,9 @@ class ExpenseListScreen extends ConsumerWidget {
           padding: EdgeInsets.zero,
           chips: [
             for (final stage in _filters)
-              stage == null
-                  ? SrChipItem(l10n.commonAll)
-                  : SrChipItem(
-                      l10n.expenseStage(stage),
-                      count: counts[stage.wire],
-                    ),
+              SrChipItem(
+                stage == null ? l10n.commonAll : l10n.expenseStage(stage),
+              ),
           ],
           index: _filters.indexOf(filter),
           onChanged: (i) =>
@@ -80,7 +74,7 @@ class ExpenseListScreen extends ConsumerWidget {
             await ref.read(expenseListProvider.future);
           },
           header: [
-            ExpenseTotals(totals: paged.facets[expenseFacets.last] ?? const {}),
+            ExpenseTotals(totals: paged.facets[expenseTotalsFacet] ?? const {}),
             const SizedBox(height: 16),
             if (paged.isEmpty)
               Padding(

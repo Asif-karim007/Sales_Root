@@ -1,23 +1,30 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:salesroot/core/network/api_failure.dart';
+import 'package:salesroot/features/hr/data/hr_repositories.dart';
 import 'package:salesroot/features/hr/models/ticket.dart';
 import 'package:salesroot/features/hr/providers/ticket_providers.dart';
 
-import 'hr_test_utils.dart';
+import '../../helpers/api_stub.dart';
+import 'hr_test_setup.dart';
 
 void main() {
   test('customer search pages over the companies', () async {
-    final container = await hrContainer();
-    final repository = container.read(ticketRepositoryProvider);
+    final stub = hrStub();
+    final container = await hrContainer(stub);
 
-    final all = await repository.searchCustomers('', 1);
-    final karim = await repository.searchCustomers('karim', 1);
+    final page = await container
+        .read(ticketRepositoryProvider)
+        .searchCustomers(' probe ', 2);
 
-    expect(all.items, hasLength(20));
-    expect(all.totalCount, greaterThan(20));
-    expect(karim.items.first.name, 'Karim Textiles');
-    expect(karim.items.first.leadId, isNotNull);
+    expect(page.items.first.id, companyId);
+    expect(page.items.first.name, '[test] Co probe');
+    expect(stub.last('GET', 'companies')?.queryParameters, {
+      'q': 'probe',
+      'offset': 20,
+      'limit': 20,
+    });
   });
 
   test('the draft lists what is missing', () {
@@ -29,76 +36,107 @@ void main() {
     });
   });
 
-  test(
-    'a ticket opens with its SLA and the complaint as first message',
-    () async {
-      final container = await hrContainer();
-      keep(container, ticketFormProvider);
-      final repository = container.read(ticketRepositoryProvider);
-      final customer = (await repository.searchCustomers(
-        'Delta',
-        1,
-      )).items.first;
-      final form = container.read(ticketFormProvider.notifier);
+  test('the ticket reads the real JSON', () async {
+    final container = await hrContainer(hrStub());
+    listenTo(container, ticketProvider(ticketId));
 
-      form.edit(
-        (d) => d.copyWith(
-          customer: customer,
-          title: 'Inverter beeping',
-          issue: TicketIssue.problem,
-          priority: TicketPriority.high,
-          description: 'Beeps every 5 minutes, red light on.',
-        ),
-      );
-      await form.submit();
+    final ticket = await container.read(ticketProvider(ticketId).future);
 
-      final ticket = container.read(ticketFormProvider).submission.value;
-      expect(ticket?.status, TicketStatus.open);
-      expect(ticket?.customerName, 'Delta Power');
-      expect(ticket?.code, startsWith('T-'));
-      expect(ticket?.slaMinutesLeft, inInclusiveRange(4 * 60 - 1, 4 * 60));
-      expect(ticket?.messages.single.mine, isFalse);
-    },
-  );
+    expect(ticket.code, 'TKT-2026-00002');
+    expect(ticket.title, '[test] hr agent ticket');
+    expect(ticket.issue, TicketIssue.problem);
+    expect(ticket.priority, TicketPriority.high);
+    expect(ticket.status, TicketStatus.fresh);
+    expect(ticket.source, ticketSourceFieldVisit);
+    expect(ticket.slaHours, 24);
+    expect(ticket.messages.single.text, '[test] description body');
+    expect(ticket.messages.single.mine, isTrue);
+  });
 
-  test('missing fields are refused by the server', () async {
-    final container = await hrContainer();
+  test('internal notes stay out of the thread', () {
+    final json = fixtureMap('hr_ticket');
+    final message = (json['messages'] as List).single as Map;
+    final ticket = Ticket.fromJson({
+      ...json,
+      'messages': [
+        message,
+        {...message, 'isInternal': true, 'body': 'note to self'},
+      ],
+    });
+    expect(ticket.messages.map((m) => m.text), ['[test] description body']);
+  });
 
-    await expectLater(
-      container
-          .read(ticketRepositoryProvider)
-          .create(
-            const TicketInput(
-              customerId: null,
-              title: ' ',
-              issue: null,
-              priority: TicketPriority.medium,
-            ),
-          ),
-      throwsA(
-        isA<ApiFailure>().having(
-          (f) => f.fieldErrors.keys,
-          'fields',
-          containsAll(['CustomerId', 'Title', 'IssueType', 'Description']),
-        ),
+  test('raising a ticket sends it, then attaches the photos', () async {
+    final stub = hrStub();
+    final container = await hrContainer(stub);
+    listenTo(container, ticketFormProvider);
+    final form = container.read(ticketFormProvider.notifier);
+    final photo = photoFile();
+
+    form.edit(
+      (d) => d.copyWith(
+        customer: const TicketCustomer(id: companyId, name: 'Co'),
+        title: ' Inverter beeping ',
+        issue: TicketIssue.warranty,
+        description: 'Beeps at night',
+        photos: [photo],
       ),
+    );
+    await form.submit();
+
+    expect(stub.lastBody('POST', 'tickets'), {
+      'subject': 'Inverter beeping',
+      'type': 'warranty',
+      'priority': 'normal',
+      'companyId': companyId,
+      'body': 'Beeps at night',
+      'source': 'field_visit',
+    });
+    final upload = stub.last('POST', 'files')?.data as FormData?;
+    expect(
+      {
+        for (final f in upload?.fields ?? <MapEntry<String, String>>[])
+          f.key: f.value,
+      },
+      {'entityType': 'ticket', 'entityId': ticketId},
+    );
+    expect(
+      container.read(ticketFormProvider).submission.value?.code,
+      'TKT-2026-00002',
     );
   });
 
-  test('a reply and a status change are saved', () async {
-    final container = await hrContainer();
-    final actions = ticketActionsProvider(1);
-    keep(container, actions);
-    keep(container, ticketProvider(1));
-    final before = await container.read(ticketProvider(1).future);
+  test('a status change and a reply are sent', () async {
+    final stub = hrStub();
+    final container = await hrContainer(stub);
+    final provider = ticketActionsProvider(ticketId);
+    listenTo(container, provider);
 
-    await container.read(actions.notifier).reply('Arif is on the way.');
-    await container.read(actions.notifier).setStatus(TicketStatus.resolved);
+    await container.read(provider.notifier).setStatus(TicketStatus.resolved);
+    expect(stub.lastBody('PATCH', 'tickets/{id}'), {'status': 'resolved'});
+    expect(container.read(provider).value, TicketAction.status);
 
-    final after = await container.read(ticketProvider(1).future);
-    expect(after.messages, hasLength(before.messages.length + 1));
-    expect(after.messages.last.mine, isTrue);
-    expect(after.status, TicketStatus.resolved);
-    expect(after.slaMinutesLeft, isNull);
+    await container.read(provider.notifier).reply(' On my way ');
+    expect(stub.lastBody('POST', 'tickets/{id}/reply'), {'body': 'On my way'});
+  });
+
+  test('a reply the server cannot place is an error', () async {
+    final stub = hrStub()
+      ..on(
+        'POST',
+        'tickets/{id}/reply',
+        fixture('hr_ticket_reply_missing'),
+        status: 404,
+      );
+    final container = await hrContainer(stub);
+    final provider = ticketActionsProvider(ticketId);
+    listenTo(container, provider);
+
+    await container.read(provider.notifier).reply('Hello');
+
+    expect(
+      container.read(provider).error,
+      isA<ApiFailure>().having((f) => f.isNotFound, '404', isTrue),
+    );
   });
 }

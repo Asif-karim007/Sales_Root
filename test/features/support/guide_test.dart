@@ -1,84 +1,100 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/features/support/models/app_destination.dart';
 import 'package:salesroot/features/support/models/guide.dart';
 import 'package:salesroot/features/support/providers/guide_providers.dart';
 
-import 'support_test_container.dart';
+import '../../helpers/api_stub.dart';
+import 'support_api_setup.dart';
 
 void main() {
-  Future<GuideAnswer> ask(String text, {bool appInBangla = true}) async {
-    final container = await supportContainer();
-    addTearDown(container.dispose);
-    return container
-        .read(guideRepositoryProvider)
-        .ask(GuideQuestion(text: text, appInBangla: appInBangla));
-  }
+  test('answers read the real JSON and map routes to screens', () {
+    final lead = GuideAnswer.fromJson(fixtureMap('support_guide_answer'));
+    expect(lead.text, startsWith('নতুন লিড'));
+    expect(lead.kind, GuideAnswerKind.answer);
+    expect(lead.actions.single.destination, AppDestination.leads);
+    expect(lead.conversationId, '01a10d29-76d0-73ac-b381-390c3116c7dd');
 
-  test('an English question gets the English article steps', () async {
-    final answer = await ask('How do I scan a visiting card?');
-    expect(answer.kind, GuideAnswerKind.answer);
-    expect(answer.text, contains('Tap the camera icon on Home.'));
-    expect(answer.articleId, isNotNull);
-    expect(answer.hasVideo, isTrue);
-    expect(answer.actions.single.destination, AppDestination.scanCard);
+    final field = GuideAnswer.fromJson(fixtureMap('support_guide_field'));
+    expect(field.actions.single.location, Routes.visits);
+
+    final unknown = GuideAnswer.fromJson(fixtureMap('support_guide_unknown'));
+    expect(unknown.actions, isEmpty);
   });
 
-  test('a Bangla question gets the Bangla answer', () async {
-    final answer = await ask('কার্ড স্ক্যান কীভাবে করব?', appInBangla: false);
-    expect(answer.text, contains('হোমে ক্যামেরা আইকন চাপুন।'));
-    expect(answer.actions.single.destination, AppDestination.scanCard);
+  test('the status says when the rules answer instead of AI', () async {
+    final container = await supportApiContainer(supportStub());
+    listenTo(container, guideStatusProvider);
 
-    final lead = await ask('লিড কীভাবে যোগ করব?');
-    expect(lead.text, contains('সবুজ + বোতাম'));
-    expect(lead.actions.single.location, '/leads/new');
+    final status = await container.read(guideStatusProvider.future);
+
+    expect(status.enabled, isFalse);
+    expect(status.limit, 1500);
   });
 
-  test('a stage question uses the app knowledge', () async {
-    final answer = await ask('What does this stage mean?');
-    expect(answer.text, contains('“Interested” means'));
-    expect(answer.actions.single.destination, AppDestination.newQuotation);
-  });
-
-  test('a task request asks to confirm before creating it', () async {
-    final english = await ask('Call Karim Textiles tomorrow at ten');
-    expect(english.kind, GuideAnswerKind.confirm);
-    expect(english.text, contains('“Call Karim Textiles” for tomorrow 10:00'));
-    expect(english.actions.single.destination, AppDestination.newTask);
-    expect(english.actions.single.params['title'], 'Call Karim Textiles');
-
-    final bangla = await ask('করিম টেক্সটাইলসকে কাল দশটায় কল');
-    expect(bangla.kind, GuideAnswerKind.confirm);
-    expect(bangla.text, contains('কাল ১০:০০-এ'));
-    expect(bangla.actions.single.params['title'], 'করিম টেক্সটাইলসকে কল');
-  });
-
-  test('an unknown question falls back to help and support', () async {
-    final answer = await ask('What is the capital of Peru?');
-    expect(answer.kind, GuideAnswerKind.fallback);
-    expect(answer.actions.map((a) => a.destination), [
-      AppDestination.help,
-      AppDestination.support,
-    ]);
-  });
-
-  test('the chat keeps the question, the answer and a decline', () async {
-    final container = await supportContainer();
-    addTearDown(container.dispose);
-    container.listen(guideChatProvider, (_, _) {});
+  test('the chat sends the question and keeps the thread', () async {
+    final stub = supportStub();
+    final container = await supportApiContainer(stub);
+    listenTo(container, guideChatProvider);
     final chat = container.read(guideChatProvider.notifier);
 
-    await chat.ask('Call Karim Textiles tomorrow at ten', appInBangla: false);
-    final asked = container.read(guideChatProvider);
-    expect(asked.messages.map((m) => m.kind), [
+    await chat.ask(' How do I add a lead? ');
+    expect(stub.lastBody('POST', 'ai/guide'), {
+      'question': 'How do I add a lead?',
+      'screen': 'ai_guide',
+    });
+    await chat.ask('And by voice?');
+    expect(
+      stub.lastBody('POST', 'ai/guide')['conversationId'],
+      '01a10d29-76d0-73ac-b381-390c3116c7dd',
+    );
+
+    final state = container.read(guideChatProvider);
+    expect(state.messages.map((m) => m.kind), [
       GuideMessageKind.greeting,
       GuideMessageKind.mine,
       GuideMessageKind.answer,
+      GuideMessageKind.mine,
+      GuideMessageKind.answer,
     ]);
+  });
 
-    chat.settle(asked.messages.last.id, accepted: false);
-    final declined = container.read(guideChatProvider);
-    expect(declined.messages[2].settled, isTrue);
-    expect(declined.messages.last.kind, GuideMessageKind.declined);
+  test('a failed answer can be asked again', () async {
+    final stub = supportStub();
+    final failing = await supportApiContainer(stub);
+    stub.offline = true;
+    listenTo(failing, guideChatProvider);
+    final chat = failing.read(guideChatProvider.notifier);
+
+    await chat.ask('Hello');
+    expect(failing.read(guideChatProvider).failure?.isOffline, isTrue);
+    expect(failing.read(guideChatProvider).unanswered, 'Hello');
+
+    stub.offline = false;
+    await chat.retry();
+    expect(failing.read(guideChatProvider).failure, isNull);
+    expect(
+      failing.read(guideChatProvider).messages.last.kind,
+      GuideMessageKind.answer,
+    );
+  });
+
+  test('a rating goes once for the thread', () async {
+    final stub = supportStub();
+    final container = await supportApiContainer(stub);
+    listenTo(container, guideChatProvider);
+    final chat = container.read(guideChatProvider.notifier);
+    await chat.ask('How do I add a lead?');
+
+    await chat.rate(helpful: true);
+    await chat.rate(helpful: false);
+
+    expect(stub.lastBody('POST', 'ai/guide/rate'), {
+      'conversationId': '01a10d29-76d0-73ac-b381-390c3116c7dd',
+      'rating': 5,
+    });
+    expect(stub.requests.where((r) => r.path == 'ai/guide/rate'), hasLength(1));
+    expect(container.read(guideChatProvider).rated, isTrue);
   });
 }

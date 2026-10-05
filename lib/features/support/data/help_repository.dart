@@ -7,8 +7,8 @@ abstract interface class HelpRepository {
 
   Future<List<HelpArticle>> popular();
 
-  Future<HelpArticle> article(int id);
+  Future<HelpArticle> article(String id);
 
   /// Records the "did this help?" answer.
-  Future<void> rate(int id, {required bool helpful});
+  Future<void> rate(String id, {required bool helpful});
 }

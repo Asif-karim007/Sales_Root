@@ -1,0 +1,8 @@
+{
+ "code": "V-021",
+ "message": {
+  "bn": "৳500-এর বেশি হলে রসিদের ছবি দিন",
+  "en": "Add a receipt photo for amounts over ৳500"
+ },
+ "field": "receiptKey"
+}

@@ -1,41 +1,40 @@
 import 'package:salesroot/core/utils/json_fields.dart';
 
 enum TicketCategory {
-  question('Question'),
-  bug('Bug'),
-  billing('Billing'),
-  data('Data'),
-  suggestion('Suggestion');
+  question('question'),
+  bug('bug'),
+  billing('billing'),
+  data('data'),
+  suggestion('suggestion');
 
   const TicketCategory(this.wire);
 
   final String wire;
 
   static TicketCategory fromWire(String? value) => values.firstWhere(
-    (category) => category.wire == value,
+    (category) => category.wire == value?.toLowerCase(),
     orElse: () => TicketCategory.question,
   );
 }
 
 enum TicketStatus {
-  open('Open'),
-  replied('Replied'),
-  resolved('Resolved');
+  open,
+  replied,
+  resolved;
 
-  const TicketStatus(this.wire);
-
-  final String wire;
-
-  static TicketStatus fromWire(String? value) => values.firstWhere(
-    (status) => status.wire == value,
-    orElse: () => TicketStatus.open,
-  );
+  /// The help desk's `new` and `open` wait on support, `waiting` on the
+  /// user, and `resolved` and `closed` are done.
+  static TicketStatus fromWire(String? value) => switch (value) {
+    'waiting' => replied,
+    'resolved' || 'closed' => resolved,
+    _ => open,
+  };
 }
 
 enum ReplyChannel {
-  inApp('InApp'),
-  inAppSms('InAppSms'),
-  phone('Phone');
+  inApp('in_app'),
+  inAppSms('in_app_sms'),
+  phone('phone');
 
   const ReplyChannel(this.wire);
 
@@ -43,28 +42,26 @@ enum ReplyChannel {
 }
 
 enum AttachmentKind {
-  image('Image'),
-  video('Video');
+  image,
+  video;
 
-  const AttachmentKind(this.wire);
+  static const _videoTypes = {'mp4', 'mov', 'm4v', '3gp', 'webm'};
 
-  final String wire;
-
-  static AttachmentKind fromWire(String? value) =>
-      value == video.wire ? video : image;
+  static AttachmentKind ofName(String name) =>
+      _videoTypes.contains(name.split('.').last.toLowerCase()) ? video : image;
 }
 
+/// A file on a message, as its storage key.
 class TicketAttachment {
   const TicketAttachment({required this.name, required this.kind});
 
   final String name;
   final AttachmentKind kind;
 
-  factory TicketAttachment.fromJson(Map<String, dynamic> json) =>
-      TicketAttachment(
-        name: json['Name'] as String? ?? '',
-        kind: AttachmentKind.fromWire(json['Kind'] as String?),
-      );
+  factory TicketAttachment.fromKey(String key) {
+    final name = key.split('/').last;
+    return TicketAttachment(name: name, kind: AttachmentKind.ofName(name));
+  }
 }
 
 class TicketMessage {
@@ -77,20 +74,26 @@ class TicketMessage {
     this.attachments = const [],
   });
 
-  final int id;
+  final String id;
   final String body;
+
+  /// Written by the support team; the user's own messages carry no
+  /// membership in the support desk.
   final bool fromAgent;
   final String? authorName;
   final DateTime? sentAt;
   final List<TicketAttachment> attachments;
 
   factory TicketMessage.fromJson(Map<String, dynamic> json) => TicketMessage(
-    id: jsonInt(json['Id']) ?? 0,
-    body: json['Body'] as String? ?? '',
-    fromAgent: jsonBool(json['FromAgent']),
-    authorName: json['AuthorName'] as String?,
-    sentAt: jsonDate(json['SentAt']),
-    attachments: jsonList(json['Attachments'], TicketAttachment.fromJson),
+    id: jsonId(json['id']) ?? '',
+    body: json['body'] as String? ?? '',
+    fromAgent: json['authorMembershipId'] != null,
+    authorName: json['authorName'] as String?,
+    sentAt: jsonDate(json['createdAt']),
+    attachments: [
+      for (final key in jsonStrings(json['attachments']))
+        TicketAttachment.fromKey(key),
+    ],
   );
 }
 
@@ -101,18 +104,20 @@ class SupportTicket {
     required this.subject,
     required this.category,
     required this.status,
-    this.replyWithinHours = 8,
+    this.replyWithinHours,
     this.agentName,
     this.updatedAt,
     this.messages = const [],
   });
 
-  final int id;
+  final String id;
   final String number;
   final String subject;
   final TicketCategory category;
   final TicketStatus status;
-  final int replyWithinHours;
+
+  /// Hours from opening to the first-response deadline the desk set.
+  final int? replyWithinHours;
   final String? agentName;
   final DateTime? updatedAt;
   final List<TicketMessage> messages;
@@ -120,17 +125,28 @@ class SupportTicket {
   bool get hasAgentReply => messages.any((m) => m.fromAgent);
   bool get isResolved => status == TicketStatus.resolved;
 
-  factory SupportTicket.fromJson(Map<String, dynamic> json) => SupportTicket(
-    id: jsonInt(json['Id']) ?? 0,
-    number: json['Number'] as String? ?? '',
-    subject: json['Subject'] as String? ?? '',
-    category: TicketCategory.fromWire(json['Category'] as String?),
-    status: TicketStatus.fromWire(json['Status'] as String?),
-    replyWithinHours: jsonInt(json['ReplyWithinHours']) ?? 8,
-    agentName: json['AgentName'] as String?,
-    updatedAt: jsonDate(json['UpdatedAt']),
-    messages: jsonList(json['Messages'], TicketMessage.fromJson),
-  );
+  /// A list row, or `{ticket, messages}` as the detail comes.
+  factory SupportTicket.fromJson(Map<String, dynamic> json) {
+    final ticket = json['ticket'] is Map ? jsonMap(json['ticket']) : json;
+    final created = jsonDate(ticket['createdAt']);
+    final due = jsonDate(ticket['slaResponseDue']);
+    return SupportTicket(
+      id: jsonId(ticket['id']) ?? '',
+      number: ticket['number'] as String? ?? '',
+      subject: ticket['subject'] as String? ?? '',
+      category: TicketCategory.fromWire(ticket['type'] as String?),
+      status: TicketStatus.fromWire(ticket['status'] as String?),
+      replyWithinHours: created == null || due == null
+          ? null
+          : due.difference(created).inHours,
+      agentName: ticket['assigneeName'] as String?,
+      updatedAt: jsonDate(ticket['updatedAt']) ?? created,
+      messages: [
+        for (final message in jsonList(json['messages'], (m) => m))
+          if (message['isInternal'] != true) TicketMessage.fromJson(message),
+      ],
+    );
+  }
 }
 
 /// A file the user picked to send with a request or a reply.
@@ -146,12 +162,6 @@ class SupportAttachment {
   final String name;
   final AttachmentKind kind;
   final int size;
-
-  Map<String, dynamic> toJson() => {
-    'Name': name,
-    'Kind': kind.wire,
-    'Size': size,
-  };
 }
 
 class TicketInput {
@@ -160,6 +170,7 @@ class TicketInput {
     required this.description,
     required this.channel,
     this.attachments = const [],
+    this.appVersion,
     this.diagnostics = const {},
   });
 
@@ -168,14 +179,31 @@ class TicketInput {
   final ReplyChannel channel;
   final List<SupportAttachment> attachments;
 
+  /// Sent only when the user agreed to share the device details.
+  final String? appVersion;
+
   /// Only the items the user agreed to send.
   final Map<String, String> diagnostics;
 
+  static const _subjectLength = 80;
+
+  /// The first line of the description, cut to fit a subject.
+  String get subject {
+    final line = description.trim().split('\n').first.trim();
+    return line.length <= _subjectLength
+        ? line
+        : '${line.substring(0, _subjectLength - 1)}…';
+  }
+
   Map<String, dynamic> toJson() => {
-    'Category': category.wire,
-    'Description': description.trim(),
-    'ReplyChannel': channel.wire,
-    'Attachments': [for (final a in attachments) a.toJson()],
-    if (diagnostics.isNotEmpty) 'Diagnostics': diagnostics,
+    'subject': subject,
+    'type': category.wire,
+    'body': description.trim(),
+    'source': 'app',
+    'appVersion': ?appVersion,
+    'tags': [
+      'reply:${channel.wire}',
+      for (final entry in diagnostics.entries) '${entry.key}:${entry.value}',
+    ],
   };
 }

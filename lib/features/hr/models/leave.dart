@@ -1,15 +1,23 @@
 import 'package:salesroot/core/format/app_date_utils.dart';
+import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/hr/models/hr_json.dart';
 
-/// The three fixed statuses a leave request moves through.
-abstract final class LeaveStatusRef {
-  static const int pending = 1;
-  static const int approved = 2;
-  static const int rejected = 3;
+enum LeaveStatus {
+  pending('pending'),
+  approved('approved'),
+  rejected('rejected'),
+  cancelled('cancelled');
+
+  const LeaveStatus(this.wire);
+
+  final String wire;
+
+  static LeaveStatus fromWire(String? value) =>
+      values.firstWhere((s) => s.wire == value, orElse: () => pending);
 }
 
-/// One leave type and the days it allows in total. An unpaid type has no
+/// One leave type and the days it allows in a year. An unpaid type has no
 /// limit and is deducted from the payslip instead.
 class LeaveType {
   const LeaveType({
@@ -17,37 +25,47 @@ class LeaveType {
     required this.name,
     this.entitlement = 0,
     this.isPaid = true,
+    this.docRequiredFromDays,
   });
 
-  final int id;
+  final String id;
   final LocalizedName name;
   final double entitlement;
   final bool isPaid;
 
+  /// A request of this many days or more needs a supporting document.
+  final double? docRequiredFromDays;
+
+  bool needsDocument(double days) {
+    final from = docRequiredFromDays;
+    return from != null && days >= from;
+  }
+
   factory LeaveType.fromJson(Map<String, dynamic> json) => LeaveType(
-    id: jsonInt(json['Id']) ?? 0,
-    name: LocalizedName.fromJson(json),
-    entitlement: jsonDouble(json['Entitlement']) ?? 0,
-    isPaid: json['IsPaid'] != false,
+    id: jsonId(json['id']) ?? '',
+    name: LocalizedName.pair(json),
+    entitlement: jsonDouble(json['daysPerYear']) ?? 0,
+    isPaid: json['isPaid'] != false,
+    docRequiredFromDays: jsonDouble(json['docRequiredFromDays']),
   );
 }
 
-/// What is left per leave type, against every approved and pending request.
+/// What is left of one leave type this year.
 class LeaveBalance {
   const LeaveBalance({
     required this.leaveTypeId,
     required this.leaveType,
+    this.isPaid = true,
     this.entitlement = 0,
     this.taken = 0,
     this.pending = 0,
-    this.remaining = 0,
-    this.remainingAfterPending = 0,
   });
 
-  final int leaveTypeId;
+  final String leaveTypeId;
   final LocalizedName leaveType;
+  final bool isPaid;
 
-  /// The days this leave type allows in total.
+  /// The days this leave type allows this year.
   final double entitlement;
 
   /// Days already used by approved requests.
@@ -56,61 +74,36 @@ class LeaveBalance {
   /// Days tied up in requests still awaiting a decision.
   final double pending;
 
-  /// Entitlement minus taken.
-  final double remaining;
-
-  /// Remaining minus pending: what is actually free to request right now.
-  final double remainingAfterPending;
+  /// What is actually free to request right now.
+  double get remainingAfterPending => entitlement - taken - pending;
 
   factory LeaveBalance.fromJson(Map<String, dynamic> json) => LeaveBalance(
-    leaveTypeId: jsonInt(json['LeaveTypeId']) ?? 0,
-    leaveType: jsonLocalizedOrEmpty(json['LeaveType'], json['LeaveTypeBn']),
-    entitlement: jsonDouble(json['Entitlement']) ?? 0,
-    taken: jsonDouble(json['Taken']) ?? 0,
-    pending: jsonDouble(json['Pending']) ?? 0,
-    remaining: jsonDouble(json['Remaining']) ?? 0,
-    remainingAfterPending: jsonDouble(json['RemainingAfterPending']) ?? 0,
+    leaveTypeId: jsonId(json['leaveTypeId']) ?? '',
+    leaveType: LocalizedName.pair(json),
+    isPaid: json['isPaid'] != false,
+    entitlement: jsonDouble(json['entitlement']) ?? 0,
+    taken: jsonDouble(json['taken']) ?? 0,
+    pending: jsonDouble(json['pending']) ?? 0,
   );
 }
 
-/// Every option the leave form needs: the types, who approves, and who
-/// covers the employee's visits while away.
+/// Every option the leave form needs: the types, the holidays the days skip
+/// and who approves.
 class LeaveLookups {
   const LeaveLookups({
     this.leaveTypes = const [],
+    this.holidays = const {},
     this.approverName,
-    this.coverName,
   });
 
   final List<LeaveType> leaveTypes;
+  final Set<DateTime> holidays;
 
-  /// Null when nobody is above the employee; the request is then approved
-  /// at once.
-  final LocalizedName? approverName;
-  final LocalizedName? coverName;
-
-  factory LeaveLookups.fromJson(Map<String, dynamic> json) => LeaveLookups(
-    leaveTypes: jsonList(json['LeaveTypes'], LeaveType.fromJson),
-    approverName: jsonLocalized(json['ApproverName'], json['ApproverNameBn']),
-    coverName: jsonLocalized(json['CoverName'], json['CoverNameBn']),
-  );
+  /// Null when nobody is above the employee.
+  final String? approverName;
 }
 
-/// The single supporting file a leave request may carry.
-class LeaveAttachment {
-  const LeaveAttachment({this.fileName, this.url});
-
-  final String? fileName;
-  final String? url;
-
-  factory LeaveAttachment.fromJson(Map<String, dynamic> json) =>
-      LeaveAttachment(
-        fileName: json['FileName'] as String?,
-        url: json['Url'] as String?,
-      );
-}
-
-/// One leave request. The list rows and the detail carry the same fields.
+/// One leave request.
 class LeaveRequest {
   const LeaveRequest({
     required this.id,
@@ -118,74 +111,60 @@ class LeaveRequest {
     required this.employeeName,
     required this.leaveTypeId,
     required this.leaveType,
-    this.designation,
     this.startDate,
     this.endDate,
     this.noOfDays = 0,
+    this.halfDay = false,
     this.reason,
     this.remarks,
-    this.statusId = LeaveStatusRef.pending,
-    this.statusUpdatedAt,
+    this.status = LeaveStatus.pending,
     this.appliedAt,
-    this.approverName,
-    this.coverName,
-    this.attachment,
-    this.canWithdraw = false,
+    this.decidedByName,
+    this.hasDocument = false,
   });
 
-  final int id;
-  final int employeeId;
-  final LocalizedName employeeName;
-  final String? designation;
-  final int leaveTypeId;
+  final String id;
+
+  /// The membership id of who asked.
+  final String employeeId;
+  final String employeeName;
+  final String leaveTypeId;
   final LocalizedName leaveType;
   final DateTime? startDate;
   final DateTime? endDate;
 
-  /// A plain decimal; `0.5` is how a half day is expressed.
+  /// Worked out by the server; `0.5` is a half day.
   final double noOfDays;
-
+  final bool halfDay;
   final String? reason;
 
   /// The approver's note on the decision.
   final String? remarks;
-  final int statusId;
-  final DateTime? statusUpdatedAt;
+  final LeaveStatus status;
   final DateTime? appliedAt;
-  final LocalizedName? approverName;
-  final LocalizedName? coverName;
-  final LeaveAttachment? attachment;
-  final bool canWithdraw;
+  final String? decidedByName;
+  final bool hasDocument;
 
-  bool get isPending => statusId == LeaveStatusRef.pending;
-  bool get isApproved => statusId == LeaveStatusRef.approved;
-  bool get isRejected => statusId == LeaveStatusRef.rejected;
+  bool get isPending => status == LeaveStatus.pending;
+  bool get isApproved => status == LeaveStatus.approved;
+  bool get canWithdraw => isPending;
 
   factory LeaveRequest.fromJson(Map<String, dynamic> json) => LeaveRequest(
-    id: jsonInt(json['Id']) ?? 0,
-    employeeId: jsonInt(json['EmployeeId']) ?? 0,
-    employeeName: jsonLocalizedOrEmpty(
-      json['EmployeeName'],
-      json['EmployeeNameBn'],
-    ),
-    designation: json['Designation'] as String?,
-    leaveTypeId: jsonInt(json['LeaveTypeId']) ?? 0,
-    leaveType: jsonLocalizedOrEmpty(
-      json['LeaveTypeName'],
-      json['LeaveTypeNameBn'],
-    ),
-    startDate: jsonDate(json['StartDate']),
-    endDate: jsonDate(json['EndDate']),
-    noOfDays: jsonDouble(json['NoOfDays']) ?? 0,
-    reason: json['Reason'] as String?,
-    remarks: json['Remarks'] as String?,
-    statusId: jsonInt(json['StatusId']) ?? LeaveStatusRef.pending,
-    statusUpdatedAt: jsonDate(json['StatusUpdatedAt']),
-    appliedAt: jsonDate(json['AppliedAt']),
-    approverName: jsonLocalized(json['ApproverName'], json['ApproverNameBn']),
-    coverName: jsonLocalized(json['CoverName'], json['CoverNameBn']),
-    attachment: jsonObject(json['Attachment'], LeaveAttachment.fromJson),
-    canWithdraw: jsonBool(json['CanWithdraw']),
+    id: jsonId(json['id']) ?? '',
+    employeeId: jsonId(json['membershipId']) ?? '',
+    employeeName: json['name'] as String? ?? '',
+    leaveTypeId: jsonId(json['leaveTypeId']) ?? '',
+    leaveType: LocalizedName.pair(json, 'type'),
+    startDate: jsonDay(json['fromDate']),
+    endDate: jsonDay(json['toDate']),
+    noOfDays: jsonDouble(json['days']) ?? 0,
+    halfDay: json['halfDay'] != null,
+    reason: json['reason'] as String?,
+    remarks: json['decisionNote'] as String?,
+    status: LeaveStatus.fromWire(json['status'] as String?),
+    appliedAt: jsonDate(json['createdAt']),
+    decidedByName: json['decidedByName'] as String?,
+    hasDocument: json['docKey'] != null,
   );
 }
 
@@ -195,47 +174,60 @@ class LeaveInput {
     required this.leaveTypeId,
     required this.startDate,
     required this.endDate,
-    required this.noOfDays,
+    this.halfDay = false,
     this.reason,
-    this.attachmentName,
+    this.documentPath,
   });
 
-  final int? leaveTypeId;
+  final String? leaveTypeId;
   final DateTime? startDate;
   final DateTime? endDate;
-
-  /// Not computed by the server: the form sends what it worked out, half
-  /// days included.
-  final double noOfDays;
+  final bool halfDay;
   final String? reason;
-  final String? attachmentName;
 
-  Map<String, dynamic> toJson() => {
-    'LeaveTypeId': leaveTypeId,
-    'StartDate': jsonUtc(startDate),
-    'EndDate': jsonUtc(endDate),
-    'NoOfDays': noOfDays,
-    'Reason': trimmedOrNull(reason),
-    'Attachment': attachmentName == null ? null : {'FileName': attachmentName},
-  }..removeWhere((_, value) => value == null);
+  /// A local photo, uploaded before the request is sent.
+  final String? documentPath;
+
+  Map<String, dynamic> toJson({String? docKey}) {
+    final start = startDate;
+    final end = endDate;
+    return {
+      'leaveTypeId': leaveTypeId,
+      'fromDate': start == null ? null : AppDateUtils.toApiDateOnly(start),
+      'toDate': end == null ? null : AppDateUtils.toApiDateOnly(end),
+      'halfDay': halfDay ? halfDayWire : null,
+      'reason': trimmedOrNull(reason),
+      'docKey': docKey,
+    }..removeWhere((_, value) => value == null);
+  }
+
+  /// The half of the last day that is taken off.
+  static const halfDayWire = 'second';
 }
 
-/// Paging and filters for the leave list. [employeeId] reads someone else's
-/// requests; it is ignored for a member reading only their own.
+/// Paging and the status chip for the leave list.
 class LeaveQuery {
-  const LeaveQuery({this.page = 1, this.statusId, this.employeeId});
+  const LeaveQuery({this.page = 1, this.status});
 
   final int page;
-  final int? statusId;
-  final int? employeeId;
+  final LeaveStatus? status;
 
-  LeaveQuery next(int page) =>
-      LeaveQuery(page: page, statusId: statusId, employeeId: employeeId);
+  LeaveQuery next(int page) => LeaveQuery(page: page, status: status);
+
+  Map<String, dynamic> toQuery() => {
+    'status': ?status?.wire,
+    ...pageQuery(page),
+  };
 }
 
 /// The working days between [start] and [end], both included, skipping the
-/// weekly Friday off; [halfDay] takes half of the last day.
-double leaveDays(DateTime? start, DateTime? end, {bool halfDay = false}) {
+/// weekly Friday off and [holidays]; [halfDay] takes half of the last day.
+double leaveDays(
+  DateTime? start,
+  DateTime? end, {
+  bool halfDay = false,
+  Set<DateTime> holidays = const {},
+}) {
   if (start == null || end == null) return 0;
   final from = AppDateUtils.dateOnly(start);
   final to = AppDateUtils.dateOnly(end);
@@ -246,13 +238,13 @@ double leaveDays(DateTime? start, DateTime? end, {bool halfDay = false}) {
     !day.isAfter(to);
     day = DateTime(day.year, day.month, day.day + 1)
   ) {
-    if (day.weekday != DateTime.friday) days++;
+    if (day.weekday != DateTime.friday && !holidays.contains(day)) days++;
   }
   if (days == 0) return 0;
   return halfDay ? days - 0.5 : days.toDouble();
 }
 
-enum LeaveField { type, dates, balance }
+enum LeaveField { type, dates, balance, document }
 
 /// The leave form while it is being filled in.
 class LeaveDraft {
@@ -265,21 +257,25 @@ class LeaveDraft {
     this.attachmentPath,
   });
 
-  final int? leaveTypeId;
+  final String? leaveTypeId;
   final DateTime? start;
   final DateTime? end;
   final bool halfDay;
   final String reason;
   final String? attachmentPath;
 
-  double get noOfDays => leaveDays(start, end, halfDay: halfDay);
+  double days(Set<DateTime> holidays) =>
+      leaveDays(start, end, halfDay: halfDay, holidays: holidays);
 
   /// The fields that block submitting, checked against [balances].
-  Set<LeaveField> errors(List<LeaveType> types, List<LeaveBalance> balances) {
-    final type = types.where((t) => t.id == leaveTypeId).firstOrNull;
+  Set<LeaveField> errors(LeaveLookups lookups, List<LeaveBalance> balances) {
+    final type = lookups.leaveTypes
+        .where((t) => t.id == leaveTypeId)
+        .firstOrNull;
     final balance = balances
         .where((b) => b.leaveTypeId == leaveTypeId)
         .firstOrNull;
+    final noOfDays = days(lookups.holidays);
     return {
       if (type == null) LeaveField.type,
       if (noOfDays <= 0) LeaveField.dates,
@@ -288,6 +284,10 @@ class LeaveDraft {
           balance != null &&
           noOfDays > balance.remainingAfterPending)
         LeaveField.balance,
+      if (type != null &&
+          attachmentPath == null &&
+          type.needsDocument(noOfDays))
+        LeaveField.document,
     };
   }
 
@@ -295,13 +295,13 @@ class LeaveDraft {
     leaveTypeId: leaveTypeId,
     startDate: start,
     endDate: end,
-    noOfDays: noOfDays,
+    halfDay: halfDay,
     reason: reason,
-    attachmentName: attachmentPath?.split('/').last,
+    documentPath: attachmentPath,
   );
 
   LeaveDraft copyWith({
-    int? leaveTypeId,
+    String? leaveTypeId,
     DateTime? start,
     DateTime? end,
     bool? halfDay,

@@ -56,14 +56,14 @@ Future<List<HelpArticle>> popularArticles(Ref ref) =>
     ref.watch(helpRepositoryProvider).popular();
 
 @riverpod
-Future<HelpArticle> helpArticle(Ref ref, int id) =>
+Future<HelpArticle> helpArticle(Ref ref, String id) =>
     ref.watch(helpRepositoryProvider).article(id);
 
 /// The reader's "did this help?" answer; null until they answer.
 @riverpod
 class ArticleVoteNotifier extends _$ArticleVoteNotifier {
   @override
-  FutureOr<bool?> build(int id) => null;
+  FutureOr<bool?> build(String id) => null;
 
   Future<void> vote({required bool helpful}) async {
     state = const AsyncLoading();

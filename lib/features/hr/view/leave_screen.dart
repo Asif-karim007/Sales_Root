@@ -18,11 +18,11 @@ import 'package:salesroot/widgets/widgets.dart';
 class LeaveScreen extends ConsumerWidget {
   const LeaveScreen({super.key});
 
-  static const List<int?> _filters = [
+  static const List<LeaveStatus?> _filters = [
     null,
-    LeaveStatusRef.pending,
-    LeaveStatusRef.approved,
-    LeaveStatusRef.rejected,
+    LeaveStatus.pending,
+    LeaveStatus.approved,
+    LeaveStatus.rejected,
   ];
 
   @override

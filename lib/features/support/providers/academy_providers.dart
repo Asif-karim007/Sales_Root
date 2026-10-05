@@ -22,7 +22,7 @@ Future<CareerPath> careerPath(Ref ref) =>
     ref.watch(academyRepositoryProvider).careerPath();
 
 @riverpod
-Future<Lesson> lesson(Ref ref, int id) =>
+Future<Lesson> lesson(Ref ref, String id) =>
     ref.watch(academyRepositoryProvider).lesson(id);
 
 /// The academy's category chip; null shows the "for you" home.
@@ -61,7 +61,7 @@ class AcademyLessonsNotifier extends _$AcademyLessonsNotifier {
 @riverpod
 class LessonCompleteNotifier extends _$LessonCompleteNotifier {
   @override
-  FutureOr<Lesson?> build(int id) => null;
+  FutureOr<Lesson?> build(String id) => null;
 
   Future<void> complete({int? quizAnswer}) async {
     if (state.isLoading) return;
