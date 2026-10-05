@@ -42,7 +42,7 @@ final class TrackerNotifierProvider
   TrackerNotifier create() => TrackerNotifier();
 }
 
-String _$trackerNotifierHash() => r'69ed54550c9a7d23cc0b0f7a3a60381e83b5c130';
+String _$trackerNotifierHash() => r'c26ca74fadb9e26e6e24ed6bbbde9e95795d5b95';
 
 /// Live tracking for the signed-in member: the state machine, the
 /// foreground service on Android, the in-app runner on iOS, and the flush of

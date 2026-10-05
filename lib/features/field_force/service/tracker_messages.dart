@@ -49,8 +49,8 @@ abstract final class TrackerMessages {
     'lastUploadAt': lastUploadAt?.toUtc().toIso8601String(),
   };
 
-  /// The service asks the UI isolate to deliver a batch, because the fake
-  /// server lives there. With a real API the service uploads by itself.
+  /// The service asks the UI isolate to deliver a batch, because the
+  /// session and its token refresh live there.
   static Map<String, Object?> uploadRequest(
     int requestId,
     List<Map<String, Object?>> pings,

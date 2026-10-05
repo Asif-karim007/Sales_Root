@@ -1,34 +1,26 @@
-import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/features/field_force/models/attendance.dart';
 
 abstract interface class AttendanceRepository {
-  /// The user's day: punch, shift, this week, this month and the timeline.
+  /// The user's day: the punch, today's visits and route, and the field
+  /// settings.
   Future<AttendanceToday> today();
 
-  /// 409 when already checked in today.
+  /// A 422 on `reason` when the server wants to know why the check-in is
+  /// outside the office.
   Future<AttendanceLog> checkIn(AttendancePunch punch);
 
-  /// 409 when not checked in.
   Future<AttendanceLog> checkOut(AttendancePunch punch);
 
-  Future<AttendanceLog> startBreak();
+  /// Uploads a check-in selfie and returns its file key.
+  Future<String> uploadSelfie(String path);
 
-  Future<AttendanceLog> endBreak();
+  /// The user's days from [from] to [to], each with its status, and their
+  /// totals.
+  Future<AttendanceMonth> days(DateTime from, DateTime to);
 
-  Future<AttendanceMonth> month(DateTime month);
-
-  Future<void> requestCorrection(DateTime date, String reason);
-
-  Future<TeamAttendanceSummary> teamSummary(TeamPeriod period);
-
-  Future<PageResult<TeamAttendanceRow>> team(TeamAttendanceQuery query);
-
-  Future<void> resolveCorrection(
-    int memberId,
-    DateTime date, {
-    required bool approve,
-  });
+  /// The team's attendance today, or its totals this week or month.
+  Future<TeamAttendance> team(TeamPeriod period);
 
   /// Every member's totals for [month], for the monthly report download.
-  Future<List<TeamAttendanceRow>> teamMonth(DateTime month);
+  Future<List<AttendancePeriodRow>> teamMonth(DateTime month);
 }

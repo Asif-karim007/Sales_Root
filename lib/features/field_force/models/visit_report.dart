@@ -1,4 +1,7 @@
+import 'package:salesroot/core/format/app_date_utils.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
+import 'package:salesroot/features/field_force/models/attendance.dart';
+import 'package:salesroot/features/field_force/models/visit.dart';
 
 enum ReportPeriod { week, month }
 
@@ -10,12 +13,12 @@ class VisitReportQuery {
   });
 
   final ReportPeriod period;
-  final int? memberId;
+  final String? memberId;
   final bool farOnly;
 
   VisitReportQuery copyWith({
     ReportPeriod? period,
-    int? Function()? memberId,
+    String? Function()? memberId,
     bool? farOnly,
   }) => VisitReportQuery(
     period: period ?? this.period,
@@ -23,79 +26,78 @@ class VisitReportQuery {
     farOnly: farOnly ?? this.farOnly,
   );
 
-  Map<String, dynamic> toQuery() =>
-      {'period': period.name, 'employeeId': memberId, 'farOnly': farOnly}
-        ..removeWhere((_, value) => value == null);
+  /// The period's first and last day around [today]: Saturday to Friday,
+  /// or the calendar month.
+  (DateTime, DateTime) range(DateTime today) {
+    final day = AppDateUtils.dateOnly(today);
+    return switch (period) {
+      ReportPeriod.week => weekAround(day),
+      ReportPeriod.month => (
+        DateTime(day.year, day.month),
+        DateTime(day.year, day.month + 1, 0),
+      ),
+    };
+  }
+}
+
+/// Saturday to Friday of the week holding [day].
+(DateTime, DateTime) weekAround(DateTime day) {
+  final start = DateTime(
+    day.year,
+    day.month,
+    day.day - (day.weekday - DateTime.saturday) % 7,
+  );
+  return (start, DateTime(start.year, start.month, start.day + 6));
 }
 
 class MemberVisitStat {
   const MemberVisitStat({
     required this.memberId,
     required this.name,
-    required this.planned,
-    required this.done,
-    required this.far,
+    required this.visits,
+    required this.productive,
   });
 
-  final int memberId;
-  final LocalizedName name;
-  final int planned;
-  final int done;
-  final int far;
+  final String memberId;
+  final String name;
+  final int visits;
+  final int productive;
 
-  double get ratio => planned == 0 ? 0 : done / planned;
-
-  factory MemberVisitStat.fromJson(Map<String, dynamic> json) =>
-      MemberVisitStat(
-        memberId: jsonInt(json['MemberId']) ?? 0,
-        name: LocalizedName.fromJson(json),
-        planned: jsonInt(json['Planned']) ?? 0,
-        done: jsonInt(json['Done']) ?? 0,
-        far: jsonInt(json['Far']) ?? 0,
-      );
+  double get ratio => visits == 0 ? 0 : productive / visits;
 }
 
+/// A visit started too far from its customer.
 class FarCheckIn {
   const FarCheckIn({
     required this.visitId,
-    required this.memberId,
     required this.memberName,
     required this.company,
-    required this.distance,
+    this.memberId,
     this.date,
-    this.reason,
   });
 
-  final int visitId;
-  final int memberId;
-  final LocalizedName memberName;
+  final String visitId;
+  final String? memberId;
+  final String memberName;
   final String company;
-  final int distance;
   final DateTime? date;
-  final String? reason;
 
-  factory FarCheckIn.fromJson(Map<String, dynamic> json) => FarCheckIn(
-    visitId: jsonInt(json['VisitId']) ?? 0,
-    memberId: jsonInt(json['MemberId']) ?? 0,
-    memberName: LocalizedName(
-      json['MemberName'] as String? ?? '',
-      json['MemberNameBn'] as String? ?? '',
-    ),
-    company: json['Company'] as String? ?? '',
-    distance: jsonInt(json['Distance']) ?? 0,
-    date: jsonDate(json['Date']),
-    reason: json['Reason'] as String?,
+  factory FarCheckIn.of(Visit visit) => FarCheckIn(
+    visitId: visit.id,
+    memberId: visit.memberId,
+    memberName: visit.memberName ?? '',
+    company: visit.title,
+    date: visit.startedAt,
   );
 }
 
-/// Planned, done, missed and far check-ins over a period.
+/// Visits, productive visits and far check-ins over a period.
 class VisitReport {
   const VisitReport({
     required this.from,
     required this.to,
-    required this.planned,
-    required this.done,
-    required this.missed,
+    required this.visits,
+    required this.productive,
     required this.far,
     required this.byMember,
     required this.farCheckIns,
@@ -103,22 +105,34 @@ class VisitReport {
 
   final DateTime from;
   final DateTime to;
-  final int planned;
-  final int done;
-  final int missed;
+  final int visits;
+  final int productive;
   final int far;
   final List<MemberVisitStat> byMember;
   final List<FarCheckIn> farCheckIns;
 
-  factory VisitReport.fromJson(Map<String, dynamic> json) => VisitReport(
-    from: jsonDate(json['From']) ?? DateTime(2000),
-    to: jsonDate(json['To']) ?? DateTime(2000),
-    planned: jsonInt(json['Planned']) ?? 0,
-    done: jsonInt(json['Done']) ?? 0,
-    missed: jsonInt(json['Missed']) ?? 0,
-    far: jsonInt(json['Far']) ?? 0,
-    byMember: jsonList(json['ByMember'], MemberVisitStat.fromJson),
-    farCheckIns: jsonList(json['FarCheckIns'], FarCheckIn.fromJson),
+  factory VisitReport.of(
+    FieldReport report, {
+    required DateTime from,
+    required DateTime to,
+    required List<Visit> farVisits,
+  }) => VisitReport(
+    from: from,
+    to: to,
+    visits: report.visits,
+    productive: report.productiveVisits,
+    far: report.locationMismatch,
+    byMember: [
+      for (final person in report.people)
+        if (person.visits > 0)
+          MemberVisitStat(
+            memberId: person.memberId,
+            name: person.name,
+            visits: person.visits,
+            productive: person.productiveVisits,
+          ),
+    ],
+    farCheckIns: [for (final visit in farVisits) FarCheckIn.of(visit)],
   );
 }
 
@@ -126,11 +140,11 @@ class VisitReport {
 class ReportMember {
   const ReportMember({required this.id, required this.name});
 
-  final int id;
-  final LocalizedName name;
+  final String id;
+  final String name;
 
   factory ReportMember.fromJson(Map<String, dynamic> json) => ReportMember(
-    id: jsonInt(json['Id']) ?? 0,
-    name: LocalizedName.fromJson(json),
+    id: jsonId(json['id']) ?? '',
+    name: json['name'] as String? ?? '',
   );
 }

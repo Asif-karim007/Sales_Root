@@ -9,6 +9,47 @@ part of 'attendance_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(fieldApi)
+final fieldApiProvider = FieldApiProvider._();
+
+final class FieldApiProvider
+    extends $FunctionalProvider<FieldApi, FieldApi, FieldApi>
+    with $Provider<FieldApi> {
+  FieldApiProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'fieldApiProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$fieldApiHash();
+
+  @$internal
+  @override
+  $ProviderElement<FieldApi> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  FieldApi create(Ref ref) {
+    return fieldApi(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(FieldApi value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<FieldApi>(value),
+    );
+  }
+}
+
+String _$fieldApiHash() => r'3900b1ceda859f9ee0cc20c19b05d7ca2e67d814';
+
 @ProviderFor(attendanceRepository)
 final attendanceRepositoryProvider = AttendanceRepositoryProvider._();
 
@@ -55,17 +96,17 @@ final class AttendanceRepositoryProvider
 }
 
 String _$attendanceRepositoryHash() =>
-    r'951949627e8239ec98dc195cc9648e34088cb15b';
+    r'e7359c0035c5355f6c1012fa08bf066c2e166762';
 
-/// The user's attendance today: punch in and out, and breaks.
+/// The user's attendance today: the punch, today's visits and route.
 
 @ProviderFor(AttendanceTodayNotifier)
 final attendanceTodayProvider = AttendanceTodayNotifierProvider._();
 
-/// The user's attendance today: punch in and out, and breaks.
+/// The user's attendance today: the punch, today's visits and route.
 final class AttendanceTodayNotifierProvider
     extends $AsyncNotifierProvider<AttendanceTodayNotifier, AttendanceToday> {
-  /// The user's attendance today: punch in and out, and breaks.
+  /// The user's attendance today: the punch, today's visits and route.
   AttendanceTodayNotifierProvider._()
     : super(
         from: null,
@@ -86,9 +127,9 @@ final class AttendanceTodayNotifierProvider
 }
 
 String _$attendanceTodayNotifierHash() =>
-    r'af3198831570aba12c7b4bca4d5953006a840b52';
+    r'068bd3c287101ebf94d1295ae079425a4d87c201';
 
-/// The user's attendance today: punch in and out, and breaks.
+/// The user's attendance today: the punch, today's visits and route.
 
 abstract class _$AttendanceTodayNotifier
     extends $AsyncNotifier<AttendanceToday> {
@@ -108,6 +149,97 @@ abstract class _$AttendanceTodayNotifier
     return element.handleCreate(ref, build);
   }
 }
+
+/// Saturday to Friday of this week, day by day.
+
+@ProviderFor(attendanceWeek)
+final attendanceWeekProvider = AttendanceWeekProvider._();
+
+/// Saturday to Friday of this week, day by day.
+
+final class AttendanceWeekProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<AttendanceMonth>,
+          AttendanceMonth,
+          FutureOr<AttendanceMonth>
+        >
+    with $FutureModifier<AttendanceMonth>, $FutureProvider<AttendanceMonth> {
+  /// Saturday to Friday of this week, day by day.
+  AttendanceWeekProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'attendanceWeekProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$attendanceWeekHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<AttendanceMonth> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<AttendanceMonth> create(Ref ref) {
+    return attendanceWeek(ref);
+  }
+}
+
+String _$attendanceWeekHash() => r'e11433a0746ddd16617450c904cea1c4f22153e7';
+
+/// This calendar month's totals.
+
+@ProviderFor(attendanceThisMonth)
+final attendanceThisMonthProvider = AttendanceThisMonthProvider._();
+
+/// This calendar month's totals.
+
+final class AttendanceThisMonthProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<AttendanceSummary>,
+          AttendanceSummary,
+          FutureOr<AttendanceSummary>
+        >
+    with
+        $FutureModifier<AttendanceSummary>,
+        $FutureProvider<AttendanceSummary> {
+  /// This calendar month's totals.
+  AttendanceThisMonthProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'attendanceThisMonthProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$attendanceThisMonthHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<AttendanceSummary> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<AttendanceSummary> create(Ref ref) {
+    return attendanceThisMonth(ref);
+  }
+}
+
+String _$attendanceThisMonthHash() =>
+    r'68018b2b76bbda54ad68edc6780029e576912cc6';
 
 @ProviderFor(AttendanceMonthCursor)
 final attendanceMonthCursorProvider = AttendanceMonthCursorProvider._();
@@ -162,12 +294,18 @@ abstract class _$AttendanceMonthCursor extends $Notifier<DateTime> {
   }
 }
 
-@ProviderFor(AttendanceMonthNotifier)
-final attendanceMonthProvider = AttendanceMonthNotifierProvider._();
+@ProviderFor(attendanceMonth)
+final attendanceMonthProvider = AttendanceMonthProvider._();
 
-final class AttendanceMonthNotifierProvider
-    extends $AsyncNotifierProvider<AttendanceMonthNotifier, AttendanceMonth> {
-  AttendanceMonthNotifierProvider._()
+final class AttendanceMonthProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<AttendanceMonth>,
+          AttendanceMonth,
+          FutureOr<AttendanceMonth>
+        >
+    with $FutureModifier<AttendanceMonth>, $FutureProvider<AttendanceMonth> {
+  AttendanceMonthProvider._()
     : super(
         from: null,
         argument: null,
@@ -179,144 +317,92 @@ final class AttendanceMonthNotifierProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$attendanceMonthNotifierHash();
+  String debugGetCreateSourceHash() => _$attendanceMonthHash();
 
   @$internal
   @override
-  AttendanceMonthNotifier create() => AttendanceMonthNotifier();
-}
-
-String _$attendanceMonthNotifierHash() =>
-    r'5b5d8ffb8bbf03f4cac4a899cc12a84cf17649d1';
-
-abstract class _$AttendanceMonthNotifier
-    extends $AsyncNotifier<AttendanceMonth> {
-  FutureOr<AttendanceMonth> build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<AttendanceMonth>, AttendanceMonth>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<AsyncValue<AttendanceMonth>, AttendanceMonth>,
-              AsyncValue<AttendanceMonth>,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
-@ProviderFor(TeamAttendanceFilter)
-final teamAttendanceFilterProvider = TeamAttendanceFilterProvider._();
-
-final class TeamAttendanceFilterProvider
-    extends $NotifierProvider<TeamAttendanceFilter, TeamAttendanceQuery> {
-  TeamAttendanceFilterProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'teamAttendanceFilterProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$teamAttendanceFilterHash();
-
-  @$internal
-  @override
-  TeamAttendanceFilter create() => TeamAttendanceFilter();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(TeamAttendanceQuery value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<TeamAttendanceQuery>(value),
-    );
-  }
-}
-
-String _$teamAttendanceFilterHash() =>
-    r'2c7a37c357addd5c79692a8b07842032167a0c50';
-
-abstract class _$TeamAttendanceFilter extends $Notifier<TeamAttendanceQuery> {
-  TeamAttendanceQuery build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<TeamAttendanceQuery, TeamAttendanceQuery>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<TeamAttendanceQuery, TeamAttendanceQuery>,
-              TeamAttendanceQuery,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
-@ProviderFor(teamAttendanceSummary)
-final teamAttendanceSummaryProvider = TeamAttendanceSummaryProvider._();
-
-final class TeamAttendanceSummaryProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<TeamAttendanceSummary>,
-          TeamAttendanceSummary,
-          FutureOr<TeamAttendanceSummary>
-        >
-    with
-        $FutureModifier<TeamAttendanceSummary>,
-        $FutureProvider<TeamAttendanceSummary> {
-  TeamAttendanceSummaryProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'teamAttendanceSummaryProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$teamAttendanceSummaryHash();
-
-  @$internal
-  @override
-  $FutureProviderElement<TeamAttendanceSummary> $createElement(
+  $FutureProviderElement<AttendanceMonth> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<TeamAttendanceSummary> create(Ref ref) {
-    return teamAttendanceSummary(ref);
+  FutureOr<AttendanceMonth> create(Ref ref) {
+    return attendanceMonth(ref);
   }
 }
 
-String _$teamAttendanceSummaryHash() =>
-    r'af763470364eabb358f8198684ab70011e03b73c';
+String _$attendanceMonthHash() => r'93e76a482e8600d73b424f317ae1b39a7603b565';
 
-/// The team's attendance, 20 members at a time.
+@ProviderFor(TeamAttendancePeriod)
+final teamAttendancePeriodProvider = TeamAttendancePeriodProvider._();
 
-@ProviderFor(TeamAttendanceNotifier)
-final teamAttendanceProvider = TeamAttendanceNotifierProvider._();
+final class TeamAttendancePeriodProvider
+    extends $NotifierProvider<TeamAttendancePeriod, TeamPeriod> {
+  TeamAttendancePeriodProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'teamAttendancePeriodProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
-/// The team's attendance, 20 members at a time.
-final class TeamAttendanceNotifierProvider
+  @override
+  String debugGetCreateSourceHash() => _$teamAttendancePeriodHash();
+
+  @$internal
+  @override
+  TeamAttendancePeriod create() => TeamAttendancePeriod();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TeamPeriod value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TeamPeriod>(value),
+    );
+  }
+}
+
+String _$teamAttendancePeriodHash() =>
+    r'c6ffc0a88d48d835ca0a401fcc2d02370c9fe95e';
+
+abstract class _$TeamAttendancePeriod extends $Notifier<TeamPeriod> {
+  TeamPeriod build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<TeamPeriod, TeamPeriod>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<TeamPeriod, TeamPeriod>,
+              TeamPeriod,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+/// The team's attendance for the chosen period.
+
+@ProviderFor(teamAttendance)
+final teamAttendanceProvider = TeamAttendanceProvider._();
+
+/// The team's attendance for the chosen period.
+
+final class TeamAttendanceProvider
     extends
-        $AsyncNotifierProvider<
-          TeamAttendanceNotifier,
-          Paged<TeamAttendanceRow>
-        > {
-  /// The team's attendance, 20 members at a time.
-  TeamAttendanceNotifierProvider._()
+        $FunctionalProvider<
+          AsyncValue<TeamAttendance>,
+          TeamAttendance,
+          FutureOr<TeamAttendance>
+        >
+    with $FutureModifier<TeamAttendance>, $FutureProvider<TeamAttendance> {
+  /// The team's attendance for the chosen period.
+  TeamAttendanceProvider._()
     : super(
         from: null,
         argument: null,
@@ -328,41 +414,18 @@ final class TeamAttendanceNotifierProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$teamAttendanceNotifierHash();
+  String debugGetCreateSourceHash() => _$teamAttendanceHash();
 
   @$internal
   @override
-  TeamAttendanceNotifier create() => TeamAttendanceNotifier();
-}
+  $FutureProviderElement<TeamAttendance> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
-String _$teamAttendanceNotifierHash() =>
-    r'1db7097a17773f88c4412639b108b57e4b1f35db';
-
-/// The team's attendance, 20 members at a time.
-
-abstract class _$TeamAttendanceNotifier
-    extends $AsyncNotifier<Paged<TeamAttendanceRow>> {
-  FutureOr<Paged<TeamAttendanceRow>> build();
-  @$mustCallSuper
   @override
-  WhenComplete runBuild() {
-    final ref =
-        this.ref
-            as $Ref<
-              AsyncValue<Paged<TeamAttendanceRow>>,
-              Paged<TeamAttendanceRow>
-            >;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<
-                AsyncValue<Paged<TeamAttendanceRow>>,
-                Paged<TeamAttendanceRow>
-              >,
-              AsyncValue<Paged<TeamAttendanceRow>>,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
+  FutureOr<TeamAttendance> create(Ref ref) {
+    return teamAttendance(ref);
   }
 }
+
+String _$teamAttendanceHash() => r'a26e6533ac04e371bafbf3760ce173b451cedc38';

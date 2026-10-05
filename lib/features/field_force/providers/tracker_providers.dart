@@ -39,7 +39,6 @@ class TrackerStatus {
     this.lastUploadAt,
     this.lastCaptureAt,
     this.stoppedAt,
-    this.pausedAt,
   });
 
   final TrackerState state;
@@ -57,9 +56,6 @@ class TrackerStatus {
 
   /// When tracking stopped without the member stopping it.
   final DateTime? stoppedAt;
-
-  /// When the member paused sharing, while the pause lasts.
-  final DateTime? pausedAt;
 
   bool get isActive => state == TrackerState.active;
 
@@ -84,7 +80,6 @@ class TrackerStatus {
     lastUploadAt: lastUploadAt ?? this.lastUploadAt,
     lastCaptureAt: lastCaptureAt ?? this.lastCaptureAt,
     stoppedAt: stoppedAt,
-    pausedAt: pausedAt,
   );
 }
 
@@ -117,9 +112,7 @@ class TrackerNotifier extends _$TrackerNotifier {
     ref.onDispose(connectivity.cancel);
 
     final status = await _evaluate();
-    if (status.state == TrackerState.ready &&
-        await TrackerPrefs.wasActive() &&
-        status.pausedAt == null) {
+    if (status.state == TrackerState.ready && await TrackerPrefs.wasActive()) {
       unawaited(Future.microtask(start));
     }
     unawaited(Future.microtask(flushNow));
@@ -129,15 +122,10 @@ class TrackerNotifier extends _$TrackerNotifier {
   Future<TrackerStatus> _evaluate() async {
     final repository = ref.read(trackingRepositoryProvider);
     var config = await TrackerPrefs.config();
-    var consented = await TrackerPrefs.consentAt() != null;
+    final consented = await TrackerPrefs.consentAt() != null;
     try {
       config = await repository.trackerConfig();
       await TrackerPrefs.setConfig(config);
-      final consent = await repository.consent();
-      consented = consent.given;
-      await TrackerPrefs.setConsentAt(
-        consent.given ? consent.at ?? DateTime.now() : null,
-      );
     } on ApiFailure catch (failure) {
       logDebug('Tracker: kept cached config (${failure.statusCode})');
     }
@@ -176,7 +164,6 @@ class TrackerNotifier extends _$TrackerNotifier {
       lastUploadAt: await TrackerPrefs.lastUploadAt(),
       lastCaptureAt: await TrackerPrefs.lastCaptureAt(),
       stoppedAt: await TrackerPrefs.stoppedAt(),
-      pausedAt: await TrackerPrefs.pausedAt(),
     );
   }
 
@@ -190,9 +177,9 @@ class TrackerNotifier extends _$TrackerNotifier {
     }
   }
 
-  /// "I agree": records consent, then asks for the system permissions.
+  /// "I agree": records consent on this phone, then asks for the system
+  /// permissions.
   Future<void> giveConsent() async {
-    await ref.read(trackingRepositoryProvider).setConsent(given: true);
     await TrackerPrefs.setConsentAt(DateTime.now());
     ref.invalidate(trackingConsentProvider);
     await _permissions.requestPrompts();
@@ -201,7 +188,6 @@ class TrackerNotifier extends _$TrackerNotifier {
 
   Future<void> declineConsent() async {
     await stop();
-    await ref.read(trackingRepositoryProvider).setConsent(given: false);
     await TrackerPrefs.setConsentAt(null);
     ref.invalidate(trackingConsentProvider);
     await refresh();
@@ -223,7 +209,7 @@ class TrackerNotifier extends _$TrackerNotifier {
       config: current.config,
       uploader: RepositoryPingUploader(ref.read(trackingRepositoryProvider)),
       title: l10n.ffTrackerNotificationTitle,
-      body: l10n.ffTrackerNotificationBody(current.config.windowLabel ?? ''),
+      body: l10n.ffTrackerNotificationWhileIn,
       channel: l10n.ffTrackerChannel,
       onChanged: () => unawaited(_syncCounts()),
     );
@@ -239,26 +225,6 @@ class TrackerNotifier extends _$TrackerNotifier {
     await TrackerPrefs.setStoppedAt(null);
     await flushNow();
     await refresh();
-  }
-
-  /// Stops sharing until [resume]; the pause is logged for the team lead.
-  Future<void> pause() async {
-    await _Runtime.stop();
-    await TrackerPrefs.setWasActive(false);
-    await TrackerPrefs.setPausedAt(DateTime.now());
-    await refresh();
-  }
-
-  Future<void> resume() async {
-    final pausedAt = await TrackerPrefs.pausedAt();
-    await TrackerPrefs.setPausedAt(null);
-    if (pausedAt != null) {
-      await ref
-          .read(trackingRepositoryProvider)
-          .logPause(pausedAt, DateTime.now());
-    }
-    await refresh();
-    await start();
   }
 
   Future<void> flushNow() async {

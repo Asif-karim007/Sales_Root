@@ -1,0 +1,20 @@
+{
+  "id": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "name": "Dhaka Sales Ltd.",
+  "weekendDays": [
+    5,
+    6
+  ],
+  "timezone": "Asia/Dhaka",
+  "settings": "{\"pack\": {\"key\": \"distribution\", \"kpis\": [\"visitsToday\", \"ordersToday\", \"toCollect\", \"collectedToday\"], \"terms\": {\"deal\": [\"Order\", \"অর্ডার\"], \"lead\": [\"Prospect shop\", \"নতুন দোকান\"], \"visit\": [\"Beat visit\", \"বিট ভিজিট\"], \"company\": [\"Outlet\", \"আউটলেট\"], \"contact\": [\"Shop owner\", \"দোকান মালিক\"]}, \"defaults\": {\"creditDays\": 15, \"followUpDays\": 7, \"quoteValidDays\": 7}, \"leadFields\": [{\"bn\": \"কী পণ্য চান\", \"en\": \"Products wanted\", \"key\": \"productInterest\", \"type\": \"text\"}], \"lostReasons\": [{\"bn\": \"দাম / মার্জিন কম\", \"en\": \"Price / margin too low for shop\", \"key\": \"price\"}, {\"bn\": \"প্রতিযোগী ব্র্যান্ড রাখে\", \"en\": \"Stocks a competitor brand\", \"key\": \"competitor\"}, {\"bn\": \"বেশি দিনের বাকি চায়\", \"en\": \"Wants longer credit\", \"key\": \"credit\"}, {\"bn\": \"জায়গা নেই\", \"en\": \"No shelf space\", \"key\": \"no_space\"}, {\"bn\": \"এই এলাকায় চলে না\", \"en\": \"Product slow-moving in area\", \"key\": \"slow_moving\"}, {\"bn\": \"দোকান বন্ধ / সরে গেছে\", \"en\": \"Shop closed / moved\", \"key\": \"closed\"}, {\"bn\": \"অন্য\", \"en\": \"Other\", \"key\": \"other\"}], \"walkthrough\": [{\"bn\": \"দোকানগুলো এলাকা ও রুট দিয়ে যোগ করুন\", \"en\": \"Import or add your outlets (shops) with area and route\", \"route\": \"/customers\"}, {\"bn\": \"মাঠ → রুটে প্রতিনিধির সাপ্তাহিক বিট দিন\", \"en\": \"Set each rep's weekly beat in Field → Routes\", \"route\": \"/field\"}, {\"bn\": \"বিক্রয় → পণ্যে দামের তালিকা দিন\", \"en\": \"Load your price list in Sales → Products\", \"route\": \"/sales/products\"}, {\"bn\": \"প্রতিনিধি চেক-ইন করে, ভিজিট করে, ফোনেই অর্ডার নেয়\", \"en\": \"Reps check in, visit, take orders from the phone\", \"route\": \"/field\"}, {\"bn\": \"বিটে বকেয়া তুলুন — রসিদ এসএমএসে যায়\", \"en\": \"Collect dues on the beat — receipt goes by SMS\", \"route\": \"/collection\"}, {\"bn\": \"প্রতিনিধি প্রতি মাসিক বিক্রি ও আদায়ের টার্গেট দিন\", \"en\": \"Set monthly sales + collection targets per rep\", \"route\": \"/team\"}], \"companyFields\": [{\"bn\": \"আউটলেটের ধরন\", \"en\": \"Outlet type\", \"key\": \"outletType\", \"type\": \"select\", \"options\": [\"retail\", \"wholesale\", \"modern_trade\"]}, {\"bn\": \"রুট / বিট\", \"en\": \"Route / Beat\", \"key\": \"route\", \"type\": \"text\"}, {\"bn\": \"দোকানের আকার\", \"en\": \"Shop size\", \"key\": \"shopSize\", \"type\": \"select\", \"options\": [\"S\", \"M\", \"L\"]}], \"visitOutcomes\": [{\"bn\": \"অর্ডার নিয়েছি\", \"en\": \"Order taken\", \"key\": \"order_taken\", \"productive\": true}, {\"bn\": \"বকেয়া তুলেছি\", \"en\": \"Dues collected\", \"key\": \"payment\", \"productive\": true}, {\"bn\": \"স্টক দেখেছি, অর্ডার নেই\", \"en\": \"Stock checked, no order\", \"key\": \"stock_check\"}, {\"bn\": \"নমুনা / পিওএস দিয়েছি\", \"en\": \"Sample / POS given\", \"key\": \"sample\"}, {\"bn\": \"ফেরত / ডেমেজ নিয়েছি\", \"en\": \"Return / damage taken\", \"key\": \"return\"}, {\"bn\": \"পরে আসতে বলেছে\", \"en\": \"Come back later\", \"key\": \"follow_up\"}, {\"bn\": \"মালিক নেই\", \"en\": \"Owner not available\", \"key\": \"not_available\"}, {\"bn\": \"দোকান বন্ধ\", \"en\": \"Shop closed\", \"key\": \"closed\"}]}}",
+  "layers": [
+    "sales",
+    "collection",
+    "customer360",
+    "fieldforce",
+    "growth",
+    "teamops",
+    "support",
+    "intelligence"
+  ]
+}

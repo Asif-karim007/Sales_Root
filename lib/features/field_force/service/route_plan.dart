@@ -5,25 +5,25 @@ import 'package:salesroot/features/field_force/service/geo.dart';
 class RoutePlan {
   const RoutePlan._(this.stops, this.legs);
 
-  factory RoutePlan.of(List<Visit> visits) {
+  factory RoutePlan.of(List<PlanStop> stops) {
     final legs = <RouteLeg?>[];
-    Visit? previous;
-    for (final visit in visits) {
+    PlanStop? previous;
+    for (final stop in stops) {
       final from = previous;
-      legs.add(from == null ? null : _leg(from, visit));
-      if (visit.latitude != null && visit.longitude != null) previous = visit;
+      legs.add(from == null ? null : _leg(from, stop));
+      if (stop.latitude != null && stop.longitude != null) previous = stop;
     }
-    return RoutePlan._(visits, legs);
+    return RoutePlan._(stops, legs);
   }
 
-  final List<Visit> stops;
+  final List<PlanStop> stops;
 
   /// The leg into each stop; null for the first one.
   final List<RouteLeg?> legs;
 
   double get km => legs.fold(0, (sum, leg) => sum + (leg?.km ?? 0));
 
-  static RouteLeg? _leg(Visit from, Visit to) {
+  static RouteLeg? _leg(PlanStop from, PlanStop to) {
     final fromLat = from.latitude;
     final fromLng = from.longitude;
     final toLat = to.latitude;

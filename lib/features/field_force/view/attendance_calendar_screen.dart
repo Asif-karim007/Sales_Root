@@ -8,7 +8,6 @@ import 'package:salesroot/features/field_force/models/attendance.dart';
 import 'package:salesroot/features/field_force/providers/attendance_providers.dart';
 import 'package:salesroot/features/field_force/service/csv_export.dart';
 import 'package:salesroot/features/field_force/view/widget/attendance_calendar.dart';
-import 'package:salesroot/features/field_force/view/widget/correction_sheet.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_format.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_info_line.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_language_toggle.dart';
@@ -16,8 +15,7 @@ import 'package:salesroot/features/field_force/view/widget/field_force_gate.dart
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #132 attendcal: the month by day, its totals, and correction requests
-/// for absent days.
+/// #132 attendcal: the month by day, its totals and its absences.
 class AttendanceCalendarScreen extends ConsumerWidget {
   const AttendanceCalendarScreen({super.key});
 
@@ -70,7 +68,7 @@ class AttendanceCalendarScreen extends ConsumerWidget {
     final summary = month.summary;
     return shareCsv(
       fileName:
-          'attendance-${AppDateUtils.toApiDateOnly(month.month).substring(0, 7)}.csv',
+          'attendance-${AppDateUtils.toApiDateOnly(month.from).substring(0, 7)}.csv',
       subject: l10n.ffCalendarTitle,
       rows: [
         [l10n.ffCsvDate, l10n.ffCsvStatus],
@@ -176,43 +174,20 @@ class _MonthReport extends StatelessWidget {
         ),
         if (absences.isNotEmpty) ...[
           const SizedBox(height: 12),
-          SrRowGroup(rows: [for (final day in absences) _AbsenceRow(day: day)]),
+          SrRowGroup(
+            rows: [
+              for (final day in absences)
+                SrListRow(
+                  leading: const SrAvatar(
+                    icon: Icons.event_busy_outlined,
+                    tone: SrAvatarTone.danger,
+                  ),
+                  title: l10n.ffAbsentOn(context.fmt.dayMonth(day.date)),
+                ),
+            ],
+          ),
         ],
       ],
-    );
-  }
-}
-
-class _AbsenceRow extends StatelessWidget {
-  const _AbsenceRow({required this.day});
-
-  final AttendanceDay day;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final correction = day.correction;
-    return SrListRow(
-      leading: const SrAvatar(
-        icon: Icons.event_busy_outlined,
-        tone: SrAvatarTone.danger,
-      ),
-      title: l10n.ffAbsentOn(context.fmt.dayMonth(day.date)),
-      subtitle: switch (correction) {
-        CorrectionStatus.pending => l10n.ffCorrectionPending,
-        CorrectionStatus.rejected => l10n.ffCorrectionWasRejected,
-        CorrectionStatus.approved => l10n.ffCorrectionWasApproved,
-        null => l10n.ffAskCorrection,
-      },
-      chevron: correction == null,
-      onTap: correction == null
-          ? () async {
-              final sent = await showCorrectionRequestSheet(context, day.date);
-              if (sent == true && context.mounted) {
-                showSrSuccess(context, l10n.ffCorrectionSent);
-              }
-            }
-          : null,
     );
   }
 }

@@ -10,7 +10,7 @@ class TrackerDb {
   static final instance = TrackerDb._();
 
   static const _name = 'salesroot_tracker.db';
-  static const _version = 1;
+  static const _version = 2;
 
   Database? _db;
 
@@ -30,6 +30,9 @@ class TrackerDb {
             locationTimeUtc TEXT NOT NULL,
             locationText TEXT,
             battery INTEGER,
+            accuracy REAL,
+            speed REAL,
+            mock INTEGER NOT NULL DEFAULT 0,
             createdAt TEXT NOT NULL,
             kind TEXT NOT NULL DEFAULT 'heartbeat'
           )
@@ -38,6 +41,19 @@ class TrackerDb {
           'CREATE INDEX idx_tracker_pings_time '
           'ON ${TrackerPing.table} (locationTimeUtc)',
         );
+      },
+      onUpgrade: (db, from, to) async {
+        if (from < 2) {
+          for (final column in [
+            'accuracy REAL',
+            'speed REAL',
+            'mock INTEGER NOT NULL DEFAULT 0',
+          ]) {
+            await db.execute(
+              'ALTER TABLE ${TrackerPing.table} ADD COLUMN $column',
+            );
+          }
+        }
       },
     );
     return _db = opened;

@@ -67,14 +67,6 @@ class TrackerConfig {
     return now >= start || now <= end;
   }
 
-  /// "09:00–18:00", or null when the window is open all day.
-  String? get windowLabel {
-    final start = startTime;
-    final end = endTime;
-    if (start == null && end == null) return null;
-    return '${start ?? ''}–${end ?? ''}';
-  }
-
   bool sameSchedule(TrackerConfig other) =>
       isEnabled == other.isEnabled &&
       startTime == other.startTime &&

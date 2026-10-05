@@ -17,7 +17,6 @@ abstract final class TrackerPrefs {
   static const _lastCaptureAt = 'tracker.lastCaptureAt';
   static const _bufferedCount = 'tracker.bufferedCount';
   static const _stoppedAt = 'tracker.stoppedAt';
-  static const _pausedAt = 'tracker.pausedAt';
 
   static Future<TrackerState> state() async => TrackerState.fromWire(
     await FlutterForegroundTask.getData<String>(key: _state),
@@ -67,11 +66,6 @@ abstract final class TrackerPrefs {
   static Future<void> setStoppedAt(DateTime? at) => at == null
       ? FlutterForegroundTask.removeData(key: _stoppedAt)
       : _writeTime(_stoppedAt, at);
-
-  static Future<DateTime?> pausedAt() => _readTime(_pausedAt);
-  static Future<void> setPausedAt(DateTime? at) => at == null
-      ? FlutterForegroundTask.removeData(key: _pausedAt)
-      : _writeTime(_pausedAt, at);
 
   static Future<int> bufferedCount() async =>
       await FlutterForegroundTask.getData<int>(key: _bufferedCount) ?? 0;

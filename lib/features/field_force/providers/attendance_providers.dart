@@ -3,67 +3,109 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
-import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/core/paging/paged.dart';
+import 'package:salesroot/core/network/dio_providers.dart';
+import 'package:salesroot/core/workspace/workspace_providers.dart';
+import 'package:salesroot/features/field_force/data/api_attendance_repository.dart';
 import 'package:salesroot/features/field_force/data/attendance_repository.dart';
-import 'package:salesroot/features/field_force/data/fake_attendance_repository.dart';
+import 'package:salesroot/features/field_force/data/field_api.dart';
 import 'package:salesroot/features/field_force/models/attendance.dart';
+import 'package:salesroot/features/field_force/models/visit_report.dart';
 import 'package:salesroot/features/field_force/providers/location_providers.dart';
 import 'package:salesroot/features/field_force/service/location_source.dart';
 
 part 'attendance_providers.g.dart';
 
 @Riverpod(keepAlive: true)
-AttendanceRepository attendanceRepository(Ref ref) =>
-    FakeAttendanceRepository(ref.watch(fakeBackendProvider));
+FieldApi fieldApi(Ref ref) => FieldApi(ref.watch(dioProvider));
 
-/// The user's attendance today: punch in and out, and breaks.
+/// The user's membership id, rebuilding each repository on a workspace
+/// switch.
+String? fieldMember(Ref ref) => ref
+    .watch(currentWorkspaceProvider.select((w) => (w?.id, w?.membershipId)))
+    .$2;
+
+@Riverpod(keepAlive: true)
+AttendanceRepository attendanceRepository(Ref ref) =>
+    ApiAttendanceRepository(ref.watch(fieldApiProvider), me: fieldMember(ref));
+
+/// The user's attendance today: the punch, today's visits and route.
 @riverpod
 class AttendanceTodayNotifier extends _$AttendanceTodayNotifier {
   @override
   Future<AttendanceToday> build() =>
       ref.watch(attendanceRepositoryProvider).today();
 
-  Future<AttendanceLog> checkIn() async {
-    final log = await ref
-        .read(attendanceRepositoryProvider)
-        .checkIn(await _punch());
-    if (ref.mounted) ref.invalidateSelf();
+  /// Checks in where the phone is. [selfiePath] is uploaded first; [reason]
+  /// answers a server that asks why the check-in is outside the office.
+  Future<AttendanceLog> checkIn({String? selfiePath, String? reason}) async {
+    final repository = ref.read(attendanceRepositoryProvider);
+    var punch = await _punch(needFix: true);
+    if (selfiePath != null) {
+      punch = punch.copyWith(
+        photoKey: await repository.uploadSelfie(selfiePath),
+      );
+    }
+    final log = await repository.checkIn(punch.copyWith(reason: reason));
+    _refresh();
     return log;
   }
 
   Future<AttendanceLog> checkOut() async {
     final log = await ref
         .read(attendanceRepositoryProvider)
-        .checkOut(await _punch());
-    if (ref.mounted) ref.invalidateSelf();
+        .checkOut(await _punch(needFix: false));
+    _refresh();
     return log;
   }
 
-  Future<void> toggleBreak() async {
-    final repository = ref.read(attendanceRepositoryProvider);
-    final onBreak = state.value?.log?.onBreak ?? false;
-    await (onBreak ? repository.endBreak() : repository.startBreak());
-    if (ref.mounted) ref.invalidateSelf();
+  void _refresh() {
+    if (!ref.mounted) return;
+    ref
+      ..invalidate(attendanceWeekProvider)
+      ..invalidate(attendanceThisMonthProvider)
+      ..invalidateSelf();
   }
 
-  /// Where the phone is; a punch without a fix is still recorded.
-  Future<AttendancePunch> _punch() async {
+  /// Where the phone is. A check-in needs a fix; a check-out without one is
+  /// still recorded.
+  Future<AttendancePunch> _punch({required bool needFix}) async {
     final location = ref.read(locationSourceProvider);
     try {
       final fix = await location.current().timeout(const Duration(seconds: 25));
       return AttendancePunch(
         latitude: fix.latitude,
         longitude: fix.longitude,
-        location: await location.placeName(fix.latitude, fix.longitude),
+        accuracy: fix.accuracy,
+        mock: fix.isMocked,
       );
     } on LocationFailure {
+      if (needFix) rethrow;
       return const AttendancePunch();
     } on TimeoutException {
+      if (needFix) throw const LocationFailure(LocationIssue.unavailable);
       return const AttendancePunch();
     }
   }
+}
+
+/// Saturday to Friday of this week, day by day.
+@riverpod
+Future<AttendanceMonth> attendanceWeek(Ref ref) {
+  final (from, to) = weekAround(DateTime.now());
+  return ref.watch(attendanceRepositoryProvider).days(from, to);
+}
+
+/// This calendar month's totals.
+@riverpod
+Future<AttendanceSummary> attendanceThisMonth(Ref ref) async {
+  final now = DateTime.now();
+  final month = await ref
+      .watch(attendanceRepositoryProvider)
+      .days(
+        DateTime(now.year, now.month),
+        DateTime(now.year, now.month + 1, 0),
+      );
+  return month.summary;
 }
 
 @riverpod
@@ -87,79 +129,23 @@ class AttendanceMonthCursor extends _$AttendanceMonthCursor {
 }
 
 @riverpod
-class AttendanceMonthNotifier extends _$AttendanceMonthNotifier {
-  @override
-  Future<AttendanceMonth> build() => ref
+Future<AttendanceMonth> attendanceMonth(Ref ref) {
+  final month = ref.watch(attendanceMonthCursorProvider);
+  return ref
       .watch(attendanceRepositoryProvider)
-      .month(ref.watch(attendanceMonthCursorProvider));
-
-  Future<void> requestCorrection(DateTime date, String reason) async {
-    await ref
-        .read(attendanceRepositoryProvider)
-        .requestCorrection(date, reason);
-    if (ref.mounted) ref.invalidateSelf();
-  }
+      .days(month, DateTime(month.year, month.month + 1, 0));
 }
 
 @riverpod
-class TeamAttendanceFilter extends _$TeamAttendanceFilter {
+class TeamAttendancePeriod extends _$TeamAttendancePeriod {
   @override
-  TeamAttendanceQuery build() => const TeamAttendanceQuery();
+  TeamPeriod build() => TeamPeriod.today;
 
-  void setPeriod(TeamPeriod period) =>
-      state = state.copyWith(period: period, correctionsOnly: false);
-
-  void toggleCorrections() =>
-      state = state.copyWith(correctionsOnly: !state.correctionsOnly);
+  void set(TeamPeriod period) => state = period;
 }
 
+/// The team's attendance for the chosen period.
 @riverpod
-Future<TeamAttendanceSummary> teamAttendanceSummary(Ref ref) => ref
+Future<TeamAttendance> teamAttendance(Ref ref) => ref
     .watch(attendanceRepositoryProvider)
-    .teamSummary(
-      ref.watch(teamAttendanceFilterProvider.select((q) => q.period)),
-    );
-
-/// The team's attendance, 20 members at a time.
-@riverpod
-class TeamAttendanceNotifier extends _$TeamAttendanceNotifier {
-  @override
-  Future<Paged<TeamAttendanceRow>> build() async => Paged.first(
-    await ref
-        .watch(attendanceRepositoryProvider)
-        .team(ref.watch(teamAttendanceFilterProvider)),
-  );
-
-  Future<void> loadMore() async {
-    final current = state.value;
-    if (current == null || !current.hasMore || current.isLoadingMore) return;
-    state = AsyncData(current.loadingMore());
-    try {
-      final next = await ref
-          .read(attendanceRepositoryProvider)
-          .team(
-            ref
-                .read(teamAttendanceFilterProvider)
-                .copyWith(page: current.page + 1),
-          );
-      if (!ref.mounted) return;
-      state = AsyncData(current.append(next));
-    } on ApiFailure catch (failure) {
-      if (!ref.mounted) return;
-      state = AsyncData(current.failedMore(failure));
-    }
-  }
-
-  Future<void> resolve(TeamAttendanceRow row, {required bool approve}) async {
-    await ref
-        .read(attendanceRepositoryProvider)
-        .resolveCorrection(
-          row.memberId,
-          row.correctionDate ?? DateTime.now(),
-          approve: approve,
-        );
-    if (!ref.mounted) return;
-    ref.invalidateSelf();
-    ref.invalidate(teamAttendanceSummaryProvider);
-  }
-}
+    .team(ref.watch(teamAttendancePeriodProvider));

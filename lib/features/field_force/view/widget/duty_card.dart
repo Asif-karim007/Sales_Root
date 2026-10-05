@@ -52,16 +52,12 @@ class _DutyRow extends ConsumerWidget {
     final l10n = context.l10n;
     final log = today.log;
     final tracker = ref.watch(trackerProvider).value;
-    final shift = clockOn(
-      today.date,
-      today.shiftEnd,
-    ).difference(clockOn(today.date, today.shiftStart)).inMinutes;
     final checkInAt = log?.checkInAt;
     final checkedOut = log?.isCheckedOut ?? false;
 
     return Row(
       children: [
-        WorkedRing(minutes: log?.workedUntil(now) ?? 0, shiftMinutes: shift),
+        WorkedRing(minutes: log?.workedUntil(now) ?? 0),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -75,7 +71,7 @@ class _DutyRow extends ConsumerWidget {
                 SrTag(
                   l10n.ffCheckedInPlace(
                     context.fmt.time(checkInAt),
-                    log?.checkInPlace?.location ?? l10n.ffOffice,
+                    placeLabel(l10n, log?.inOffice),
                   ),
                   tone: SrTone.ok,
                 ),
@@ -84,10 +80,7 @@ class _DutyRow extends ConsumerWidget {
                 behavior: HitTestBehavior.opaque,
                 onTap: () => showTrackingStatusSheet(context),
                 child: Text(
-                  l10n.ffDutyLine(
-                    context.ffWindow(today.shiftStart, today.shiftEnd),
-                    trackingLabel(l10n, tracker),
-                  ),
+                  l10n.ffDutyTrackingLine(trackingLabel(l10n, tracker)),
                   style: AppText.meta(c.ink2),
                 ),
               ),

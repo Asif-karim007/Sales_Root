@@ -38,16 +38,13 @@ void main() {
   });
 
   test('a route sums road legs between stops', () {
-    Visit stop(int id, double lat, double lng) => Visit(
-      id: id,
-      status: VisitStatus.planned,
-      latitude: lat,
-      longitude: lng,
+    PlanStop stop(String id, double lat, double lng) => PlanStop.ofStop(
+      RouteStop(id: id, companyId: id, name: id, latitude: lat, longitude: lng),
     );
     final plan = RoutePlan.of([
-      stop(1, 23.8223, 90.3654),
-      stop(2, 23.7937, 90.4066),
-      stop(3, 23.7330, 90.4172),
+      stop('a', 23.8223, 90.3654),
+      stop('b', 23.7937, 90.4066),
+      stop('c', 23.7330, 90.4172),
     ]);
     expect(plan.legs.first, isNull);
     expect(plan.legs[1]?.km, greaterThan(5));

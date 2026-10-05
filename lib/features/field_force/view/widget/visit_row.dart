@@ -7,22 +7,21 @@ import 'package:salesroot/features/field_force/models/visit.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// Where a visit stands on today's list.
-enum VisitSlot { done, inProgress, next, later, missed }
+/// Where a stop stands on today's list.
+enum VisitSlot { done, inProgress, next, later }
 
-/// Slots for a day's visits in route order: the first one still to do is
+/// Slots for a day's stops in order: the first one still to visit is
 /// "next", the rest "later".
-List<VisitSlot> visitSlots(List<Visit> visits) {
+List<VisitSlot> visitSlots(List<PlanStop> stops) {
   final slots = <VisitSlot>[];
   var nextTaken = false;
-  for (final visit in visits) {
-    slots.add(switch (visit.status) {
+  for (final stop in stops) {
+    slots.add(switch (stop.status) {
       VisitStatus.done => VisitSlot.done,
       VisitStatus.inProgress => VisitSlot.inProgress,
-      VisitStatus.missed => VisitSlot.missed,
       VisitStatus.planned => nextTaken ? VisitSlot.later : VisitSlot.next,
     });
-    if (visit.status == VisitStatus.planned) nextTaken = true;
+    if (stop.status == VisitStatus.planned) nextTaken = true;
   }
   return slots;
 }
@@ -30,12 +29,12 @@ List<VisitSlot> visitSlots(List<Visit> visits) {
 class VisitRow extends StatelessWidget {
   const VisitRow({
     super.key,
-    required this.visit,
+    required this.stop,
     required this.slot,
     required this.onTap,
   });
 
-  final Visit visit;
+  final PlanStop stop;
   final VisitSlot slot;
   final VoidCallback onTap;
 
@@ -43,8 +42,7 @@ class VisitRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
-    final bangla = context.fmt.isBangla;
-    final planned = visit.plannedAt;
+    final time = stop.time;
     final (icon, tone, tag, tagTone) = switch (slot) {
       VisitSlot.done => (
         Icons.check_rounded,
@@ -70,26 +68,18 @@ class VisitRow extends StatelessWidget {
         l10n.ffSlotLater,
         SrTone.neutral,
       ),
-      VisitSlot.missed => (
-        Icons.event_busy_outlined,
-        SrAvatarTone.danger,
-        l10n.ffSlotMissed,
-        SrTone.err,
-      ),
     };
-    final subtitle = [?visit.area?.of(bangla), ?visit.purpose].join(' · ');
-
     return SrListRow(
       leading: SrAvatar(icon: icon, tone: tone),
-      title: visit.title,
-      subtitle: subtitle,
+      title: stop.title,
+      subtitle: stop.area,
       onTap: onTap,
       trailing: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (planned != null)
-            Text(context.fmt.time(planned), style: AppText.rowTitle(c.ink)),
+          if (time != null)
+            Text(context.fmt.time(time), style: AppText.rowTitle(c.ink)),
           const SizedBox(height: 4),
           SrTag(tag, tone: tagTone),
         ],

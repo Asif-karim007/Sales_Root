@@ -1,0 +1,63 @@
+{
+    "day": "2026-10-05",
+    "attendance": {
+        "id": "01a10d05-7e58-7a28-95c6-4d9a290b85c3",
+        "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+        "membershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+        "day": "2026-10-05T00:00:00",
+        "checkInAt": "2026-10-05T17:03:46.261607Z",
+        "checkInLat": 23.8366,
+        "checkInLng": 90.3695,
+        "checkInAccuracy": 12.5,
+        "checkInInOffice": false,
+        "checkInReason": "[test] field probe",
+        "checkInPhoto": null,
+        "checkOutAt": null,
+        "checkOutLat": null,
+        "checkOutLng": null,
+        "checkOutManual": false,
+        "status": "late",
+        "mockDetected": false,
+        "distanceKm": 0.0,
+        "note": null,
+        "createdAt": "2026-10-05T17:03:46.263995Z",
+        "updatedAt": "2026-10-05T17:03:46.263995Z",
+        "deletedAt": null,
+        "version": 255
+    },
+    "visits": [
+        {
+            "id": "01a10d05-f45b-710c-9095-806e0018311f",
+            "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+            "membershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+            "companyId": null,
+            "leadId": null,
+            "contactId": null,
+            "startedAt": "2026-10-05T17:04:16.475049Z",
+            "endedAt": null,
+            "startLat": 23.837,
+            "startLng": 90.37,
+            "endLat": null,
+            "endLng": null,
+            "locationMismatch": false,
+            "outcome": null,
+            "note": null,
+            "photos": [],
+            "packData": "{}",
+            "routeStopId": null,
+            "createdAt": "2026-10-05T17:04:16.475049Z",
+            "updatedAt": "2026-10-05T17:04:16.475049Z",
+            "deletedAt": null,
+            "version": 256,
+            "companyName": null
+        }
+    ],
+    "route": {
+        "stops": []
+    },
+    "settings": {
+        "geofenceM": 200,
+        "trackIntervalSec": 600,
+        "selfieOnCheckIn": false
+    }
+}

@@ -1,0 +1,157 @@
+{
+    "range": {
+        "preset": "custom",
+        "from": "2026-10-01",
+        "to": "2026-10-07",
+        "group": "day",
+        "buckets": [
+            "2026-10-01",
+            "2026-10-02",
+            "2026-10-03",
+            "2026-10-04",
+            "2026-10-05",
+            "2026-10-06",
+            "2026-10-07"
+        ],
+        "days": 7
+    },
+    "summary": {
+        "daysPresent": 0,
+        "late": 0,
+        "absent": 0,
+        "distanceKm": 10045.2,
+        "visits": 1,
+        "productiveVisits": 0,
+        "mockGpsFlags": 0
+    },
+    "trend": [
+        {
+            "bucket": "2026-10-01",
+            "present": 0,
+            "late": 0,
+            "absent": 0,
+            "leave": 0,
+            "inOffice": 0,
+            "distanceKm": 0.0,
+            "avgHours": 0.0,
+            "visits": 0,
+            "productiveVisits": 0,
+            "locationMismatch": 0,
+            "avgVisitMin": 0
+        },
+        {
+            "bucket": "2026-10-02",
+            "present": 0,
+            "late": 0,
+            "absent": 0,
+            "leave": 0,
+            "inOffice": 0,
+            "distanceKm": 0.0,
+            "avgHours": 0.0,
+            "visits": 0,
+            "productiveVisits": 0,
+            "locationMismatch": 0,
+            "avgVisitMin": 0
+        },
+        {
+            "bucket": "2026-10-03",
+            "present": 0,
+            "late": 0,
+            "absent": 0,
+            "leave": 0,
+            "inOffice": 0,
+            "distanceKm": 0.0,
+            "avgHours": 0.0,
+            "visits": 0,
+            "productiveVisits": 0,
+            "locationMismatch": 0,
+            "avgVisitMin": 0
+        },
+        {
+            "bucket": "2026-10-04",
+            "present": 0,
+            "late": 0,
+            "absent": 0,
+            "leave": 0,
+            "inOffice": 0,
+            "distanceKm": 0.0,
+            "avgHours": 0.0,
+            "visits": 0,
+            "productiveVisits": 0,
+            "locationMismatch": 0,
+            "avgVisitMin": 0
+        },
+        {
+            "bucket": "2026-10-05",
+            "present": 0,
+            "late": 0,
+            "absent": 0,
+            "leave": 1,
+            "inOffice": 0,
+            "distanceKm": 10045.2,
+            "avgHours": 0.0,
+            "visits": 1,
+            "productiveVisits": 0,
+            "locationMismatch": 0,
+            "avgVisitMin": 0
+        },
+        {
+            "bucket": "2026-10-06",
+            "present": 0,
+            "late": 0,
+            "absent": 0,
+            "leave": 0,
+            "inOffice": 0,
+            "distanceKm": 0.0,
+            "avgHours": 0.0,
+            "visits": 0,
+            "productiveVisits": 0,
+            "locationMismatch": 0,
+            "avgVisitMin": 0
+        },
+        {
+            "bucket": "2026-10-07",
+            "present": 0,
+            "late": 0,
+            "absent": 0,
+            "leave": 0,
+            "inOffice": 0,
+            "distanceKm": 0.0,
+            "avgHours": 0.0,
+            "visits": 0,
+            "productiveVisits": 0,
+            "locationMismatch": 0,
+            "avgVisitMin": 0
+        }
+    ],
+    "breakdowns": {
+        "byPerson": [
+            {
+                "key": "Rafi Ahmed",
+                "id": "01a10101-8656-7886-b8e5-4f197fbd9159",
+                "daysPresent": 0,
+                "late": 0,
+                "absent": 0,
+                "distanceKm": 10045.2,
+                "avgHours": 0.0,
+                "visits": 1,
+                "productiveVisits": 0,
+                "earliestIn": "23:03:46.2616070",
+                "avgInHour": 23.06
+            }
+        ],
+        "byOutcome": [
+            {
+                "key": "\u2014",
+                "visits": 1
+            }
+        ],
+        "byCustomer": [
+            {
+                "key": "\u2014",
+                "visits": 1,
+                "lastVisit": "2026-10-05T17:04:16.475049Z"
+            }
+        ]
+    }
+}

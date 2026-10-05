@@ -11,27 +11,40 @@ import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
-import 'package:salesroot/features/field_force/models/visit.dart';
 import 'package:salesroot/features/field_force/providers/visit_providers.dart';
 import 'package:salesroot/features/field_force/service/location_source.dart';
-import 'package:salesroot/features/field_force/view/widget/far_check_in_sheet.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_format.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_info_line.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_language_toggle.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_map.dart';
 import 'package:salesroot/features/field_force/view/widget/field_force_gate.dart';
 import 'package:salesroot/features/field_force/view/widget/minute_builder.dart';
-import 'package:salesroot/features/field_force/view/widget/photo_capture.dart';
-import 'package:salesroot/features/field_force/view/widget/visit_note_sheet.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #122 checkin: where the phone is against where the customer is, with a
-/// photo and a note. Beyond the check-in radius it goes through #123.
-class CheckInScreen extends ConsumerStatefulWidget {
-  const CheckInScreen({super.key, required this.visitId});
+/// The check-in screen for [companyId], from a route stop or a lead.
+String checkInRoute({
+  required String companyId,
+  String? leadId,
+  String? routeStopId,
+}) => Uri(
+  path: Routes.visitCheckInFor(companyId),
+  queryParameters: {'lead': ?leadId, 'stop': ?routeStopId},
+).toString();
 
-  final int visitId;
+/// #122 checkin: where the phone is against where the customer is. Far from
+/// the customer the visit still starts, and the server flags it.
+class CheckInScreen extends ConsumerStatefulWidget {
+  const CheckInScreen({
+    super.key,
+    required this.companyId,
+    this.leadId,
+    this.routeStopId,
+  });
+
+  final String companyId;
+  final String? leadId;
+  final String? routeStopId;
 
   @override
   ConsumerState<CheckInScreen> createState() => _CheckInScreenState();
@@ -41,17 +54,15 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen> {
   bool _submitting = false;
 
   CheckInNotifier get _notifier =>
-      ref.read(checkInProvider(widget.visitId).notifier);
+      ref.read(checkInProvider(widget.companyId).notifier);
 
-  Future<void> _checkIn(CheckInState state) async {
-    String? reason;
-    if (state.isFar) {
-      reason = await showFarCheckInSheet(context, visitId: widget.visitId);
-      if (reason == null || !mounted) return;
-    }
+  Future<void> _checkIn() async {
     setState(() => _submitting = true);
     try {
-      final visit = await _notifier.submit(reason: reason);
+      final visit = await _notifier.submit(
+        leadId: widget.leadId,
+        routeStopId: widget.routeStopId,
+      );
       if (!mounted) return;
       showSrSuccess(context, context.l10n.ffCheckedInVisit(visit.title));
       context.pushReplacement(Routes.visitFor(visit.id));
@@ -67,36 +78,22 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final checkIn = ref.watch(checkInProvider(widget.visitId));
+    final checkIn = ref.watch(checkInProvider(widget.companyId));
     final value = checkIn.value;
-    final visit = value?.visit;
-    final canCheckIn =
-        value != null &&
-        value.fix != null &&
-        !value.locating &&
-        visit?.status == VisitStatus.planned;
+    final canCheckIn = value != null && value.fix != null && !value.locating;
 
     return SrScaffold(
       appBar: SrAppBar(
         title: l10n.ffCheckInTitle,
         actions: const [FfLanguageToggle()],
       ),
-      footer: visit != null && visit.status != VisitStatus.planned
-          ? SrButton(
-              label: l10n.ffOpenVisit,
-              expand: true,
-              onPressed: () =>
-                  context.pushReplacement(Routes.visitFor(visit.id)),
-            )
-          : SrButton(
-              label: l10n.ffCheckIn,
-              icon: Icons.login_rounded,
-              expand: true,
-              loading: _submitting,
-              onPressed: canCheckIn && !_submitting
-                  ? () => _checkIn(value)
-                  : null,
-            ),
+      footer: SrButton(
+        label: l10n.ffCheckIn,
+        icon: Icons.login_rounded,
+        expand: true,
+        loading: _submitting,
+        onPressed: canCheckIn && !_submitting ? _checkIn : null,
+      ),
       body: FieldForceGate(
         module: AppModule.visit,
         right: ModuleRight.add,
@@ -104,21 +101,10 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen> {
           AsyncValue(:final value?) => _CheckInBody(
             state: value,
             onRetry: _notifier.locate,
-            onPhoto: () async {
-              final path = await takeVisitPhoto(context);
-              if (path != null) _notifier.setPhoto(path);
-            },
-            onNote: () async {
-              final note = await showVisitNoteSheet(
-                context,
-                initial: value.note,
-              );
-              if (note != null) _notifier.setNote(note);
-            },
           ),
           AsyncError(:final error) => SrErrorState(
             error: error,
-            onRetry: () => ref.invalidate(checkInProvider(widget.visitId)),
+            onRetry: () => ref.invalidate(checkInProvider(widget.companyId)),
           ),
           _ => const SrSkeletonList(count: 3, cards: true),
         },
@@ -128,27 +114,18 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen> {
 }
 
 class _CheckInBody extends StatelessWidget {
-  const _CheckInBody({
-    required this.state,
-    required this.onRetry,
-    required this.onPhoto,
-    required this.onNote,
-  });
+  const _CheckInBody({required this.state, required this.onRetry});
 
   final CheckInState state;
   final VoidCallback onRetry;
-  final VoidCallback onPhoto;
-  final VoidCallback onNote;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final visit = state.visit;
+    final target = state.target;
     final fix = state.fix;
-    final lat = visit.latitude;
-    final lng = visit.longitude;
-    final photo = state.photoPath;
-    final note = state.note;
+    final lat = target.latitude;
+    final lng = target.longitude;
 
     return ListView(
       physics: const SrScrollPhysics(),
@@ -162,7 +139,7 @@ class _CheckInBody extends StatelessWidget {
                 id: 'customer',
                 latitude: lat,
                 longitude: lng,
-                title: visit.title,
+                title: target.companyName,
               ),
             if (fix != null)
               FfMapPin(
@@ -194,10 +171,9 @@ class _CheckInBody extends StatelessWidget {
             builder: (context, now) => Column(
               children: [
                 FfInfoLine(label: l10n.ffGps, value: _gpsLine(context)),
-                FfInfoLine(label: l10n.ffTime, value: context.fmt.time(now)),
                 FfInfoLine(
-                  label: l10n.ffPurpose,
-                  value: visit.purpose ?? '—',
+                  label: l10n.ffTime,
+                  value: context.fmt.time(now),
                   last: true,
                 ),
               ],
@@ -205,37 +181,10 @@ class _CheckInBody extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: SrButton(
-                label: photo == null ? l10n.ffPhoto : l10n.ffRetakePhoto,
-                icon: Icons.photo_camera_outlined,
-                size: SrButtonSize.sm,
-                variant: SrButtonVariant.secondary,
-                expand: true,
-                onPressed: onPhoto,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: SrButton(
-                label: note == null ? l10n.ffNote : l10n.ffEditNote,
-                icon: Icons.edit_note_rounded,
-                size: SrButtonSize.sm,
-                variant: SrButtonVariant.secondary,
-                expand: true,
-                onPressed: onNote,
-              ),
-            ),
-          ],
+        SrNote(
+          message: state.isFar ? l10n.ffFarVisitNote : l10n.ffCheckInNote,
+          tone: state.isFar ? SrNoteTone.gold : SrNoteTone.tint,
         ),
-        if (photo != null || note != null) ...[
-          const SizedBox(height: 12),
-          _Attachments(photo: photo, note: note),
-        ],
-        const SizedBox(height: 12),
-        SrNote(message: l10n.ffCheckInNote),
       ],
     );
   }
@@ -259,25 +208,21 @@ class _CustomerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
-    final visit = state.visit;
-    final planned = visit.plannedAt;
+    final target = state.target;
     final distance = state.distance;
-    final subtitle = [
-      ?visit.address,
-      if (planned != null) l10n.ffPlannedAt(context.fmt.time(planned)),
-    ].join(' · ');
+    final subtitle = [?target.address, ?target.area].join(' · ');
 
     return SrCard(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [
-          SrAvatar(name: visit.title, size: 44, square: true),
+          SrAvatar(name: target.companyName, size: 44, square: true),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(visit.title, style: AppText.rowTitle(c.ink)),
+                Text(target.companyName, style: AppText.rowTitle(c.ink)),
                 Text(subtitle, style: AppText.meta(c.ink2)),
               ],
             ),
@@ -289,40 +234,6 @@ class _CustomerCard extends StatelessWidget {
             SrTag(
               l10n.ffAway(context.ffDistance(distance)),
               tone: state.isFar ? SrTone.warn : SrTone.ok,
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Attachments extends StatelessWidget {
-  const _Attachments({required this.photo, required this.note});
-
-  final String? photo;
-  final String? note;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = SrColors.of(context);
-    final photo = this.photo;
-    final note = this.note;
-    return SrCard(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (photo != null) ...[
-            FfPhotoThumb(path: photo, size: 56),
-            const SizedBox(width: 12),
-          ],
-          if (note != null)
-            Expanded(
-              child: Text(
-                note,
-                style: AppText.body(c.ink, size: 14),
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
-              ),
             ),
         ],
       ),

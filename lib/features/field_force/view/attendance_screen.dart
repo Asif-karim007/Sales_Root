@@ -6,7 +6,6 @@ import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/access/module_access.dart';
 import 'package:salesroot/core/format/app_format.dart';
-import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
@@ -40,12 +39,7 @@ class AttendanceScreen extends ConsumerWidget {
     return SrScaffold(
       appBar: SrAppBar(
         title: l10n.ffAttendanceTitle,
-        subtitle: value == null
-            ? null
-            : l10n.ffAttendanceSubtitle(
-                fmt.weekdayDate(value.date),
-                context.ffWindow(value.shiftStart, value.shiftEnd),
-              ),
+        subtitle: value == null ? null : fmt.weekdayDate(value.date),
         actions: [
           const FfLanguageToggle(),
           if (team.visible)
@@ -64,7 +58,12 @@ class AttendanceScreen extends ConsumerWidget {
       body: FieldForceGate(
         module: AppModule.attendance,
         child: RefreshIndicator(
-          onRefresh: () => ref.refresh(attendanceTodayProvider.future),
+          onRefresh: () {
+            ref
+              ..invalidate(attendanceWeekProvider)
+              ..invalidate(attendanceThisMonthProvider);
+            return ref.refresh(attendanceTodayProvider.future);
+          },
           child: switch (today) {
             AsyncValue(:final value?) => _AttendanceBody(today: value),
             AsyncError(:final error) => SrErrorState(
@@ -89,7 +88,9 @@ class _AttendanceBody extends ConsumerWidget {
     final c = SrColors.of(context);
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final month = today.month;
+    final month = ref.watch(attendanceThisMonthProvider).value;
+    final week = ref.watch(attendanceWeekProvider).value?.days;
+    String count(int? n) => n == null ? '—' : fmt.number(n);
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(parent: SrScrollPhysics()),
@@ -100,22 +101,22 @@ class _AttendanceBody extends ConsumerWidget {
         FfCountRow(
           tiles: [
             FfCountTile(
-              value: fmt.number(month.present),
+              value: count(month?.present),
               label: l10n.ffPresent,
               color: c.success,
             ),
             FfCountTile(
-              value: fmt.number(month.late),
+              value: count(month?.late),
               label: l10n.ffLate,
               color: c.gold,
             ),
             FfCountTile(
-              value: fmt.number(month.leave),
+              value: count(month?.leave),
               label: l10n.ffLeave,
               color: c.ink2,
             ),
             FfCountTile(
-              value: fmt.number(month.absent),
+              value: count(month?.absent),
               label: l10n.ffAbsent,
               color: c.danger,
             ),
@@ -132,7 +133,10 @@ class _AttendanceBody extends ConsumerWidget {
                 onAction: () => context.push(Routes.attendanceCalendar),
               ),
               const SizedBox(height: 10),
-              AttendanceWeekStrip(days: today.week),
+              if (week == null)
+                const SrSkeletonBox(height: 48, radius: 10)
+              else
+                AttendanceWeekStrip(days: week),
             ],
           ),
         ),
@@ -157,33 +161,14 @@ class _AttendanceBody extends ConsumerWidget {
   }
 }
 
-class _PunchCard extends ConsumerStatefulWidget {
+class _PunchCard extends ConsumerWidget {
   const _PunchCard({required this.today});
 
   final AttendanceToday today;
 
   @override
-  ConsumerState<_PunchCard> createState() => _PunchCardState();
-}
-
-class _PunchCardState extends ConsumerState<_PunchCard> {
-  bool _busy = false;
-
-  Future<void> _toggleBreak() async {
-    setState(() => _busy = true);
-    try {
-      await ref.read(attendanceTodayProvider.notifier).toggleBreak();
-    } on ApiFailure catch (failure) {
-      if (mounted) showSrError(context, failure.message);
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final today = widget.today;
     final log = today.log;
     final canPunch = ref.watch(
       moduleAccessProvider(
@@ -200,36 +185,20 @@ class _PunchCardState extends ConsumerState<_PunchCard> {
             _PunchSummary(today: today, now: now),
             if (canPunch && !(log?.isCheckedOut ?? false)) ...[
               const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: checkedIn
-                        ? SrButton(
-                            label: l10n.ffCheckOut,
-                            icon: Icons.logout_rounded,
-                            expand: true,
-                            onPressed: () => dutyCheckOut(context, ref),
-                          )
-                        : SrButton(
-                            label: l10n.ffCheckIn,
-                            icon: Icons.login_rounded,
-                            expand: true,
-                            onPressed: () => dutyCheckIn(context, ref),
-                          ),
-                  ),
-                  if (checkedIn) ...[
-                    const SizedBox(width: 8),
-                    SrButton(
-                      label: log?.onBreak ?? false
-                          ? l10n.ffEndBreak
-                          : l10n.ffBreak,
-                      variant: SrButtonVariant.secondary,
-                      loading: _busy,
-                      onPressed: _busy ? null : _toggleBreak,
-                    ),
-                  ],
-                ],
-              ),
+              if (checkedIn)
+                SrButton(
+                  label: l10n.ffCheckOut,
+                  icon: Icons.logout_rounded,
+                  expand: true,
+                  onPressed: () => dutyCheckOut(context, ref),
+                )
+              else
+                SrButton(
+                  label: l10n.ffCheckIn,
+                  icon: Icons.login_rounded,
+                  expand: true,
+                  onPressed: () => dutyCheckIn(context, ref),
+                ),
             ],
           ],
         ),
@@ -252,45 +221,26 @@ class _PunchSummary extends StatelessWidget {
     final log = today.log;
     final checkInAt = log?.checkInAt;
     final checkOutAt = log?.checkOutAt;
-    final start = clockOn(today.date, today.shiftStart);
-    final end = today.shiftEndsAt;
-    final left = end.difference(now).inMinutes;
-    final place = log?.checkInPlace?.location;
+    final place = checkInAt == null ? null : placeLabel(l10n, log?.inOffice);
 
     final (tag, tone) = checkOutAt != null
         ? (l10n.ffCheckedOutAt(fmt.time(checkOutAt)), SrTone.neutral)
         : checkInAt != null
         ? (l10n.ffCheckedInAt(fmt.time(checkInAt)), SrTone.ok)
         : (l10n.ffNotCheckedIn, SrTone.neutral);
-    final line = checkOutAt != null
-        ? l10n.ffWorkedToday(context.ffDuration(log?.workedUntil(now) ?? 0))
-        : checkInAt == null
-        ? l10n.ffShiftStarts(fmt.time(start))
-        : left > 0
-        ? l10n.ffShiftEndsIn(fmt.time(end), context.ffDuration(left))
-        : l10n.ffShiftOver(fmt.time(end));
+    final line = checkInAt == null
+        ? l10n.ffTodayEmpty
+        : l10n.ffWorkedToday(context.ffDuration(log?.workedUntil(now) ?? 0));
 
     return Row(
       children: [
-        WorkedRing(
-          minutes: log?.workedUntil(now) ?? 0,
-          shiftMinutes: end.difference(start).inMinutes,
-          size: 88,
-        ),
+        WorkedRing(minutes: log?.workedUntil(now) ?? 0, size: 88),
         const SizedBox(width: 14),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SrTag(tag, tone: tone),
-              if (log?.onBreak ?? false) ...[
-                const SizedBox(height: 6),
-                SrTag(
-                  l10n.ffOnBreak,
-                  tone: SrTone.gold,
-                  icon: Icons.coffee_outlined,
-                ),
-              ],
               if (place != null) ...[
                 const SizedBox(height: 6),
                 Row(

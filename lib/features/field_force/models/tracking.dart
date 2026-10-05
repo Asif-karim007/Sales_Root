@@ -1,205 +1,114 @@
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/field_force/models/attendance.dart';
 
-/// The owner's live-tracking and duty rules for the workspace.
+/// The workspace's field rules, from `attendance/today` → `settings`.
 class TrackingSettings {
   const TrackingSettings({
-    this.dutyStart = '09:00',
-    this.dutyEnd = '18:00',
-    this.workDays = const [6, 7, 1, 2, 3, 4],
-    this.checkInRadius = 300,
-    this.updateMinutes = 0,
-    this.retentionDays = 90,
-    this.liveTracking = true,
-    this.offOutsideDuty = true,
-    this.allowPauses = true,
-    this.flagMockLocations = true,
-    this.teamLeadSeesOwn = true,
-    this.managerSeesDepartment = true,
-    this.ownerSeesEveryone = true,
+    this.geofenceMetres = 200,
+    this.trackIntervalSeconds = 600,
+    this.selfieOnCheckIn = false,
   });
 
   static const radiusChoices = [100, 200, 300, 500];
-  static const updateChoices = [0, 1, 5, 10];
-  static const retentionChoices = [30, 60, 90, 180];
+  static const intervalChoices = [60, 300, 600, 900];
 
-  /// "09:00", local wall-clock time.
-  final String dutyStart;
-  final String dutyEnd;
+  /// Metres; further than this from the customer is a far check-in.
+  final int geofenceMetres;
 
-  /// `DateTime.weekday` values; Friday (5) is the usual day off.
-  final List<int> workDays;
+  /// Seconds between location updates; 0 turns live tracking off.
+  final int trackIntervalSeconds;
+  final bool selfieOnCheckIn;
 
-  /// Metres; further than this is a far check-in.
-  final int checkInRadius;
+  bool get liveTracking => trackIntervalSeconds > 0;
 
-  /// Minutes between location updates; 0 adapts between 2 and 5.
-  final int updateMinutes;
-  final int retentionDays;
-  final bool liveTracking;
-  final bool offOutsideDuty;
-  final bool allowPauses;
-  final bool flagMockLocations;
-  final bool teamLeadSeesOwn;
-  final bool managerSeesDepartment;
-  final bool ownerSeesEveryone;
-
-  /// The heartbeat the tracker uses.
-  double get heartbeatMinutes => updateMinutes == 0 ? 5 : updateMinutes * 1.0;
-
-  bool isWorkDay(DateTime day) => workDays.contains(day.weekday);
+  double get heartbeatMinutes => trackIntervalSeconds / 60;
 
   factory TrackingSettings.fromJson(Map<String, dynamic> json) {
     const fallback = TrackingSettings();
-    final days = jsonInts(json['WorkDays']);
     return TrackingSettings(
-      dutyStart: json['DutyStart'] as String? ?? fallback.dutyStart,
-      dutyEnd: json['DutyEnd'] as String? ?? fallback.dutyEnd,
-      workDays: days.isEmpty ? fallback.workDays : days,
-      checkInRadius: jsonInt(json['CheckInRadius']) ?? fallback.checkInRadius,
-      updateMinutes: jsonInt(json['UpdateMinutes']) ?? fallback.updateMinutes,
-      retentionDays: jsonInt(json['RetentionDays']) ?? fallback.retentionDays,
-      liveTracking: json['LiveTracking'] as bool? ?? fallback.liveTracking,
-      offOutsideDuty:
-          json['OffOutsideDuty'] as bool? ?? fallback.offOutsideDuty,
-      allowPauses: json['AllowPauses'] as bool? ?? fallback.allowPauses,
-      flagMockLocations:
-          json['FlagMockLocations'] as bool? ?? fallback.flagMockLocations,
-      teamLeadSeesOwn:
-          json['TeamLeadSeesOwn'] as bool? ?? fallback.teamLeadSeesOwn,
-      managerSeesDepartment:
-          json['ManagerSeesDepartment'] as bool? ??
-          fallback.managerSeesDepartment,
-      ownerSeesEveryone:
-          json['OwnerSeesEveryone'] as bool? ?? fallback.ownerSeesEveryone,
+      geofenceMetres: jsonInt(json['geofenceM']) ?? fallback.geofenceMetres,
+      trackIntervalSeconds:
+          jsonInt(json['trackIntervalSec']) ?? fallback.trackIntervalSeconds,
+      selfieOnCheckIn: jsonBool(json['selfieOnCheckIn']),
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'DutyStart': dutyStart,
-    'DutyEnd': dutyEnd,
-    'WorkDays': workDays,
-    'CheckInRadius': checkInRadius,
-    'UpdateMinutes': updateMinutes,
-    'RetentionDays': retentionDays,
-    'LiveTracking': liveTracking,
-    'OffOutsideDuty': offOutsideDuty,
-    'AllowPauses': allowPauses,
-    'FlagMockLocations': flagMockLocations,
-    'TeamLeadSeesOwn': teamLeadSeesOwn,
-    'ManagerSeesDepartment': managerSeesDepartment,
-    'OwnerSeesEveryone': ownerSeesEveryone,
+    'geofenceM': geofenceMetres,
+    'trackIntervalSec': trackIntervalSeconds,
+    'selfieOnCheckIn': selfieOnCheckIn,
   };
 
   TrackingSettings copyWith({
-    String? dutyStart,
-    String? dutyEnd,
-    List<int>? workDays,
-    int? checkInRadius,
-    int? updateMinutes,
-    int? retentionDays,
-    bool? liveTracking,
-    bool? offOutsideDuty,
-    bool? allowPauses,
-    bool? flagMockLocations,
-    bool? teamLeadSeesOwn,
-    bool? managerSeesDepartment,
-    bool? ownerSeesEveryone,
+    int? geofenceMetres,
+    int? trackIntervalSeconds,
+    bool? selfieOnCheckIn,
   }) => TrackingSettings(
-    dutyStart: dutyStart ?? this.dutyStart,
-    dutyEnd: dutyEnd ?? this.dutyEnd,
-    workDays: workDays ?? this.workDays,
-    checkInRadius: checkInRadius ?? this.checkInRadius,
-    updateMinutes: updateMinutes ?? this.updateMinutes,
-    retentionDays: retentionDays ?? this.retentionDays,
-    liveTracking: liveTracking ?? this.liveTracking,
-    offOutsideDuty: offOutsideDuty ?? this.offOutsideDuty,
-    allowPauses: allowPauses ?? this.allowPauses,
-    flagMockLocations: flagMockLocations ?? this.flagMockLocations,
-    teamLeadSeesOwn: teamLeadSeesOwn ?? this.teamLeadSeesOwn,
-    managerSeesDepartment: managerSeesDepartment ?? this.managerSeesDepartment,
-    ownerSeesEveryone: ownerSeesEveryone ?? this.ownerSeesEveryone,
+    geofenceMetres: geofenceMetres ?? this.geofenceMetres,
+    trackIntervalSeconds: trackIntervalSeconds ?? this.trackIntervalSeconds,
+    selfieOnCheckIn: selfieOnCheckIn ?? this.selfieOnCheckIn,
   );
 }
 
-/// The member's answer to the live-tracking consent screen.
+/// The member's answer to the live-tracking consent screen, kept on this
+/// phone.
 class TrackingConsent {
-  const TrackingConsent({required this.given, this.at, this.workspaceName});
+  const TrackingConsent({this.at, this.workspaceName});
 
-  final bool given;
   final DateTime? at;
   final String? workspaceName;
-
-  factory TrackingConsent.fromJson(Map<String, dynamic> json) =>
-      TrackingConsent(
-        given: jsonBool(json['Given']),
-        at: jsonDate(json['At']),
-        workspaceName: json['WorkspaceName'] as String?,
-      );
 }
 
 enum LiveStatus {
-  onVisit('OnVisit'),
-  moving('Moving'),
-  idle('Idle'),
-  notTracking('NotTracking'),
-  offDuty('OffDuty');
+  live,
+  checkedOut,
+  offDuty;
 
-  const LiveStatus(this.wire);
-
-  final String wire;
-
-  static LiveStatus fromWire(String? value) => values.firstWhere(
-    (status) => status.wire == value,
-    orElse: () => LiveStatus.offDuty,
-  );
-
-  bool get isLive => this == onVisit || this == moving || this == idle;
+  bool get isLive => this == live;
 }
 
-/// Where one team member is right now.
+/// Where one team member is, from today's row of `GET attendance`.
 class LiveMember {
   const LiveMember({
     required this.memberId,
     required this.name,
     required this.status,
-    this.checkedIn = false,
     this.latitude,
     this.longitude,
-    this.area,
-    this.visitCompany,
     this.lastSeenAt,
-    this.lastSeenMinutes,
     this.battery,
+    this.visits = 0,
+    this.mockDetected = false,
   });
 
-  final int memberId;
-  final LocalizedName name;
+  final String memberId;
+  final String name;
   final LiveStatus status;
-  final bool checkedIn;
   final double? latitude;
   final double? longitude;
-  final LocalizedName? area;
-  final String? visitCompany;
   final DateTime? lastSeenAt;
-
-  /// How long ago the last ping arrived, by the server's clock.
-  final int? lastSeenMinutes;
   final int? battery;
+  final int visits;
+  final bool mockDetected;
 
-  factory LiveMember.fromJson(Map<String, dynamic> json) => LiveMember(
-    memberId: jsonInt(json['MemberId']) ?? 0,
-    name: LocalizedName.fromJson(json),
-    status: LiveStatus.fromWire(json['Status'] as String?),
-    checkedIn: jsonBool(json['CheckedIn']),
-    latitude: jsonDouble(json['Latitude']),
-    longitude: jsonDouble(json['Longitude']),
-    area: jsonObject(json['Area'], LocalizedName.fromJson),
-    visitCompany: json['VisitCompany'] as String?,
-    lastSeenAt: jsonDate(json['LastSeenAt']),
-    lastSeenMinutes: jsonInt(json['LastSeenMinutes']),
-    battery: jsonInt(json['Battery']),
-  );
+  factory LiveMember.fromJson(Map<String, dynamic> json) {
+    final battery = jsonInt(json['battery']);
+    return LiveMember(
+      memberId: jsonId(json['membershipId']) ?? '',
+      name: json['name'] as String? ?? '',
+      status: json['checkOutAt'] != null
+          ? LiveStatus.checkedOut
+          : json['checkInAt'] != null
+          ? LiveStatus.live
+          : LiveStatus.offDuty,
+      latitude: jsonDouble(json['lat']),
+      longitude: jsonDouble(json['lng']),
+      lastSeenAt: jsonDate(json['lastSeenAt']),
+      battery: battery == null || battery < 0 || battery > 100 ? null : battery,
+      visits: jsonInt(json['visits']) ?? 0,
+      mockDetected: jsonBool(json['mockDetected']),
+    );
+  }
 }
 
 /// One recorded location of a member's day.
@@ -218,17 +127,28 @@ class TrailPoint {
   /// Whole percent, when the phone reported it.
   final int? battery;
 
+  /// A point of `GET team/map`, in the `LocationPoint` shape the app
+  /// uploads.
   static TrailPoint? fromJson(Map<String, dynamic> json) {
-    final lat = jsonDouble(json['Latitude']);
-    final lng = jsonDouble(json['Longitude']);
+    final lat = jsonDouble(json['lat']);
+    final lng = jsonDouble(json['lng']);
     if (lat == null || lng == null) return null;
-    final battery = jsonInt(json['Battery']);
+    final battery = jsonInt(json['battery']);
     return TrailPoint(
       latitude: lat,
       longitude: lng,
-      time: jsonDate(json['LocationTime']),
+      time: jsonDate(json['at']),
       battery: battery == null || battery < 0 || battery > 100 ? null : battery,
     );
+  }
+
+  /// The points in a `GET team/map` answer for one member and day: a bare
+  /// list, or a list under `points`.
+  static List<TrailPoint> listOf(dynamic json) {
+    final rows = json is List ? json : jsonMap(json)['points'];
+    return [
+      for (final point in jsonList(rows, TrailPoint.fromJson)) ?point,
+    ]..sort((a, b) => (a.time ?? DateTime(0)).compareTo(b.time ?? DateTime(0)));
   }
 }
 
@@ -240,30 +160,14 @@ class MemberDay {
     required this.date,
     required this.points,
     required this.events,
-    this.heartbeatMinutes = 5,
   });
 
-  final int memberId;
-  final LocalizedName name;
+  final String memberId;
+  final String name;
   final DateTime date;
   final List<TrailPoint> points;
   final List<DayEvent> events;
-  final double heartbeatMinutes;
 
   int get visitCount =>
       events.where((e) => e.kind == DayEventKind.visit).length;
-
-  factory MemberDay.fromJson(Map<String, dynamic> json) {
-    final points = [
-      for (final point in jsonList(json['Points'], TrailPoint.fromJson)) ?point,
-    ]..sort((a, b) => (a.time ?? DateTime(0)).compareTo(b.time ?? DateTime(0)));
-    return MemberDay(
-      memberId: jsonInt(json['MemberId']) ?? 0,
-      name: LocalizedName.fromJson(json),
-      date: jsonDate(json['Date']) ?? DateTime(2000),
-      points: points,
-      events: dayEventsFromJson(json['Events']),
-      heartbeatMinutes: jsonDouble(json['HeartbeatMinutes']) ?? 5,
-    );
-  }
 }

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:battery_plus/battery_plus.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:salesroot/core/utils/debug_log.dart';
@@ -64,13 +63,8 @@ class TrackerEngine {
     _lastLng = null;
   }
 
-  Future<CaptureSkip> captureMovement(Position fix) => _capture(
-    latitude: fix.latitude,
-    longitude: fix.longitude,
-    accuracy: fix.accuracy,
-    fixTime: fix.timestamp,
-    kind: TrackerPingKind.movement,
-  );
+  Future<CaptureSkip> captureMovement(Position fix) =>
+      _capture(fix, kind: TrackerPingKind.movement);
 
   /// One fix every `DurationInMinute`, moving or not, so the server can
   /// tell "parked" from "the app was killed".
@@ -78,22 +72,16 @@ class TrackerEngine {
     if (!config.isInsideWindow(now)) return CaptureSkip.outsideWindow;
     final fix = await _bestFix();
     if (fix == null) return CaptureSkip.noFix;
-    return _capture(
-      latitude: fix.latitude,
-      longitude: fix.longitude,
-      accuracy: fix.accuracy,
-      fixTime: fix.timestamp,
-      kind: TrackerPingKind.heartbeat,
-    );
+    return _capture(fix, kind: TrackerPingKind.heartbeat);
   }
 
-  Future<CaptureSkip> _capture({
-    required double latitude,
-    required double longitude,
-    required double accuracy,
-    required DateTime fixTime,
+  Future<CaptureSkip> _capture(
+    Position fix, {
     required TrackerPingKind kind,
   }) async {
+    final latitude = fix.latitude;
+    final longitude = fix.longitude;
+    final accuracy = fix.accuracy;
     final now = DateTime.now();
     if (!config.isInsideWindow(now)) return CaptureSkip.outsideWindow;
     if (!TrackerPing.isValidCoordinate(latitude, longitude)) {
@@ -115,10 +103,12 @@ class TrackerEngine {
       TrackerPing(
         latitude: latitude,
         longitude: longitude,
-        locationTimeUtc: _validTime(fixTime, now).toUtc(),
+        locationTimeUtc: _validTime(fix.timestamp, now).toUtc(),
         createdAt: now.toUtc(),
         battery: await _batteryLevel(),
-        locationText: movement ? null : await _placeName(latitude, longitude),
+        accuracy: accuracy,
+        speed: fix.speed < 0 ? null : fix.speed,
+        mock: fix.isMocked,
         kind: kind,
       ),
     );
@@ -154,25 +144,6 @@ class TrackerEngine {
   Future<int?> _batteryLevel() async {
     try {
       return await _battery.batteryLevel;
-    } on Exception {
-      return null;
-    }
-  }
-
-  /// Heartbeats only: one lookup per 15 m would rate-limit the geocoder.
-  Future<String?> _placeName(double latitude, double longitude) async {
-    try {
-      final places = await Geocoding()
-          .placemarkFromCoordinates(latitude, longitude)
-          .timeout(const Duration(seconds: 8));
-      if (places.isEmpty) return null;
-      final place = places.first;
-      final text = [
-        for (final part in [place.street, place.subLocality, place.locality])
-          if (part != null && part.isNotEmpty) part,
-      ].join(', ');
-      if (text.isEmpty) return null;
-      return text.length > 250 ? text.substring(0, 250) : text;
     } on Exception {
       return null;
     }

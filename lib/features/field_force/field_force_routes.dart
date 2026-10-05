@@ -24,7 +24,7 @@ final List<RouteBase> fieldForceRoutes = [
     redirect: requireAccess(AppModule.visit),
     builder: (context, state) => VisitsScreen(
       openNew: state.uri.queryParameters['new'] == '1',
-      leadId: int.tryParse(state.uri.queryParameters['leadId'] ?? ''),
+      leadId: state.uri.queryParameters['leadId'],
     ),
   ),
   GoRoute(
@@ -45,7 +45,11 @@ final List<RouteBase> fieldForceRoutes = [
   GoRoute(
     path: Routes.visitCheckIn,
     redirect: requireAccess(AppModule.visit, ModuleRight.add),
-    builder: (context, state) => CheckInScreen(visitId: idParam(state)),
+    builder: (context, state) => CheckInScreen(
+      companyId: idParam(state),
+      leadId: state.uri.queryParameters['lead'],
+      routeStopId: state.uri.queryParameters['stop'],
+    ),
   ),
   GoRoute(
     path: Routes.trackingConsent,

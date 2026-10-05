@@ -7,22 +7,21 @@ import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/format/app_date_utils.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/field_force/models/attendance.dart';
 import 'package:salesroot/features/field_force/providers/attendance_providers.dart';
 import 'package:salesroot/features/field_force/service/csv_export.dart';
 import 'package:salesroot/features/field_force/view/widget/attendance_calendar.dart';
-import 'package:salesroot/features/field_force/view/widget/correction_sheet.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_count_tile.dart';
+import 'package:salesroot/features/field_force/view/widget/ff_format.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_language_toggle.dart';
 import 'package:salesroot/features/field_force/view/widget/field_force_gate.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #133 attendteam: the team's attendance today, this week or this month,
-/// correction requests to approve, and the monthly report.
+/// and the monthly report.
 class TeamAttendanceScreen extends ConsumerStatefulWidget {
   const TeamAttendanceScreen({super.key});
 
@@ -36,7 +35,6 @@ class _TeamAttendanceScreenState extends ConsumerState<TeamAttendanceScreen> {
 
   Future<void> _export() async {
     final l10n = context.l10n;
-    final bangla = context.fmt.isBangla;
     final now = DateTime.now();
     setState(() => _exporting = true);
     try {
@@ -50,24 +48,23 @@ class _TeamAttendanceScreenState extends ConsumerState<TeamAttendanceScreen> {
         rows: [
           [
             l10n.ffCsvMember,
-            l10n.ffWorkingDays,
             l10n.ffPresent,
             l10n.ffLate,
+            l10n.ffHalfDay,
             l10n.ffLeave,
             l10n.ffAbsent,
-            l10n.ffCsvWorkedMinutes,
+            l10n.ffCsvDistanceKm,
           ],
           for (final row in rows)
-            if (row.summary case final s?)
-              [
-                row.name.of(bangla),
-                '${s.workingDays}',
-                '${s.present}',
-                '${s.late}',
-                '${s.leave}',
-                '${s.absent}',
-                '${s.workedMinutes}',
-              ],
+            [
+              row.name,
+              '${row.present}',
+              '${row.late}',
+              '${row.halfDays}',
+              '${row.leave}',
+              '${row.absent}',
+              row.distanceKm.toStringAsFixed(1),
+            ],
         ],
       );
     } on ApiFailure catch (failure) {
@@ -111,41 +108,30 @@ class _TeamAttendanceScreenState extends ConsumerState<TeamAttendanceScreen> {
       body: FieldForceGate(
         module: AppModule.teamAttendance,
         child: RefreshIndicator(
-          onRefresh: () {
-            ref.invalidate(teamAttendanceSummaryProvider);
-            return ref.refresh(teamAttendanceProvider.future);
-          },
-          child: NotificationListener<ScrollNotification>(
-            onNotification: (note) {
-              if (note.metrics.extentAfter < 300) {
-                ref.read(teamAttendanceProvider.notifier).loadMore();
-              }
-              return false;
-            },
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: SrScrollPhysics(),
-              ),
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
-              children: [
-                const _SummaryRow(),
-                const SizedBox(height: 12),
-                const _PeriodChips(),
-                const SizedBox(height: 12),
-                switch (team) {
-                  AsyncValue(:final value?) => _TeamList(rows: value),
-                  AsyncError(:final error) => SrErrorState(
-                    error: error,
-                    onRetry: () => ref.invalidate(teamAttendanceProvider),
-                  ),
-                  _ => const SrSkeletonList(
-                    count: 6,
-                    shrinkWrap: true,
-                    padding: EdgeInsets.zero,
-                  ),
-                },
-              ],
+          onRefresh: () => ref.refresh(teamAttendanceProvider.future),
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: SrScrollPhysics(),
             ),
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+            children: [
+              _SummaryRow(summary: team.value?.summary),
+              const SizedBox(height: 12),
+              const _PeriodChips(),
+              const SizedBox(height: 12),
+              switch (team) {
+                AsyncValue(:final value?) => _TeamList(rows: value.rows),
+                AsyncError(:final error) => SrErrorState(
+                  error: error,
+                  onRetry: () => ref.invalidate(teamAttendanceProvider),
+                ),
+                _ => const SrSkeletonList(
+                  count: 6,
+                  shrinkWrap: true,
+                  padding: EdgeInsets.zero,
+                ),
+              },
+            ],
           ),
         ),
       ),
@@ -153,15 +139,17 @@ class _TeamAttendanceScreenState extends ConsumerState<TeamAttendanceScreen> {
   }
 }
 
-class _SummaryRow extends ConsumerWidget {
-  const _SummaryRow();
+class _SummaryRow extends StatelessWidget {
+  const _SummaryRow({required this.summary});
+
+  final TeamAttendanceSummary? summary;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final summary = ref.watch(teamAttendanceSummaryProvider).value;
+    final summary = this.summary;
     String count(int? n) => n == null ? '—' : fmt.number(n);
     return FfCountRow(
       tiles: [
@@ -196,46 +184,35 @@ class _PeriodChips extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final fmt = context.fmt;
-    final filter = ref.watch(teamAttendanceFilterProvider);
-    final notifier = ref.read(teamAttendanceFilterProvider.notifier);
-    final corrections =
-        ref.watch(teamAttendanceSummaryProvider).value?.corrections ?? 0;
+    final period = ref.watch(teamAttendancePeriodProvider);
+    final notifier = ref.read(teamAttendancePeriodProvider.notifier);
     return Wrap(
       spacing: 6,
       runSpacing: 6,
       children: [
-        for (final (period, label) in [
+        for (final (choice, label) in [
           (TeamPeriod.today, l10n.ffToday),
           (TeamPeriod.week, l10n.ffThisWeek),
           (TeamPeriod.month, l10n.ffThisMonth),
         ])
           SrChip(
             label: label,
-            selected: filter.period == period && !filter.correctionsOnly,
-            onTap: () => notifier.setPeriod(period),
-          ),
-        if (corrections > 0 || filter.correctionsOnly)
-          SrChip(
-            label: l10n.ffCorrectionsChip(fmt.number(corrections)),
-            tone: SrTone.err,
-            selected: filter.correctionsOnly,
-            onTap: notifier.toggleCorrections,
+            selected: period == choice,
+            onTap: () => notifier.set(choice),
           ),
       ],
     );
   }
 }
 
-class _TeamList extends ConsumerWidget {
+class _TeamList extends StatelessWidget {
   const _TeamList({required this.rows});
 
-  final Paged<TeamAttendanceRow> rows;
+  final List<TeamAttendanceRow> rows;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final loadMoreError = rows.loadMoreError;
     if (rows.isEmpty) {
       return SrCard(
         child: SrEmptyState(
@@ -245,22 +222,7 @@ class _TeamList extends ConsumerWidget {
         ),
       );
     }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SrRowGroup(rows: [for (final row in rows.items) _TeamRow(row: row)]),
-        if (rows.isLoadingMore) ...[
-          const SizedBox(height: 12),
-          const SrSkeletonRow(),
-        ],
-        if (loadMoreError != null)
-          SrErrorState(
-            error: loadMoreError,
-            compact: true,
-            onRetry: ref.read(teamAttendanceProvider.notifier).loadMore,
-          ),
-      ],
-    );
+    return SrRowGroup(rows: [for (final row in rows) _TeamRow(row: row)]);
   }
 }
 
@@ -273,12 +235,6 @@ class _TeamRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final name = row.name.of(fmt.isBangla);
-    final canApprove = ref.watch(
-      moduleAccessProvider(
-        AppModule.teamAttendance,
-      ).select((a) => a.canApprove),
-    );
     final canTrack = ref.watch(
       moduleAccessProvider(AppModule.liveTracking).select((a) => a.canView),
     );
@@ -291,40 +247,26 @@ class _TeamRow extends ConsumerWidget {
             fmt.number(summary.workingDays),
             fmt.number(summary.late),
           )
-        : row.needsCorrection
-        ? l10n.ffTeamAskedCorrection
+        : checkInAt != null
+        ? l10n.ffTeamIn(fmt.time(checkInAt), placeLabel(l10n, row.inOffice))
         : switch (row.status) {
-            AttendanceStatus.late when checkInAt != null => l10n.ffTeamInLate(
-              fmt.time(checkInAt),
-              fmt.number(row.lateMinutes),
-            ),
-            AttendanceStatus.present || AttendanceStatus.late
-                when checkInAt != null =>
-              l10n.ffTeamIn(fmt.time(checkInAt), row.place ?? l10n.ffOffice),
             AttendanceStatus.leave => l10n.ffTeamOnLeave,
             AttendanceStatus.upcoming => l10n.ffTeamNotYet,
             _ => l10n.ffTeamNoCheckIn,
           };
-    final (tag, tone) = row.needsCorrection
-        ? (l10n.ffTeamCorrect, SrTone.err)
-        : (
-            attendanceLabel(l10n, row.status),
-            switch (row.status) {
-              AttendanceStatus.present => SrTone.ok,
-              AttendanceStatus.late => SrTone.warn,
-              AttendanceStatus.absent => SrTone.err,
-              _ => SrTone.neutral,
-            },
-          );
+    final tone = switch (row.status) {
+      AttendanceStatus.present => SrTone.ok,
+      AttendanceStatus.late || AttendanceStatus.halfDay => SrTone.warn,
+      AttendanceStatus.absent => SrTone.err,
+      _ => SrTone.neutral,
+    };
 
     return SrListRow(
-      leading: SrAvatar(name: name),
-      title: name,
+      leading: SrAvatar(name: row.name),
+      title: row.name,
       subtitle: subtitle,
-      trailing: SrTag(tag, tone: tone),
-      onTap: row.needsCorrection && canApprove
-          ? () => showCorrectionReviewSheet(context, row)
-          : canTrack
+      trailing: SrTag(attendanceLabel(l10n, row.status), tone: tone),
+      onTap: canTrack
           ? () => context.push(Routes.trackingMemberFor(row.memberId))
           : null,
     );
