@@ -2,6 +2,7 @@ import 'package:dio/dio.dart' hide LogInterceptor;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:salesroot/core/network/api_extras.dart';
+import 'package:salesroot/core/locale/locale_provider.dart';
 import 'package:salesroot/core/network/interceptors.dart';
 import 'package:salesroot/core/session/session_provider.dart';
 import 'package:salesroot/core/workspace/workspace_providers.dart';
@@ -32,6 +33,7 @@ Dio dio(Ref ref) {
     LogInterceptor(),
     StatusInterceptor(
       onSessionExpired: () => ref.read(sessionProvider.notifier).expire(),
+      bangla: () => ref.read(appLocaleProvider) == bangla,
     ),
   ]);
   return dio;

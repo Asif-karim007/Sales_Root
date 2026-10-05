@@ -8,6 +8,7 @@ class ApiFailure implements Exception, SrDisplayableFailure {
     this.message, {
     this.fieldErrors = const {},
     this.quota,
+    this.code,
   });
 
   @override
@@ -21,9 +22,12 @@ class ApiFailure implements Exception, SrDisplayableFailure {
   /// The plan limit that was hit, for a 402.
   final QuotaKind? quota;
 
+  /// The server's error code, such as `V-002`.
+  final String? code;
+
   /// The request never reached the server: no connection, or it timed out.
   bool get isOffline => statusCode == 0;
-  bool get isValidation => statusCode == 400;
+  bool get isValidation => statusCode == 400 || statusCode == 422;
   bool get isUnauthorised => statusCode == 401;
   bool get isQuota => statusCode == 402;
   bool get isForbidden => statusCode == 403;

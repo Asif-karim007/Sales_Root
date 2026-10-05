@@ -83,12 +83,14 @@ class LogInterceptor extends Interceptor {
   }
 }
 
-/// The API answers with a real status code and a `{IsSuccess, Message,
-/// Result}` body. Success unwraps `Result`; anything else raises [ApiFailure].
+/// The API answers with a real status code and a plain JSON body. A 2xx
+/// passes through; anything else raises [ApiFailure] from the
+/// `{code, message: {bn, en}, field}` error body.
 class StatusInterceptor extends Interceptor {
-  StatusInterceptor({required this.onSessionExpired});
+  StatusInterceptor({required this.onSessionExpired, required this.bangla});
 
   final void Function() onSessionExpired;
+  final bool Function() bangla;
 
   @override
   void onResponse(
@@ -96,19 +98,13 @@ class StatusInterceptor extends Interceptor {
     ResponseInterceptorHandler handler,
   ) {
     final status = response.statusCode ?? 0;
-    final body = response.data;
+    if (status >= 200 && status < 300) return handler.next(response);
 
-    if (status == 200 || status == 201) {
-      if (response.requestOptions.extra[ApiExtras.keepEnvelope] != true) {
-        response.data = body is Map ? body[ApiConfig.envelopeResult] : null;
-      }
-      return handler.next(response);
-    }
-
-    final envelope = _envelope(body);
-    final message = envelope is Map
-        ? '${envelope[ApiConfig.envelopeMessage] ?? ''}'
-        : '';
+    final error = _decode(response.data);
+    final message = _message(
+      error is Map ? error[ApiConfig.errorMessage] : null,
+    );
+    final field = error is Map ? error[ApiConfig.errorField] : null;
     if (status == 401 &&
         response.requestOptions.headers.containsKey('Authorization')) {
       onSessionExpired();
@@ -121,7 +117,10 @@ class StatusInterceptor extends Interceptor {
         error: ApiFailure(
           status,
           message.isEmpty ? _fallbackMessage(status) : message,
-          fieldErrors: _fieldErrors(envelope),
+          fieldErrors: field is String && message.isNotEmpty
+              ? {field: message}
+              : const {},
+          code: error is Map ? error[ApiConfig.errorCode] as String? : null,
         ),
       ),
     );
@@ -133,7 +132,7 @@ class StatusInterceptor extends Interceptor {
     handler.next(err.copyWith(error: ApiFailure(0, _transportMessage(err))));
   }
 
-  dynamic _envelope(dynamic body) {
+  dynamic _decode(dynamic body) {
     if (body is! List<int>) return body;
     try {
       return jsonDecode(utf8.decode(body));
@@ -142,15 +141,11 @@ class StatusInterceptor extends Interceptor {
     }
   }
 
-  Map<String, String> _fieldErrors(dynamic envelope) {
-    final errors = envelope is Map ? envelope[ApiConfig.envelopeErrors] : null;
-    if (errors is! Map) return const {};
-    return {
-      for (final entry in errors.entries)
-        '${entry.key}': entry.value is List
-            ? (entry.value as List).join(' ')
-            : '${entry.value}',
-    };
+  String _message(dynamic message) {
+    if (message is Map) {
+      return '${message[bangla() ? 'bn' : 'en'] ?? message['en'] ?? ''}';
+    }
+    return message is String ? message : '';
   }
 
   String _fallbackMessage(int status) => switch (status) {
