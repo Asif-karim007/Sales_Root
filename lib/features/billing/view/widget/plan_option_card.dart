@@ -85,20 +85,16 @@ class SeatStepper extends StatelessWidget {
     required this.label,
     required this.onChanged,
     required this.min,
-    this.max,
   });
 
   final int value;
   final String label;
   final int min;
-  final int? max;
   final ValueChanged<int> onChanged;
 
   @override
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
-    final max = this.max;
-    final canAdd = max == null || value < max;
     return Row(
       children: [
         SrIconButton(
@@ -115,8 +111,7 @@ class SeatStepper extends StatelessWidget {
         ),
         SrIconButton(
           icon: Icons.add_rounded,
-          color: canAdd ? null : c.ink3,
-          onTap: canAdd ? () => onChanged(value + 1) : null,
+          onTap: () => onChanged(value + 1),
         ),
       ],
     );

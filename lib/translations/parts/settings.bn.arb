@@ -1,279 +1,8 @@
 {
   "@@locale": "bn",
-  "@settingsDeviceRemoveTitle": {
-    "placeholders": {
-      "device": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsDevicesCount": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsFieldTemplate": {
-    "placeholders": {
-      "template": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsImportDuplicateRows": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsImportDuplicatesFlagged": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsImportFailedHint": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsImportFileSize": {
-    "placeholders": {
-      "rows": {
-        "type": "String"
-      },
-      "columns": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsImportMapTo": {
-    "placeholders": {
-      "column": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsImportMissing": {
-    "placeholders": {
-      "fields": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsImportProcessed": {
-    "placeholders": {
-      "done": {
-        "type": "String"
-      },
-      "total": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsImportSample": {
-    "placeholders": {
-      "sample": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsImportStart": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsLevelLockedBy": {
-    "placeholders": {
-      "owner": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsLevelLockedShort": {
-    "placeholders": {
-      "level": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsLoginAt": {
-    "placeholders": {
-      "when": {
-        "type": "String"
-      },
-      "device": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsMorePlan": {
-    "placeholders": {
-      "plan": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsMorePlanRenews": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsMoreVersion": {
-    "placeholders": {
-      "version": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsNotifQuietRange": {
-    "placeholders": {
-      "from": {
-        "type": "String"
-      },
-      "to": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsPinChangedAt": {
-    "placeholders": {
-      "when": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsPipelineDefault": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsReportOfTarget": {
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsReportSourceLine": {
-    "placeholders": {
-      "leads": {
-        "type": "String"
-      },
-      "rate": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsReportTrendDown": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsReportTrendUp": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsReportVsPrevious": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsSignOutPending": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsStageDeleteTitle": {
-    "placeholders": {
-      "stage": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsSyncConflictCount": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsSyncDays": {
-    "placeholders": {
-      "days": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsSyncHistoryDays": {
-    "placeholders": {
-      "days": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsSyncLast": {
-    "placeholders": {
-      "when": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsSyncMb": {
-    "placeholders": {
-      "size": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsSyncResolvedLine": {
-    "placeholders": {
-      "kept": {
-        "type": "String"
-      },
-      "discarded": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsSyncWaiting": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "@settingsWorkspaceNamed": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "settingsAccount": "অ্যাকাউন্ট",
   "settingsBiometric": "আঙুলের ছাপ / ফেস",
   "settingsBiometricHint": "পিন না দিয়েই খুলুন",
-  "settingsConflictChanged": "সার্ভারে রেকর্ডটি আবার বদলেছে। দুটো মান দেখে আবার বেছে নিন।",
   "settingsConflictIntro": "একই ঘর দুই ডিভাইসে বদলানো হয়েছে। কোনটা রাখবেন?",
   "settingsConflictKeep": "এটা রাখুন",
   "settingsConflictKept": "রাখা হবে",
@@ -285,21 +14,20 @@
   "settingsConflictTimeline": "যেটাই রাখুন, অন্যটা “সম্প্রতি মীমাংসিত” তালিকায় থাকবে।",
   "settingsConflictTitle": "অমিল",
   "settingsConflictYou": "আপনি",
-  "settingsDeviceUnknown": "অজানা ডিভাইস",
   "settingsDevices": "ডিভাইস",
   "settingsDevicesCount": "ডিভাইস · {count}",
-  "settingsDevicesSignOutAll": "সব ডিভাইস থেকে লগআউট",
-  "settingsDevicesSignOutAllBody": "এই ফোনসহ সব ডিভাইস লগআউট হবে; আবার ঢুকতে এসএমএস কোড লাগবে।",
-  "settingsDevicesSignOutAllConfirm": "সব জায়গা থেকে লগআউট",
-  "settingsEntityActivity": "কার্যক্রম",
-  "settingsEntityCompany": "কাস্টমার",
+  "@settingsDevicesCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "settingsEntityContact": "কনট্যাক্ট",
   "settingsEntityExpense": "খরচ",
   "settingsEntityLead": "লিড",
-  "settingsEntityOther": "রেকর্ড",
   "settingsEntityTask": "কাজ",
   "settingsEntityVisit": "ভিজিট",
-  "settingsFieldChoice": "পছন্দ",
   "settingsFieldDate": "তারিখ",
   "settingsFieldEmail": "ইমেইল",
   "settingsFieldMoney": "টাকা",
@@ -308,7 +36,6 @@
   "settingsFieldRequired": "আবশ্যক",
   "settingsFieldText": "লেখা",
   "settingsFieldYesNo": "হ্যাঁ/না",
-  "settingsFieldsCompany": "কাস্টমার",
   "settingsFieldsLead": "লিড",
   "settingsFieldsNote": "এই ঘরগুলো আপনার ইন্ডাস্ট্রি প্যাকের সাথে আসে। প্রতিটি ফর্মে সাধারণ ঘরগুলোর নিচে দেখায়।",
   "settingsFormFields": "ফর্মের ঘর",
@@ -321,33 +48,86 @@
   "settingsImportDone": "আনা শেষ",
   "settingsImportDuplicate": "একই",
   "settingsImportDuplicateRows": "{count}টি সারি আগের কাস্টমারের সাথে মিলেছে।",
+  "@settingsImportDuplicateRows": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "settingsImportDuplicates": "একই",
   "settingsImportDuplicatesFlagged": "{count}টি সারি আগের কাস্টমারের সাথে মিলেছে।",
+  "@settingsImportDuplicatesFlagged": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "settingsImportFailed": "বাদ গেছে",
   "settingsImportFailedHint": "সার্ভার পড়তে না পারায় {count}টি সারি বাদ গেছে।",
-  "settingsImportFieldAddress": "ঠিকানা",
-  "settingsImportFieldArea": "এলাকা",
-  "settingsImportFieldDistrict": "জেলা",
+  "@settingsImportFailedHint": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "settingsImportFieldEmail": "ইমেইল",
   "settingsImportFieldName": "কাস্টমারের নাম",
   "settingsImportFieldNote": "নোট",
-  "settingsImportFieldPhone": "ফোন",
   "settingsImportFieldSkip": "বাদ দিন",
   "settingsImportFileSize": "{rows} সারি · {columns} কলাম",
+  "@settingsImportFileSize": {
+    "placeholders": {
+      "rows": {
+        "type": "String"
+      },
+      "columns": {
+        "type": "String"
+      }
+    }
+  },
   "settingsImportFormatBody": "প্রথম সারিতে কলামের নাম থাকবে, যেমন Name, Phone, Email, Area, Address, Notes। প্রতিটি কাস্টমারের নাম লাগবে।",
   "settingsImportFormatTitle": "ফাইলে যা লাগবে",
   "settingsImportImported": "আনা হয়েছে",
   "settingsImportMap": "কলাম মেলান",
   "settingsImportMapTo": "“{column}” যাবে",
+  "@settingsImportMapTo": {
+    "placeholders": {
+      "column": {
+        "type": "String"
+      }
+    }
+  },
   "settingsImportMissing": "এগোতে {fields}-এর জন্য একটি কলাম মেলান।",
+  "@settingsImportMissing": {
+    "placeholders": {
+      "fields": {
+        "type": "String"
+      }
+    }
+  },
   "settingsImportNoDuplicates": "আগের কোনো কাস্টমারের সাথে মেলেনি।",
   "settingsImportNoName": "নাম নেই",
   "settingsImportNoRows": "ফাইলে কলামের নাম আছে, কিন্তু কোনো সারি নেই।",
-  "settingsImportOpenCustomers": "কাস্টমার দেখুন",
   "settingsImportPreview": "নমুনা",
-  "settingsImportRows": "{count}টি সারি",
   "settingsImportSample": "নমুনা: {sample}",
+  "@settingsImportSample": {
+    "placeholders": {
+      "sample": {
+        "type": "String"
+      }
+    }
+  },
   "settingsImportStart": "{count}টি আনুন",
+  "@settingsImportStart": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "settingsImportTitle": "CSV থেকে আনা",
   "settingsImportTooLarge": "ফাইলটি ৫ MB-এর বেশি। ভাগ করে আনুন।",
   "settingsImportUnnamed": "(নাম নেই)",
@@ -365,7 +145,21 @@
   "settingsLevelEasyHint": "৪ ধাপ, বড় টাইল, কথা বলে যোগ",
   "settingsLevelLocked": "আপনার মালিক এই স্তর লক করেছেন।",
   "settingsLevelLockedBy": "আপনার মালিক এই স্তর লক করেছেন। বদলাতে {owner}-কে বলুন।",
+  "@settingsLevelLockedBy": {
+    "placeholders": {
+      "owner": {
+        "type": "String"
+      }
+    }
+  },
   "settingsLevelLockedShort": "{level} · মালিক লক করেছেন",
+  "@settingsLevelLockedShort": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
   "settingsLevelStandard": "স্ট্যান্ডার্ড",
   "settingsLevelStandardHint": "পুরো পাইপলাইন, বিক্রি, রিপোর্ট",
   "settingsMoreAbout": "Nexzen ও অন্য প্রোডাক্ট",
@@ -403,7 +197,21 @@
   "settingsMoreNotices": "নোটিশ",
   "settingsMorePayslip": "বেতন স্লিপ",
   "settingsMorePlan": "{plan} প্ল্যান",
+  "@settingsMorePlan": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
   "settingsMorePlanRenews": "নবায়ন {date}",
+  "@settingsMorePlanRenews": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "settingsMoreProducts": "পণ্য",
   "settingsMoreQuotations": "কোটেশন",
   "settingsMoreRefer": "রেফার করুন ও আয় করুন",
@@ -412,6 +220,13 @@
   "settingsMoreTeam": "টিম ও সদস্য",
   "settingsMoreTitle": "আরও",
   "settingsMoreVersion": "SalesRoot v{version} · Nexzen Solution Ltd.",
+  "@settingsMoreVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "settingsMoreVisits": "ভিজিট",
   "settingsNetEthernet": "ইথারনেট",
   "settingsNetMobile": "মোবাইল ডেটা",
@@ -437,6 +252,16 @@
   "settingsNotifQuiet": "রাতে চুপ",
   "settingsNotifQuietFrom": "চুপ শুরু",
   "settingsNotifQuietRange": "{from} – {to}",
+  "@settingsNotifQuietRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
   "settingsNotifQuietTo": "চুপ শেষ",
   "settingsNotifReminders": "রিমাইন্ডার",
   "settingsNotifRemindersHint": "কাজ ও ফলো-আপ",
@@ -445,6 +270,13 @@
   "settingsPersonal": "ব্যক্তিগত",
   "settingsPinChange": "পিন বদলান",
   "settingsPinChangedAt": "শেষ বদল {when}",
+  "@settingsPinChangedAt": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
   "settingsPinConfirm": "নতুন পিন আবার দিন",
   "settingsPinCurrent": "এখনকার পিন দিন",
   "settingsPinHint": "অ্যাপ খোলার ৪ অঙ্কের পিন",
@@ -453,6 +285,13 @@
   "settingsPinSaved": "নতুন পিন সেভ হয়েছে",
   "settingsPinWrong": "পিন মেলেনি। আবার চেষ্টা করুন।",
   "settingsPipelineDefault": "{name} (ডিফল্ট)",
+  "@settingsPipelineDefault": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "settingsPipelines": "পাইপলাইন ও ধাপ",
   "settingsPipelinesNote": "ধাপের নাম বাংলা ও ইংরেজি দুই ভাষায় থাকে। সহজ মোডে সর্বোচ্চ ৪টি দেখাবে; টেনে ক্রম বদলান।",
   "settingsPipelinesNoteViewOnly": "শুধু মালিক ধাপ বদলাতে পারেন। সহজ মোডে সর্বোচ্চ ৪টি দেখাবে।",
@@ -482,6 +321,13 @@
   "settingsReportNoSales": "এই সময়ে কোনো বিক্রি হয়নি",
   "settingsReportNoSalesHint": "আরও লম্বা সময় বা টিম ভিউ দেখুন।",
   "settingsReportOfTarget": "{amount}-এর",
+  "@settingsReportOfTarget": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "settingsReportOpen": "চলছে",
   "settingsReportPdf": "PDF",
   "settingsReportPdfHint": "প্রিন্ট করার মতো সারাংশ, ইংরেজিতে",
@@ -493,6 +339,16 @@
   "settingsReportSalesTotal": "এই সময়ের বিক্রি",
   "settingsReportSource": "উৎস",
   "settingsReportSourceLine": "{leads} · {rate}",
+  "@settingsReportSourceLine": {
+    "placeholders": {
+      "leads": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
   "settingsReportSources": "লিড ও উৎস",
   "settingsReportSourcesHint": "কোথা থেকে কত লিড, কনভার্সন",
   "settingsReportTable": "লিড ও দায়িত্বপ্রাপ্ত",
@@ -500,9 +356,30 @@
   "settingsReportTeam": "টিম",
   "settingsReportThisMonth": "এ মাস",
   "settingsReportTrendDown": "↓ {value}",
+  "@settingsReportTrendDown": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "settingsReportTrendUp": "↑ {value}",
+  "@settingsReportTrendUp": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "settingsReportValue": "মূল্য",
   "settingsReportVsPrevious": "আগের সময়ের তুলনায় {value}",
+  "@settingsReportVsPrevious": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "settingsReportWeek": "সপ্তাহ",
   "settingsReportWeekly": "সপ্তাহে নতুন লিড",
   "settingsReportWinRate": "জেতার হার",
@@ -517,10 +394,16 @@
   "settingsSignOut": "লগআউট",
   "settingsSignOutBody": "আবার ঢুকতে মোবাইল নম্বর আর SMS কোড লাগবে।",
   "settingsSignOutPending": "এই ফোনের {count}টি পরিবর্তন এখনও সিঙ্ক হয়নি। এখন লগআউট করলে সেগুলো হারিয়ে যাবে।",
+  "@settingsSignOutPending": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "settingsSignOutTitle": "SalesRoot থেকে লগআউট করবেন?",
   "settingsStageAdd": "ধাপ যোগ করুন",
   "settingsStageEasy": "সহজ মোডে দেখা যায়",
-  "settingsStageEasyToggle": "সহজ মোডে দেখান",
   "settingsStageEdit": "ধাপ সম্পাদনা",
   "settingsStageNameBn": "বাংলায় নাম",
   "settingsStageNameEn": "ইংরেজিতে নাম",
@@ -531,21 +414,43 @@
   "settingsSync": "সিঙ্ক ও অফলাইন",
   "settingsSyncAllDone": "সব সিঙ্ক হয়েছে",
   "settingsSyncConflictCount": "{count}টি অমিল মেটাতে হবে",
+  "@settingsSyncConflictCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "settingsSyncConflicts": "অমিল",
   "settingsSyncDays": "{days} দিন অফলাইনে",
+  "@settingsSyncDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "settingsSyncDiscard": "পরিবর্তনটি বাদ দিন",
   "settingsSyncFailed": "ফেরত এসেছে",
   "settingsSyncFailedTitle": "সার্ভার এই পরিবর্তন নেয়নি",
-  "settingsSyncFieldAmount": "পরিমাণ",
-  "settingsSyncFieldDue": "নির্ধারিত সময়",
-  "settingsSyncFieldName": "নাম",
-  "settingsSyncFieldNote": "নোট",
-  "settingsSyncFieldPhone": "ফোন",
-  "settingsSyncFieldTitle": "শিরোনাম",
   "settingsSyncHistory": "সময়সীমা",
   "settingsSyncHistoryDays": "শেষ {days} দিন",
+  "@settingsSyncHistoryDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "settingsSyncKept": "অফলাইনে যা থাকবে",
   "settingsSyncLast": "শেষ সিঙ্ক {when}",
+  "@settingsSyncLast": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
   "settingsSyncMedia": "ছবি ও ফাইল অফলাইনে",
   "settingsSyncMediaHint": "সংযুক্তি ফোনে রাখুন",
   "settingsSyncNow": "এখনই সিঙ্ক করুন",
@@ -557,9 +462,18 @@
   "settingsSyncOpUpdate": "বদলানো",
   "settingsSyncOutbox": "পাঠানোর অপেক্ষায়",
   "settingsSyncPending": "ফোনে সেভ, পাঠানো বাকি",
-  "settingsSyncReceived": "{count}টি আপডেট এসেছে",
   "settingsSyncResolved": "সম্প্রতি মেটানো",
   "settingsSyncResolvedLine": "{kept} রাখা হয়েছে · {discarded} বাদ গেছে",
+  "@settingsSyncResolvedLine": {
+    "placeholders": {
+      "kept": {
+        "type": "String"
+      },
+      "discarded": {
+        "type": "String"
+      }
+    }
+  },
   "settingsSyncTagOffline": "অফলাইন",
   "settingsSyncTagOk": "ঠিক আছে",
   "settingsSyncTagPending": "বাকি",
@@ -567,10 +481,62 @@
   "settingsSyncVersion": "অ্যাপ ভার্সন",
   "settingsSyncView": "দেখুন",
   "settingsSyncWaiting": "{count}টি পরিবর্তন সিঙ্কের অপেক্ষায়",
+  "@settingsSyncWaiting": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "settingsSyncWifi": "শুধু Wi-Fi-তে মিডিয়া",
   "settingsSyncWifiHint": "মোবাইল ডেটা বাঁচায়",
   "settingsTitle": "সেটিংস",
   "settingsViewOnly": "শুধু দেখা",
   "settingsWorkspace": "ওয়ার্কস্পেস",
-  "settingsWorkspaceNamed": "ওয়ার্কস্পেস · {name}"
+  "settingsWorkspaceNamed": "ওয়ার্কস্পেস · {name}",
+  "@settingsWorkspaceNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsConflictChanged": "সার্ভারে রেকর্ডটি আবার বদলেছে। দুটো মান দেখে আবার বেছে নিন।",
+  "settingsDeviceUnknown": "অজানা ডিভাইস",
+  "settingsDevicesSignOutAll": "সব ডিভাইস থেকে লগআউট",
+  "settingsDevicesSignOutAllBody": "এই ফোনসহ সব ডিভাইস লগআউট হবে; আবার ঢুকতে এসএমএস কোড লাগবে।",
+  "settingsDevicesSignOutAllConfirm": "সব জায়গা থেকে লগআউট",
+  "settingsEntityActivity": "কার্যক্রম",
+  "settingsEntityCompany": "কাস্টমার",
+  "settingsEntityOther": "রেকর্ড",
+  "settingsFieldChoice": "পছন্দ",
+  "settingsFieldsCompany": "কাস্টমার",
+  "settingsImportFieldAddress": "ঠিকানা",
+  "settingsImportFieldArea": "এলাকা",
+  "settingsImportFieldDistrict": "জেলা",
+  "settingsImportFieldPhone": "ফোন",
+  "settingsImportOpenCustomers": "কাস্টমার দেখুন",
+  "settingsImportRows": "{count}টি সারি",
+  "@settingsImportRows": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsStageEasyToggle": "সহজ মোডে দেখান",
+  "settingsSyncFieldAmount": "পরিমাণ",
+  "settingsSyncFieldDue": "নির্ধারিত সময়",
+  "settingsSyncFieldName": "নাম",
+  "settingsSyncFieldNote": "নোট",
+  "settingsSyncFieldPhone": "ফোন",
+  "settingsSyncFieldTitle": "শিরোনাম",
+  "settingsSyncReceived": "{count}টি আপডেট এসেছে",
+  "@settingsSyncReceived": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  }
 }

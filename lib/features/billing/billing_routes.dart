@@ -64,9 +64,8 @@ final List<RouteBase> billingRoutes = [
   GoRoute(
     path: Routes.planActivated,
     redirect: requireAccess(AppModule.billing),
-    builder: (context, state) => PlanActivatedScreen(
-      invoiceId: int.tryParse(state.uri.queryParameters['invoice'] ?? '') ?? 0,
-    ),
+    builder: (context, state) =>
+        PlanActivatedScreen(invoiceId: state.uri.queryParameters['invoice']),
   ),
   GoRoute(
     path: Routes.addOns,

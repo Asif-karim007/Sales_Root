@@ -161,8 +161,8 @@ class _QuickFix extends StatelessWidget {
     if (pack != null) {
       return OptionCardBody(
         title: pack.name.of(context.isBangla),
-        price: PriceText(amount: pack.price, unit: l10n.billingPerOnce),
-        note: pack.detail.of(context.isBangla),
+        price: PriceText(amount: pack.price, unit: context.addOnUnit(pack)),
+        note: context.addOnNote(pack),
       );
     }
     return OptionCardBody(
@@ -184,14 +184,11 @@ class _Upgrade extends StatelessWidget {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final note = switch (kind) {
-      QuotaKind.users =>
-        plan.maxUsers == null
-            ? l10n.billingGivesAnyUsers
-            : l10n.billingGivesUsers(fmt.number(plan.maxUsers ?? 1)),
+      QuotaKind.users => l10n.billingGivesAnyUsers,
       QuotaKind.records => l10n.billingGivesRecords(fmt.number(plan.records)),
       QuotaKind.storage => l10n.billingGivesStorage(fmt.number(plan.storageGb)),
       QuotaKind.cardScans => l10n.billingGivesScans(fmt.number(plan.cardScans)),
-      QuotaKind.smsCredits => plan.summary.of(context.isBangla),
+      QuotaKind.smsCredits => context.layersLine(plan),
     };
     return OptionCardBody(
       title: plan.name,

@@ -57,7 +57,6 @@ class WalletCard extends StatelessWidget {
             runSpacing: 4,
             children: [
               Text(l10n.billingEarned(fmt.money(overview.earned)), style: meta),
-              Text(l10n.billingUsed(fmt.money(overview.used)), style: meta),
               Text(
                 l10n.billingFriendsJoined(fmt.number(overview.joined)),
                 style: meta,
@@ -83,22 +82,19 @@ extension ReferralLabels on BuildContext {
   String referralDetail(Referral referral) {
     final registered = referral.registeredAt;
     final bought = referral.boughtAt;
-    final plan = referral.planName;
+    final invited = referral.invitedAt;
     return switch (referral.status) {
       ReferralStatus.bought => joinDot([
-        if (plan != null) l10n.billingReferPlan(plan),
+        l10n.billingReferBought,
         if (bought != null) fmt.dayMonth(bought),
       ]),
       ReferralStatus.registered => joinDot([
         l10n.billingReferRegistered,
         if (registered != null) fmt.dayMonth(registered),
-        if (referral.holdHours > 0)
-          l10n.billingHoldHours(fmt.number(referral.holdHours)),
       ]),
       ReferralStatus.pending => joinDot([
         l10n.billingReferInvited,
-        fmt.dayMonth(referral.invitedAt),
-        l10n.billingDaysLeft(fmt.number(referral.daysLeft)),
+        if (invited != null) fmt.dayMonth(invited),
       ]),
       ReferralStatus.notEligible => l10n.billingReferWasUser,
       ReferralStatus.expired => l10n.billingReferNoSignup,
@@ -131,11 +127,11 @@ class ReferralRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final fmt = context.fmt;
-    final name = referral.name.of(context.isBangla);
-    final held = referral.holdHours > 0;
+    final contact = fmt.digits(referral.contact);
+    final name = referral.name ?? contact;
 
     return SrListRow(
-      title: joinDot([name, fmt.digits(referral.phoneMasked)]),
+      title: joinDot([?referral.name, contact]),
       subtitle: context.referralDetail(referral),
       leading: SrAvatar(
         name: name,
@@ -157,7 +153,7 @@ class ReferralRow extends StatelessWidget {
             if (showStatus) const SizedBox(height: 4),
             Text(
               context.l10n.billingPlus(fmt.money(referral.reward)),
-              style: AppText.rowTitle(held ? c.warning : c.success, size: 13.5),
+              style: AppText.rowTitle(c.success, size: 13.5),
             ),
           ],
         ],

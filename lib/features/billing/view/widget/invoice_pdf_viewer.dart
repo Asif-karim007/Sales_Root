@@ -12,17 +12,10 @@ import 'package:salesroot/widgets/widgets.dart';
 extension InvoiceLabels on BuildContext {
   String invoiceStatus(InvoiceStatus status) => switch (status) {
     InvoiceStatus.paid => l10n.billingStatusPaid,
+    InvoiceStatus.due => l10n.billingStatusDue,
     InvoiceStatus.failed => l10n.billingStatusFailed,
     InvoiceStatus.refunded => l10n.billingStatusRefunded,
   };
-
-  /// "Business · October 2026" for a renewal, else the item name.
-  String invoiceTitle(Invoice invoice) {
-    final item = invoice.item.of(isBangla);
-    final period = invoice.periodStart;
-    if (invoice.kind != InvoiceKind.plan || period == null) return item;
-    return joinDot([item, fmt.monthYear(period)]);
-  }
 
   /// Renders [invoices] in the current language.
   Future<Uint8List> invoicesPdf(List<Invoice> invoices, String workspace) {
@@ -32,13 +25,13 @@ extension InvoiceLabels on BuildContext {
       title: l10n.billingPdfTitle,
       billedTo: l10n.billingPdfBilledTo,
       workspace: workspace,
-      date: (invoice) =>
-          joinDot([invoiceTitle(invoice), fmt.date(invoice.issuedAt)]),
+      date: (invoice) => joinDot([
+        invoice.item,
+        if (invoice.issuedAt case final issuedAt?) fmt.date(issuedAt),
+      ]),
       status: (invoice) => invoiceStatus(invoice.status),
-      method: (invoice) {
-        final paid = invoice.method;
-        return paid == null ? method : methodLine(paid);
-      },
+      method: (invoice) =>
+          invoice.gateway == null ? method : gatewayName(invoice.gateway),
       item: l10n.billingPdfItem,
       amount: l10n.billingPdfAmount,
       credits: l10n.billingCreditsApplied,
@@ -49,7 +42,7 @@ extension InvoiceLabels on BuildContext {
     return buildInvoicesPdf(
       invoices: invoices,
       text: text,
-      lineLabel: orderLineLabel,
+      lineLabel: (line) => line.item,
       money: signedMoney,
     );
   }

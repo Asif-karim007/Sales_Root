@@ -1,6 +1,5 @@
 import 'package:salesroot/core/access/plan.dart';
 import 'package:salesroot/features/billing/models/billing_catalog.dart';
-import 'package:salesroot/features/billing/models/pricing.dart';
 import 'package:salesroot/features/billing/models/subscription.dart';
 import 'package:salesroot/features/billing/models/usage.dart';
 
@@ -15,24 +14,19 @@ class BillingOverview {
   final BillingCatalog catalog;
   final Subscription subscription;
 
-  /// The access plan: usage counters and the add-ons the app unlocks.
+  /// The access plan: usage counters and limits.
   final Plan usage;
 
   PlanOffer get plan => catalog.plan(subscription.planCode);
 
   PlanOffer? get nextPlan => catalog.nextAfter(plan);
 
-  List<UsageMeter> get meters => usageMeters(usage, plan, subscription);
+  List<UsageMeter> get meters => usageMeters(usage, subscription);
 
-  int get renewal => BillingPricing.renewal(catalog, subscription);
+  /// The per-seat add-ons bought on top of the plan.
+  Set<String> get addOns => subscription.addOnsOver(catalog);
 
-  /// On when the app unlocks it, or when billing holds an add-on the app has
-  /// no module for.
-  bool isOn(AddOnOffer addOn) {
-    final grants = addOn.grants;
-    if (addOn.includedIn == plan.code) return true;
-    return grants == null
-        ? subscription.hasAddOn(addOn.code)
-        : usage.has(grants);
-  }
+  /// On when the plan includes what it opens, or the workspace has it.
+  bool isOn(AddOnOffer addOn) =>
+      addOn.includedIn(plan) || subscription.hasAddOn(addOn);
 }

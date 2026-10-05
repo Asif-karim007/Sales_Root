@@ -13,7 +13,6 @@ import 'package:salesroot/core/workspace/workspace_providers.dart';
 import 'package:salesroot/features/billing/models/billing_catalog.dart';
 import 'package:salesroot/features/billing/models/billing_overview.dart';
 import 'package:salesroot/features/billing/models/checkout.dart';
-import 'package:salesroot/features/billing/models/pricing.dart';
 import 'package:salesroot/features/billing/models/usage.dart';
 import 'package:salesroot/features/billing/providers/billing_providers.dart';
 import 'package:salesroot/features/billing/view/widget/billing_bits.dart';
@@ -77,7 +76,7 @@ class _ChoosePlanScreenState extends ConsumerState<ChoosePlanScreen> {
             : subscription.seats);
     return _Choice(
       plan: plan,
-      cycle: _cycle ?? subscription.cycle,
+      cycle: _cycle ?? BillingCycle.monthly,
       seats: _clampSeats(wanted, plan, subscription.activeUsers),
       limit: limit,
       quickFix: (limit?.hasQuickFix ?? false) && _quickFix,
@@ -85,10 +84,14 @@ class _ChoosePlanScreenState extends ConsumerState<ChoosePlanScreen> {
   }
 
   static int _clampSeats(int seats, PlanOffer plan, int activeUsers) {
-    final max = plan.maxUsers;
-    if (max != null && seats > max) return max;
-    return seats < activeUsers ? activeUsers : seats;
+    final least = _leastSeats(plan, activeUsers);
+    return seats < least ? least : seats;
   }
+
+  /// A plan is sold with its minimum seats, and never fewer than the people
+  /// already in the workspace.
+  static int _leastSeats(PlanOffer plan, int activeUsers) =>
+      activeUsers > plan.minUsers ? activeUsers : plan.minUsers;
 
   CheckoutRequest _request(BillingOverview overview, _Choice choice) {
     final subscription = overview.subscription;
@@ -97,15 +100,10 @@ class _ChoosePlanScreenState extends ConsumerState<ChoosePlanScreen> {
       final fix = limit.quickFix(subscription);
       if (fix != null) return fix;
     }
-    final catalog = overview.catalog;
-    final kept = subscription.addOns
-        .where((code) => catalog.available(catalog.addOn(code), choice.plan))
-        .toSet();
     return CheckoutRequest(
       plan: choice.plan.code,
       seats: choice.seats,
       cycle: choice.cycle,
-      addOns: kept.length == subscription.addOns.length ? null : kept,
     );
   }
 
@@ -113,7 +111,7 @@ class _ChoosePlanScreenState extends ConsumerState<ChoosePlanScreen> {
     final request = _request(overview, choice);
     final catalog = overview.catalog;
     final offersAddOns = catalog.addOns.any(
-      (a) => !a.isPack && catalog.available(a, choice.plan),
+      (a) => !a.isPack && !a.includedIn(choice.plan),
     );
     final later = !choice.quickFix && !choice.plan.isFree && offersAddOns;
     context.push(
@@ -155,7 +153,7 @@ class _ChoosePlanScreenState extends ConsumerState<ChoosePlanScreen> {
     final pack = limit?.pack;
     final isCurrent =
         choice.plan.code == subscription.planCode &&
-        choice.cycle == subscription.cycle &&
+        choice.cycle == BillingCycle.monthly &&
         choice.seats == subscription.seats;
     final String label;
     if (choice.quickFix && limit != null) {
@@ -228,7 +226,6 @@ class _ChoosePlanScreenState extends ConsumerState<ChoosePlanScreen> {
             cycle: choice.cycle,
             selected: !choice.quickFix && offer.code == plan.code,
             current: offer.code == subscription.planCode,
-            activeUsers: subscription.activeUsers,
             onTap: () => setState(() {
               _plan = offer.code;
               _quickFix = false;
@@ -236,7 +233,7 @@ class _ChoosePlanScreenState extends ConsumerState<ChoosePlanScreen> {
           ),
           const SizedBox(height: 10),
         ],
-        if (!choice.quickFix && !plan.isFree && !plan.singleUser) ...[
+        if (!choice.quickFix && !plan.isFree) ...[
           _SeatsCard(
             plan: plan,
             cycle: choice.cycle,
@@ -290,7 +287,6 @@ class _PlanTile extends StatelessWidget {
     required this.cycle,
     required this.selected,
     required this.current,
-    required this.activeUsers,
     required this.onTap,
   });
 
@@ -298,7 +294,6 @@ class _PlanTile extends StatelessWidget {
   final BillingCycle cycle;
   final bool selected;
   final bool current;
-  final int activeUsers;
   final VoidCallback onTap;
 
   @override
@@ -306,14 +301,11 @@ class _PlanTile extends StatelessWidget {
     final c = SrColors.of(context);
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final fits = plan.fits(activeUsers);
-    final unit = plan.isFree || plan.singleUser
-        ? l10n.billingPerMonth
-        : l10n.billingPerUserMonth;
+    final unit = plan.isFree ? l10n.billingPerMonth : l10n.billingPerUserMonth;
 
     return PlanOptionCard(
       selected: selected,
-      onTap: fits ? onTap : null,
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -329,20 +321,16 @@ class _PlanTile extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 2),
-          Text(plan.summary.of(context.isBangla), style: AppText.meta(c.ink2)),
+          Text(context.layersLine(plan), style: AppText.meta(c.ink2)),
           if (cycle == BillingCycle.yearly && !plan.isFree)
             Text(
-              l10n.billingYearlyPrice(
-                fmt.money(
-                  BillingPricing.seatsPrice(plan.pricePerUser, 1, cycle),
-                ),
-              ),
+              l10n.billingYearlyPrice(fmt.money(plan.seatPrice(cycle))),
               style: AppText.meta(c.accent),
             ),
-          if (!fits)
+          if (plan.minUsers > 1 && !plan.isFree)
             Text(
-              l10n.billingTooManyUsers(fmt.number(activeUsers)),
-              style: AppText.meta(c.danger),
+              l10n.billingMinUsers(fmt.number(plan.minUsers)),
+              style: AppText.meta(c.ink2),
             ),
           if (current) ...[
             const SizedBox(height: 6),
@@ -374,8 +362,11 @@ class _SeatsCard extends StatelessWidget {
     final c = SrColors.of(context);
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final total = BillingPricing.seatsPrice(plan.pricePerUser, seats, cycle);
-    final saving = BillingPricing.yearlySaving(plan.pricePerUser, seats);
+    final total = plan.seatPrice(cycle) * seats;
+    final saving = plan.yearlySaving(seats);
+    final perSeat = cycle == BillingCycle.yearly
+        ? plan.yearlyPerUser
+        : plan.pricePerUser;
 
     return SrCard(
       child: Column(
@@ -386,8 +377,7 @@ class _SeatsCard extends StatelessWidget {
           SeatStepper(
             value: seats,
             label: context.users(seats),
-            min: activeUsers < 1 ? 1 : activeUsers,
-            max: plan.maxUsers,
+            min: _ChoosePlanScreenState._leastSeats(plan, activeUsers),
             onChanged: onChanged,
           ),
           const SizedBox(height: 6),
@@ -400,7 +390,7 @@ class _SeatsCard extends StatelessWidget {
           BillingLine(
             label: l10n.billingSeatsTotal(
               context.users(seats),
-              fmt.money(plan.pricePerUser),
+              fmt.money(perSeat),
             ),
             value: '${fmt.money(total)}${context.perCycleUnit(cycle)}',
             meta: cycle == BillingCycle.yearly

@@ -1,4 +1,3 @@
-import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/features/billing/models/billing_catalog.dart';
 import 'package:salesroot/features/billing/models/checkout.dart';
 import 'package:salesroot/features/billing/models/invoice.dart';
@@ -9,19 +8,15 @@ abstract interface class BillingRepository {
 
   Future<Subscription> subscription();
 
-  Future<PageResult<Invoice>> invoices(int page);
+  /// The workspace's bills of the last year, newest first.
+  Future<List<Invoice>> invoices();
 
-  /// Every bill, for the all-receipts PDF.
-  Future<List<Invoice>> receipts();
+  /// Prices [order], a `Checkout` body from [CheckoutRequest.toCheckout].
+  Future<Quote> quote(Map<String, dynamic> order);
 
-  Future<Invoice> invoice(int id);
+  /// Raises the bill for [order] and starts the payment.
+  Future<CheckoutResult> checkout(Map<String, dynamic> order);
 
-  /// Charges [method] for [request]. The server prices it again and answers
-  /// 409 when the total differs from [expectedTotal].
-  Future<Purchase> pay(
-    CheckoutRequest request, {
-    required PaymentKind method,
-    required bool useCredits,
-    required int expectedTotal,
-  });
+  /// Asks the gateway whether the payment went through.
+  Future<void> verify(String transactionId);
 }

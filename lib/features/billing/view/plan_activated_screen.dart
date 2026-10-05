@@ -16,17 +16,18 @@ import 'package:salesroot/features/billing/view/widget/invoice_pdf_viewer.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #101 The purchase went through: what is on now and the receipt.
+/// #101 The purchase went through: what is on now and, when the server
+/// raised one, the receipt.
 class PlanActivatedScreen extends ConsumerWidget {
-  const PlanActivatedScreen({super.key, required this.invoiceId});
+  const PlanActivatedScreen({super.key, this.invoiceId});
 
-  final int invoiceId;
+  final String? invoiceId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final invoice = ref.watch(invoiceProvider(invoiceId));
-    final overview = ref.watch(billingOverviewProvider);
+    final id = invoiceId;
+    final invoice = id == null ? null : ref.watch(invoiceProvider(id)).value;
 
     return SrScaffold(
       appBar: SrAppBar(
@@ -40,28 +41,30 @@ class PlanActivatedScreen extends ConsumerWidget {
         onPressed: () => context.go(Routes.home),
       ),
       body: SrAsyncView(
-        value: invoice,
-        onRetry: () => ref.invalidate(invoiceProvider(invoiceId)),
+        value: ref.watch(billingOverviewProvider),
+        onRetry: () => ref.invalidate(billingOverviewProvider),
         loading: (_) => const SrSkeletonList(count: 2, cards: true),
-        data: (context, invoice) =>
-            _ActivatedBody(invoice: invoice, overview: overview.value),
+        data: (context, overview) =>
+            _ActivatedBody(overview: overview, invoice: invoice),
       ),
     );
   }
 }
 
 class _ActivatedBody extends ConsumerWidget {
-  const _ActivatedBody({required this.invoice, required this.overview});
+  const _ActivatedBody({required this.overview, this.invoice});
 
-  final Invoice invoice;
-  final BillingOverview? overview;
+  final BillingOverview overview;
+  final Invoice? invoice;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
-    final item = invoice.item.of(context.isBangla);
-    final news = _news(context);
+    final fmt = context.fmt;
+    final plan = overview.plan;
+    final renewsAt = overview.subscription.renewsAt;
+    final invoice = this.invoice;
     final workspace = ref.watch(
       currentWorkspaceProvider.select((w) => w?.name ?? ''),
     );
@@ -72,77 +75,53 @@ class _ActivatedBody extends ConsumerWidget {
         const Center(child: BigCheck()),
         const SizedBox(height: 14),
         Text(
-          invoice.kind == InvoiceKind.pack
-              ? l10n.billingPackAdded(item)
-              : l10n.billingIsOn(item),
+          l10n.billingIsOn(plan.name),
           textAlign: TextAlign.center,
           style: AppText.pageTitle(c.ink, size: 20),
         ),
         const SizedBox(height: 6),
         Text(
-          _subtitle(context),
+          joinDot([
+            l10n.billingForUsers(fmt.number(overview.subscription.seats)),
+            if (renewsAt != null) l10n.billingRenews(fmt.dayMonth(renewsAt)),
+            if (invoice != null) l10n.billingReceiptSent,
+          ]),
           textAlign: TextAlign.center,
           style: AppText.lead(c.ink2),
         ),
-        if (news.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          SrCard(
-            tone: SrCardTone.tint,
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.billingWhatsNew, style: AppText.rowTitle(c.ink)),
-                const SizedBox(height: 6),
-                CheckList(items: news),
-              ],
+        const SizedBox(height: 20),
+        SrCard(
+          tone: SrCardTone.tint,
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.billingWhatsNew, style: AppText.rowTitle(c.ink)),
+              const SizedBox(height: 6),
+              CheckList(
+                items: [
+                  for (final layer in overview.subscription.layers)
+                    (context.layerLabel(layer), context.layerHint(layer)),
+                ],
+              ),
+            ],
+          ),
+        ),
+        if (invoice != null) ...[
+          const SizedBox(height: 16),
+          SrButton(
+            label: l10n.billingViewReceipt,
+            icon: Icons.receipt_long_outlined,
+            variant: SrButtonVariant.secondary,
+            expand: true,
+            onPressed: () => context.openPdf(
+              name: '${invoice.number}.pdf',
+              title: invoice.number,
+              load: () => context.invoicesPdf([invoice], workspace),
             ),
           ),
         ],
-        const SizedBox(height: 16),
-        SrButton(
-          label: l10n.billingViewReceipt,
-          icon: Icons.receipt_long_outlined,
-          variant: SrButtonVariant.secondary,
-          expand: true,
-          onPressed: () => context.openPdf(
-            name: '${invoice.number}.pdf',
-            title: invoice.number,
-            load: () => context.invoicesPdf([invoice], workspace),
-          ),
-        ),
       ],
     );
-  }
-
-  String _subtitle(BuildContext context) {
-    final l10n = context.l10n;
-    final fmt = context.fmt;
-    final renewsAt = overview?.subscription.renewsAt;
-    return joinDot([
-      if (invoice.kind == InvoiceKind.plan && invoice.seats > 0)
-        l10n.billingForUsers(fmt.number(invoice.seats)),
-      if (invoice.kind != InvoiceKind.pack && renewsAt != null)
-        l10n.billingRenews(fmt.dayMonth(renewsAt)),
-      if (invoice.kind == InvoiceKind.pack) fmt.money(invoice.total),
-      l10n.billingReceiptSent,
-    ]);
-  }
-
-  List<(String, String?)> _news(BuildContext context) {
-    final overview = this.overview;
-    if (overview == null) return const [];
-    final bangla = context.isBangla;
-    final catalog = overview.catalog;
-    final codes = invoice.quote.lines.map((l) => l.code).toSet();
-    return [
-      for (final plan in catalog.plans)
-        if (codes.contains(plan.code) && invoice.kind == InvoiceKind.plan)
-          for (final f in plan.features)
-            (f.name.of(bangla), f.detail.of(bangla)),
-      for (final addOn in catalog.addOns)
-        if (codes.contains(addOn.code) && invoice.kind != InvoiceKind.plan)
-          (addOn.name.of(bangla), addOn.detail.of(bangla)),
-    ];
   }
 }
