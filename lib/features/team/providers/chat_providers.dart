@@ -10,6 +10,7 @@ import 'package:salesroot/features/team/data/chat_repository.dart';
 import 'package:salesroot/features/team/data/fake_chat_repository.dart';
 import 'package:salesroot/features/team/models/chat.dart';
 import 'package:salesroot/features/team/models/chat_room.dart';
+import 'package:salesroot/features/team/models/member.dart';
 
 part 'chat_providers.g.dart';
 
@@ -19,6 +20,11 @@ ChatRepository chatRepository(Ref ref) {
   ref.onDispose(repository.dispose);
   return repository;
 }
+
+/// The people chats can be started with.
+@riverpod
+Future<List<Member>> chatPeople(Ref ref) =>
+    ref.watch(chatRepositoryProvider).people();
 
 @riverpod
 class ChatSearchNotifier extends _$ChatSearchNotifier {
@@ -127,7 +133,7 @@ class OversightListNotifier extends _$OversightListNotifier {
 }
 
 @riverpod
-Future<ChatThread> chatThread(Ref ref, int id) =>
+Future<ChatThread> chatThread(Ref ref, String id) =>
     ref.watch(chatRepositoryProvider).thread(id);
 
 /// One open thread, live: the first page of messages, then every message,
@@ -140,7 +146,7 @@ class ChatRoomNotifier extends _$ChatRoomNotifier {
   final Map<int, MessageInput> _unsent = {};
 
   @override
-  Stream<ChatRoom> build(int threadId) {
+  Stream<ChatRoom> build(String threadId) {
     final repository = ref.watch(chatRepositoryProvider);
     final controller = StreamController<ChatRoom>();
     _controller = controller;
@@ -218,7 +224,7 @@ class ChatRoomNotifier extends _$ChatRoomNotifier {
     final temp = ChatMessage(
       id: --_lastTempId,
       threadId: threadId,
-      senderId: 0,
+      senderId: '',
       senderName: const LocalizedName('', ''),
       text: input.text.trim(),
       sentAt: DateTime.now(),
@@ -264,13 +270,13 @@ class ChatOpener extends _$ChatOpener {
   @override
   FutureOr<ChatThread?> build() => null;
 
-  Future<void> lead(int leadId) =>
+  Future<void> lead(String leadId) =>
       _open(() => ref.read(chatRepositoryProvider).leadThread(leadId));
 
-  Future<void> direct(int memberId) =>
+  Future<void> direct(String memberId) =>
       _open(() => ref.read(chatRepositoryProvider).direct(memberId));
 
-  Future<void> group(String name, List<int> memberIds) => _open(
+  Future<void> group(String name, List<String> memberIds) => _open(
     () => ref.read(chatRepositoryProvider).createGroup(name, memberIds),
   );
 
@@ -288,7 +294,7 @@ enum ChatEditOutcome { saved, membersAdded, left }
 @riverpod
 class ChatThreadEditor extends _$ChatThreadEditor {
   @override
-  FutureOr<ChatEditOutcome?> build(int threadId) => null;
+  FutureOr<ChatEditOutcome?> build(String threadId) => null;
 
   Future<void> settings({bool? notifications, bool? autoDownload}) => _run(
     ChatEditOutcome.saved,
@@ -301,7 +307,7 @@ class ChatThreadEditor extends _$ChatThreadEditor {
         ),
   );
 
-  Future<void> addMembers(List<int> memberIds) => _run(
+  Future<void> addMembers(List<String> memberIds) => _run(
     ChatEditOutcome.membersAdded,
     () => ref.read(chatRepositoryProvider).addMembers(threadId, memberIds),
   );

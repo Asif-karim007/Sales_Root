@@ -1,0 +1,21 @@
+[
+  {
+    "membershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+    "name": "Rafi Ahmed",
+    "photoUrl": null,
+    "role": "executive",
+    "status": "half_day",
+    "checkInAt": "2026-10-05T17:03:46.261607Z",
+    "checkOutAt": "2026-10-05T17:05:30.433483Z",
+    "checkInInOffice": false,
+    "checkInReason": "[test] field probe",
+    "distanceKm": 10045.19,
+    "checkOutManual": false,
+    "mockDetected": false,
+    "visits": 1,
+    "lat": 0,
+    "lng": 0,
+    "lastSeenAt": "2026-10-05T17:05:00Z",
+    "battery": 81
+  }
+]

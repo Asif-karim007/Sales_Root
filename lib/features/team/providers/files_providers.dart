@@ -17,9 +17,9 @@ FilesRepository filesRepository(Ref ref) =>
 @riverpod
 class FileFolderNotifier extends _$FileFolderNotifier {
   @override
-  int? build() => null;
+  String? build() => null;
 
-  void set(int? folderId) => state = folderId;
+  void set(String? folderId) => state = folderId;
 }
 
 @riverpod
@@ -67,7 +67,7 @@ class FileListNotifier extends _$FileListNotifier {
 }
 
 @riverpod
-Future<TeamFile> teamFile(Ref ref, int id) =>
+Future<TeamFile> teamFile(Ref ref, String id) =>
     ref.watch(filesRepositoryProvider).file(id);
 
 enum FileEditOutcome { visibilityChanged, deleted }
@@ -75,7 +75,7 @@ enum FileEditOutcome { visibilityChanged, deleted }
 @riverpod
 class FileEditor extends _$FileEditor {
   @override
-  FutureOr<FileEditOutcome?> build(int id) => null;
+  FutureOr<FileEditOutcome?> build(String id) => null;
 
   Future<void> setVisibility(FileVisibility visibility) => _run(
     FileEditOutcome.visibilityChanged,
@@ -125,9 +125,9 @@ class UploadState {
 
   final LocalFile? file;
   final String name;
-  final int? folderId;
+  final String? folderId;
   final bool visibleToAll;
-  final int? leadId;
+  final String? leadId;
   final String? leadTitle;
   final double progress;
   final UploadPhase phase;
@@ -137,9 +137,9 @@ class UploadState {
   UploadState copyWith({
     LocalFile? file,
     String? name,
-    int? folderId,
+    String? folderId,
     bool? visibleToAll,
-    int? Function()? leadId,
+    String? Function()? leadId,
     String? Function()? leadTitle,
     double? progress,
     UploadPhase? phase,
@@ -165,8 +165,11 @@ class UploadNotifier extends _$UploadNotifier {
   UploadCancel? _cancel;
 
   @override
-  UploadState build({int? folderId, int? replaceFileId, int? leadId}) =>
-      UploadState(folderId: folderId, leadId: leadId);
+  UploadState build({
+    String? folderId,
+    String? replaceFileId,
+    String? leadId,
+  }) => UploadState(folderId: folderId, leadId: leadId);
 
   void pick(LocalFile file) => state = state.copyWith(
     file: file,
@@ -178,12 +181,12 @@ class UploadNotifier extends _$UploadNotifier {
 
   void setName(String name) => state = state.copyWith(name: name);
 
-  void setFolder(int folderId) => state = state.copyWith(folderId: folderId);
+  void setFolder(String folderId) => state = state.copyWith(folderId: folderId);
 
   void setVisibleToAll(bool visible) =>
       state = state.copyWith(visibleToAll: visible);
 
-  void setLead(int? id, String? title) =>
+  void setLead(String? id, String? title) =>
       state = state.copyWith(leadId: () => id, leadTitle: () => title);
 
   Future<void> start() async {

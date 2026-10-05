@@ -7,8 +7,8 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/features/team/models/invite.dart';
+import 'package:salesroot/features/team/models/member.dart';
 import 'package:salesroot/features/team/providers/team_providers.dart';
 import 'package:salesroot/features/team/view/widget/failure_text.dart';
 import 'package:salesroot/features/team/view/widget/team_labels.dart';
@@ -17,11 +17,11 @@ import 'package:salesroot/widgets/widgets.dart';
 
 /// #66 `rolepick`: the roles and what each may do. Pops with the chosen
 /// role; with [readOnly] it only explains every role.
-Future<WorkspaceRole?> showRolePickSheet(
+Future<MemberRole?> showRolePickSheet(
   BuildContext context, {
-  WorkspaceRole? selected,
+  MemberRole? selected,
   bool readOnly = false,
-}) => showSrSheet<WorkspaceRole>(
+}) => showSrSheet<MemberRole>(
   context: context,
   builder: (_) => _RoleSheet(selected: selected, readOnly: readOnly),
 );
@@ -29,15 +29,13 @@ Future<WorkspaceRole?> showRolePickSheet(
 class _RoleSheet extends StatelessWidget {
   const _RoleSheet({required this.selected, required this.readOnly});
 
-  final WorkspaceRole? selected;
+  final MemberRole? selected;
   final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
-    final roles = readOnly
-        ? WorkspaceRole.values
-        : const [WorkspaceRole.member, WorkspaceRole.teamLead];
+    final roles = readOnly ? MemberRole.values : MemberRole.assignable;
     return SrSheet(
       title: readOnly ? context.l10n.teamRolesTitle : context.l10n.teamRole,
       child: SingleChildScrollView(
@@ -65,14 +63,15 @@ class _RoleSheet extends StatelessWidget {
     );
   }
 
-  static IconData _iconOf(WorkspaceRole role) => switch (role) {
-    WorkspaceRole.owner => Icons.workspace_premium_outlined,
-    WorkspaceRole.teamLead => Icons.supervisor_account_outlined,
-    WorkspaceRole.member => Icons.person_outline_rounded,
+  static IconData _iconOf(MemberRole role) => switch (role) {
+    MemberRole.owner => Icons.workspace_premium_outlined,
+    MemberRole.teamLead => Icons.supervisor_account_outlined,
+    MemberRole.executive => Icons.person_outline_rounded,
+    MemberRole.finance => Icons.account_balance_wallet_outlined,
   };
 }
 
-/// #68 `invitepending`: resend or revoke one invitation.
+/// #68 `invitepending`: revoke one invitation.
 Future<void> showInvitePendingSheet(BuildContext context, Invite invite) =>
     showSrSheet<void>(
       context: context,
@@ -87,18 +86,13 @@ class _InvitePendingSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final actions = inviteActionsProvider(invite.id);
-    final state = ref.watch(actions);
-    ref.listen(actions, (_, next) {
+    final revoker = inviteRevokerProvider(invite.id);
+    final state = ref.watch(revoker);
+    ref.listen(revoker, (_, next) {
       switch (next) {
-        case AsyncData(value: final outcome?):
+        case AsyncData(value: true):
           Navigator.of(context).pop();
-          showSrSuccess(
-            context,
-            outcome == InviteOutcome.resent
-                ? l10n.teamInviteResent
-                : l10n.teamInviteRevoked,
-          );
+          showSrSuccess(context, l10n.teamInviteRevoked);
         case AsyncError(:final error):
           showSrError(context, failureText(context, error));
         default:
@@ -123,18 +117,11 @@ class _InvitePendingSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           SrButton(
-            label: l10n.teamInviteResend,
-            variant: SrButtonVariant.secondary,
-            expand: true,
-            onPressed: busy ? null : () => ref.read(actions.notifier).resend(),
-          ),
-          const SizedBox(height: 10),
-          SrButton(
             label: l10n.teamInviteRevoke,
             variant: SrButtonVariant.danger,
             expand: true,
             loading: busy,
-            onPressed: busy ? null : () => ref.read(actions.notifier).revoke(),
+            onPressed: busy ? null : () => ref.read(revoker.notifier).revoke(),
           ),
         ],
       ),
@@ -142,17 +129,15 @@ class _InvitePendingSheet extends ConsumerWidget {
   }
 }
 
-/// "+880 1912 345 678 · 2 days ago · Member".
+/// "+880 1912 345 678 · Member · expires 12 Oct".
 String inviteSubtitle(BuildContext context, Invite invite) {
-  final l10n = context.l10n;
-  final address = invite.phone ?? invite.email ?? '';
-  final when = invite.sentDaysAgo == 0
-      ? l10n.commonToday
-      : l10n.relativeDays(context.fmt.number(invite.sentDaysAgo));
+  final phone = invite.phone;
+  final expires = invite.expiresAt;
   return [
-    if (invite.label != address) context.phone(address),
-    when,
+    if (phone != null && invite.label != phone) context.phone(phone),
     context.roleLabel(invite.role),
+    if (expires != null)
+      context.l10n.teamInviteExpiresOn(context.fmt.dayMonth(expires)),
   ].join(' · ');
 }
 
@@ -222,16 +207,12 @@ class _NoSeatSheetState extends ConsumerState<_NoSeatSheet> {
             ],
           ],
         ),
-        const SizedBox(height: 14),
-        SrNote(
-          message: l10n.teamNoSeatProrated(fmt.money(picked.proratedToday)),
-        ),
         const SizedBox(height: 16),
         SrButton(
           label: l10n.teamNoSeatAction(
             picked.seats,
             fmt.number(picked.seats),
-            fmt.money(picked.proratedToday),
+            fmt.money(picked.pricePerMonth),
           ),
           expand: true,
           onPressed: () {

@@ -43,30 +43,8 @@
       }
     }
   },
-  "teamOfflineDays": "{n, plural, other{অফলাইন {count} দিন}}",
-  "@teamOfflineDays": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      },
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "teamPeople": "{n, plural, other{{count} জন}}",
   "@teamPeople": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      },
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "teamDays": "{n, plural, other{{count} দিন}}",
-  "@teamDays": {
     "placeholders": {
       "n": {
         "type": "int"
@@ -80,9 +58,11 @@
   "teamRoleOwner": "মালিক",
   "teamRoleTeamLead": "টিম লিড",
   "teamRoleMember": "সদস্য",
+  "teamRoleFinance": "ফাইন্যান্স",
   "teamRoleOwnerAbout": "সব কিছু: বিলিং, সেটিংস, সব রেকর্ড ও চ্যাট",
   "teamRoleTeamLeadAbout": "রিপোর্ট করা সদস্যদের সব, বরাদ্দ, অনুমোদন",
   "teamRoleMemberAbout": "নিজের লিড, ভিজিট, চ্যাট",
+  "teamRoleFinanceAbout": "কালেকশন, ইনভয়েস ও খরচ",
   "teamLevel": "অভিজ্ঞতার স্তর",
   "teamLevelEasy": "সহজ",
   "teamLevelStandard": "স্ট্যান্ডার্ড",
@@ -102,7 +82,6 @@
   "teamStatusActive": "সক্রিয়",
   "teamStatusNotStarted": "শুরু করেননি",
   "teamStatusOnLeave": "ছুটিতে",
-  "teamStatusOffline": "অফলাইন",
   "teamStatusDeactivated": "নিষ্ক্রিয়",
   "teamInviteTitle": "ইনভাইট",
   "teamSeatsFree": "{used}/{total} ব্যবহারকারী ব্যবহৃত · {free}টি খালি",
@@ -120,11 +99,7 @@
     }
   },
   "teamInviteByPhone": "মোবাইল নম্বর",
-  "teamInviteByEmail": "ইমেইল",
   "teamInvitePhoneHint": "+880 1XXX XXX XXX",
-  "teamInviteEmailHint": "name@company.com",
-  "teamInviteName": "নাম",
-  "teamInviteNameHint": "যেমন তানভীর হাসান",
   "teamReportsTo": "রিপোর্ট করবে",
   "teamReportsToHint": "টিম লিড বাছুন",
   "teamNameWithRole": "{name} ({role})",
@@ -138,13 +113,8 @@
       }
     }
   },
-  "teamFieldForce": "ফিল্ড ফোর্স",
-  "teamFieldForceAbout": "ভিজিট ও হাজিরা",
-  "teamTeamOnlyCapture": "টিম-অনলি ক্যাপচার",
-  "teamTeamOnlyCaptureAbout": "ডিউটিতে পাওয়া লিড শুধু টিমে",
   "teamInviteSend": "ইনভাইট পাঠান",
   "teamInvitePhoneInvalid": "সঠিক বাংলাদেশি মোবাইল নম্বর দিন",
-  "teamInviteEmailInvalid": "সঠিক ইমেইল ঠিকানা দিন",
   "teamInviteDuplicate": "ইতিমধ্যে টিমে আছেন বা ইনভাইট পাঠানো হয়েছে",
   "teamManagerInvalid": "একজন সক্রিয় সদস্য বাছুন",
   "teamInviteSentTitle": "ইনভাইট",
@@ -157,20 +127,26 @@
     }
   },
   "teamInviteSentSms": "এসএমএসে লিংক গেছে; অ্যাপ খুলে এই নম্বরে লগইন করলেই টিমে যুক্ত হবেন।",
-  "teamInviteSentEmail": "ইমেইলে লিংক গেছে; এই ঠিকানায় লগইন করলেই টিমে যুক্ত হবেন।",
   "teamInviteExpires": "মেয়াদ",
+  "teamInviteExpiresOn": "মেয়াদ {date} পর্যন্ত",
+  "@teamInviteExpiresOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "teamInviteWhatsApp": "WhatsApp",
   "teamInviteSms": "এসএমএস",
-  "teamInviteCopyLink": "লিংক কপি",
   "teamInviteAnother": "আরেকজন",
   "teamBackToTeam": "টিমে ফিরুন",
-  "teamInviteMessage": "SalesRoot-এ {workspace}-এ যোগ দিন: {link}",
+  "teamInviteMessage": "SalesRoot-এ {workspace}-এ যোগ দিন: {phone} নম্বর দিয়ে সাইন ইন করলেই হবে।",
   "@teamInviteMessage": {
     "placeholders": {
       "workspace": {
         "type": "String"
       },
-      "link": {
+      "phone": {
         "type": "String"
       }
     }
@@ -178,9 +154,7 @@
   "teamCopied": "কপি হয়েছে",
   "teamOpenFailed": "এই ফোনে এটি খোলা গেল না",
   "teamInvitePendingTitle": "ইনভাইট বাকি",
-  "teamInviteResend": "আবার পাঠান",
   "teamInviteRevoke": "বাতিল করুন",
-  "teamInviteResent": "ইনভাইট আবার পাঠানো হয়েছে",
   "teamInviteRevoked": "ইনভাইট বাতিল হয়েছে",
   "teamNoSeatTitle": "ব্যবহারকারী বাড়ান",
   "teamNoSeatBody": "{total}/{total} ব্যবহারকারী ব্যবহৃত। আরেকজন যোগ করতে ব্যবহারকারী বাড়াতে হবে।",
@@ -192,14 +166,6 @@
     }
   },
   "teamPerMonth": "/ মাস",
-  "teamNoSeatProrated": "এ মাসের বাকি দিনের জন্য আনুপাতিক হিসাব হবে: আজ {amount}",
-  "@teamNoSeatProrated": {
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
   "teamNoSeatAction": "{n, plural, other{{count} জন যোগ করুন · {amount}}}",
   "@teamNoSeatAction": {
     "placeholders": {
@@ -216,17 +182,14 @@
   },
   "teamStatLeadsThisMonth": "এ মাসে লিড",
   "teamStatWon": "বিক্রি",
-  "teamStatAttendance": "হাজিরা",
-  "teamDutyHours": "ডিউটি",
-  "teamLiveTracking": "লাইভ ট্র্যাকিং",
-  "teamTrackingConsented": "সম্মতি দিয়েছেন",
-  "teamTrackingNotYet": "এখনো না",
+  "teamStatCollected": "আদায়",
   "teamJoined": "যোগদান",
+  "teamArea": "টিম",
   "teamChangeLevel": "স্তর বদলান",
   "teamChangeRole": "ভূমিকা বদলান",
   "teamChangeManager": "কার কাছে রিপোর্ট করবে বদলান",
   "teamOpenWork": "খোলা কাজ",
-  "teamOpenLeads": "{n, plural, other{{count}টি খোলা লিড · {amount}}}",
+  "teamOpenLeads": "{n, plural, other{{count}টি খোলা লিড}}",
   "@teamOpenLeads": {
     "placeholders": {
       "n": {
@@ -234,27 +197,20 @@
       },
       "count": {
         "type": "String"
-      },
-      "amount": {
-        "type": "String"
       }
     }
   },
-  "teamOpenTasks": "{n, plural, other{{count}টি কাজ · {overdue}টি দেরি}}",
-  "@teamOpenTasks": {
+  "teamOverdueTasks": "{n, plural, other{{count}টি কাজ দেরিতে}}",
+  "@teamOverdueTasks": {
     "placeholders": {
       "n": {
         "type": "int"
       },
       "count": {
         "type": "String"
-      },
-      "overdue": {
-        "type": "String"
       }
     }
   },
-  "teamMessage": "চ্যাট",
   "teamRemoveAndReassign": "সরান ও বুঝিয়ে দিন",
   "teamDeactivate": "নিষ্ক্রিয় করুন",
   "teamReactivate": "আবার সক্রিয় করুন",
@@ -269,51 +225,27 @@
   "teamDeactivateAbout": "আবার সক্রিয় না করা পর্যন্ত লগইন করতে পারবেন না। তাঁর রেকর্ড টিমেই থাকবে।",
   "teamSaved": "সেভ হয়েছে",
   "teamRemoveTitle": "সদস্য সরান",
-  "teamRemoveNote": "{name}-কে সরালে তাঁর {leads}টি লিড ও {tasks}টি কাজ কাউকে দিতে হবে। টিমের রেকর্ড টিমেই থাকবে।",
+  "teamRemoveNote": "{name}-কে সরালে তাঁর লিড ও কাজ আপনার বেছে নেওয়া সহকর্মী পাবেন। টিমের রেকর্ড টিমেই থাকবে।",
   "@teamRemoveNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "teamRemoveNoteLeads": "{name}-কে সরালে তাঁর {leads}টি খোলা লিড ও কাজ আপনার বেছে নেওয়া সহকর্মী পাবেন। টিমের রেকর্ড টিমেই থাকবে।",
+  "@teamRemoveNoteLeads": {
     "placeholders": {
       "name": {
         "type": "String"
       },
       "leads": {
         "type": "String"
-      },
-      "tasks": {
-        "type": "String"
       }
     }
   },
   "teamReassignTo": "লিড ও কাজ যাবে",
   "teamReassignToHint": "একজন সহকর্মী বাছুন",
-  "teamRemoveLeads": "খোলা লিড ({count})",
-  "@teamRemoveLeads": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "teamRemoveTasks": "খোলা কাজ ({count})",
-  "@teamRemoveTasks": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "teamRemoveVisits": "আজকের ভিজিট ({count})",
-  "@teamRemoveVisits": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "teamKeepChatHistory": "চ্যাটের ইতিহাস রাখুন",
-  "teamKeepContacts": "তাঁর যোগ করা কনট্যাক্টের কপি রাখতে দিন",
-  "teamKeepContactsAbout": "ডিফল্ট: না · অডিট লগে লেখা হবে",
-  "teamRemoveReason": "কারণ",
-  "teamRemoveReasonHint": "যেমন চাকরি ছেড়েছেন",
   "teamReassignAndRemove": "বুঝিয়ে দিন ও সরান",
   "teamRemoved": "{name}-কে সরানো হয়েছে",
   "@teamRemoved": {

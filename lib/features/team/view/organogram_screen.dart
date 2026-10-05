@@ -26,7 +26,7 @@ class OrganogramScreen extends ConsumerStatefulWidget {
 }
 
 class _OrganogramScreenState extends ConsumerState<OrganogramScreen> {
-  int? _focusId;
+  String? _focusId;
   bool _editing = false;
 
   @override
@@ -69,7 +69,7 @@ class _OrganogramScreenState extends ConsumerState<OrganogramScreen> {
     final l10n = context.l10n;
     final members = all.where((m) => m.isActive).toList();
     final owner = members.where((m) => m.isOwner).firstOrNull;
-    List<Member> reportsOf(int id) =>
+    List<Member> reportsOf(String id) =>
         members.where((m) => m.managerId == id).toList();
     final heads = [
       ...members.where((m) => m.isTeamLead),
@@ -141,7 +141,7 @@ class _OrganogramScreenState extends ConsumerState<OrganogramScreen> {
                   title: context.name(head.name),
                   subtitle: [
                     context.roleLabel(head.role),
-                    if (head.area case final area?) context.name(area),
+                    ?head.area,
                     l10n.teamPeople(
                       reportsOf(head.id).length,
                       context.fmt.number(reportsOf(head.id).length),
@@ -213,7 +213,7 @@ class _Node extends StatelessWidget {
     final area = member.area;
     final subtitle = [
       context.roleLabel(member.role),
-      if (!compact && member.isTeamLead && area != null) context.name(area),
+      if (!compact && member.isTeamLead && area != null) area,
     ].join(' · ');
     return Material(
       color: c.surface,

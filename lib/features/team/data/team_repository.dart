@@ -3,28 +3,26 @@ import 'package:salesroot/features/team/models/invite.dart';
 import 'package:salesroot/features/team/models/member.dart';
 
 abstract interface class TeamRepository {
-  /// One page of members, with `Counts` facets for the filter chips.
+  /// The members a filter shows, with `counts` per filter as a facet.
   Future<PageResult<Member>> members(MemberQuery query);
 
-  /// Every member, for pickers and the organogram.
+  /// Every member who has joined, for pickers and the organogram.
   Future<List<Member>> directory();
 
-  Future<Member> member(int id);
+  Future<Member> member(String id);
 
-  Future<Member> updateMember(int id, MemberUpdate update);
+  Future<Member> updateMember(String id, MemberUpdate update);
 
-  /// Hands the member's work to someone else, then removes them.
-  Future<void> removeMember(int id, RemovalInput input);
+  /// Removes the member and hands their work to [successorId].
+  Future<void> removeMember(String id, {required String successorId});
 
   Future<List<Invite>> invites();
 
-  Future<Invite> invite(int id);
+  Future<Invite> invite(String id);
 
   Future<Invite> sendInvite(InviteInput input);
 
-  Future<Invite> resendInvite(int id);
+  Future<void> revokeInvite(String id);
 
-  Future<void> revokeInvite(int id);
-
-  Future<List<SeatPack>> seatPacks();
+  Future<List<SeatPack>> seatPacks(String planKey);
 }

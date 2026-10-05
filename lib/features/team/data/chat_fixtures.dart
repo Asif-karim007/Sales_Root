@@ -1,7 +1,22 @@
+import 'package:collection/collection.dart';
+
 import 'package:salesroot/core/fake/seed_graph.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/core/workspace/workspace.dart';
-import 'package:salesroot/features/team/data/team_fixtures.dart';
+
+/// The id of the seeded workspace owner.
+int ownerIdOf(SeedGraph graph) =>
+    graph.members.firstWhereOrNull((m) => m.role == WorkspaceRole.owner)?.id ??
+    SeedGraph.meId;
+
+/// The member's manager, or the owner when the seeded one isn't in this
+/// workspace.
+int? managerIdOf(SeedGraph graph, SeedMember member) {
+  final managerId = member.managerId;
+  if (managerId == null || member.role == WorkspaceRole.owner) return null;
+  final exists = graph.members.any((m) => m.id == managerId);
+  return exists ? managerId : ownerIdOf(graph);
+}
 
 List<Map<String, dynamic>> chatThreadFixtures(SeedGraph graph) =>
     _ChatSeed(graph).threads;

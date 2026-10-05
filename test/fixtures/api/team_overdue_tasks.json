@@ -1,0 +1,35 @@
+{
+  "items": [
+    {
+      "id": "01a10101-8683-7805-b6a0-88318199eb76",
+      "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+      "title": "Visit Rahim Traders",
+      "type": "visit",
+      "dueAt": "2026-10-03T04:00:00Z",
+      "remindMin": 15,
+      "assigneeMembershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+      "leadId": "01a10101-866a-7007-90bc-2326bcdb9d50",
+      "companyId": "01a10101-8657-7f15-8630-b08119f1ae61",
+      "contactId": null,
+      "repeatRule": null,
+      "status": "open",
+      "doneAt": null,
+      "outcome": null,
+      "note": null,
+      "createdBy": null,
+      "createdAt": "2026-10-03T09:03:59.542506Z",
+      "updatedAt": "2026-10-03T09:03:59.542506Z",
+      "deletedAt": null,
+      "version": 32,
+      "assigneeName": "Rafi Ahmed",
+      "leadName": "Mr Rahim",
+      "leadPhone": "+8801811000010",
+      "companyName": "Rahim Traders",
+      "contactName": null,
+      "contactPhone": null
+    }
+  ],
+  "total": 3,
+  "offset": 0,
+  "limit": 1
+}

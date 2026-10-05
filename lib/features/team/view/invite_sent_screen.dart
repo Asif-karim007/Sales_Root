@@ -21,7 +21,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class InviteSentScreen extends ConsumerWidget {
   const InviteSentScreen({super.key, required this.inviteId});
 
-  final int inviteId;
+  final String inviteId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -74,10 +74,11 @@ class _Sent extends ConsumerWidget {
     final workspace = ref.watch(
       currentWorkspaceProvider.select((w) => w?.name ?? ''),
     );
-    final message = l10n.teamInviteMessage(workspace, invite.link);
-    final phone = invite.phone;
+    final phone = invite.phone ?? '';
+    final message = l10n.teamInviteMessage(workspace, context.phone(phone));
     final level = invite.level;
     final managerName = invite.managerName;
+    final expires = invite.expiresAt;
     return ListView(
       padding: const EdgeInsets.fromLTRB(
         SrMetrics.gutter,
@@ -102,7 +103,7 @@ class _Sent extends ConsumerWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          phone == null ? l10n.teamInviteSentEmail : l10n.teamInviteSentSms,
+          l10n.teamInviteSentSms,
           textAlign: TextAlign.center,
           style: AppText.lead(c.ink2),
         ),
@@ -118,19 +119,14 @@ class _Sent extends ConsumerWidget {
                   ? l10n.teamLevelTheirChoice
                   : context.levelLabel(level),
             ),
-            InfoLine(
-              l10n.teamInviteExpires,
-              l10n.teamDays(
-                invite.expiresInDays,
-                context.fmt.number(invite.expiresInDays),
-              ),
-            ),
+            if (expires != null)
+              InfoLine(l10n.teamInviteExpires, context.fmt.date(expires)),
           ],
         ),
         const SizedBox(height: 14),
         _ShareGrid(
           buttons: [
-            if (phone != null) ...[
+            if (phone.isNotEmpty) ...[
               _ShareButton(
                 label: l10n.teamInviteWhatsApp,
                 icon: Icons.chat_outlined,
@@ -142,11 +138,6 @@ class _Sent extends ConsumerWidget {
                 onTap: () => openExternal(context, smsUri(phone, message)),
               ),
             ],
-            _ShareButton(
-              label: l10n.teamInviteCopyLink,
-              icon: Icons.link_rounded,
-              onTap: () => copyText(context, invite.link),
-            ),
             _ShareButton(
               label: l10n.commonShare,
               icon: Icons.ios_share_rounded,

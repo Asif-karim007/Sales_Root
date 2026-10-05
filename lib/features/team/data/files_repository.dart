@@ -9,9 +9,9 @@ abstract interface class FilesRepository {
   /// One page of files, newest first.
   Future<PageResult<TeamFile>> files(FileQuery query);
 
-  Future<TeamFile> file(int id);
+  Future<TeamFile> file(String id);
 
-  Future<Uint8List> download(int id);
+  Future<Uint8List> download(String id);
 
   /// Reports progress from 0 to 1 while the bytes go up.
   Future<TeamFile> upload(
@@ -20,7 +20,7 @@ abstract interface class FilesRepository {
     UploadCancel? cancel,
   });
 
-  Future<TeamFile> setVisibility(int id, FileVisibility visibility);
+  Future<TeamFile> setVisibility(String id, FileVisibility visibility);
 
-  Future<void> delete(int id);
+  Future<void> delete(String id);
 }

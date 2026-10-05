@@ -14,7 +14,6 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/team/models/chat.dart';
 import 'package:salesroot/features/team/models/chat_room.dart';
 import 'package:salesroot/features/team/providers/chat_providers.dart';
-import 'package:salesroot/features/team/providers/team_providers.dart';
 import 'package:salesroot/features/team/view/widget/chat_composer.dart';
 import 'package:salesroot/features/team/view/widget/chat_labels.dart';
 import 'package:salesroot/features/team/view/widget/external_links.dart';
@@ -29,7 +28,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class ChatScreen extends ConsumerWidget {
   const ChatScreen({super.key, required this.threadId});
 
-  final int threadId;
+  final String threadId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -102,7 +101,7 @@ class _Header extends ConsumerWidget {
     final phone = _phoneOf(context, thread, ref);
     return SrAppBar(
       titleWidget: InkWell(
-        onTap: () => _openInfo(context, thread),
+        onTap: () => context.push(Routes.chatInfoFor(thread.id)),
         child: Row(
           children: [
             context.threadAvatar(thread, size: 36),
@@ -157,7 +156,7 @@ class _Header extends ConsumerWidget {
       return null;
     }
     return ref
-        .watch(teamDirectoryProvider)
+        .watch(chatPeopleProvider)
         .value
         ?.firstWhereOrNull((m) => m.id == peer.id)
         ?.phone;
@@ -181,17 +180,6 @@ class _Header extends ConsumerWidget {
       ChatKind.lead => context.peopleLine(thread),
     };
   }
-
-  void _openInfo(BuildContext context, ChatThread thread) {
-    final peer = context.peerOf(thread);
-    if (thread.kind == ChatKind.direct &&
-        thread.isParticipant &&
-        peer != null) {
-      context.push(Routes.memberFor(peer.id));
-      return;
-    }
-    context.push(Routes.chatInfoFor(thread.id));
-  }
 }
 
 class _Messages extends ConsumerWidget {
@@ -201,7 +189,7 @@ class _Messages extends ConsumerWidget {
     required this.room,
   });
 
-  final int threadId;
+  final String threadId;
   final ChatThread? thread;
   final AsyncValue<ChatRoom> room;
 
@@ -256,7 +244,7 @@ class _MessageList extends ConsumerWidget {
     required this.showSenders,
   });
 
-  final int threadId;
+  final String threadId;
   final ChatRoom room;
   final bool showSenders;
 

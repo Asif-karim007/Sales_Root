@@ -11,7 +11,6 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/team/models/member.dart';
 import 'package:salesroot/features/team/providers/team_providers.dart';
 import 'package:salesroot/features/team/view/invite_form_screen.dart';
-import 'package:salesroot/features/team/view/widget/chat_links.dart';
 import 'package:salesroot/features/team/view/widget/external_links.dart';
 import 'package:salesroot/features/team/view/widget/info_card.dart';
 import 'package:salesroot/features/team/view/widget/team_labels.dart';
@@ -26,13 +25,12 @@ import 'package:salesroot/widgets/widgets.dart';
 class MemberDetailScreen extends ConsumerWidget {
   const MemberDetailScreen({super.key, required this.memberId});
 
-  final int memberId;
+  final String memberId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final member = ref.watch(memberProvider(memberId));
     final access = ref.watch(moduleAccessProvider(AppModule.team));
-    final chat = ref.watch(moduleAccessProvider(AppModule.chat));
     ref.listen(memberEditorProvider(memberId), (_, next) {
       switch (next) {
         case AsyncData(value: _?):
@@ -45,8 +43,6 @@ class MemberDetailScreen extends ConsumerWidget {
     final loaded = member.value;
     final canEdit = access.canEdit && (loaded?.canEdit ?? false);
     final canRemove = access.canDelete && (loaded?.canDelete ?? false);
-    final canMessage =
-        loaded != null && chat.canAdd && !loaded.isMe && loaded.isActive;
     return SrScaffold(
       appBar: SrAppBar(
         actions: [
@@ -66,12 +62,13 @@ class MemberDetailScreen extends ConsumerWidget {
         ],
         bottom: loaded == null ? null : _Profile(member: loaded),
       ),
-      footer: loaded == null || !(canMessage || canRemove)
+      footer: loaded == null || !canRemove
           ? null
-          : _Footer(
-              member: loaded,
-              canMessage: canMessage,
-              canRemove: canRemove,
+          : SrButton(
+              label: context.l10n.teamRemoveAndReassign,
+              variant: SrButtonVariant.danger,
+              expand: true,
+              onPressed: () => context.push(Routes.memberRemoveFor(loaded.id)),
             ),
       body: SrAsyncView(
         value: member,
@@ -128,9 +125,13 @@ class MemberDetailScreen extends ConsumerWidget {
           icon: Icons.person_off_outlined,
           destructive: true,
         );
-        if (sure) await editor.apply(const MemberUpdate(isActive: false));
+        if (sure) {
+          await editor.apply(
+            const MemberUpdate(status: MembershipStatus.suspended),
+          );
+        }
       case _MoreAction.active:
-        await editor.apply(const MemberUpdate(isActive: true));
+        await editor.apply(const MemberUpdate(status: MembershipStatus.active));
       case null:
     }
   }
@@ -183,7 +184,7 @@ class _Profile extends StatelessWidget {
     final name = context.name(member.name);
     final contact = [
       if (member.phone case final phone?) context.phone(phone),
-      ?member.email,
+      ?member.designation,
     ].join(' · ');
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 4),
@@ -230,12 +231,7 @@ class _Body extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final stats = member.stats ?? const MemberStats();
-    final hasFieldForce =
-        ref.watch(planProvider).value?.has(AddOn.fieldForce) ?? false;
-    final levelLocked = ref.watch(experienceLevelLockedProvider);
-    final editor = ref.read(memberEditorProvider(member.id).notifier);
-    final busy = ref.watch(memberEditorProvider(member.id)).isLoading;
+    final stats = member.stats;
     final managerName = member.managerName;
     final joined = member.joiningDate;
     return ListView(
@@ -246,24 +242,25 @@ class _Body extends ConsumerWidget {
         24,
       ),
       children: [
-        SrStatGrid(
-          tiles: [
-            SrKpiTile(
-              label: l10n.teamStatLeadsThisMonth,
-              value: fmt.number(stats.leadsThisMonth),
-            ),
-            SrKpiTile(
-              label: l10n.teamStatWon,
-              value: fmt.moneyCompact(stats.wonValue),
-            ),
-            SrKpiTile(
-              label: l10n.teamStatAttendance,
-              value:
-                  '${fmt.number(stats.attendanceDays)}/${fmt.number(stats.workingDays)}',
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
+        if (stats != null) ...[
+          SrStatGrid(
+            tiles: [
+              SrKpiTile(
+                label: l10n.teamStatLeadsThisMonth,
+                value: fmt.number(stats.leadsThisMonth),
+              ),
+              SrKpiTile(
+                label: l10n.teamStatWon,
+                value: fmt.moneyCompact(stats.wonValue),
+              ),
+              SrKpiTile(
+                label: l10n.teamStatCollected,
+                value: fmt.moneyCompact(stats.collected),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+        ],
         InfoCard(
           lines: [
             InfoLine(l10n.teamRole, context.roleLabel(member.role)),
@@ -276,136 +273,93 @@ class _Body extends ConsumerWidget {
                     : null,
               ),
             InfoLine(l10n.teamLevel, context.levelLabel(member.level)),
-            if (member.dutyStart != null && member.dutyEnd != null)
-              InfoLine(
-                l10n.teamDutyHours,
-                fmt.digits('${member.dutyStart}–${member.dutyEnd}'),
-              ),
-            if (hasFieldForce)
-              InfoLine(
-                l10n.teamLiveTracking,
-                member.trackingConsent
-                    ? l10n.teamTrackingConsented
-                    : l10n.teamTrackingNotYet,
-              ),
+            if (member.area case final area?) InfoLine(l10n.teamArea, area),
             if (joined != null)
               InfoLine(l10n.teamJoined, fmt.monthYear(joined)),
           ],
         ),
         if (canEdit && !member.isOwner) ...[
           const SizedBox(height: 12),
-          Row(
-            children: [
-              if (!levelLocked) ...[
-                Expanded(
-                  child: SrButton(
-                    label: l10n.teamChangeLevel,
-                    size: SrButtonSize.sm,
-                    variant: SrButtonVariant.secondary,
-                    expand: true,
-                    onPressed: busy
-                        ? null
-                        : () async {
-                            final level = await showLevelSheet(
-                              context,
-                              member.level,
-                            );
-                            if (level == null || level == member.level) return;
-                            await editor.apply(MemberUpdate(level: level));
-                          },
-                  ),
+          _EditButtons(member: member),
+        ],
+        if (stats != null) ...[
+          const SizedBox(height: 18),
+          SrSectionHeader(title: l10n.teamOpenWork),
+          const SizedBox(height: 10),
+          SrRowGroup(
+            rows: [
+              SrListRow(
+                leading: const SrAvatar(
+                  icon: Icons.work_outline_rounded,
+                  tone: SrAvatarTone.accent,
                 ),
-                const SizedBox(width: 10),
-              ],
-              Expanded(
-                child: SrButton(
-                  label: l10n.teamChangeRole,
-                  size: SrButtonSize.sm,
-                  variant: SrButtonVariant.secondary,
-                  expand: true,
-                  onPressed: busy
-                      ? null
-                      : () async {
-                          final role = await showRolePickSheet(
-                            context,
-                            selected: member.role,
-                          );
-                          if (role == null || role == member.role) return;
-                          await editor.apply(MemberUpdate(role: role));
-                        },
+                title: l10n.teamOpenLeads(
+                  stats.openLeads,
+                  fmt.number(stats.openLeads),
+                ),
+                subtitle: l10n.teamOverdueTasks(
+                  stats.overdueTasks,
+                  fmt.number(stats.overdueTasks),
                 ),
               ),
             ],
           ),
         ],
-        const SizedBox(height: 18),
-        SrSectionHeader(title: l10n.teamOpenWork),
-        const SizedBox(height: 10),
-        SrRowGroup(
-          rows: [
-            SrListRow(
-              leading: const SrAvatar(
-                icon: Icons.work_outline_rounded,
-                tone: SrAvatarTone.accent,
-              ),
-              title: l10n.teamOpenLeads(
-                stats.openLeads,
-                fmt.number(stats.openLeads),
-                fmt.moneyCompact(stats.openLeadValue),
-              ),
-              subtitle: l10n.teamOpenTasks(
-                stats.openTasks,
-                fmt.number(stats.openTasks),
-                fmt.number(stats.overdueTasks),
-              ),
-            ),
-          ],
-        ),
       ],
     );
   }
 }
 
-class _Footer extends ConsumerWidget {
-  const _Footer({
-    required this.member,
-    required this.canMessage,
-    required this.canRemove,
-  });
+/// Change level and change role.
+class _EditButtons extends ConsumerWidget {
+  const _EditButtons({required this.member});
 
   final Member member;
-  final bool canMessage;
-  final bool canRemove;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final buttons = [
-      if (canMessage)
-        SrButton(
-          label: l10n.teamMessage,
-          icon: Icons.chat_bubble_outline_rounded,
-          variant: SrButtonVariant.secondary,
-          expand: true,
-          onPressed: () => openDirectChat(context, ref, member.id),
-        ),
-      if (canRemove)
-        SrButton(
-          label: l10n.teamRemoveAndReassign,
-          variant: SrButtonVariant.danger,
-          expand: true,
-          onPressed: () => context.push(Routes.memberRemoveFor(member.id)),
-        ),
-    ];
+    final levelLocked = ref.watch(experienceLevelLockedProvider);
+    final editor = ref.read(memberEditorProvider(member.id).notifier);
+    final busy = ref.watch(memberEditorProvider(member.id)).isLoading;
     return Row(
       children: [
-        for (var i = 0; i < buttons.length; i++) ...[
-          if (i > 0) const SizedBox(width: 10),
+        if (!levelLocked) ...[
           Expanded(
-            flex: buttons.length > 1 && i == 0 ? 2 : 3,
-            child: buttons[i],
+            child: SrButton(
+              label: l10n.teamChangeLevel,
+              size: SrButtonSize.sm,
+              variant: SrButtonVariant.secondary,
+              expand: true,
+              onPressed: busy
+                  ? null
+                  : () async {
+                      final level = await showLevelSheet(context, member.level);
+                      if (level == null || level == member.level) return;
+                      await editor.apply(MemberUpdate(level: level));
+                    },
+            ),
           ),
+          const SizedBox(width: 10),
         ],
+        Expanded(
+          child: SrButton(
+            label: l10n.teamChangeRole,
+            size: SrButtonSize.sm,
+            variant: SrButtonVariant.secondary,
+            expand: true,
+            onPressed: busy
+                ? null
+                : () async {
+                    final role = await showRolePickSheet(
+                      context,
+                      selected: member.role,
+                    );
+                    if (role == null || role == member.role) return;
+                    await editor.apply(MemberUpdate(role: role));
+                  },
+          ),
+        ),
       ],
     );
   }

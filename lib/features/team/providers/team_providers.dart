@@ -1,9 +1,12 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
-import 'package:salesroot/core/network/api_failure.dart';
+import 'package:salesroot/core/access/access_providers.dart';
+import 'package:salesroot/core/network/dio_providers.dart';
 import 'package:salesroot/core/paging/paged.dart';
-import 'package:salesroot/features/team/data/fake_team_repository.dart';
+import 'package:salesroot/core/workspace/workspace_providers.dart';
+import 'package:salesroot/features/team/data/api_team_repository.dart';
+import 'package:salesroot/features/team/data/team_api.dart';
 import 'package:salesroot/features/team/data/team_repository.dart';
 import 'package:salesroot/features/team/models/invite.dart';
 import 'package:salesroot/features/team/models/member.dart';
@@ -11,8 +14,13 @@ import 'package:salesroot/features/team/models/member.dart';
 part 'team_providers.g.dart';
 
 @Riverpod(keepAlive: true)
-TeamRepository teamRepository(Ref ref) =>
-    FakeTeamRepository(ref.watch(fakeBackendProvider));
+TeamApi teamApi(Ref ref) => TeamApi(ref.watch(dioProvider));
+
+@Riverpod(keepAlive: true)
+TeamRepository teamRepository(Ref ref) {
+  final me = ref.watch(currentWorkspaceProvider.select((w) => w?.membershipId));
+  return ApiTeamRepository(ref.watch(teamApiProvider), me: me);
+}
 
 @riverpod
 class MemberFilterNotifier extends _$MemberFilterNotifier {
@@ -24,7 +32,7 @@ class MemberFilterNotifier extends _$MemberFilterNotifier {
 
 @riverpod
 class MemberListNotifier extends _$MemberListNotifier {
-  static const countsKey = 'Counts';
+  static const countsKey = ApiTeamRepository.countsKey;
 
   @override
   Future<Paged<Member>> build() async {
@@ -33,27 +41,6 @@ class MemberListNotifier extends _$MemberListNotifier {
         .watch(teamRepositoryProvider)
         .members(MemberQuery(filter: filter));
     return Paged.first(page, facetKeys: const [countsKey]);
-  }
-
-  Future<void> loadMore() async {
-    final current = state.value;
-    if (current == null || !current.hasMore || current.isLoadingMore) return;
-    state = AsyncData(current.loadingMore());
-    try {
-      final next = await ref
-          .read(teamRepositoryProvider)
-          .members(
-            MemberQuery(
-              filter: ref.read(memberFilterProvider),
-              page: current.page + 1,
-            ),
-          );
-      if (!ref.mounted) return;
-      state = AsyncData(current.append(next));
-    } on ApiFailure catch (failure) {
-      if (!ref.mounted) return;
-      state = AsyncData(current.failedMore(failure));
-    }
   }
 
   Future<void> refresh() async {
@@ -67,7 +54,7 @@ Future<List<Invite>> pendingInvites(Ref ref) =>
     ref.watch(teamRepositoryProvider).invites();
 
 @riverpod
-Future<Invite> invite(Ref ref, int id) =>
+Future<Invite> invite(Ref ref, String id) =>
     ref.watch(teamRepositoryProvider).invite(id);
 
 @riverpod
@@ -75,12 +62,16 @@ Future<List<Member>> teamDirectory(Ref ref) =>
     ref.watch(teamRepositoryProvider).directory();
 
 @riverpod
-Future<Member> member(Ref ref, int id) =>
+Future<Member> member(Ref ref, String id) =>
     ref.watch(teamRepositoryProvider).member(id);
 
 @riverpod
-Future<List<SeatPack>> seatPacks(Ref ref) =>
-    ref.watch(teamRepositoryProvider).seatPacks();
+Future<List<SeatPack>> seatPacks(Ref ref) async {
+  final repository = ref.watch(teamRepositoryProvider);
+  final plan = await ref.watch(planProvider.future);
+  if (plan == null) return const [];
+  return repository.seatPacks(plan.code);
+}
 
 /// Sends an invitation; the form listens for the sent invite or the failure.
 @riverpod
@@ -99,26 +90,17 @@ class InviteSender extends _$InviteSender {
   }
 }
 
-/// Resend and revoke on one pending invitation.
+/// Revokes one pending invitation; true once done.
 @riverpod
-class InviteActions extends _$InviteActions {
+class InviteRevoker extends _$InviteRevoker {
   @override
-  FutureOr<InviteOutcome?> build(int id) => null;
+  FutureOr<bool> build(String id) => false;
 
-  Future<void> resend() => _run(InviteOutcome.resent, () async {
-    await ref.read(teamRepositoryProvider).resendInvite(id);
-  });
-
-  Future<void> revoke() => _run(
-    InviteOutcome.revoked,
-    () => ref.read(teamRepositoryProvider).revokeInvite(id),
-  );
-
-  Future<void> _run(InviteOutcome outcome, Future<void> Function() work) async {
+  Future<void> revoke() async {
     state = const AsyncLoading();
     final result = await AsyncValue.guard(() async {
-      await work();
-      return outcome;
+      await ref.read(teamRepositoryProvider).revokeInvite(id);
+      return true;
     });
     if (!ref.mounted) return;
     state = result;
@@ -126,13 +108,11 @@ class InviteActions extends _$InviteActions {
   }
 }
 
-enum InviteOutcome { resent, revoked }
-
 /// Role, level, manager and active changes on one member.
 @riverpod
 class MemberEditor extends _$MemberEditor {
   @override
-  FutureOr<Member?> build(int id) => null;
+  FutureOr<Member?> build(String id) => null;
 
   Future<void> apply(MemberUpdate update) async {
     state = const AsyncLoading();
@@ -149,12 +129,14 @@ class MemberEditor extends _$MemberEditor {
 @riverpod
 class MemberRemoval extends _$MemberRemoval {
   @override
-  FutureOr<bool> build(int id) => false;
+  FutureOr<bool> build(String id) => false;
 
-  Future<void> remove(RemovalInput input) async {
+  Future<void> remove({required String successorId}) async {
     state = const AsyncLoading();
     final result = await AsyncValue.guard(() async {
-      await ref.read(teamRepositoryProvider).removeMember(id, input);
+      await ref
+          .read(teamRepositoryProvider)
+          .removeMember(id, successorId: successorId);
       return true;
     });
     if (!ref.mounted) return;
@@ -163,7 +145,7 @@ class MemberRemoval extends _$MemberRemoval {
   }
 }
 
-void _invalidateTeam(Ref ref, {int? memberId}) {
+void _invalidateTeam(Ref ref, {String? memberId}) {
   ref
     ..invalidate(memberListProvider)
     ..invalidate(pendingInvitesProvider)

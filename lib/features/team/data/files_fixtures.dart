@@ -1,7 +1,7 @@
 import 'package:salesroot/core/fake/seed_graph.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/core/workspace/workspace.dart';
-import 'package:salesroot/features/team/data/team_fixtures.dart';
+import 'package:salesroot/features/team/data/chat_fixtures.dart';
 
 const int priceListsFolder = 1;
 const int brochuresFolder = 2;

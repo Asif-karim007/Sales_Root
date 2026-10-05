@@ -1,0 +1,85 @@
+{
+  "plans": [
+    {
+      "key": "free",
+      "name": "Free",
+      "monthlyPerUser": 0.0,
+      "yearlyPerUser": 0.0,
+      "minUsers": 1,
+      "recordLimit": 500,
+      "storageLimitMb": 200,
+      "scanLimit": 20,
+      "aiLimit": 30,
+      "layers": [
+        "sales"
+      ],
+      "features": "{}",
+      "isPublic": true,
+      "sortOrder": 0,
+      "updatedAt": "2026-10-03T09:02:28.877089Z"
+    },
+    {
+      "key": "team",
+      "name": "Team",
+      "monthlyPerUser": 399.0,
+      "yearlyPerUser": 333.0,
+      "minUsers": 3,
+      "recordLimit": 50000,
+      "storageLimitMb": 20480,
+      "scanLimit": 500,
+      "aiLimit": 500,
+      "layers": [
+        "sales",
+        "collection",
+        "customer360"
+      ],
+      "features": "{}",
+      "isPublic": true,
+      "sortOrder": 2,
+      "updatedAt": "2026-10-03T09:02:28.877089Z"
+    },
+    {
+      "key": "business",
+      "name": "Business",
+      "monthlyPerUser": 599.0,
+      "yearlyPerUser": 499.0,
+      "minUsers": 10,
+      "recordLimit": 500000,
+      "storageLimitMb": 102400,
+      "scanLimit": 2000,
+      "aiLimit": 1500,
+      "layers": [
+        "sales",
+        "collection",
+        "customer360",
+        "fieldforce",
+        "growth",
+        "teamops",
+        "support",
+        "intelligence"
+      ],
+      "features": "{}",
+      "isPublic": true,
+      "sortOrder": 3,
+      "updatedAt": "2026-10-03T09:02:28.877089Z"
+    }
+  ],
+  "addons": [
+    {
+      "key": "ai_team",
+      "nameEn": "AI assistant on Team",
+      "nameBn": "Team-এ এআই সহকারী",
+      "price": 79.0,
+      "unit": "user_month",
+      "grants": "{\"layer\": \"intelligence\"}"
+    },
+    {
+      "key": "fieldforce",
+      "nameEn": "Field Force",
+      "nameBn": "ফিল্ড ফোর্স",
+      "price": 99.0,
+      "unit": "user_month",
+      "grants": "{\"layer\": \"fieldforce\"}"
+    }
+  ]
+}

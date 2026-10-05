@@ -16,6 +16,7 @@ import 'package:salesroot/features/team/providers/files_providers.dart';
 import 'package:salesroot/features/team/view/widget/attach_sheet.dart';
 import 'package:salesroot/features/team/view/widget/file_widgets.dart';
 import 'package:salesroot/features/team/view/widget/info_card.dart';
+import 'package:salesroot/features/team/view/widget/lookup_field.dart';
 import 'package:salesroot/features/team/view/widget/team_labels.dart';
 import 'package:salesroot/features/team/view/widget/team_language_toggle.dart';
 import 'package:salesroot/features/team/view/widget/failure_text.dart';
@@ -31,13 +32,13 @@ class UploadScreen extends ConsumerStatefulWidget {
     this.leadId,
   });
 
-  final int? folderId;
+  final String? folderId;
 
   /// Uploads a new version of this file.
-  final int? replaceFileId;
+  final String? replaceFileId;
 
   /// Links the upload to this lead.
-  final int? leadId;
+  final String? leadId;
 
   @override
   ConsumerState<UploadScreen> createState() => _UploadScreenState();
@@ -276,14 +277,14 @@ class _DropZone extends StatelessWidget {
 class _FolderField extends ConsumerWidget {
   const _FolderField({required this.selected, required this.onChanged});
 
-  final int? selected;
-  final ValueChanged<int> onChanged;
+  final String? selected;
+  final ValueChanged<String> onChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final folders = ref.watch(fileFoldersProvider);
-    return SrLookupPicker(
+    return LookupField<FileFolder>(
       title: l10n.teamUploadFolder,
       label: l10n.teamUploadFolder,
       placeholder: folders.hasError
@@ -291,11 +292,10 @@ class _FolderField extends ConsumerWidget {
           : l10n.teamUploadFolderHint,
       icon: Icons.folder_outlined,
       selected: selected,
-      onChanged: onChanged,
-      options: [
-        for (final folder in folders.value ?? const <FileFolder>[])
-          SrLookupOption(id: folder.id, name: context.name(folder.name)),
-      ],
+      onChanged: (folder) => onChanged(folder.id),
+      options: folders.value ?? const [],
+      idOf: (folder) => folder.id,
+      labelOf: (folder) => context.name(folder.name),
     );
   }
 }
@@ -303,7 +303,7 @@ class _FolderField extends ConsumerWidget {
 class _Replacing extends ConsumerWidget {
   const _Replacing({required this.fileId});
 
-  final int fileId;
+  final String fileId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

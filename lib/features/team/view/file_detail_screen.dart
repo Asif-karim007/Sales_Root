@@ -27,7 +27,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class FileDetailScreen extends ConsumerWidget {
   const FileDetailScreen({super.key, required this.fileId});
 
-  final int fileId;
+  final String fileId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

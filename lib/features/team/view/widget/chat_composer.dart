@@ -11,7 +11,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class ChatComposer extends ConsumerStatefulWidget {
   const ChatComposer({super.key, required this.threadId});
 
-  final int threadId;
+  final String threadId;
 
   @override
   ConsumerState<ChatComposer> createState() => _ChatComposerState();
