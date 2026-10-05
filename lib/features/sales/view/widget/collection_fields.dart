@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/network/api_failure.dart';
@@ -10,7 +9,7 @@ import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The method chips and the fields each method needs: a TrxID for bKash and
-/// Nagad, the bank for a transfer, the bank, number and date for a cheque.
+/// Nagad, a reference for a transfer, the number and date for a cheque.
 /// [easy] drops the optional fields.
 class CollectionMethodFields extends StatefulWidget {
   const CollectionMethodFields({
@@ -34,17 +33,11 @@ class CollectionMethodFields extends StatefulWidget {
 
 class _CollectionMethodFieldsState extends State<CollectionMethodFields> {
   late final _reference = TextEditingController(text: widget.draft.reference);
-  late final _sender = TextEditingController(text: widget.draft.senderNumber);
-  late final _bank = TextEditingController(text: widget.draft.bankName);
-  late final _cheque = TextEditingController(text: widget.draft.chequeNumber);
   late final _note = TextEditingController(text: widget.draft.note);
 
   @override
   void dispose() {
     _reference.dispose();
-    _sender.dispose();
-    _bank.dispose();
-    _cheque.dispose();
     _note.dispose();
     super.dispose();
   }
@@ -107,31 +100,8 @@ class _CollectionMethodFieldsState extends State<CollectionMethodFields> {
             label: l10n.salesTrxId,
             hint: l10n.salesTrxIdHint,
             textCapitalization: TextCapitalization.characters,
-            error: _error('Reference'),
+            error: _error('reference'),
             onChanged: widget.form.setReference,
-          ),
-          if (!easy) ...[
-            const SizedBox(height: 12),
-            SrTextField(
-              controller: _sender,
-              label: l10n.salesSenderNumber,
-              optional: true,
-              keyboardType: TextInputType.phone,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp('[0-9+]')),
-              ],
-              onChanged: widget.form.setSenderNumber,
-            ),
-          ],
-        ],
-        if (method.needsBank) ...[
-          const SizedBox(height: 12),
-          SrTextField(
-            controller: _bank,
-            label: l10n.salesBankName,
-            textCapitalization: TextCapitalization.words,
-            error: _error('BankName'),
-            onChanged: widget.form.setBankName,
           ),
         ],
         if (method == PaymentMethod.bank && !easy) ...[
@@ -150,11 +120,11 @@ class _CollectionMethodFieldsState extends State<CollectionMethodFields> {
             children: [
               Expanded(
                 child: SrTextField(
-                  controller: _cheque,
+                  controller: _reference,
                   label: l10n.salesChequeNumber,
                   keyboardType: TextInputType.number,
-                  error: _error('ChequeNumber'),
-                  onChanged: widget.form.setChequeNumber,
+                  error: _error('reference'),
+                  onChanged: widget.form.setReference,
                 ),
               ),
               const SizedBox(width: 10),
@@ -164,7 +134,7 @@ class _CollectionMethodFieldsState extends State<CollectionMethodFields> {
                   icon: Icons.event_outlined,
                   placeholder: l10n.salesPickDate,
                   value: chequeDate == null ? null : fmt.dayMonth(chequeDate),
-                  error: _error('ChequeDate'),
+                  error: _error('chequeDate'),
                   onTap: _pickChequeDate,
                 ),
               ),

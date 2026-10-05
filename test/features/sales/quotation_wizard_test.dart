@@ -1,146 +1,198 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/features/sales/models/product.dart';
 import 'package:salesroot/features/sales/models/quotation.dart';
-import 'package:salesroot/features/sales/providers/product_providers.dart';
-import 'package:salesroot/features/sales/providers/quotation_providers.dart';
+import 'package:salesroot/features/sales/models/sales_party.dart';
 import 'package:salesroot/features/sales/providers/quotation_wizard.dart';
 
-import 'sales_test_helpers.dart';
+import '../../helpers/api_stub.dart';
+import 'sales_test_setup.dart';
+
+List<Product> _products() => [
+  for (final row in fixture('sales_products') as List)
+    Product.fromJson(row as Map<String, dynamic>),
+];
 
 void main() {
-  late ProviderContainer container;
-
-  setUp(() async => container = await salesContainer());
-  tearDown(() => container.dispose());
-
-  Future<List<Product>> products() async {
-    container.listen(productListProvider('', null), (_, _) {});
-    return (await container.read(productListProvider('', null).future)).items;
-  }
-
-  test('a lead prefills the customer and its price list', () async {
-    final lead = container.read(seedGraphProvider).leads.first;
-    final provider = quotationWizardProvider(leadId: lead.id);
-    container.listen(provider, (_, _) {});
+  test('from a lead the customer, contact and lead are set', () async {
+    final container = await salesContainer(salesStub());
+    final provider = quotationWizardProvider(leadId: leadId);
+    listenTo(container, provider);
 
     final draft = await container.read(provider.future);
 
-    expect(draft.customer?.companyId, lead.companyId);
-    expect(draft.customer?.leadId, lead.id);
-    expect(draft.step, QuotationStep.items);
+    expect(draft.customer?.name, 'Rahim Traders');
+    expect(draft.customer?.companyId, rahimId);
+    expect(draft.customer?.contactName, 'Mr Rahim');
+    expect(draft.customer?.leadId, leadId);
     expect(draft.canContinue, isFalse);
   });
 
-  test('steps forward only with a customer and items, and back', () async {
-    final lead = container.read(seedGraphProvider).leads.first;
-    final provider = quotationWizardProvider(leadId: lead.id);
-    container.listen(provider, (_, _) {});
+  test('a picked company brings its main contact and open lead', () async {
+    final stub = salesStub();
+    final container = await salesContainer(stub);
+    final provider = quotationWizardProvider();
+    listenTo(container, provider);
+    await container.read(provider.future);
+
+    await container
+        .read(provider.notifier)
+        .setCustomer(
+          SalesCustomer.fromCompany(
+            (fixtureMap('sales_companies')['items'] as List).last
+                as Map<String, dynamic>,
+          ),
+        );
+
+    final customer = container.read(provider).value?.customer;
+    expect(customer?.name, 'Rahim Traders');
+    expect(customer?.contactName, 'Mr Rahim');
+    expect(customer?.leadId, leadId);
+    expect(stub.last('GET', 'companies/{id}')?.path, contains(rahimId));
+  });
+
+  test('items add up; adding again raises the quantity', () async {
+    final container = await salesContainer(salesStub());
+    final provider = quotationWizardProvider(leadId: leadId);
+    listenTo(container, provider);
     await container.read(provider.future);
     final wizard = container.read(provider.notifier);
-    final catalogue = await products();
-
-    wizard.next();
-    expect(container.read(provider).value?.step, QuotationStep.items);
+    final [delivery, _, soap] = _products();
 
     wizard
-      ..addProduct(catalogue[0])
-      ..addProduct(catalogue[0])
-      ..addProduct(catalogue[5])
-      ..setQty(catalogue[5].id, 3)
-      ..next();
-    var draft = container.read(provider).value;
-    expect(draft?.step, QuotationStep.terms);
-    expect(draft?.qtyOf(catalogue[0].id), 2);
-    expect(draft?.qtyOf(catalogue[5].id), 3);
+      ..addProduct(soap)
+      ..addProduct(soap)
+      ..addProduct(delivery)
+      ..setLineDiscount(soap.id, 500)
+      ..setDiscount(400);
 
-    wizard
-      ..setQty(catalogue[5].id, 0)
-      ..setDiscount(500)
-      ..next();
-    draft = container.read(provider).value;
-    expect(draft?.lines, hasLength(1));
-    expect(draft?.step, QuotationStep.review);
+    final draft = container.read(provider).requireValue;
+    expect(draft.qtyOf(soap.id), 2);
+    expect(draft.totals.gross, 10100);
+    expect(draft.totals.subtotal, 9670);
+    expect(draft.totals.discount, closeTo(386.8, 0.001));
+    expect(draft.canContinue, isTrue);
 
-    expect(wizard.back(), isTrue);
-    expect(wizard.back(), isTrue);
-    expect(wizard.back(), isFalse);
-    expect(container.read(provider).value?.step, QuotationStep.items);
+    wizard.setQty(delivery.id, 0);
+    expect(container.read(provider).requireValue.itemCount, 1);
   });
 
-  test('switching the price list re-prices the items', () async {
-    final lead = container.read(seedGraphProvider).leads.first;
-    final provider = quotationWizardProvider(leadId: lead.id);
-    container.listen(provider, (_, _) {});
+  test('saving a draft posts a QuoteCreate', () async {
+    final stub = salesStub();
+    final container = await salesContainer(stub);
+    final provider = quotationWizardProvider(leadId: leadId);
+    listenTo(container, provider);
     await container.read(provider.future);
-    final wizard = container.read(provider.notifier);
-    final panel = (await products()).first;
-
-    wizard
-      ..setPriceList(PriceList.list)
-      ..addProduct(panel)
-      ..setPriceList(PriceList.dealer);
-
-    expect(
-      container.read(provider).value?.lines.single.unitPrice,
-      panel.dealerPrice,
-    );
-  });
-
-  test('sending saves the quotation as sent with the drafted totals', () async {
-    final lead = container.read(seedGraphProvider).leads.first;
-    final provider = quotationWizardProvider(leadId: lead.id);
-    container.listen(provider, (_, _) {});
-    await container.read(provider.future);
-    final wizard = container.read(provider.notifier);
-    final catalogue = await products();
-
-    wizard
-      ..addProduct(catalogue[0])
-      ..setQty(catalogue[0].id, 12)
-      ..setDiscount(500);
-    final expected = container.read(provider).value?.totals.total;
-    await wizard.submit(SendChannel.whatsApp);
-
-    final saved = container.read(provider).value?.submission?.value;
-    expect(saved, isNotNull);
-    expect(saved?.status, QuotationStatus.sent);
-    expect(saved?.sentVia, SendChannel.whatsApp);
-    expect(saved?.totals.total, expected);
-    expect(saved?.number, quotationNumber(saved?.id ?? 0));
-  });
-
-  test('saving without items fails with the server validation', () async {
-    final lead = container.read(seedGraphProvider).leads.first;
-    final provider = quotationWizardProvider(leadId: lead.id);
-    container.listen(provider, (_, _) {});
-    await container.read(provider.future);
-
-    await container.read(provider.notifier).submit(null);
-
-    final error = container.read(provider).value?.submission?.error;
-    expect(error, isA<ApiFailure>());
-    expect((error as ApiFailure?)?.isValidation, isTrue);
-  });
-
-  test('a new version replaces the terms and bumps the version', () async {
-    container.listen(quotationListProvider, (_, _) {});
-    final list = await container.read(quotationListProvider.future);
-    final open = list.items.firstWhere((q) => q.status == QuotationStatus.sent);
-    final provider = quotationWizardProvider(fromId: open.id, revise: true);
-    container.listen(provider, (_, _) {});
-    await container.read(provider.future);
-    final wizard = container.read(provider.notifier)..setDiscount(1000);
+    final wizard = container.read(provider.notifier)
+      ..addProduct(_products().last)
+      ..setValidUntil(DateTime(2026, 10, 20))
+      ..setTerms('50% advance')
+      ..setNote(' ');
 
     await wizard.submit(null);
 
+    final draft = container.read(provider).requireValue;
+    expect(draft.submission?.value?.number, 'QT-2026-00002');
+    expect(stub.lastBody('POST', 'quotes'), {
+      'companyId': rahimId,
+      'leadId': leadId,
+      'contactId': '01a10101-865e-7196-8bd5-2cf8d667f937',
+      'lines': [
+        {
+          'productId': soapId,
+          'description': 'Soap 100g (carton of 48)',
+          'qty': 1.0,
+          'unit': 'ctn',
+          'unitPrice': 4300.0,
+          'discountPct': 0.0,
+          'taxPct': 0.0,
+        },
+      ],
+      'discountPct': 0.0,
+      'validUntil': '2026-10-20',
+      'terms': '50% advance',
+    });
+    expect(stub.last('POST', 'quotes/{id}/send'), isNull);
+  });
+
+  test('sending saves, then has the server send it', () async {
+    final stub = salesStub();
+    final container = await salesContainer(stub);
+    final provider = quotationWizardProvider(leadId: leadId);
+    listenTo(container, provider);
+    await container.read(provider.future);
+    final wizard = container.read(provider.notifier)
+      ..addProduct(_products().last);
+
+    await wizard.submit(SendChannel.whatsApp);
+
+    expect(stub.last('POST', 'quotes'), isNotNull);
+    expect(stub.last('POST', 'quotes/{id}/send')?.path, contains(draftQuoteId));
+    expect(container.read(provider).value?.sentVia, SendChannel.whatsApp);
+  });
+
+  test('a discount above the limit can go for approval', () async {
+    final stub = salesStub()
+      ..on(
+        'POST',
+        'quotes',
+        (r) => (r.data as Map)['requestApproval'] == true
+            ? fixture('sales_quote_pending_approval')
+            : StubReply(422, fixture('sales_error_discount')),
+      );
+    final container = await salesContainer(stub);
+    final provider = quotationWizardProvider(leadId: leadId);
+    listenTo(container, provider);
+    await container.read(provider.future);
+    final wizard = container.read(provider.notifier)
+      ..addProduct(_products().last)
+      ..setDiscount(1000);
+
+    await wizard.submit(SendChannel.sms);
+    final error = container.read(provider).value?.submission?.error;
+    expect((error as ApiFailure?)?.fieldError('discountPct'), isNotNull);
+
+    await wizard.submit(null, requestApproval: true);
+
     final saved = container.read(provider).value?.submission?.value;
-    expect(saved?.id, open.id);
-    expect(saved?.version, open.version + 1);
-    expect(saved?.discountBps, 1000);
-    expect(saved?.status, QuotationStatus.draft);
+    expect(saved?.status, QuotationStatus.pendingApproval);
+    expect(stub.lastBody('POST', 'quotes')['discountPct'], 10.0);
+    expect(stub.last('POST', 'quotes/{id}/send'), isNull);
+  });
+
+  test('editing loads the quotation and saves it in place', () async {
+    final stub = salesStub();
+    final container = await salesContainer(stub);
+    final provider = quotationWizardProvider(editId: draftQuoteId);
+    listenTo(container, provider);
+
+    final draft = await container.read(provider.future);
+    expect(draft.editing?.number, 'QT-2026-00002');
+    expect(draft.lines, hasLength(2));
+    expect(draft.discountBps, 400);
+    expect(draft.note, '[test] probe');
+
+    await container.read(provider.notifier).submit(null);
+
+    expect(stub.last('PATCH', 'quotes/{id}')?.path, contains(draftQuoteId));
+    expect(stub.last('POST', 'quotes'), isNull);
+    expect(stub.lastBody('PATCH', 'quotes/{id}')['lines'], hasLength(2));
+  });
+
+  test('going back from the first step closes the wizard', () async {
+    final container = await salesContainer(salesStub());
+    final provider = quotationWizardProvider(leadId: leadId);
+    listenTo(container, provider);
+    await container.read(provider.future);
+    final wizard = container.read(provider.notifier);
+
+    expect(wizard.back(), isFalse);
+    wizard
+      ..addProduct(_products().first)
+      ..next();
+    expect(container.read(provider).value?.step, QuotationStep.terms);
+    expect(wizard.back(), isTrue);
+    expect(container.read(provider).value?.step, QuotationStep.items);
   });
 }

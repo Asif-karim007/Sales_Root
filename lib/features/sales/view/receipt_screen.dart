@@ -13,11 +13,13 @@ import 'package:salesroot/features/sales/models/collection.dart';
 import 'package:salesroot/features/sales/pdf/sales_pdf.dart';
 import 'package:salesroot/features/sales/providers/collection_providers.dart';
 import 'package:salesroot/features/sales/providers/quotation_providers.dart';
+import 'package:salesroot/features/sales/view/sales_labels.dart';
 import 'package:salesroot/features/sales/view/sales_links.dart';
 import 'package:salesroot/features/sales/view/widget/amount_lines.dart';
 import 'package:salesroot/features/sales/view/widget/button_row.dart';
 import 'package:salesroot/features/sales/view/widget/pdf_sheet.dart';
 import 'package:salesroot/features/sales/view/widget/quotation_doc_card.dart';
+import 'package:salesroot/features/sales/view/widget/reason_sheet.dart';
 import 'package:salesroot/features/sales/view/widget/sales_failure.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
@@ -26,7 +28,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class ReceiptScreen extends ConsumerWidget {
   const ReceiptScreen({super.key, required this.id});
 
-  final int id;
+  final String id;
 
   Future<PdfBuilder> _builder(
     BuildContext context,
@@ -81,14 +83,54 @@ class ReceiptScreen extends ConsumerWidget {
     await printSalesPdf(build: build, name: r.number);
   }
 
+  Future<void> _cancel(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
+    final reason = await askCancelReason(
+      context,
+      title: l10n.salesCancelReceipt,
+      message: l10n.salesCancelReceiptBody,
+    );
+    if (reason == null) return;
+    await ref.read(receiptActionsProvider(id).notifier).cancel(reason);
+  }
+
+  void _outcome(BuildContext context, AsyncValue<Collection?> next) {
+    final l10n = context.l10n;
+    switch (next) {
+      case AsyncData(:final value?) when value.cancelled:
+        showSrSuccess(context, l10n.salesReceiptCancelled);
+      case AsyncData(value: Collection(:final chequeStatus?)):
+        showSrSuccess(context, l10n.chequeStatus(chequeStatus));
+      case AsyncError(:final error):
+        showSalesFailure(context, error);
+      default:
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final value = ref.watch(collectionProvider(id));
     final receipt = value.value;
-    final canAdd = ref.watch(moduleAccessProvider(AppModule.collection)).canAdd;
+    final access = ref.watch(moduleAccessProvider(AppModule.collection));
+    final canAdd = access.canAdd;
+    ref.listen(
+      receiptActionsProvider(id),
+      (_, next) => _outcome(context, next),
+    );
     return SrScaffold(
-      appBar: SrAppBar(title: l10n.salesReceipt),
+      appBar: SrAppBar(
+        title: l10n.salesReceipt,
+        actions: [
+          if (receipt != null && !receipt.cancelled && access.canDelete)
+            SrIconButton(
+              icon: Icons.block_rounded,
+              tooltip: l10n.salesCancelReceipt,
+              onTap: () => _cancel(context, ref),
+            ),
+        ],
+      ),
       body: SrAsyncView<Collection>(
         value: value,
         onRetry: () => ref.invalidate(collectionProvider(id)),
@@ -105,6 +147,10 @@ class ReceiptScreen extends ConsumerWidget {
             _Recorded(receipt: r),
             const SizedBox(height: 16),
             _ReceiptCard(receipt: r),
+            if (r.method == PaymentMethod.cheque) ...[
+              const SizedBox(height: 14),
+              _ChequeCard(receipt: r),
+            ],
             const SizedBox(height: 14),
             ButtonRow(
               buttons: [
@@ -180,11 +226,13 @@ class _Recorded extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         Text(
-          receipt.smsSent
-              ? l10n.salesReceiptSmsSent(receipt.number)
-              : l10n.salesReceiptNumber(receipt.number),
+          l10n.salesReceiptNumber(receipt.number),
           style: AppText.meta(c.ink2, size: 13),
         ),
+        if (receipt.cancelled) ...[
+          const SizedBox(height: 6),
+          SrTag(l10n.salesCancelled, tone: SrTone.err),
+        ],
       ],
     );
   }
@@ -200,6 +248,7 @@ class _ReceiptCard extends ConsumerWidget {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final r = receipt;
+    final balance = r.balanceDue;
     return SrCard(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
       child: Column(
@@ -218,16 +267,87 @@ class _ReceiptCard extends ConsumerWidget {
           for (final allocation in r.allocations)
             AmountLine(
               label: l10n.salesAgainst,
-              value: allocationLabel(l10n, fmt, allocation),
+              value: allocationLabel(fmt, allocation),
             ),
-          AmountLine(
-            label: l10n.salesBalanceDue,
-            value: fmt.money(r.balanceDue),
+          if (r.advance > 0)
+            AmountLine(label: l10n.salesAdvance, value: fmt.money(r.advance)),
+          if (balance != null)
+            AmountLine(label: l10n.salesBalanceDue, value: fmt.money(balance)),
+          if (r.receivedByName.isNotEmpty)
+            AmountLine(label: l10n.salesReceivedBy, value: r.receivedByName),
+        ],
+      ),
+    );
+  }
+}
+
+/// A cheque's state, and for whoever approves collections, marking it
+/// cleared or bounced.
+class _ChequeCard extends ConsumerWidget {
+  const _ChequeCard({required this.receipt});
+
+  final Collection receipt;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final fmt = context.fmt;
+    final r = receipt;
+    final status = r.chequeStatus ?? ChequeStatus.pending;
+    final date = r.chequeDate;
+    final actions = ref.read(receiptActionsProvider(r.id).notifier);
+    final busy = ref.watch(receiptActionsProvider(r.id)).isLoading;
+    final canDecide =
+        status == ChequeStatus.pending &&
+        !r.cancelled &&
+        ref.watch(moduleAccessProvider(AppModule.collection)).canApprove;
+    return SrCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  date == null
+                      ? l10n.salesMethodCheque
+                      : '${l10n.salesMethodCheque} · ${fmt.date(date)}',
+                  style: AppText.rowTitle(SrColors.of(context).ink),
+                ),
+              ),
+              SrTag(
+                l10n.chequeStatus(status),
+                tone: switch (status) {
+                  ChequeStatus.pending => SrTone.gold,
+                  ChequeStatus.cleared => SrTone.ok,
+                  ChequeStatus.bounced => SrTone.err,
+                },
+              ),
+            ],
           ),
-          AmountLine(
-            label: l10n.salesReceivedBy,
-            value: r.receivedByIn(bangla: fmt.isBangla),
-          ),
+          if (canDecide) ...[
+            const SizedBox(height: 12),
+            ButtonRow(
+              buttons: [
+                SrButton(
+                  label: l10n.salesChequeBounced,
+                  size: SrButtonSize.sm,
+                  variant: SrButtonVariant.secondary,
+                  onPressed: busy
+                      ? null
+                      : () => actions.setChequeStatus(ChequeStatus.bounced),
+                ),
+                SrButton(
+                  label: l10n.salesChequeCleared,
+                  size: SrButtonSize.sm,
+                  loading: busy,
+                  onPressed: busy
+                      ? null
+                      : () => actions.setChequeStatus(ChequeStatus.cleared),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
-import 'package:salesroot/features/sales/models/instalment.dart';
 import 'package:salesroot/features/sales/models/sales_line.dart';
 import 'package:salesroot/features/sales/models/sales_math.dart';
 import 'package:salesroot/features/sales/providers/quotation_wizard.dart';
@@ -13,8 +12,6 @@ import 'package:salesroot/features/sales/view/widget/amount_lines.dart';
 import 'package:salesroot/features/sales/view/widget/quote_items_step.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
-
-const _deliveryChoices = [3, 7, 14, 21, 30, 45];
 
 /// What a percentage field shows for [bps]: empty for none, `5`, `7.5`.
 String _percentText(int bps) {
@@ -25,7 +22,7 @@ String _percentText(int bps) {
       : percent.toString();
 }
 
-/// #53: the overall and per-line discount, VAT, validity, payment and
+/// #53: the overall and per-line discount, validity, the payment and
 /// delivery terms, and the note printed on the quotation.
 class QuoteTermsStep extends StatefulWidget {
   const QuoteTermsStep({super.key, required this.draft, required this.wizard});
@@ -41,11 +38,13 @@ class _QuoteTermsStepState extends State<QuoteTermsStep> {
   late final _discount = TextEditingController(
     text: _percentText(widget.draft.discountBps),
   );
+  late final _terms = TextEditingController(text: widget.draft.terms);
   late final _note = TextEditingController(text: widget.draft.note);
 
   @override
   void dispose() {
     _discount.dispose();
+    _terms.dispose();
     _note.dispose();
     super.dispose();
   }
@@ -59,35 +58,6 @@ class _QuoteTermsStepState extends State<QuoteTermsStep> {
       last: now.add(const Duration(days: 365)),
     );
     if (picked != null) widget.wizard.setValidUntil(picked);
-  }
-
-  Future<void> _pickTerms() async {
-    final l10n = context.l10n;
-    final picked = await showSrSheet<PaymentTerms>(
-      context: context,
-      builder: (_) => SrOptionSheet<PaymentTerms>(
-        title: l10n.salesPaymentTerms,
-        options: PaymentTerms.values,
-        labelOf: l10n.paymentTerms,
-        isSelected: (t) => t == widget.draft.paymentTerms,
-      ),
-    );
-    if (picked != null) widget.wizard.setPaymentTerms(picked);
-  }
-
-  Future<void> _pickDelivery() async {
-    final l10n = context.l10n;
-    final fmt = context.fmt;
-    final picked = await showSrSheet<int>(
-      context: context,
-      builder: (_) => SrOptionSheet<int>(
-        title: l10n.salesDelivery,
-        options: _deliveryChoices,
-        labelOf: (days) => l10n.salesWithinDays(fmt.number(days)),
-        isSelected: (days) => days == widget.draft.deliveryDays,
-      ),
-    );
-    if (picked != null) widget.wizard.setDeliveryDays(picked);
   }
 
   Future<void> _editLine(SalesLine line) => showSrSheet<void>(
@@ -113,7 +83,6 @@ class _QuoteTermsStepState extends State<QuoteTermsStep> {
           child: SalesTotalsLines(
             totals: draft.totals,
             discountBps: draft.discountBps,
-            vatBps: standardVatBps,
             itemCount: draft.itemCount,
           ),
         ),
@@ -152,16 +121,14 @@ class _QuoteTermsStepState extends State<QuoteTermsStep> {
           ],
         ),
         const SizedBox(height: 12),
-        SrDropdownField(
+        SrTextField(
+          controller: _terms,
           label: l10n.salesPaymentTerms,
-          value: l10n.paymentTerms(draft.paymentTerms),
-          onTap: _pickTerms,
-        ),
-        const SizedBox(height: 12),
-        SrDropdownField(
-          label: l10n.salesDelivery,
-          value: l10n.salesWithinDays(fmt.number(draft.deliveryDays)),
-          onTap: _pickDelivery,
+          hint: l10n.salesTermsHint,
+          optional: true,
+          multiline: true,
+          maxLength: 400,
+          onChanged: widget.wizard.setTerms,
         ),
         const SizedBox(height: 12),
         SrTextField(
@@ -204,7 +171,7 @@ class _LineSheet extends StatefulWidget {
 }
 
 class _LineSheetState extends State<_LineSheet> {
-  late int _qty = widget.line.qty;
+  late double _qty = widget.line.qty;
   late final _discount = TextEditingController(
     text: _percentText(widget.line.discountBps),
   );
@@ -218,9 +185,9 @@ class _LineSheetState extends State<_LineSheet> {
   void _save() {
     final line = widget.line;
     widget.wizard
-      ..setQty(line.productId, _qty)
+      ..setQty(line.key, _qty)
       ..setLineDiscount(
-        line.productId,
+        line.key,
         bpsFromPercent(double.tryParse(_discount.text) ?? 0),
       );
     Navigator.of(context).pop();

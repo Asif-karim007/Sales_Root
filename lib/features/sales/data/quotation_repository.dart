@@ -4,33 +4,33 @@ import 'package:salesroot/features/sales/models/sales_order.dart';
 import 'package:salesroot/features/sales/models/sales_party.dart';
 
 abstract interface class QuotationRepository {
-  /// A page of quotations, with a `StatusCounts` facet.
   Future<PageResult<Quotation>> list(QuotationQuery query);
 
-  Future<Quotation> get(int id);
+  /// The quotation with its lines, and the order made from it once accepted.
+  Future<Quotation> get(String id);
 
-  /// Saves a new quotation; sent at once when the input names a channel.
   Future<Quotation> create(QuotationInput input);
 
-  /// Replaces the quotation's terms as its next version.
-  Future<Quotation> revise(int id, QuotationInput input);
+  /// Replaces the quotation's lines and terms.
+  Future<Quotation> save(String id, QuotationInput input);
 
-  Future<Quotation> send(int id, SendChannel channel);
+  /// A manager clears a quotation sent for approval.
+  Future<Quotation> approve(String id);
 
-  Future<Quotation> markAccepted(int id);
+  /// The server sends the customer the link to the quotation.
+  Future<Quotation> send(String id);
 
-  Future<Quotation> markRejected(int id);
+  /// A new draft with the same customer, lines and terms.
+  Future<Quotation> duplicate(String id);
 
-  /// Marks the quotation accepted and opens an order on its payment terms.
-  Future<SalesOrder> convertToOrder(int id);
-
-  Future<void> delete(int id);
+  /// Marks the quotation accepted and opens an order from it.
+  Future<SalesOrder> convertToOrder(String id);
 
   Future<List<SalesCustomer>> customers(String search, int page);
 
-  Future<SalesCustomer> customer(int companyId);
+  Future<SalesCustomer> customer(String companyId);
 
-  Future<SalesCustomer> customerForLead(int leadId);
+  Future<SalesCustomer> customerForLead(String leadId);
 
   Future<SellerProfile> seller();
 }

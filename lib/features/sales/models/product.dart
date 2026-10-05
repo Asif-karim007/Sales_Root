@@ -1,105 +1,90 @@
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/sales/models/sales_math.dart';
 
-enum PriceList {
-  list('List'),
-  dealer('Dealer');
-
-  const PriceList(this.wire);
-
-  final String wire;
-
-  static PriceList fromWire(String? value) =>
-      value == dealer.wire ? dealer : list;
-}
-
-enum ProductCategory {
-  solar('Solar'),
-  inverters('Inverters'),
-  batteries('Batteries'),
-  accessories('Accessories'),
-  lighting('Lighting'),
-  pumps('Pumps'),
-  services('Services');
-
-  const ProductCategory(this.wire);
-
-  final String wire;
-
-  static ProductCategory fromWire(String? value) => values.firstWhere(
-    (c) => c.wire == value,
-    orElse: () => ProductCategory.accessories,
-  );
-}
-
 class Product {
   const Product({
     required this.id,
     required this.code,
     required this.name,
     required this.nameBn,
-    required this.category,
     required this.unit,
     required this.price,
-    required this.dealerPrice,
-    this.vatBps = standardVatBps,
+    this.vatBps = 0,
     this.stock,
   });
 
-  final int id;
+  final String id;
+
+  /// The SKU; empty when the product has none.
   final String code;
   final String name;
   final String nameBn;
-  final ProductCategory category;
 
-  /// The selling unit as the server sends it: piece, metre, per kW, set…
+  /// The selling unit as the server sends it: piece, ctn, trip…
   final String unit;
-  final int price;
-  final int dealerPrice;
+  final double price;
   final int vatBps;
 
-  /// Units in stock; null for services, which have none.
-  final int? stock;
+  /// Units in stock; null when stock is not kept for it.
+  final double? stock;
 
   String nameIn({required bool bangla}) =>
       LocalizedName(name, nameBn).of(bangla);
 
-  bool get isService => category == ProductCategory.services;
-  bool get sameInAllLists => price == dealerPrice;
+  factory Product.fromJson(Map<String, dynamic> json) {
+    final tracked = jsonBool(json['trackStock']);
+    return Product(
+      id: jsonId(json['id']) ?? '',
+      code: json['sku'] as String? ?? '',
+      name: json['nameEn'] as String? ?? '',
+      nameBn: json['nameBn'] as String? ?? '',
+      unit: json['unit'] as String? ?? '',
+      price: jsonDouble(json['price']) ?? 0,
+      vatBps: bpsFromPercent(jsonDouble(json['taxPct']) ?? 0),
+      stock: tracked ? jsonDouble(json['stockQty']) ?? 0 : null,
+    );
+  }
+}
 
-  int priceIn(PriceList list) => switch (list) {
-    PriceList.list => price,
-    PriceList.dealer => dealerPrice,
-  };
+/// The body of `POST products` and `PATCH products/{id}`.
+class ProductInput {
+  const ProductInput({
+    required this.name,
+    required this.nameBn,
+    required this.code,
+    required this.unit,
+    required this.price,
+    required this.vatBps,
+  });
 
-  factory Product.fromJson(Map<String, dynamic> json) => Product(
-    id: jsonInt(json['Id']) ?? 0,
-    code: json['Code'] as String? ?? '',
-    name: json['Name'] as String? ?? '',
-    nameBn: json['NameBn'] as String? ?? '',
-    category: ProductCategory.fromWire(json['Category'] as String?),
-    unit: json['Unit'] as String? ?? '',
-    price: jsonInt(json['Price']) ?? 0,
-    dealerPrice: jsonInt(json['DealerPrice']) ?? jsonInt(json['Price']) ?? 0,
-    vatBps: jsonInt(json['VatBps']) ?? standardVatBps,
-    stock: jsonInt(json['Stock']),
-  );
+  final String name;
+  final String nameBn;
+  final String code;
+  final String unit;
+  final double price;
+  final int vatBps;
+
+  static String? _text(String value) {
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
+
+  Map<String, dynamic> toJson() => {
+    'nameEn': name.trim(),
+    'nameBn': _text(nameBn),
+    'sku': _text(code),
+    'unit': _text(unit),
+    'price': price,
+    'taxPct': percentFromBps(vatBps),
+  }..removeWhere((_, value) => value == null);
 }
 
 class ProductQuery {
-  const ProductQuery({this.search = '', this.category, this.page = 1});
+  const ProductQuery({this.search = ''});
 
   final String search;
-  final ProductCategory? category;
-  final int page;
 
-  ProductQuery atPage(int page) =>
-      ProductQuery(search: search, category: category, page: page);
-
-  Map<String, dynamic> toQuery() => {
-    'Search': search.trim().isEmpty ? null : search.trim(),
-    'Category': category?.wire,
-    'Page': page,
-    'PageSize': 20,
-  }..removeWhere((_, value) => value == null);
+  Map<String, dynamic> toQuery() =>
+      {'q': search.trim().isEmpty ? null : search.trim()}
+        ..removeWhere((_, value) => value == null);
 }

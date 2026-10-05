@@ -205,7 +205,7 @@ final class OrderProvider
     with $FutureModifier<SalesOrder>, $FutureProvider<SalesOrder> {
   OrderProvider._({
     required OrderFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'orderProvider',
@@ -231,7 +231,7 @@ final class OrderProvider
 
   @override
   FutureOr<SalesOrder> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return order(ref, argument);
   }
 
@@ -246,10 +246,10 @@ final class OrderProvider
   }
 }
 
-String _$orderHash() => r'b32ae799077ff4257f0b14deba7c597191cee0b2';
+String _$orderHash() => r'92a74ced9f71470c172d61f3db0dd6d407d7d25b';
 
 final class OrderFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<SalesOrder>, int> {
+    with $FunctionalFamilyOverride<FutureOr<SalesOrder>, String> {
   OrderFamily._()
     : super(
         retry: null,
@@ -259,7 +259,7 @@ final class OrderFamily extends $Family
         isAutoDispose: true,
       );
 
-  OrderProvider call(int id) => OrderProvider._(argument: id, from: this);
+  OrderProvider call(String id) => OrderProvider._(argument: id, from: this);
 
   @override
   String toString() => r'orderProvider';
@@ -273,7 +273,7 @@ final class InvoiceProvider
     with $FutureModifier<Invoice>, $FutureProvider<Invoice> {
   InvoiceProvider._({
     required InvoiceFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'invoiceProvider',
@@ -299,7 +299,7 @@ final class InvoiceProvider
 
   @override
   FutureOr<Invoice> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return invoice(ref, argument);
   }
 
@@ -314,10 +314,10 @@ final class InvoiceProvider
   }
 }
 
-String _$invoiceHash() => r'1bb07b5b345fbe02a21230e921d576dc0f9fbabc';
+String _$invoiceHash() => r'81a7fb5428d4651ec69087bcaa9c3cad17a2f08c';
 
 final class InvoiceFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Invoice>, int> {
+    with $FunctionalFamilyOverride<FutureOr<Invoice>, String> {
   InvoiceFamily._()
     : super(
         retry: null,
@@ -327,20 +327,25 @@ final class InvoiceFamily extends $Family
         isAutoDispose: true,
       );
 
-  InvoiceProvider call(int id) => InvoiceProvider._(argument: id, from: this);
+  InvoiceProvider call(String id) =>
+      InvoiceProvider._(argument: id, from: this);
 
   @override
   String toString() => r'invoiceProvider';
 }
 
+/// Bills one order. The screen listens for the new bill to open it.
+
 @ProviderFor(OrderActions)
 final orderActionsProvider = OrderActionsFamily._();
 
+/// Bills one order. The screen listens for the new bill to open it.
 final class OrderActionsProvider
-    extends $NotifierProvider<OrderActions, AsyncValue<OrderOutcome?>> {
+    extends $NotifierProvider<OrderActions, AsyncValue<Invoice?>> {
+  /// Bills one order. The screen listens for the new bill to open it.
   OrderActionsProvider._({
     required OrderActionsFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'orderActionsProvider',
@@ -364,10 +369,10 @@ final class OrderActionsProvider
   OrderActions create() => OrderActions();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AsyncValue<OrderOutcome?> value) {
+  Override overrideWithValue(AsyncValue<Invoice?> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<AsyncValue<OrderOutcome?>>(value),
+      providerOverride: $SyncValueProvider<AsyncValue<Invoice?>>(value),
     );
   }
 
@@ -382,16 +387,18 @@ final class OrderActionsProvider
   }
 }
 
-String _$orderActionsHash() => r'ed6a7734f3d7d119a1bc885e30c76d945c960653';
+String _$orderActionsHash() => r'a3f56f4eeaa2c7438b632b936a18495b49943879';
+
+/// Bills one order. The screen listens for the new bill to open it.
 
 final class OrderActionsFamily extends $Family
     with
         $ClassFamilyOverride<
           OrderActions,
-          AsyncValue<OrderOutcome?>,
-          AsyncValue<OrderOutcome?>,
-          AsyncValue<OrderOutcome?>,
-          int
+          AsyncValue<Invoice?>,
+          AsyncValue<Invoice?>,
+          AsyncValue<Invoice?>,
+          String
         > {
   OrderActionsFamily._()
     : super(
@@ -402,28 +409,31 @@ final class OrderActionsFamily extends $Family
         isAutoDispose: true,
       );
 
-  OrderActionsProvider call(int id) =>
+  /// Bills one order. The screen listens for the new bill to open it.
+
+  OrderActionsProvider call(String id) =>
       OrderActionsProvider._(argument: id, from: this);
 
   @override
   String toString() => r'orderActionsProvider';
 }
 
-abstract class _$OrderActions extends $Notifier<AsyncValue<OrderOutcome?>> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+/// Bills one order. The screen listens for the new bill to open it.
 
-  AsyncValue<OrderOutcome?> build(int id);
+abstract class _$OrderActions extends $Notifier<AsyncValue<Invoice?>> {
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
+
+  AsyncValue<Invoice?> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref =
-        this.ref as $Ref<AsyncValue<OrderOutcome?>, AsyncValue<OrderOutcome?>>;
+    final ref = this.ref as $Ref<AsyncValue<Invoice?>, AsyncValue<Invoice?>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<OrderOutcome?>, AsyncValue<OrderOutcome?>>,
-              AsyncValue<OrderOutcome?>,
+              AnyNotifier<AsyncValue<Invoice?>, AsyncValue<Invoice?>>,
+              AsyncValue<Invoice?>,
               Object?,
               Object?
             >;
@@ -431,18 +441,130 @@ abstract class _$OrderActions extends $Notifier<AsyncValue<OrderOutcome?>> {
   }
 }
 
-/// The delivery or service completion form for one order.
+/// Splits one bill into instalments or cancels it.
+
+@ProviderFor(InvoiceActions)
+final invoiceActionsProvider = InvoiceActionsFamily._();
+
+/// Splits one bill into instalments or cancels it.
+final class InvoiceActionsProvider
+    extends $NotifierProvider<InvoiceActions, AsyncValue<InvoiceChange?>> {
+  /// Splits one bill into instalments or cancels it.
+  InvoiceActionsProvider._({
+    required InvoiceActionsFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'invoiceActionsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$invoiceActionsHash();
+
+  @override
+  String toString() {
+    return r'invoiceActionsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  InvoiceActions create() => InvoiceActions();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AsyncValue<InvoiceChange?> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AsyncValue<InvoiceChange?>>(value),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is InvoiceActionsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$invoiceActionsHash() => r'35db06094d7d2d80f9be26517a24e02000d54435';
+
+/// Splits one bill into instalments or cancels it.
+
+final class InvoiceActionsFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          InvoiceActions,
+          AsyncValue<InvoiceChange?>,
+          AsyncValue<InvoiceChange?>,
+          AsyncValue<InvoiceChange?>,
+          String
+        > {
+  InvoiceActionsFamily._()
+    : super(
+        retry: null,
+        name: r'invoiceActionsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// Splits one bill into instalments or cancels it.
+
+  InvoiceActionsProvider call(String id) =>
+      InvoiceActionsProvider._(argument: id, from: this);
+
+  @override
+  String toString() => r'invoiceActionsProvider';
+}
+
+/// Splits one bill into instalments or cancels it.
+
+abstract class _$InvoiceActions extends $Notifier<AsyncValue<InvoiceChange?>> {
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
+
+  AsyncValue<InvoiceChange?> build(String id);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref
+            as $Ref<AsyncValue<InvoiceChange?>, AsyncValue<InvoiceChange?>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                AsyncValue<InvoiceChange?>,
+                AsyncValue<InvoiceChange?>
+              >,
+              AsyncValue<InvoiceChange?>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
+}
+
+/// Marks one order delivered, and bills it at once when asked.
 
 @ProviderFor(DeliveryForm)
 final deliveryFormProvider = DeliveryFormFamily._();
 
-/// The delivery or service completion form for one order.
+/// Marks one order delivered, and bills it at once when asked.
 final class DeliveryFormProvider
     extends $AsyncNotifierProvider<DeliveryForm, DeliveryDraft> {
-  /// The delivery or service completion form for one order.
+  /// Marks one order delivered, and bills it at once when asked.
   DeliveryFormProvider._({
     required DeliveryFormFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'deliveryFormProvider',
@@ -476,9 +598,9 @@ final class DeliveryFormProvider
   }
 }
 
-String _$deliveryFormHash() => r'83e0352025b191b015cd7762c80b36914b662934';
+String _$deliveryFormHash() => r'272f7913963d5f08ba120c1fb2f40024f0058fa5';
 
-/// The delivery or service completion form for one order.
+/// Marks one order delivered, and bills it at once when asked.
 
 final class DeliveryFormFamily extends $Family
     with
@@ -487,7 +609,7 @@ final class DeliveryFormFamily extends $Family
           AsyncValue<DeliveryDraft>,
           DeliveryDraft,
           FutureOr<DeliveryDraft>,
-          int
+          String
         > {
   DeliveryFormFamily._()
     : super(
@@ -498,22 +620,22 @@ final class DeliveryFormFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// The delivery or service completion form for one order.
+  /// Marks one order delivered, and bills it at once when asked.
 
-  DeliveryFormProvider call(int orderId) =>
+  DeliveryFormProvider call(String orderId) =>
       DeliveryFormProvider._(argument: orderId, from: this);
 
   @override
   String toString() => r'deliveryFormProvider';
 }
 
-/// The delivery or service completion form for one order.
+/// Marks one order delivered, and bills it at once when asked.
 
 abstract class _$DeliveryForm extends $AsyncNotifier<DeliveryDraft> {
-  late final _$args = ref.$arg as int;
-  int get orderId => _$args;
+  late final _$args = ref.$arg as String;
+  String get orderId => _$args;
 
-  FutureOr<DeliveryDraft> build(int orderId);
+  FutureOr<DeliveryDraft> build(String orderId);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

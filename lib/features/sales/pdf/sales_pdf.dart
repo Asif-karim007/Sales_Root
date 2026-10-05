@@ -53,36 +53,35 @@ class SalesPdf {
     Quotation quotation,
     SellerProfile seller, {
     PdfPageFormat format = PdfPageFormat.a4,
-  }) => _document(
-    format: format,
-    seller: seller,
-    title: l10n.salesPdfQuotation,
-    number: quotation.number,
-    date: quotation.createdAt,
-    body: [
-      _party(quotation.companyName, quotation.contactName),
-      pw.SizedBox(height: 14),
-      _items(quotation.lines),
-      pw.SizedBox(height: 8),
-      _totals(
-        quotation.totals,
-        discountBps: quotation.discountBps,
-        vatBps: quotation.vatBps,
-      ),
-      pw.SizedBox(height: 14),
-      _paragraph(
-        [
-          l10n.salesValidTo(fmt.date(quotation.validUntil)),
-          l10n.paymentTerms(quotation.paymentTerms),
-          l10n.salesDeliveryInDays(fmt.number(quotation.deliveryDays)),
-        ].join(' · '),
-      ),
-      if (quotation.note.isNotEmpty) ...[
-        pw.SizedBox(height: 6),
-        _paragraph(quotation.note),
+  }) {
+    final validUntil = quotation.validUntil;
+    return _document(
+      format: format,
+      seller: seller,
+      title: l10n.salesPdfQuotation,
+      number: quotation.number,
+      date: quotation.createdAt,
+      body: [
+        _party(quotation.companyName, quotation.contactName),
+        pw.SizedBox(height: 14),
+        _items(quotation.lines),
+        pw.SizedBox(height: 8),
+        _totals(quotation.totals, discountBps: quotation.discountBps),
+        if (validUntil != null) ...[
+          pw.SizedBox(height: 14),
+          _paragraph(l10n.salesValidTo(fmt.date(validUntil))),
+        ],
+        if (quotation.terms.isNotEmpty) ...[
+          pw.SizedBox(height: 6),
+          _paragraph(quotation.terms),
+        ],
+        if (quotation.note.isNotEmpty) ...[
+          pw.SizedBox(height: 6),
+          _paragraph(quotation.note),
+        ],
       ],
-    ],
-  );
+    );
+  }
 
   Future<Uint8List> invoice(
     Invoice invoice,
@@ -91,22 +90,19 @@ class SalesPdf {
   }) => _document(
     format: format,
     seller: seller,
-    title: seller.taxInvoices ? l10n.salesPdfTaxInvoice : l10n.salesPdfBill,
+    title: l10n.salesPdfBill,
     number: invoice.number,
     date: invoice.issuedAt,
     body: [
       _party(invoice.companyName, invoice.contactName),
-      pw.SizedBox(height: 4),
-      _paragraph(l10n.salesAgainstOrder(invoice.orderNumber)),
+      if (invoice.orderNumber case final order?) ...[
+        pw.SizedBox(height: 4),
+        _paragraph(l10n.salesAgainstOrder(order)),
+      ],
       pw.SizedBox(height: 14),
       _items(invoice.lines),
       pw.SizedBox(height: 8),
-      _totals(
-        invoice.totals,
-        discountBps: invoice.discountBps,
-        vatBps: invoice.vatBps,
-        collected: invoice.paid,
-      ),
+      _totals(invoice.totals, collected: invoice.paid),
       if (invoice.instalments.isNotEmpty) ...[
         pw.SizedBox(height: 16),
         pw.Text(
@@ -139,9 +135,13 @@ class SalesPdf {
       _line(l10n.salesAmount, fmt.money(collection.amount), strong: true),
       _line(l10n.salesMethod, receiptMethod(l10n, collection)),
       for (final allocation in collection.allocations)
-        _line(l10n.salesAgainst, allocationLabel(l10n, fmt, allocation)),
-      _line(l10n.salesBalanceDue, fmt.money(collection.balanceDue)),
-      _line(l10n.salesReceivedBy, collection.receivedByIn(bangla: _bangla)),
+        _line(l10n.salesAgainst, allocationLabel(fmt, allocation)),
+      if (collection.advance > 0)
+        _line(l10n.salesAdvance, fmt.money(collection.advance)),
+      if (collection.balanceDue case final balance?)
+        _line(l10n.salesBalanceDue, fmt.money(balance)),
+      if (collection.receivedByName.isNotEmpty)
+        _line(l10n.salesReceivedBy, collection.receivedByName),
       pw.SizedBox(height: 48),
       pw.Align(
         alignment: pw.Alignment.centerRight,
@@ -219,7 +219,10 @@ class SalesPdf {
               ),
               pw.SizedBox(height: 2),
               pw.Text(
-                '${seller.address} · ${fmt.phone(seller.phone)}',
+                [
+                  if (seller.address.isNotEmpty) seller.address,
+                  if (seller.phone.isNotEmpty) fmt.phone(seller.phone),
+                ].join(' · '),
                 style: pw.TextStyle(fontSize: 9, color: _ink2),
               ),
             ],
@@ -315,9 +318,8 @@ class SalesPdf {
 
   pw.Widget _totals(
     SalesTotals totals, {
-    required int discountBps,
-    required int vatBps,
-    int? collected,
+    int? discountBps,
+    double? collected,
   }) => pw.Align(
     alignment: pw.Alignment.centerRight,
     child: pw.SizedBox(
@@ -327,10 +329,12 @@ class SalesPdf {
           _line(l10n.salesSubtotal, fmt.money(totals.subtotal)),
           if (totals.discount > 0)
             _line(
-              l10n.salesDiscountPercent(fmt.bps(discountBps)),
+              discountBps == null
+                  ? l10n.salesDiscount
+                  : l10n.salesDiscountPercent(fmt.bps(discountBps)),
               '− ${fmt.money(totals.discount)}',
             ),
-          _line(l10n.salesVatPercent(fmt.bps(vatBps)), fmt.money(totals.vat)),
+          if (totals.vat > 0) _line(l10n.salesVat, fmt.money(totals.vat)),
           _line(l10n.salesTotal, fmt.money(totals.total), strong: true),
           if (collected != null) ...[
             _line(l10n.salesCollected, '− ${fmt.money(collected)}'),
@@ -371,23 +375,10 @@ class SalesPdf {
       pw.Text(text, style: pw.TextStyle(fontSize: 9.5, color: _ink2));
 }
 
-/// `bKash · BKX7H2K9Q1`, `Cheque 4012345 · City Bank`.
-String receiptMethod(AppLocalizations l10n, Collection collection) {
-  final parts = [
-    l10n.method(collection.method),
-    ?collection.chequeNumber,
-    ?collection.reference,
-    ?collection.bankName,
-  ];
-  return parts.join(' · ');
-}
+/// `bKash · BKX7H2K9Q1`, `Cheque · 4012345`.
+String receiptMethod(AppLocalizations l10n, Collection collection) =>
+    [l10n.method(collection.method), ?collection.reference].join(' · ');
 
-/// `INV-2026-0912 · 2nd instalment`, or the order for an advance.
-String allocationLabel(
-  AppLocalizations l10n,
-  AppFormat fmt,
-  Allocation allocation,
-) =>
-    '${allocation.invoiceNumber ?? allocation.orderNumber} · '
-    '${l10n.salesInstalmentOf(l10n.ordinal(allocation.seq))} · '
-    '${fmt.money(allocation.amount)}';
+/// `1st instalment · ৳ 50,000`.
+String allocationLabel(AppFormat fmt, Allocation allocation) =>
+    '${allocation.label} · ${fmt.money(allocation.amount)}';

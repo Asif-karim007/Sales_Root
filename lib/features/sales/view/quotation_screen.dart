@@ -17,16 +17,15 @@ import 'package:salesroot/features/sales/view/widget/button_row.dart';
 import 'package:salesroot/features/sales/view/widget/pdf_sheet.dart';
 import 'package:salesroot/features/sales/view/widget/quotation_doc_card.dart';
 import 'package:salesroot/features/sales/view/widget/sales_failure.dart';
-import 'package:salesroot/features/sales/view/widget/sales_rows.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #56: the quotation as sent, its PDF, and what to do next: send, revise,
-/// duplicate, mark accepted (which makes the order) or rejected.
+/// #56: the quotation as sent, its PDF, and what to do next: approve, send,
+/// edit, duplicate, or mark it accepted, which makes the order.
 class QuotationScreen extends ConsumerWidget {
   const QuotationScreen({super.key, required this.id});
 
-  final int id;
+  final String id;
 
   Future<void> _pdf(BuildContext context, WidgetRef ref, Quotation q) async {
     final l10n = context.l10n;
@@ -55,7 +54,7 @@ class QuotationScreen extends ConsumerWidget {
         title: l10n.salesHowToSend,
         options: SendChannel.values,
         labelOf: l10n.channel,
-        isSelected: (c) => c == q.sentVia,
+        isSelected: (_) => false,
       ),
     );
     if (channel == null || !context.mounted) return;
@@ -72,24 +71,20 @@ class QuotationScreen extends ConsumerWidget {
       if (context.mounted) showSrError(context, l10n.salesPdfFailed);
       return;
     }
-    await ref.read(quotationActionsProvider(id).notifier).send(channel);
+    await ref.read(quotationActionsProvider(id).notifier).send();
   }
 
   Future<void> _accept(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
-    final makeOrder = ref.read(moduleAccessProvider(AppModule.order)).canAdd;
     final ok = await showSrConfirm(
       context,
       title: l10n.salesAcceptTitle,
-      message: makeOrder ? l10n.salesAcceptBody : l10n.salesAcceptOnlyBody,
-      confirmLabel: makeOrder
-          ? l10n.salesConvertToOrder
-          : l10n.salesMarkAccepted,
+      message: l10n.salesAcceptBody,
+      confirmLabel: l10n.salesConvertToOrder,
       icon: Icons.handshake_outlined,
     );
     if (!ok) return;
-    final actions = ref.read(quotationActionsProvider(id).notifier);
-    await (makeOrder ? actions.convertToOrder() : actions.markAccepted());
+    await ref.read(quotationActionsProvider(id).notifier).convertToOrder();
   }
 
   Future<void> _more(BuildContext context, WidgetRef ref, Quotation q) async {
@@ -103,24 +98,12 @@ class QuotationScreen extends ConsumerWidget {
         () => _pdf(context, ref, q),
       ),
       if (access.canAdd)
-        (
-          l10n.salesDuplicate,
-          Icons.copy_all_outlined,
-          () async => context.push(quotationNewFor(fromId: q.id)),
-        ),
+        (l10n.salesDuplicate, Icons.copy_all_outlined, actions.duplicate),
       if (access.canEdit && q.status.isAwaiting)
         (
           l10n.salesSendAgain,
           Icons.send_outlined,
           () => _send(context, ref, q),
-        ),
-      if (access.canEdit && q.status.isOpen && q.canEdit)
-        (l10n.salesMarkRejected, Icons.block_rounded, actions.markRejected),
-      if (access.canDelete && q.canDelete)
-        (
-          l10n.salesDeleteDraft,
-          Icons.delete_outline_rounded,
-          () => _delete(context, ref),
         ),
     ];
     final picked = await showSrSheet<int>(
@@ -147,33 +130,20 @@ class QuotationScreen extends ConsumerWidget {
     await options[picked].$3();
   }
 
-  Future<void> _delete(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final ok = await showSrConfirm(
-      context,
-      title: l10n.salesDeleteDraft,
-      message: l10n.salesDeleteDraftBody,
-      confirmLabel: l10n.commonDelete,
-      icon: Icons.delete_outline_rounded,
-      destructive: true,
-    );
-    if (ok) await ref.read(quotationActionsProvider(id).notifier).delete();
-  }
-
   void _outcome(BuildContext context, AsyncValue<QuotationOutcome?> next) {
     final l10n = context.l10n;
     switch (next) {
       case AsyncData(value: QuotationConverted(:final order)):
         showSrSuccess(context, l10n.salesOrderCreated(order.number));
         context.pushReplacement(Routes.orderFor(order.id));
+      case AsyncData(value: QuotationDuplicated(:final quotation)):
+        showSrSuccess(context, l10n.salesDraftSaved);
+        context.pushReplacement(Routes.quotationFor(quotation.id));
       case AsyncData(value: QuotationUpdated(:final quotation)):
         showSrSuccess(
           context,
           l10n.salesQuotationNowStatus(l10n.quotationStatus(quotation.status)),
         );
-      case AsyncData(value: QuotationDeleted()):
-        showSrSuccess(context, l10n.salesDraftDeleted);
-        context.pop();
       case AsyncError(:final error):
         showSalesFailure(context, error);
       default:
@@ -184,7 +154,6 @@ class QuotationScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final fmt = context.fmt;
     final value = ref.watch(quotationProvider(id));
     final quotation = value.value;
     ref.listen(
@@ -203,9 +172,7 @@ class QuotationScreen extends ConsumerWidget {
     return SrScaffold(
       appBar: SrAppBar(
         title: quotation?.number ?? l10n.salesQuotation,
-        subtitle: quotation == null
-            ? null
-            : '${quotation.companyName} · ${l10n.salesVersion(fmt.number(quotation.version))}',
+        subtitle: quotation?.companyName,
         actions: [
           if (quotation != null) ...[
             SrIconButton(
@@ -241,10 +208,8 @@ class _QuotationBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final fmt = context.fmt;
     final q = quotation;
     final seller = ref.watch(sellerProfileProvider).value;
-    final viewed = q.lastViewedAt;
     final order = q.orderNumber;
     return RefreshIndicator(
       onRefresh: () => ref.refresh(quotationProvider(q.id).future),
@@ -262,26 +227,20 @@ class _QuotationBody extends ConsumerWidget {
                 l10n.quotationStatus(q.status),
                 tone: quotationTone(q.status),
               ),
-              const Spacer(),
-              Text(
-                l10n.salesByOwner(q.ownerName),
-                style: AppText.meta(SrColors.of(context).ink2),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  q.ownerName.isEmpty ? '' : l10n.salesByOwner(q.ownerName),
+                  textAlign: TextAlign.end,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.meta(SrColors.of(context).ink2),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 10),
           QuotationDocCard(quotation: q, seller: seller),
-          if (viewed != null) ...[
-            const SizedBox(height: 12),
-            SrNote(
-              tone: SrNoteTone.gold,
-              icon: Icons.visibility_outlined,
-              message: l10n.salesViewedNote(
-                fmt.number(q.viewCount),
-                '${salesDay(context, viewed)} ${fmt.time(viewed)}',
-              ),
-            ),
-          ],
           if (order != null) ...[
             const SizedBox(height: 12),
             SrNote(
@@ -306,6 +265,7 @@ List<Widget> _footerButtons(
   final l10n = context.l10n;
   final access = ref.watch(moduleAccessProvider(AppModule.quotation));
   final orders = ref.watch(moduleAccessProvider(AppModule.order));
+  final actions = ref.read(quotationActionsProvider(q.id).notifier);
   final busy = ref.watch(quotationActionsProvider(q.id)).isLoading;
   final orderId = q.orderId;
   if (orderId != null) {
@@ -318,42 +278,51 @@ List<Widget> _footerButtons(
         ),
     ];
   }
-  if (q.status == QuotationStatus.accepted) {
-    return [
+  final edit = SrButton(
+    label: l10n.commonEdit,
+    icon: Icons.edit_note_rounded,
+    variant: SrButtonVariant.secondary,
+    onPressed: () => context.push(quotationNewFor(editId: q.id)),
+  );
+  return switch (q.status) {
+    QuotationStatus.accepted => [
       if (orders.canAdd)
         SrButton(
           label: l10n.salesConvertToOrder,
           loading: busy,
-          onPressed: busy
-              ? null
-              : ref
-                    .read(quotationActionsProvider(q.id).notifier)
-                    .convertToOrder,
+          onPressed: busy ? null : actions.convertToOrder,
         ),
-    ];
-  }
-  return [
-    if (access.canEdit && q.canEdit)
-      SrButton(
-        label: q.status == QuotationStatus.draft
-            ? l10n.commonEdit
-            : l10n.salesNewVersion,
-        icon: Icons.edit_note_rounded,
-        variant: SrButtonVariant.secondary,
-        onPressed: () =>
-            context.push(quotationNewFor(fromId: q.id, revise: true)),
-      ),
-    if (access.canEdit && q.status == QuotationStatus.draft)
-      SrButton(
-        label: l10n.commonSend,
-        icon: Icons.send_outlined,
-        onPressed: onSend,
-      )
-    else if (access.canEdit && q.status.isAwaiting)
-      SrButton(
-        label: l10n.salesMarkAccepted,
-        loading: busy,
-        onPressed: busy ? null : onAccept,
-      ),
-  ];
+    ],
+    QuotationStatus.pendingApproval => [
+      if (access.canEdit) edit,
+      if (access.canApprove)
+        SrButton(
+          label: l10n.salesApprove,
+          icon: Icons.verified_outlined,
+          loading: busy,
+          onPressed: busy ? null : actions.approve,
+        ),
+    ],
+    QuotationStatus.draft || QuotationStatus.approved => [
+      if (access.canEdit) ...[
+        edit,
+        SrButton(
+          label: l10n.commonSend,
+          icon: Icons.send_outlined,
+          onPressed: onSend,
+        ),
+      ],
+    ],
+    QuotationStatus.sent || QuotationStatus.viewed => [
+      if (access.canEdit) edit,
+      if (orders.canAdd)
+        SrButton(
+          label: l10n.salesMarkAccepted,
+          loading: busy,
+          onPressed: busy ? null : onAccept,
+        ),
+    ],
+    QuotationStatus.rejected ||
+    QuotationStatus.expired => [if (access.canEdit) edit],
+  };
 }

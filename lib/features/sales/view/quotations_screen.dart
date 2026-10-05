@@ -43,7 +43,6 @@ class QuotationsScreen extends ConsumerWidget {
         children: [
           const SizedBox(height: 12),
           _StatusChips(
-            counts: list.value?.facets['StatusCounts'] ?? const {},
             selected: status,
             onChanged: ref.read(quotationStatusFilterProvider.notifier).set,
           ),
@@ -82,13 +81,8 @@ class QuotationsScreen extends ConsumerWidget {
 }
 
 class _StatusChips extends StatelessWidget {
-  const _StatusChips({
-    required this.counts,
-    required this.selected,
-    required this.onChanged,
-  });
+  const _StatusChips({required this.selected, required this.onChanged});
 
-  final Map<String, int> counts;
   final QuotationStatus? selected;
   final ValueChanged<QuotationStatus?> onChanged;
 
@@ -99,13 +93,9 @@ class _StatusChips extends StatelessWidget {
     final current = selected;
     return SrChipRow(
       chips: [
-        SrChipItem(l10n.commonAll, count: counts['All']),
+        SrChipItem(l10n.commonAll),
         for (final status in statuses)
-          SrChipItem(
-            l10n.quotationStatus(status),
-            count: counts[status.wire],
-            tone: quotationTone(status),
-          ),
+          SrChipItem(l10n.quotationStatus(status), tone: quotationTone(status)),
       ],
       index: current == null ? 0 : statuses.indexOf(current) + 1,
       onChanged: (i) => onChanged(i == 0 ? null : statuses[i - 1]),

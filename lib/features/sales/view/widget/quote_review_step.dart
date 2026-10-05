@@ -5,7 +5,6 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/sales/models/quotation.dart';
-import 'package:salesroot/features/sales/models/sales_math.dart';
 import 'package:salesroot/features/sales/pdf/sales_pdf.dart';
 import 'package:salesroot/features/sales/providers/quotation_providers.dart';
 import 'package:salesroot/features/sales/providers/quotation_wizard.dart';
@@ -20,25 +19,22 @@ import 'package:salesroot/widgets/widgets.dart';
 /// The draft as a quotation, for the preview and the PDF before it is saved.
 Quotation previewQuotation(QuotationDraft draft, String number) {
   final customer = draft.customer;
-  final revising = draft.revising;
+  final editing = draft.editing;
   return Quotation(
-    id: revising?.id ?? 0,
-    number: revising?.number ?? number,
-    version: (revising?.version ?? 0) + 1,
-    companyId: customer?.companyId ?? 0,
+    id: editing?.id ?? '',
+    number: editing?.number ?? number,
+    companyId: customer?.companyId,
     companyName: customer?.name ?? '',
     contactName: customer?.contactName ?? '',
-    priceList: draft.priceList,
     lines: draft.lines,
     discountBps: draft.discountBps,
-    vatBps: standardVatBps,
+    totals: draft.totals,
     validUntil: draft.validUntil,
-    paymentTerms: draft.paymentTerms,
-    deliveryDays: draft.deliveryDays,
+    terms: draft.terms,
     note: draft.note,
-    status: QuotationStatus.draft,
-    createdAt: DateTime.now(),
-    ownerName: '',
+    status: editing?.status ?? QuotationStatus.draft,
+    createdAt: editing?.createdAt ?? DateTime.now(),
+    ownerName: editing?.ownerName ?? '',
   );
 }
 
@@ -135,7 +131,6 @@ class QuoteReviewStep extends ConsumerWidget {
               SalesTotalsLines(
                 totals: draft.totals,
                 discountBps: draft.discountBps,
-                vatBps: standardVatBps,
               ),
             ],
           ),

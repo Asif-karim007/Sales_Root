@@ -1,0 +1,11 @@
+{
+ "code": "V-010",
+ "message": {
+  "bn": "আপনি সর্বোচ্চ 5% ছাড় দিতে পারেন। অনুমোদন চাইবেন?",
+  "en": "You can give up to 5% discount. Ask for approval?"
+ },
+ "field": "discountPct",
+ "data": {
+  "maxPct": 5
+ }
+}

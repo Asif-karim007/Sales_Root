@@ -1,39 +1,64 @@
-import 'package:salesroot/core/utils/json_fields.dart';
-import 'package:salesroot/features/sales/models/product.dart';
+import 'package:collection/collection.dart';
 
-/// A company a quotation can go to, with its main contact and price list.
+import 'package:salesroot/core/utils/json_fields.dart';
+
+/// Who a quotation goes to: a company with its main contact, or a lead.
 class SalesCustomer {
   const SalesCustomer({
-    required this.companyId,
     required this.name,
-    required this.contactName,
-    required this.priceList,
+    this.companyId,
     this.contactId,
+    this.contactName,
     this.contactPhone,
     this.leadId,
     this.area,
   });
 
-  final int companyId;
+  final String? companyId;
   final String name;
-  final int? contactId;
-  final String contactName;
+  final String? contactId;
+  final String? contactName;
   final String? contactPhone;
-  final PriceList priceList;
 
   /// The open lead with this customer, when there is one.
-  final int? leadId;
+  final String? leadId;
   final String? area;
 
-  factory SalesCustomer.fromJson(Map<String, dynamic> json) => SalesCustomer(
-    companyId: jsonInt(json['CompanyId']) ?? 0,
-    name: json['Name'] as String? ?? '',
-    contactId: jsonInt(json['ContactId']),
-    contactName: json['ContactName'] as String? ?? '',
-    contactPhone: json['ContactPhone'] as String?,
-    priceList: PriceList.fromWire(json['PriceList'] as String?),
-    leadId: jsonInt(json['LeadId']),
-    area: json['Area'] as String?,
+  /// A row of `GET companies`.
+  factory SalesCustomer.fromCompany(Map<String, dynamic> json) => SalesCustomer(
+    companyId: jsonId(json['id']),
+    name: json['name'] as String? ?? '',
+    contactPhone: json['phone'] as String?,
+    area: json['area'] as String?,
+  );
+
+  /// `GET companies/{id}`: the company, its first contact and open lead.
+  factory SalesCustomer.fromCompanyDetail(Map<String, dynamic> json) {
+    final company = jsonMap(json['company']);
+    final contact = jsonList(json['people'], (row) => row).firstOrNull;
+    final lead = jsonList(
+      json['leads'],
+      (row) => row,
+    ).firstWhereOrNull((row) => (row['status'] ?? 'open') == 'open');
+    return SalesCustomer(
+      companyId: jsonId(company['id']),
+      name: company['name'] as String? ?? '',
+      contactId: jsonId(contact?['id']),
+      contactName: contact?['name'] as String?,
+      contactPhone: contact?['phone'] as String? ?? company['phone'] as String?,
+      leadId: jsonId(lead?['id']),
+      area: company['area'] as String?,
+    );
+  }
+
+  /// The `lead` of `GET leads/{id}`.
+  factory SalesCustomer.fromLead(Map<String, dynamic> json) => SalesCustomer(
+    companyId: jsonId(json['companyId']),
+    name: json['companyName'] as String? ?? json['name'] as String? ?? '',
+    contactId: jsonId(json['contactId']),
+    contactName: json['contactName'] as String? ?? json['name'] as String?,
+    contactPhone: json['phone'] as String?,
+    leadId: jsonId(json['id']),
   );
 }
 
@@ -43,20 +68,16 @@ class SellerProfile {
     required this.name,
     required this.address,
     required this.phone,
-    this.taxInvoices = false,
   });
 
   final String name;
   final String address;
   final String phone;
 
-  /// Prints "Tax invoice" with the VAT registration instead of "Bill".
-  final bool taxInvoices;
-
+  /// `GET workspaces/current`.
   factory SellerProfile.fromJson(Map<String, dynamic> json) => SellerProfile(
-    name: json['Name'] as String? ?? '',
-    address: json['Address'] as String? ?? '',
-    phone: json['Phone'] as String? ?? '',
-    taxInvoices: jsonBool(json['TaxInvoices']),
+    name: json['name'] as String? ?? '',
+    address: json['address'] as String? ?? '',
+    phone: json['phone'] as String? ?? '',
   );
 }

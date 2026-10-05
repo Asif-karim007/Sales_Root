@@ -1,0 +1,41 @@
+{
+ "items": [
+  {
+   "id": "01a10101-8690-7963-915f-6bb20aa6c9e7",
+   "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+   "number": "QT-2026-00001",
+   "leadId": "01a10101-866a-7007-90bc-2326bcdb9d50",
+   "companyId": "01a10101-8657-7f15-8630-b08119f1ae61",
+   "contactId": "01a10101-865e-7196-8bd5-2cf8d667f937",
+   "ownerMembershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+   "status": "sent",
+   "currency": "BDT",
+   "subtotal": 215000.0,
+   "discountPct": 4.0,
+   "discountAmt": 8600.0,
+   "taxAmt": 0.0,
+   "total": 206400.0,
+   "validUntil": "2026-10-18T00:00:00",
+   "terms": null,
+   "note": null,
+   "publicToken": "43f96a83ca06bae16aecbe57",
+   "sentAt": "2026-10-03T07:03:59.542506Z",
+   "acceptedAt": null,
+   "acceptedBy": null,
+   "approvedBy": null,
+   "createdBy": "01a10101-8644-75d5-813c-211d42aa3d68",
+   "createdAt": "2026-10-03T09:03:59.542506Z",
+   "updatedAt": "2026-10-03T09:03:59.542506Z",
+   "deletedAt": null,
+   "version": 38,
+   "companyName": "Rahim Traders",
+   "contactName": "Mr Rahim",
+   "contactPhone": "+8801811000010",
+   "leadName": "Mr Rahim",
+   "ownerName": "Rafi Ahmed"
+  }
+ ],
+ "total": 1,
+ "offset": 0,
+ "limit": 3
+}

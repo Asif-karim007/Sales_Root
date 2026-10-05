@@ -1,0 +1,16 @@
+{
+ "range": {
+  "preset": "last_month",
+  "from": "2026-09-01",
+  "to": "2026-09-30",
+  "group": "day",
+  "days": 30
+ },
+ "summary": {
+  "won": 0,
+  "wonAmount": 0,
+  "avgDeal": 0,
+  "orderAmount": 0
+ },
+ "trend": []
+}

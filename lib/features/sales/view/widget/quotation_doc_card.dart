@@ -5,7 +5,6 @@ import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/sales/models/quotation.dart';
 import 'package:salesroot/features/sales/models/sales_party.dart';
-import 'package:salesroot/features/sales/view/sales_labels.dart';
 import 'package:salesroot/features/sales/view/widget/amount_lines.dart';
 import 'package:salesroot/features/sales/view/widget/items_table.dart';
 import 'package:salesroot/translations/translations.dart';
@@ -29,10 +28,10 @@ class QuotationDocCard extends StatelessWidget {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final q = quotation;
+    final validUntil = q.validUntil;
     final terms = [
-      l10n.salesValidTo(fmt.dayMonth(q.validUntil)),
-      l10n.paymentTerms(q.paymentTerms),
-      l10n.salesDeliveryInDays(fmt.number(q.deliveryDays)),
+      if (validUntil != null) l10n.salesValidTo(fmt.dayMonth(validUntil)),
+      if (q.terms.isNotEmpty) q.terms,
       if (q.note.isNotEmpty) q.note,
     ].join(' · ');
     return SrCard(
@@ -65,13 +64,11 @@ class QuotationDocCard extends StatelessWidget {
           const SizedBox(height: 10),
           ItemsTable(lines: q.lines),
           const SizedBox(height: 6),
-          SalesTotalsLines(
-            totals: q.totals,
-            discountBps: q.discountBps,
-            vatBps: q.vatBps,
-          ),
-          const SizedBox(height: 8),
-          Text(terms, style: AppText.meta(c.ink2, size: 11.5)),
+          SalesTotalsLines(totals: q.totals, discountBps: q.discountBps),
+          if (terms.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(terms, style: AppText.meta(c.ink2, size: 11.5)),
+          ],
         ],
       ),
     );
@@ -126,7 +123,10 @@ class DocLetterhead extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${profile.address} · ${fmt.phone(profile.phone)}',
+                      [
+                        if (profile.address.isNotEmpty) profile.address,
+                        if (profile.phone.isNotEmpty) fmt.phone(profile.phone),
+                      ].join(' · '),
                       style: AppText.meta(c.ink2, size: 11.5),
                     ),
                   ],

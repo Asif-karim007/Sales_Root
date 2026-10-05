@@ -2,7 +2,6 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/features/sales/models/collection.dart';
 import 'package:salesroot/features/sales/models/instalment.dart';
 import 'package:salesroot/features/sales/models/outstanding.dart';
-import 'package:salesroot/features/sales/models/product.dart';
 import 'package:salesroot/features/sales/models/quotation.dart';
 import 'package:salesroot/features/sales/models/sales_order.dart';
 import 'package:salesroot/translations/translations.dart';
@@ -13,12 +12,16 @@ extension SalesFormat on AppFormat {
   String bps(int bps) =>
       '${number(bps / 100, decimals: bps % 100 == 0 ? 0 : 1)}%';
 
-  String qty(int qty) => number(qty);
+  /// Whole quantities without decimals, parts to two places.
+  String qty(double qty) =>
+      number(qty, decimals: qty == qty.roundToDouble() ? 0 : 2);
 }
 
 extension SalesLabels on AppLocalizations {
   String quotationStatus(QuotationStatus status) => switch (status) {
     QuotationStatus.draft => salesStatusDraft,
+    QuotationStatus.pendingApproval => salesStatusPendingApproval,
+    QuotationStatus.approved => salesStatusApproved,
     QuotationStatus.sent => salesStatusSent,
     QuotationStatus.viewed => salesStatusViewed,
     QuotationStatus.accepted => salesStatusAccepted,
@@ -31,20 +34,11 @@ extension SalesLabels on AppLocalizations {
     OrderStatus.inProgress => salesOrderInProgress,
     OrderStatus.delivered => salesOrderDelivered,
     OrderStatus.invoiced => salesOrderInvoiced,
-  };
-
-  String category(ProductCategory category) => switch (category) {
-    ProductCategory.solar => salesCategorySolar,
-    ProductCategory.inverters => salesCategoryInverters,
-    ProductCategory.batteries => salesCategoryBatteries,
-    ProductCategory.accessories => salesCategoryAccessories,
-    ProductCategory.lighting => salesCategoryLighting,
-    ProductCategory.pumps => salesCategoryPumps,
-    ProductCategory.services => salesCategoryServices,
+    OrderStatus.cancelled => salesCancelled,
   };
 
   String unit(String unit) => switch (unit) {
-    'piece' => salesUnitPiece,
+    'piece' || 'pc' || 'pcs' => salesUnitPiece,
     'metre' => salesUnitMetre,
     'pair' => salesUnitPair,
     'per kW' => salesUnitPerKw,
@@ -54,20 +48,6 @@ extension SalesLabels on AppLocalizations {
     'job' => salesUnitJob,
     'day' => salesUnitDay,
     _ => unit,
-  };
-
-  String priceList(PriceList list) => switch (list) {
-    PriceList.list => salesPriceListList,
-    PriceList.dealer => salesPriceListDealer,
-  };
-
-  String paymentTerms(PaymentTerms terms) => switch (terms) {
-    PaymentTerms.fullAdvance => salesTermsFullAdvance,
-    PaymentTerms.advance50 => salesTermsAdvance50,
-    PaymentTerms.advance50Split => salesTermsAdvance50Split,
-    PaymentTerms.advance30 => salesTermsAdvance30,
-    PaymentTerms.onDelivery => salesTermsOnDelivery,
-    PaymentTerms.credit30 => salesTermsCredit30,
   };
 
   String channel(SendChannel channel) => switch (channel) {
@@ -85,11 +65,10 @@ extension SalesLabels on AppLocalizations {
     PaymentMethod.cheque => salesMethodCheque,
   };
 
-  String instalmentKind(InstalmentKind kind) => switch (kind) {
-    InstalmentKind.advance => salesKindAdvance,
-    InstalmentKind.onDelivery => salesKindOnDelivery,
-    InstalmentKind.afterInstallation => salesKindAfterInstallation,
-    InstalmentKind.onBill => salesKindOnBill,
+  String chequeStatus(ChequeStatus status) => switch (status) {
+    ChequeStatus.pending => salesChequePending,
+    ChequeStatus.cleared => salesChequeCleared,
+    ChequeStatus.bounced => salesChequeBounced,
   };
 
   String ordinal(int n) => switch (n) {
@@ -100,11 +79,15 @@ extension SalesLabels on AppLocalizations {
     _ => salesOrdinalN('$n'),
   };
 
-  /// `2nd · on delivery`
-  String instalment(Instalment instalment) =>
-      '${ordinal(instalment.seq)} · ${instalmentKind(instalment.kind)}';
+  /// `2nd instalment`, or the server's name for a receivable not split from
+  /// a bill.
+  String instalment(Instalment instalment) => switch (instalment.seq) {
+    final seq? => salesInstalmentOf(ordinal(seq)),
+    null => instalment.label,
+  };
 
   String agingBucket(AgingBucket bucket) => switch (bucket) {
+    AgingBucket.current => salesAgingCurrent,
     AgingBucket.upTo30 => salesAging0to30,
     AgingBucket.upTo60 => salesAging31to60,
     AgingBucket.upTo90 => salesAging61to90,
@@ -122,6 +105,8 @@ extension SalesLabels on AppLocalizations {
 
 SrTone quotationTone(QuotationStatus status) => switch (status) {
   QuotationStatus.draft => SrTone.neutral,
+  QuotationStatus.pendingApproval => SrTone.gold,
+  QuotationStatus.approved => SrTone.ok,
   QuotationStatus.sent => SrTone.accent,
   QuotationStatus.viewed => SrTone.warn,
   QuotationStatus.accepted => SrTone.ok,

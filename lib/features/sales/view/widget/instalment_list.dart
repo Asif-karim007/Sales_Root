@@ -6,8 +6,8 @@ import 'package:salesroot/features/sales/view/sales_labels.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// A payment schedule: each instalment with its date, amount and whether it
-/// is collected, due or overdue.
+/// What a bill is to be paid in: each instalment with its date, amount and
+/// whether it is collected, due or overdue.
 class InstalmentList extends StatelessWidget {
   const InstalmentList({super.key, required this.instalments});
 

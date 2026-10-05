@@ -69,17 +69,17 @@ class SalesTotalsLines extends StatelessWidget {
   const SalesTotalsLines({
     super.key,
     required this.totals,
-    required this.discountBps,
-    required this.vatBps,
+    this.discountBps,
     this.itemCount,
     this.collected,
   });
 
   final SalesTotals totals;
-  final int discountBps;
-  final int vatBps;
+
+  /// The overall discount rate, when the document keeps one.
+  final int? discountBps;
   final int? itemCount;
-  final int? collected;
+  final double? collected;
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +88,7 @@ class SalesTotalsLines extends StatelessWidget {
     final c = SrColors.of(context);
     final count = itemCount;
     final paid = collected;
+    final rate = discountBps;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -100,13 +101,13 @@ class SalesTotalsLines extends StatelessWidget {
         ),
         if (totals.discount > 0)
           AmountLine(
-            label: l10n.salesDiscountPercent(fmt.bps(discountBps)),
+            label: rate == null
+                ? l10n.salesDiscount
+                : l10n.salesDiscountPercent(fmt.bps(rate)),
             value: '− ${fmt.money(totals.discount)}',
           ),
-        AmountLine(
-          label: l10n.salesVatPercent(fmt.bps(vatBps)),
-          value: fmt.money(totals.vat),
-        ),
+        if (totals.vat > 0)
+          AmountLine(label: l10n.salesVat, value: fmt.money(totals.vat)),
         AmountLine(
           label: l10n.salesTotal,
           value: fmt.money(totals.total),

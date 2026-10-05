@@ -1,0 +1,61 @@
+{
+ "order": {
+  "id": "01a10101-869f-7916-b997-939393716475",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "number": "SO-2026-00001",
+  "leadId": null,
+  "quoteId": null,
+  "companyId": "01a10101-865d-7e81-90c1-c811923c2adf",
+  "contactId": null,
+  "ownerMembershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+  "status": "delivered",
+  "subtotal": 100000.0,
+  "discountAmt": 0.0,
+  "taxAmt": 0.0,
+  "total": 100000.0,
+  "deliveryDate": "2026-09-23T00:00:00",
+  "deliveryAddress": null,
+  "custom": "{}",
+  "note": null,
+  "createdBy": "01a10101-8644-75d5-813c-211d42aa3d68",
+  "createdAt": "2026-10-03T09:03:59.542506Z",
+  "updatedAt": "2026-10-03T09:03:59.542506Z",
+  "deletedAt": null,
+  "version": 40,
+  "companyName": "Green Agro Ltd.",
+  "contactName": null,
+  "ownerName": "Rafi Ahmed",
+  "invoicedAmt": 100000.0
+ },
+ "lines": [
+  {
+   "id": "01a10101-86a5-7eec-b7cf-43766ce23180",
+   "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+   "orderId": "01a10101-869f-7916-b997-939393716475",
+   "productId": "01a10101-868f-7152-8a02-e5b178328511",
+   "description": "Detergent 1kg (carton of 12)",
+   "qty": 47.619,
+   "unit": "ctn",
+   "unitPrice": 2100.0,
+   "discountPct": 0.0,
+   "taxPct": 0.0,
+   "lineTotal": 100000.0,
+   "deliveredQty": 47.619,
+   "sortOrder": 0,
+   "updatedAt": "2026-10-03T09:03:59.542506Z",
+   "deletedAt": null,
+   "version": 41
+  }
+ ],
+ "invoices": [
+  {
+   "id": "01a10101-86a8-78f8-a541-3fcb7add305d",
+   "number": "INV-2026-00001",
+   "status": "partial",
+   "total": 100000.0,
+   "paidAmt": 50000.0,
+   "dueDate": "2026-10-23T00:00:00",
+   "issueDate": "2026-09-23T00:00:00"
+  }
+ ]
+}

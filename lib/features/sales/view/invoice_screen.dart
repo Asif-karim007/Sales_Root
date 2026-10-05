@@ -5,80 +5,30 @@ import 'package:go_router/go_router.dart';
 import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/format/app_format.dart';
-import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/sales/models/sales_order.dart';
-import 'package:salesroot/features/sales/models/sales_party.dart';
 import 'package:salesroot/features/sales/pdf/sales_pdf.dart';
 import 'package:salesroot/features/sales/providers/order_providers.dart';
 import 'package:salesroot/features/sales/providers/quotation_providers.dart';
-import 'package:salesroot/features/sales/view/sales_labels.dart';
 import 'package:salesroot/features/sales/view/sales_links.dart';
 import 'package:salesroot/features/sales/view/widget/amount_lines.dart';
 import 'package:salesroot/features/sales/view/widget/button_row.dart';
 import 'package:salesroot/features/sales/view/widget/instalment_list.dart';
 import 'package:salesroot/features/sales/view/widget/pdf_sheet.dart';
+import 'package:salesroot/features/sales/view/widget/reason_sheet.dart';
 import 'package:salesroot/features/sales/view/widget/sales_failure.dart';
+import 'package:salesroot/features/sales/view/widget/sales_rows.dart';
+import 'package:salesroot/features/sales/view/widget/split_sheet.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #59: the bill, what is collected and due, sending it, and recording a
-/// payment against it.
+/// #59: the bill, what is collected and due, its instalments, sending it,
+/// and recording a payment against it.
 class InvoiceScreen extends ConsumerWidget {
   const InvoiceScreen({super.key, required this.id});
 
-  final int id;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final value = ref.watch(invoiceProvider(id));
-    final invoice = value.value;
-    final seller = ref.watch(sellerProfileProvider).value;
-    final collect = ref.watch(moduleAccessProvider(AppModule.collection));
-    return SrScaffold(
-      appBar: SrAppBar(
-        title: _title(l10n, seller),
-        actions: [
-          if (invoice != null)
-            SrIconButton(
-              icon: Icons.picture_as_pdf_outlined,
-              tooltip: l10n.salesPreviewPdf,
-              onTap: () => _pdf(context, ref, invoice),
-            ),
-        ],
-      ),
-      body: SrAsyncView<Invoice>(
-        value: value,
-        onRetry: () => ref.invalidate(invoiceProvider(id)),
-        onUpgrade: upgradeFor(context, value.error),
-        loading: (_) => const SrSkeletonList(count: 2, cards: true),
-        data: (context, invoice) => _InvoiceBody(
-          invoice: invoice,
-          seller: seller,
-          onPdf: () => _pdf(context, ref, invoice),
-          onShare: (text) => _share(context, ref, invoice, text),
-        ),
-      ),
-      footer: invoice != null && collect.canAdd && invoice.due > 0
-          ? SrButton(
-              label: l10n.salesRecordCollection,
-              icon: Icons.payments_outlined,
-              expand: true,
-              onPressed: () => context.push(
-                collectionNewFor(
-                  customerId: invoice.companyId,
-                  invoiceId: invoice.id,
-                ),
-              ),
-            )
-          : null,
-    );
-  }
-
-  static String _title(AppLocalizations l10n, SellerProfile? seller) =>
-      seller?.taxInvoices ?? false ? l10n.salesTaxInvoice : l10n.salesBill;
+  final String id;
 
   Future<void> _pdf(BuildContext context, WidgetRef ref, Invoice i) async {
     final l10n = context.l10n;
@@ -115,18 +65,101 @@ class InvoiceScreen extends ConsumerWidget {
       if (context.mounted) showSrError(context, l10n.salesPdfFailed);
     }
   }
+
+  Future<void> _cancel(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
+    final reason = await askCancelReason(
+      context,
+      title: l10n.salesCancelBill,
+      message: l10n.salesCancelBillBody,
+    );
+    if (reason == null) return;
+    await ref.read(invoiceActionsProvider(id).notifier).cancel(reason);
+  }
+
+  void _outcome(BuildContext context, AsyncValue<InvoiceChange?> next) {
+    final l10n = context.l10n;
+    switch (next) {
+      case AsyncData(value: InvoiceChange.split):
+        showSrSuccess(context, l10n.salesScheduleSaved);
+      case AsyncData(value: InvoiceChange.cancelled):
+        showSrSuccess(context, l10n.salesBillCancelled);
+      case AsyncError(:final error):
+        showSalesFailure(context, error);
+      default:
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final value = ref.watch(invoiceProvider(id));
+    final invoice = value.value;
+    final collect = ref.watch(moduleAccessProvider(AppModule.collection));
+    final bills = ref.watch(moduleAccessProvider(AppModule.invoice));
+    ref.listen(
+      invoiceActionsProvider(id),
+      (_, next) => _outcome(context, next),
+    );
+    final canCancel =
+        invoice != null &&
+        bills.canDelete &&
+        invoice.status != InvoiceStatus.cancelled;
+    return SrScaffold(
+      appBar: SrAppBar(
+        title: l10n.salesBill,
+        actions: [
+          if (invoice != null)
+            SrIconButton(
+              icon: Icons.picture_as_pdf_outlined,
+              tooltip: l10n.salesPreviewPdf,
+              onTap: () => _pdf(context, ref, invoice),
+            ),
+          if (canCancel)
+            SrIconButton(
+              icon: Icons.block_rounded,
+              tooltip: l10n.salesCancelBill,
+              onTap: () => _cancel(context, ref),
+            ),
+        ],
+      ),
+      body: SrAsyncView<Invoice>(
+        value: value,
+        onRetry: () => ref.invalidate(invoiceProvider(id)),
+        onUpgrade: upgradeFor(context, value.error),
+        loading: (_) => const SrSkeletonList(count: 2, cards: true),
+        data: (context, invoice) => _InvoiceBody(
+          invoice: invoice,
+          onPdf: () => _pdf(context, ref, invoice),
+          onShare: (text) => _share(context, ref, invoice, text),
+        ),
+      ),
+      footer: invoice != null && collect.canAdd && invoice.due > 0
+          ? SrButton(
+              label: l10n.salesRecordCollection,
+              icon: Icons.payments_outlined,
+              expand: true,
+              onPressed: () => context.push(
+                collectionNewFor(
+                  customerId: invoice.companyId,
+                  invoiceId: invoice.id,
+                ),
+              ),
+            )
+          : null,
+    );
+  }
 }
 
 class _InvoiceBody extends ConsumerWidget {
   const _InvoiceBody({
     required this.invoice,
-    required this.seller,
     required this.onPdf,
     required this.onShare,
   });
 
   final Invoice invoice;
-  final SellerProfile? seller;
   final VoidCallback onPdf;
   final ValueChanged<String> onShare;
 
@@ -135,6 +168,8 @@ class _InvoiceBody extends ConsumerWidget {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final i = invoice;
+    final canSplit =
+        i.due > 0 && ref.watch(moduleAccessProvider(AppModule.invoice)).canEdit;
     final reminder = l10n.salesBillReminderText(
       i.companyName,
       i.number,
@@ -150,19 +185,7 @@ class _InvoiceBody extends ConsumerWidget {
           32,
         ),
         children: [
-          _InvoiceCard(invoice: i, taxInvoice: seller?.taxInvoices ?? false),
-          if (!(seller?.taxInvoices ?? true)) ...[
-            const SizedBox(height: 12),
-            SrNote(
-              message: l10n.salesBillNote,
-              action: SrButton(
-                label: l10n.salesSettings,
-                size: SrButtonSize.sm,
-                variant: SrButtonVariant.ghost,
-                onPressed: () => context.push(Routes.settings),
-              ),
-            ),
-          ],
+          _InvoiceCard(invoice: i),
           const SizedBox(height: 18),
           SrSectionHeader(title: l10n.salesSend),
           const SizedBox(height: 8),
@@ -191,11 +214,16 @@ class _InvoiceBody extends ConsumerWidget {
               ),
             ],
           ),
-          if (i.instalments.isNotEmpty) ...[
+          if (i.instalments.isNotEmpty || canSplit) ...[
             const SizedBox(height: 18),
-            SrSectionHeader(title: l10n.salesInstalments),
+            SrSectionHeader(
+              title: l10n.salesInstalments,
+              actionLabel: canSplit ? l10n.salesSplitInstalments : null,
+              onAction: () => showSplitSheet(context, i),
+            ),
             const SizedBox(height: 8),
-            InstalmentList(instalments: i.instalments),
+            if (i.instalments.isNotEmpty)
+              InstalmentList(instalments: i.instalments),
           ],
         ],
       ),
@@ -204,10 +232,9 @@ class _InvoiceBody extends ConsumerWidget {
 }
 
 class _InvoiceCard extends StatelessWidget {
-  const _InvoiceCard({required this.invoice, required this.taxInvoice});
+  const _InvoiceCard({required this.invoice});
 
   final Invoice invoice;
-  final bool taxInvoice;
 
   @override
   Widget build(BuildContext context) {
@@ -216,6 +243,7 @@ class _InvoiceCard extends StatelessWidget {
     final fmt = context.fmt;
     final i = invoice;
     final totals = i.totals;
+    final order = i.orderNumber;
     return SrCard(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
       child: Column(
@@ -229,13 +257,13 @@ class _InvoiceCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      taxInvoice
-                          ? l10n.salesTaxInvoiceNumber(i.number)
-                          : l10n.salesBillNumber(i.number),
+                      l10n.salesBillNumber(i.number),
                       style: AppText.rowTitle(c.ink),
                     ),
                     Text(
-                      l10n.salesCompanyOrder(i.companyName, i.orderNumber),
+                      order == null
+                          ? i.companyName
+                          : l10n.salesCompanyOrder(i.companyName, order),
                       style: AppText.meta(c.ink2),
                     ),
                     Text(fmt.date(i.issuedAt), style: AppText.meta(c.ink3)),
@@ -250,12 +278,7 @@ class _InvoiceCard extends StatelessWidget {
                     style: AppText.metric(c.ink, size: 18),
                   ),
                   const SizedBox(height: 4),
-                  i.due > 0
-                      ? SrTag(
-                          l10n.salesDueAmountLabel(fmt.money(i.due)),
-                          tone: SrTone.err,
-                        )
-                      : SrTag(l10n.salesPaidInFull, tone: SrTone.ok),
+                  InvoiceTag(status: i.status, due: i.due),
                 ],
               ),
             ],
@@ -267,13 +290,11 @@ class _InvoiceCard extends StatelessWidget {
           ),
           if (totals.discount > 0)
             AmountLine(
-              label: l10n.salesDiscountPercent(fmt.bps(i.discountBps)),
+              label: l10n.salesDiscount,
               value: '− ${fmt.money(totals.discount)}',
             ),
-          AmountLine(
-            label: l10n.salesVatPercent(fmt.bps(i.vatBps)),
-            value: fmt.money(totals.vat),
-          ),
+          if (totals.vat > 0)
+            AmountLine(label: l10n.salesVat, value: fmt.money(totals.vat)),
           AmountLine(
             label: l10n.salesCollected,
             value: '− ${fmt.money(i.paid)}',

@@ -9,6 +9,47 @@ part of 'sales_repositories.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(salesApi)
+final salesApiProvider = SalesApiProvider._();
+
+final class SalesApiProvider
+    extends $FunctionalProvider<SalesApi, SalesApi, SalesApi>
+    with $Provider<SalesApi> {
+  SalesApiProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'salesApiProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$salesApiHash();
+
+  @$internal
+  @override
+  $ProviderElement<SalesApi> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  SalesApi create(Ref ref) {
+    return salesApi(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SalesApi value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SalesApi>(value),
+    );
+  }
+}
+
+String _$salesApiHash() => r'd05368beab1f6a7e6678bb9cbb72acc841df504e';
+
 @ProviderFor(productRepository)
 final productRepositoryProvider = ProductRepositoryProvider._();
 
@@ -54,7 +95,7 @@ final class ProductRepositoryProvider
   }
 }
 
-String _$productRepositoryHash() => r'a779b8494e4e0285c23707f0066d2454f24e64f5';
+String _$productRepositoryHash() => r'eff19fdfb5b566a2ddef5ac9aa26185203e544fd';
 
 @ProviderFor(quotationRepository)
 final quotationRepositoryProvider = QuotationRepositoryProvider._();
@@ -102,7 +143,7 @@ final class QuotationRepositoryProvider
 }
 
 String _$quotationRepositoryHash() =>
-    r'8818302727bf3e765174bb0a026299378b8c7959';
+    r'8ed6e9ea34b3d7310cc2466eed0a2776c434ab65';
 
 @ProviderFor(orderRepository)
 final orderRepositoryProvider = OrderRepositoryProvider._();
@@ -144,7 +185,7 @@ final class OrderRepositoryProvider
   }
 }
 
-String _$orderRepositoryHash() => r'8953f1e1023392a34d8c7c7a844e86eabb925435';
+String _$orderRepositoryHash() => r'aaf64cd5f8a0c1ba04b09ce3b0277c84e492bb9a';
 
 @ProviderFor(collectionRepository)
 final collectionRepositoryProvider = CollectionRepositoryProvider._();
@@ -192,4 +233,4 @@ final class CollectionRepositoryProvider
 }
 
 String _$collectionRepositoryHash() =>
-    r'2fcb4eef7143027dd85f07d428bd09f3836e4fd9';
+    r'5de6a10dad012d3576aa576bba9467882774e255';

@@ -7,16 +7,19 @@ abstract interface class OrderRepository {
 
   Future<PageResult<SalesOrder>> list(OrderQuery query);
 
-  Future<SalesOrder> get(int id);
+  Future<SalesOrder> get(String id);
 
-  /// Replaces the payment schedule; it has to add up to the order total.
-  Future<SalesOrder> updateSchedule(int id, List<Instalment> instalments);
+  Future<SalesOrder> logDelivery(String id, DeliveryInput input);
 
-  Future<SalesOrder> logDelivery(int id, DeliveryInput input);
-
-  Future<Invoice> createInvoice(int orderId);
+  /// Bills the order's whole value.
+  Future<Invoice> createInvoice(String orderId);
 
   Future<PageResult<Invoice>> invoices(int page);
 
-  Future<Invoice> invoice(int id);
+  Future<Invoice> invoice(String id);
+
+  /// Splits what is left on the bill into equal instalments.
+  Future<Invoice> splitInvoice(String id, InstalmentPlan plan);
+
+  Future<Invoice> cancelInvoice(String id, String reason);
 }

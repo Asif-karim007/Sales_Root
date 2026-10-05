@@ -1,131 +1,122 @@
+import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
-import 'package:salesroot/features/sales/models/instalment.dart';
 
-/// How old an unpaid bill is, in days since it was issued.
+/// How long money has been owed: not yet due, or days past the due date.
 enum AgingBucket {
-  upTo30('0-30'),
-  upTo60('31-60'),
-  upTo90('61-90'),
-  over90('90+');
+  current('current'),
+  upTo30('b130'),
+  upTo60('b3160'),
+  upTo90('b6190'),
+  over90('b90Plus');
 
   const AgingBucket(this.wire);
 
+  /// The key of the bucket in `GET dues/summary`.
   final String wire;
-
-  static AgingBucket of(int days) {
-    if (days <= 30) return upTo30;
-    if (days <= 60) return upTo60;
-    if (days <= 90) return upTo90;
-    return over90;
-  }
 }
 
-/// Sums [dues] (age in days, amount due) into the four buckets.
-Map<AgingBucket, int> agingOf(Iterable<(int, int)> dues) {
-  final buckets = {for (final bucket in AgingBucket.values) bucket: 0};
-  for (final (days, amount) in dues) {
-    final bucket = AgingBucket.of(days);
-    buckets[bucket] = (buckets[bucket] ?? 0) + amount;
-  }
-  return buckets;
+enum OutstandingFilter {
+  all(null),
+  overdue('overdue');
+
+  const OutstandingFilter(this.bucket);
+
+  /// The `bucket` of `GET dues`.
+  final String? bucket;
 }
 
-enum OutstandingFilter { all, overdue, mine, byCustomer }
+class OutstandingQuery {
+  const OutstandingQuery({
+    this.filter = OutstandingFilter.all,
+    this.search = '',
+    this.page = 1,
+  });
 
+  final OutstandingFilter filter;
+  final String search;
+  final int page;
+
+  OutstandingQuery atPage(int page) =>
+      OutstandingQuery(filter: filter, search: search, page: page);
+
+  Map<String, dynamic> toQuery() => {
+    'bucket': ?filter.bucket,
+    if (search.trim().isNotEmpty) 'q': search.trim(),
+    ...pageQuery(page),
+  };
+}
+
+/// `GET dues/summary`.
 class OutstandingSummary {
   const OutstandingSummary({
     required this.total,
-    required this.overdue,
     required this.customerCount,
     required this.buckets,
+    required this.collectedToday,
+    required this.collectedThisMonth,
   });
 
-  final int total;
-  final int overdue;
+  final double total;
   final int customerCount;
-  final Map<AgingBucket, int> buckets;
+  final Map<AgingBucket, double> buckets;
+  final double collectedToday;
+  final double collectedThisMonth;
 
-  factory OutstandingSummary.fromJson(Map<String, dynamic> json) {
-    final raw = json['Aging'];
-    return OutstandingSummary(
-      total: jsonInt(json['Total']) ?? 0,
-      overdue: jsonInt(json['Overdue']) ?? 0,
-      customerCount: jsonInt(json['CustomerCount']) ?? 0,
-      buckets: {
-        for (final bucket in AgingBucket.values)
-          bucket: raw is Map ? jsonInt(raw[bucket.wire]) ?? 0 : 0,
-      },
-    );
-  }
+  /// Everything past its due date.
+  double get overdue => total - (buckets[AgingBucket.current] ?? 0);
+
+  factory OutstandingSummary.fromJson(Map<String, dynamic> json) =>
+      OutstandingSummary(
+        total: jsonDouble(json['total']) ?? 0,
+        customerCount: jsonInt(json['companies']) ?? 0,
+        buckets: {
+          for (final bucket in AgingBucket.values)
+            bucket: jsonDouble(json[bucket.wire]) ?? 0,
+        },
+        collectedToday: jsonDouble(json['collectedToday']) ?? 0,
+        collectedThisMonth: jsonDouble(json['collectedMonth']) ?? 0,
+      );
 }
 
-/// One customer's unpaid bills.
+/// One customer's unpaid dues: a row of `GET dues`.
 class CustomerOutstanding {
   const CustomerOutstanding({
     required this.companyId,
     required this.companyName,
-    required this.bills,
+    required this.items,
     required this.oldestDays,
     required this.due,
     required this.overdue,
-    this.nextDueDate,
-    this.nextOrderNumber,
-    this.instalmentsLeft = 0,
+    this.oldestDueDate,
+    this.area,
   });
 
-  final int companyId;
+  final String companyId;
   final String companyName;
-  final int bills;
+
+  /// How many receivables are open.
+  final int items;
+
+  /// Days the oldest due is late; 0 when nothing is late yet.
   final int oldestDays;
-  final int due;
-  final bool overdue;
-  final DateTime? nextDueDate;
-  final String? nextOrderNumber;
-  final int instalmentsLeft;
+  final double due;
+  final double overdue;
+  final DateTime? oldestDueDate;
+  final String? area;
+
+  bool get isOverdue => overdue > 0;
 
   factory CustomerOutstanding.fromJson(Map<String, dynamic> json) =>
       CustomerOutstanding(
-        companyId: jsonInt(json['CompanyId']) ?? 0,
-        companyName: json['CompanyName'] as String? ?? '',
-        bills: jsonInt(json['Bills']) ?? 0,
-        oldestDays: jsonInt(json['OldestDays']) ?? 0,
-        due: jsonInt(json['Due']) ?? 0,
-        overdue: jsonBool(json['Overdue']),
-        nextDueDate: jsonDate(json['NextDueDate']),
-        nextOrderNumber: json['NextOrderNumber'] as String?,
-        instalmentsLeft: jsonInt(json['InstalmentsLeft']) ?? 0,
+        companyId: jsonId(json['companyId']) ?? '',
+        companyName: json['companyName'] as String? ?? '',
+        items: jsonInt(json['items']) ?? 0,
+        oldestDays: jsonInt(json['maxAgeDays']) ?? 0,
+        due: jsonDouble(json['outstanding']) ?? 0,
+        overdue: jsonDouble(json['overdue']) ?? 0,
+        oldestDueDate: jsonDate(json['oldestDue']),
+        area: json['area'] as String?,
       );
-}
-
-/// An open instalment on the collection list, with its customer.
-class DueRow {
-  const DueRow({
-    required this.companyId,
-    required this.companyName,
-    required this.orderId,
-    required this.orderNumber,
-    required this.instalment,
-    this.invoiceId,
-    this.invoiceNumber,
-  });
-
-  final int companyId;
-  final String companyName;
-  final int orderId;
-  final String orderNumber;
-  final int? invoiceId;
-  final String? invoiceNumber;
-  final Instalment instalment;
-
-  factory DueRow.fromJson(Map<String, dynamic> json) => DueRow(
-    companyId: jsonInt(json['CompanyId']) ?? 0,
-    companyName: json['CompanyName'] as String? ?? '',
-    orderId: jsonInt(json['OrderId']) ?? 0,
-    orderNumber: json['OrderNumber'] as String? ?? '',
-    invoiceId: jsonInt(json['InvoiceId']),
-    invoiceNumber: json['InvoiceNumber'] as String?,
-    instalment: Instalment.fromJson(json),
-  );
 }
 
 /// The collection home figures.
@@ -140,36 +131,47 @@ class CollectionSummary {
     required this.receivable,
     required this.overdue,
     required this.dueToday,
-    required this.dueTodayCustomers,
   });
 
-  final int collectedToday;
-  final int collectedYesterday;
-  final int collectedThisMonth;
-  final int todayCash;
-  final int todayMobile;
-  final int todayBank;
-  final int receivable;
-  final int overdue;
-  final int dueToday;
-  final int dueTodayCustomers;
+  final double collectedToday;
+  final double collectedYesterday;
+  final double collectedThisMonth;
+  final double todayCash;
+  final double todayMobile;
+  final double todayBank;
+  final double receivable;
+  final double overdue;
+
+  /// What fell due today.
+  final double dueToday;
 
   /// Change on yesterday in percent; null when nothing came in yesterday.
   double? get changeOnYesterday => collectedYesterday == 0
       ? null
       : (collectedToday - collectedYesterday) * 100 / collectedYesterday;
 
-  factory CollectionSummary.fromJson(Map<String, dynamic> json) =>
-      CollectionSummary(
-        collectedToday: jsonInt(json['CollectedToday']) ?? 0,
-        collectedYesterday: jsonInt(json['CollectedYesterday']) ?? 0,
-        collectedThisMonth: jsonInt(json['CollectedThisMonth']) ?? 0,
-        todayCash: jsonInt(json['TodayCash']) ?? 0,
-        todayMobile: jsonInt(json['TodayMobile']) ?? 0,
-        todayBank: jsonInt(json['TodayBank']) ?? 0,
-        receivable: jsonInt(json['Receivable']) ?? 0,
-        overdue: jsonInt(json['Overdue']) ?? 0,
-        dueToday: jsonInt(json['DueToday']) ?? 0,
-        dueTodayCustomers: jsonInt(json['DueTodayCustomers']) ?? 0,
-      );
+  /// The dues [summary] and the last seven days of `GET reports/collection`
+  /// by day, today last.
+  factory CollectionSummary.from(
+    OutstandingSummary summary,
+    Map<String, dynamic> report,
+  ) {
+    final days = jsonList(report['trend'], (row) => row);
+    Map<String, dynamic> dayBefore(int back) =>
+        days.length > back ? days[days.length - 1 - back] : const {};
+    final today = dayBefore(0);
+    double of(Map<String, dynamic> day, String key) =>
+        jsonDouble(day[key]) ?? 0;
+    return CollectionSummary(
+      collectedToday: of(today, 'collected'),
+      collectedYesterday: of(dayBefore(1), 'collected'),
+      collectedThisMonth: summary.collectedThisMonth,
+      todayCash: of(today, 'cash'),
+      todayMobile: of(today, 'mobileBanking'),
+      todayBank: of(today, 'bank'),
+      receivable: summary.total,
+      overdue: summary.overdue,
+      dueToday: of(today, 'fellDue'),
+    );
+  }
 }

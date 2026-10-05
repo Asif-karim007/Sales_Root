@@ -84,8 +84,6 @@ class OutstandingScreen extends ConsumerWidget {
                   chips: [
                     SrChipItem(l10n.commonAll),
                     SrChipItem(l10n.salesOverdue, tone: SrTone.err),
-                    SrChipItem(l10n.salesMine),
-                    SrChipItem(l10n.salesByCustomer),
                   ],
                   index: filter.index,
                   onChanged: (i) => ref
@@ -122,13 +120,14 @@ class _AgingCard extends StatelessWidget {
     final c = SrColors.of(context);
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final largest = summary.buckets.values.fold<int>(
+    final largest = summary.buckets.values.fold<double>(
       0,
       (max, value) => value > max ? value : max,
     );
     final colors = {
-      AgingBucket.upTo30: c.accent,
-      AgingBucket.upTo60: c.warning,
+      AgingBucket.current: c.accent,
+      AgingBucket.upTo30: c.warning,
+      AgingBucket.upTo60: c.danger,
       AgingBucket.upTo90: c.danger,
       AgingBucket.over90: c.danger,
     };
@@ -146,11 +145,11 @@ class _AgingCard extends StatelessWidget {
           for (final bucket in AgingBucket.values) ...[
             SrBarRow(
               label: l10n.agingBucket(bucket),
-              value: (summary.buckets[bucket] ?? 0).toDouble(),
-              max: largest.toDouble(),
+              value: summary.buckets[bucket] ?? 0,
+              max: largest,
               valueLabel: fmt.moneyCompact(summary.buckets[bucket] ?? 0),
               color: colors[bucket],
-              labelWidth: 72,
+              labelWidth: 100,
               valueWidth: 84,
             ),
             const SizedBox(height: 10),

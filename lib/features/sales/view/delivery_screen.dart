@@ -1,37 +1,31 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 
 import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/routing/routes.dart';
-import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/sales/models/sales_order.dart';
 import 'package:salesroot/features/sales/providers/order_providers.dart';
 import 'package:salesroot/features/sales/view/sales_labels.dart';
 import 'package:salesroot/features/sales/view/widget/sales_failure.dart';
-import 'package:salesroot/features/sales/view/widget/signature_sheet.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #58: delivery or service completion: what went out, proof, and who took
-/// it; optionally makes the bill at once.
+/// #58: delivery or service completion: what went out and when; optionally
+/// makes the bill at once.
 class DeliveryScreen extends ConsumerStatefulWidget {
   const DeliveryScreen({super.key, required this.orderId});
 
-  final int orderId;
+  final String orderId;
 
   @override
   ConsumerState<DeliveryScreen> createState() => _DeliveryScreenState();
 }
 
 class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
-  final _receivedBy = TextEditingController();
   final _note = TextEditingController();
   bool _seeded = false;
 
@@ -39,7 +33,6 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
 
   @override
   void dispose() {
-    _receivedBy.dispose();
     _note.dispose();
     super.dispose();
   }
@@ -47,54 +40,24 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
   void _seed(DeliveryDraft draft) {
     if (_seeded) return;
     _seeded = true;
-    _receivedBy.text = draft.receivedBy;
     _note.text = draft.note;
   }
 
-  Future<void> _photo() async {
-    final l10n = context.l10n;
-    final source = await showSrSheet<ImageSource>(
-      context: context,
-      builder: (_) => SrOptionSheet<ImageSource>(
-        title: l10n.salesAddPhoto,
-        options: const [ImageSource.camera, ImageSource.gallery],
-        labelOf: (s) => s == ImageSource.camera
-            ? l10n.salesTakePhoto
-            : l10n.salesFromGallery,
-        isSelected: (_) => false,
-      ),
-    );
-    if (source == null) return;
-    final picked = await ImagePicker().pickImage(
-      source: source,
-      imageQuality: 70,
-      maxWidth: 1600,
-    );
-    if (picked == null) return;
-    ref.read(_provider.notifier).addPhoto(picked.path);
-  }
-
-  Future<void> _sign() async {
-    final png = await showSignatureSheet(context);
-    if (png != null) ref.read(_provider.notifier).setSignature(png);
-  }
-
-  Future<void> _pickTime(DateTime current) async {
+  Future<void> _pickDate(DateTime current) async {
     final picked = await showSrDatePicker(
       context: context,
       initial: current,
-      withTime: true,
       last: DateTime.now().add(const Duration(days: 1)),
     );
-    if (picked != null) ref.read(_provider.notifier).setDeliveredAt(picked);
+    if (picked != null) ref.read(_provider.notifier).setDeliveredOn(picked);
   }
 
   void _saved(SalesOrder order) {
     final l10n = context.l10n;
-    final invoiceId = order.invoiceId;
+    final bill = order.invoices.isEmpty ? null : order.invoices.first;
     showSrSuccess(context, l10n.salesDeliverySaved);
-    if (invoiceId != null && order.status == OrderStatus.invoiced) {
-      context.pushReplacement(Routes.invoiceFor(invoiceId));
+    if (bill != null && ref.read(_provider).value?.createBill == true) {
+      context.pushReplacement(Routes.invoiceFor(bill.id));
     } else {
       context.pop();
     }
@@ -127,11 +90,8 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
         data: (context, draft) => SrKeyboardDismiss(
           child: _DeliveryForm(
             draft: draft,
-            receivedBy: _receivedBy,
             note: _note,
-            onPhoto: _photo,
-            onSign: _sign,
-            onTime: () => _pickTime(draft.deliveredAt),
+            onDate: () => _pickDate(draft.deliveredOn),
           ),
         ),
       ),
@@ -152,19 +112,13 @@ class _DeliveryScreenState extends ConsumerState<DeliveryScreen> {
 class _DeliveryForm extends ConsumerWidget {
   const _DeliveryForm({
     required this.draft,
-    required this.receivedBy,
     required this.note,
-    required this.onPhoto,
-    required this.onSign,
-    required this.onTime,
+    required this.onDate,
   });
 
   final DeliveryDraft draft;
-  final TextEditingController receivedBy;
   final TextEditingController note;
-  final VoidCallback onPhoto;
-  final VoidCallback onSign;
-  final VoidCallback onTime;
+  final VoidCallback onDate;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -173,7 +127,7 @@ class _DeliveryForm extends ConsumerWidget {
     final form = ref.read(deliveryFormProvider(draft.order.id).notifier);
     final order = draft.order;
     final canBill =
-        order.invoiceId == null &&
+        order.invoices.isEmpty &&
         ref.watch(moduleAccessProvider(AppModule.invoice)).canAdd;
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -202,37 +156,21 @@ class _DeliveryForm extends ConsumerWidget {
             for (final line in order.lines)
               SrListRow(
                 leading: SrCheckbox(
-                  value: draft.delivered.contains(line.productId),
-                  onChanged: (_) => form.toggleItem(line.productId),
+                  value: draft.delivered.contains(line.key),
+                  onChanged: (_) => form.toggleItem(line.key),
                 ),
                 title: line.nameIn(bangla: fmt.isBangla),
                 subtitle: '${fmt.qty(line.qty)} ${l10n.unit(line.unit)}',
-                onTap: () => form.toggleItem(line.productId),
+                onTap: () => form.toggleItem(line.key),
               ),
           ],
         ),
         const SizedBox(height: 16),
         SrPickerField(
-          label: l10n.salesDateTime,
+          label: l10n.salesDeliveryDate,
           icon: Icons.event_outlined,
-          value:
-              '${fmt.date(draft.deliveredAt)} · ${fmt.time(draft.deliveredAt)}',
-          onTap: onTime,
-        ),
-        const SizedBox(height: 14),
-        SrFieldLabel(l10n.salesPhotoOrSignature),
-        const SizedBox(height: 6),
-        _ProofTiles(draft: draft, onPhoto: onPhoto, onSign: onSign),
-        if (draft.photos.isNotEmpty) ...[
-          const SizedBox(height: 10),
-          _PhotoStrip(photos: draft.photos, onRemove: form.removePhoto),
-        ],
-        const SizedBox(height: 14),
-        SrTextField(
-          controller: receivedBy,
-          label: l10n.salesReceivedBy,
-          textCapitalization: TextCapitalization.words,
-          onChanged: form.setReceivedBy,
+          value: fmt.date(draft.deliveredOn),
+          onTap: onDate,
         ),
         const SizedBox(height: 12),
         SrTextField(
@@ -255,138 +193,6 @@ class _DeliveryForm extends ConsumerWidget {
           ),
         ],
       ],
-    );
-  }
-}
-
-class _ProofTiles extends StatelessWidget {
-  const _ProofTiles({
-    required this.draft,
-    required this.onPhoto,
-    required this.onSign,
-  });
-
-  final DeliveryDraft draft;
-  final VoidCallback onPhoto;
-  final VoidCallback onSign;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final signature = draft.signature;
-    return Row(
-      children: [
-        Expanded(
-          child: _DashedTile(
-            onTap: onPhoto,
-            child: _TileLabel(
-              icon: Icons.photo_camera_outlined,
-              label: draft.photos.isEmpty
-                  ? l10n.salesTakePhoto
-                  : l10n.salesPhotoCount(
-                      context.fmt.number(draft.photos.length),
-                    ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _DashedTile(
-            onTap: onSign,
-            child: signature == null
-                ? _TileLabel(
-                    icon: Icons.draw_outlined,
-                    label: l10n.salesSignature,
-                  )
-                : Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Image.memory(signature, fit: BoxFit.contain),
-                  ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _DashedTile extends StatelessWidget {
-  const _DashedTile({required this.onTap, required this.child});
-
-  final VoidCallback onTap;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return SrCard(
-      tone: SrCardTone.dashed,
-      padding: EdgeInsets.zero,
-      onTap: onTap,
-      child: SizedBox(height: 90, child: Center(child: child)),
-    );
-  }
-}
-
-class _TileLabel extends StatelessWidget {
-  const _TileLabel({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = SrColors.of(context);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: c.accent),
-        const SizedBox(height: 6),
-        Text(label, style: AppText.caption(c.ink, size: 12)),
-      ],
-    );
-  }
-}
-
-class _PhotoStrip extends StatelessWidget {
-  const _PhotoStrip({required this.photos, required this.onRemove});
-
-  final List<String> photos;
-  final ValueChanged<String> onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return SizedBox(
-      height: 72,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: photos.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (context, i) => Stack(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(SrMetrics.radiusSmall),
-              child: Image.file(
-                File(photos[i]),
-                width: 72,
-                height: 72,
-                fit: BoxFit.cover,
-                cacheWidth: 216,
-              ),
-            ),
-            Positioned(
-              top: 0,
-              right: 0,
-              child: SrIconButton(
-                icon: Icons.close_rounded,
-                compact: true,
-                onDark: true,
-                tooltip: l10n.commonDelete,
-                onTap: () => onRemove(photos[i]),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
