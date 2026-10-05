@@ -670,11 +670,11 @@ class _Fields extends StatelessWidget {
 }
 
 final List<SrLookupOption> _people = [
-  SrLookupOption(id: 1, name: _s('p1'), subtitle: _s('owner')),
-  SrLookupOption(id: 2, name: _s('p2'), subtitle: _s('lead')),
-  SrLookupOption(id: 3, name: _s('p3'), subtitle: _s('member')),
-  SrLookupOption(id: 4, name: _s('p4'), subtitle: _s('member')),
-  SrLookupOption(id: 5, name: _s('p5'), subtitle: _s('member')),
+  SrLookupOption(id: '1', name: _s('p1'), subtitle: _s('owner')),
+  SrLookupOption(id: '2', name: _s('p2'), subtitle: _s('lead')),
+  SrLookupOption(id: '3', name: _s('p3'), subtitle: _s('member')),
+  SrLookupOption(id: '4', name: _s('p4'), subtitle: _s('member')),
+  SrLookupOption(id: '5', name: _s('p5'), subtitle: _s('member')),
 ];
 
 class _Pickers extends StatefulWidget {
@@ -685,8 +685,8 @@ class _Pickers extends StatefulWidget {
 }
 
 class _PickersState extends State<_Pickers> {
-  int? _single = 2;
-  List<int> _multi = const [1, 3];
+  String? _single = '2';
+  List<String> _multi = const ['1', '3'];
 
   Future<List<String>> _search(String term, int page) async {
     await Future<void>.delayed(const Duration(milliseconds: 400));

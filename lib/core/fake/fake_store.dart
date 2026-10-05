@@ -81,11 +81,10 @@ Map<String, dynamic> fakePage(
       ? const <Map<String, dynamic>>[]
       : rows.sublist(start, (start + pageSize).clamp(0, rows.length));
   return {
-    'Items': [for (final row in items) Map<String, dynamic>.of(row)],
-    'Page': page,
-    'PageSize': pageSize,
-    'TotalCount': rows.length,
-    'TotalPages': (rows.length / pageSize).ceil(),
+    'items': [for (final row in items) Map<String, dynamic>.of(row)],
+    'total': rows.length,
+    'offset': start,
+    'limit': pageSize,
     ...extra,
   };
 }

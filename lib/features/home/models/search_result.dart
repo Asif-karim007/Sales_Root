@@ -92,8 +92,8 @@ class SearchGroup {
   factory SearchGroup.fromJson(SearchKind kind, Map<String, dynamic> json) =>
       SearchGroup(
         kind: kind,
-        items: jsonList(json['Items'], (row) => SearchHit.fromJson(kind, row)),
-        totalCount: jsonInt(json['TotalCount']) ?? 0,
+        items: jsonList(json['items'], (row) => SearchHit.fromJson(kind, row)),
+        totalCount: jsonInt(json['total']) ?? 0,
       );
 }
 

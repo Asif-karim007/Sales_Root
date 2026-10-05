@@ -13,7 +13,7 @@ class SrLookupOption {
     this.imageUrl,
   });
 
-  final int id;
+  final String id;
   final String name;
   final String? subtitle;
   final String? imageUrl;
@@ -36,8 +36,8 @@ class SrLookupPicker extends StatelessWidget {
 
   final String title;
   final List<SrLookupOption> options;
-  final int? selected;
-  final ValueChanged<int> onChanged;
+  final String? selected;
+  final ValueChanged<String> onChanged;
   final String? label;
   final String? placeholder;
   final IconData? icon;
@@ -93,8 +93,8 @@ class SrLookupMultiPicker extends StatelessWidget {
 
   final String title;
   final List<SrLookupOption> options;
-  final List<int> selected;
-  final ValueChanged<List<int>> onChanged;
+  final List<String> selected;
+  final ValueChanged<List<String>> onChanged;
   final String? label;
   final String? placeholder;
   final IconData? icon;

@@ -104,8 +104,6 @@ class LeadDetailScreen extends ConsumerWidget {
         context.push(Routes.leadEditFor(lead.id));
       case _DetailAction.log:
         context.push(Routes.leadActivityFor(lead.id));
-      case _DetailAction.discuss:
-        context.push('${Routes.chats}?leadId=${lead.id}');
       case _DetailAction.delete:
         final actions = ref.read(leadActionsProvider.notifier);
         if (await confirmLeadDelete(context, lead)) {
@@ -115,7 +113,7 @@ class LeadDetailScreen extends ConsumerWidget {
   }
 }
 
-enum _DetailAction { links, edit, log, discuss, delete }
+enum _DetailAction { links, edit, log, delete }
 
 class _DetailMenu extends ConsumerWidget {
   const _DetailMenu({required this.lead});
@@ -135,9 +133,12 @@ class _DetailMenu extends ConsumerWidget {
         (_DetailAction.log, Icons.edit_note_rounded, l10n.leadsLogActivity),
       ],
       if (chat.canView)
-        (_DetailAction.discuss, Icons.forum_outlined, l10n.leadsDiscuss),
-      if (access.canDelete)
-        (_DetailAction.delete, Icons.delete_outline_rounded, l10n.commonDelete),
+        if (access.canDelete)
+          (
+            _DetailAction.delete,
+            Icons.delete_outline_rounded,
+            l10n.commonDelete,
+          ),
     ];
     return SrSheet(
       title: lead.leadName,
