@@ -98,7 +98,7 @@ class NoticeRecipient {
     this.remindedAt,
   });
 
-  final int memberId;
+  final String memberId;
   final String name;
   final String nameBn;
   final DateTime? readAt;
@@ -114,7 +114,7 @@ class NoticeRecipient {
 
   factory NoticeRecipient.fromJson(Map<String, dynamic> json) =>
       NoticeRecipient(
-        memberId: jsonInt(json['MemberId']) ?? 0,
+        memberId: jsonId(json['MemberId']) ?? '',
         name: json['Name'] as String? ?? '',
         nameBn: json['NameBn'] as String? ?? '',
         readAt: jsonDate(json['ReadAt']),
@@ -149,10 +149,10 @@ class Notice {
     this.canDelete = false,
   });
 
-  final int id;
+  final String id;
   final String title;
   final String body;
-  final int? authorId;
+  final String? authorId;
   final String authorName;
   final String authorNameBn;
   final AuthorRole authorRole;
@@ -182,10 +182,10 @@ class Notice {
       bangla && authorNameBn.isNotEmpty ? authorNameBn : authorName;
 
   factory Notice.fromJson(Map<String, dynamic> json) => Notice(
-    id: jsonInt(json['Id']) ?? 0,
+    id: jsonId(json['Id']) ?? '',
     title: json['Title'] as String? ?? '',
     body: json['Body'] as String? ?? '',
-    authorId: jsonInt(json['AuthorId']),
+    authorId: jsonId(json['AuthorId']),
     authorName: json['AuthorName'] as String? ?? '',
     authorNameBn: json['AuthorNameBn'] as String? ?? '',
     authorRole: AuthorRole.fromWire(json['AuthorRole'] as String?),

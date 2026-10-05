@@ -22,7 +22,7 @@ class RuleDecision {
   final DistributionRule? rule;
 
   /// Who gets the lead; null leaves it in the shared queue.
-  final int? memberId;
+  final String? memberId;
 
   /// The rule's next round-robin position, when it moved.
   final int? cursor;
@@ -37,7 +37,7 @@ abstract final class DistributionEngine {
     required bool enabled,
     required List<DistributionRule> rules,
     required RuleSubject subject,
-    required Map<int, GrowthMember> members,
+    required Map<String, GrowthMember> members,
     required DateTime at,
   }) {
     if (!enabled) return const RuleDecision();
@@ -72,7 +72,7 @@ abstract final class DistributionEngine {
 
   static RuleDecision _assign(
     DistributionRule rule,
-    Map<int, GrowthMember> members,
+    Map<String, GrowthMember> members,
   ) {
     if (rule.mode == AssignMode.queue) return RuleDecision(rule: rule);
     final ids = rule.memberIds;
@@ -92,7 +92,7 @@ abstract final class DistributionEngine {
         return RuleDecision(rule: rule, memberId: eligible.first.id);
       case AssignMode.byLoad:
         final lightest = eligible.reduce(
-          (a, b) => b.openLeads < a.openLeads ? b : a,
+          (a, b) => (b.openLeads ?? 0) < (a.openLeads ?? 0) ? b : a,
         );
         return RuleDecision(rule: rule, memberId: lightest.id);
       case AssignMode.roundRobin:

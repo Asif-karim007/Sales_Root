@@ -8,15 +8,16 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
-import 'package:salesroot/features/growth/models/inbox_lead.dart';
+import 'package:salesroot/features/growth/models/conversation.dart';
 import 'package:salesroot/features/growth/providers/inbox_providers.dart';
+import 'package:salesroot/features/growth/view/widget/conversation_box_chips.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
 import 'package:salesroot/features/growth/view/widget/growth_labels.dart';
 import 'package:salesroot/features/growth/view/widget/inbox_actions.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #136 New leads from every channel, with the SLA timer.
+/// #136 New enquiries from every channel, waiting to be taken.
 class NewLeadsScreen extends ConsumerWidget {
   const NewLeadsScreen({super.key});
 
@@ -24,14 +25,10 @@ class NewLeadsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final list = ref.watch(inboxListProvider);
-    final average = list.value?.facets['Stats']?['AvgFirstResponseMinutes'];
     final rules = ref.watch(moduleAccessProvider(AppModule.distribution));
     return SrScaffold(
       appBar: SrAppBar(
         title: l10n.growthInboxTitle,
-        subtitle: average == null || average == 0
-            ? null
-            : l10n.growthInboxAverage(context.fmt.number(average)),
         actions: [
           const GrowthLanguageAction(),
           if (rules.visible)
@@ -45,25 +42,19 @@ class NewLeadsScreen extends ConsumerWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 12),
-            child: _FilterChips(),
-          ),
+          const Padding(padding: EdgeInsets.only(top: 12), child: _BoxChips()),
           Expanded(
             child: SrAsyncView(
               value: list,
               onRetry: () => ref.invalidate(inboxListProvider),
               onUpgrade: () => context.push(Routes.planUsage),
-              data: (context, paged) => GrowthClock(
-                builder: (context) => GrowthPagedList<InboxLead>(
-                  paged: paged,
-                  onLoadMore: () =>
-                      ref.read(inboxListProvider.notifier).loadMore(),
-                  onRefresh: () =>
-                      ref.read(inboxListProvider.notifier).refresh(),
-                  empty: const _Empty(),
-                  row: (lead) => _InboxRow(lead: lead),
-                ),
+              data: (context, paged) => GrowthPagedList<Conversation>(
+                paged: paged,
+                onLoadMore: () =>
+                    ref.read(inboxListProvider.notifier).loadMore(),
+                onRefresh: () => ref.read(inboxListProvider.notifier).refresh(),
+                empty: const _Empty(),
+                row: (conversation) => _InboxRow(conversation: conversation),
               ),
             ),
           ),
@@ -73,119 +64,78 @@ class NewLeadsScreen extends ConsumerWidget {
   }
 }
 
-class _FilterChips extends ConsumerWidget {
-  const _FilterChips();
+class _BoxChips extends ConsumerWidget {
+  const _BoxChips();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final filter = ref.watch(inboxFilterProvider);
-    final counts = ref.watch(
-      inboxListProvider.select((list) => list.value?.facets['Counts']),
-    );
-    final filters = InboxFilter.values;
-    return SrChipRow(
-      index: filters.indexOf(filter),
-      onChanged: (i) => ref.read(inboxFilterProvider.notifier).set(filters[i]),
-      chips: [
-        for (final f in filters)
-          SrChipItem(
-            switch (f) {
-              InboxFilter.all => l10n.commonAll,
-              InboxFilter.unassigned => l10n.growthInboxUnassigned,
-              InboxFilter.mine => l10n.growthInboxMine,
-              InboxFilter.late => l10n.growthInboxLateFilter,
-              InboxFilter.facebook => l10n.growthSourceFacebook,
-              InboxFilter.website => l10n.growthSourceWebsite,
-              InboxFilter.whatsapp => l10n.growthSourceWhatsapp,
-            },
-            count: counts?[f.wire],
-            tone: f == InboxFilter.late ? SrTone.err : SrTone.neutral,
-          ),
-      ],
+    final box = ref.watch(inboxBoxProvider);
+    return ConversationBoxChips(
+      box: box,
+      onChanged: ref.read(inboxBoxProvider.notifier).set,
     );
   }
 }
 
 class _InboxRow extends ConsumerWidget {
-  const _InboxRow({required this.lead});
+  const _InboxRow({required this.conversation});
 
-  final InboxLead lead;
+  final Conversation conversation;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
-    final fmt = context.fmt;
+    final at = conversation.lastAt;
     final canEdit = ref.watch(moduleAccessProvider(AppModule.inbox)).canEdit;
-    final area = lead.area?.of(fmt.isBangla);
-    final late = lead.isLate();
     return SrListRow(
       leading: SrAvatar(
-        name: lead.name,
-        tone: lead.duplicate != null
-            ? SrAvatarTone.gold
-            : lead.status == InboxStatus.fresh && !late
+        name: conversation.name,
+        tone: conversation.isUnassigned
             ? SrAvatarTone.accent
             : SrAvatarTone.neutral,
       ),
-      title: area == null ? lead.name : '${lead.name} · $area',
+      title: conversation.name,
       subtitle: [
-        lead.source.label(l10n),
-        if (lead.duplicate != null)
-          l10n.growthInboxMatchesExisting
-        else
-          ?(lead.interest ?? lead.formName),
+        conversation.channel.label(l10n),
+        ?conversation.lastMessage,
       ].join(' · '),
       trailing: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            growthAgo(context, lead.waiting()),
-            style: AppText.meta(late ? c.danger : c.ink2, size: 12),
-          ),
+          if (at != null)
+            Text(
+              context.fmt.relative(at),
+              style: AppText.meta(c.ink2, size: 12),
+            ),
           const SizedBox(height: 4),
-          InboxStatusTag(lead: lead),
+          InboxStatusTag(conversation: conversation),
         ],
       ),
-      onTap: () => context.push(Routes.newLeadFor(lead.id)),
-      onLongPress: canEdit && lead.canEdit
-          ? () => showInboxQuickActions(context, ref, lead)
+      onTap: () => context.push(Routes.newLeadFor(conversation.id)),
+      onLongPress: canEdit && conversation.open
+          ? () => showInboxQuickActions(context, ref, conversation)
           : null,
     );
   }
 }
 
-/// New, late, possible duplicate or who it is assigned to.
+/// New, who it is assigned to, or closed.
 class InboxStatusTag extends StatelessWidget {
-  const InboxStatusTag({super.key, required this.lead});
+  const InboxStatusTag({super.key, required this.conversation});
 
-  final InboxLead lead;
+  final Conversation conversation;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final assignee = lead.assignedTo?.of(context.fmt.isBangla);
-    return switch (lead.status) {
-      InboxStatus.accepted => SrTag(
-        l10n.growthInboxAcceptedTag,
-        tone: SrTone.ok,
-      ),
-      InboxStatus.rejected => SrTag(l10n.growthInboxRejectedTag),
-      InboxStatus.assigned => SrTag(
-        l10n.growthInboxAssignedTag(assignee?.split(' ').first ?? ''),
-      ),
-      InboxStatus.fresh when lead.duplicate != null => SrTag(
-        l10n.growthInboxDuplicateTag,
-        tone: SrTone.warn,
-      ),
-      InboxStatus.fresh when lead.isLate() => SrTag(
-        l10n.growthInboxLateTag,
-        tone: SrTone.err,
-      ),
-      InboxStatus.fresh => SrTag(l10n.growthInboxNewTag, tone: SrTone.ok),
-    };
+    final assignee = conversation.assignedTo;
+    if (!conversation.open) return SrTag(l10n.growthInboxClosedTag);
+    if (conversation.isUnassigned) {
+      return SrTag(l10n.growthInboxNewTag, tone: SrTone.ok);
+    }
+    return SrTag(l10n.growthInboxAssignedTag(assignee?.split(' ').first ?? ''));
   }
 }
 

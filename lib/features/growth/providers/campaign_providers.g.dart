@@ -55,7 +55,7 @@ final class CampaignRepositoryProvider
 }
 
 String _$campaignRepositoryHash() =>
-    r'e86fac5d4d1ff317233540822817e423b21d7ff6';
+    r'f3da27c1c22779192993dfe30b274df1634b2204';
 
 /// The campaign list (#143).
 
@@ -86,7 +86,7 @@ final class CampaignListNotifierProvider
 }
 
 String _$campaignListNotifierHash() =>
-    r'06124b2111c200471ad348f2c10087a30ea6d70f';
+    r'137ea20d171630a44cf4e569f9cc799b96798703';
 
 /// The campaign list (#143).
 
@@ -117,7 +117,7 @@ final class CampaignProvider
     with $FutureModifier<Campaign>, $FutureProvider<Campaign> {
   CampaignProvider._({
     required CampaignFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'campaignProvider',
@@ -143,7 +143,7 @@ final class CampaignProvider
 
   @override
   FutureOr<Campaign> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return campaign(ref, argument);
   }
 
@@ -158,10 +158,10 @@ final class CampaignProvider
   }
 }
 
-String _$campaignHash() => r'28291ddd74aa1fed6046902cbe86527c6a032ce6';
+String _$campaignHash() => r'f8bf16affa432c8dc057a4cbfb30989c5cc831c8';
 
 final class CampaignFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Campaign>, int> {
+    with $FunctionalFamilyOverride<FutureOr<Campaign>, String> {
   CampaignFamily._()
     : super(
         retry: null,
@@ -171,53 +171,53 @@ final class CampaignFamily extends $Family
         isAutoDispose: true,
       );
 
-  CampaignProvider call(int id) => CampaignProvider._(argument: id, from: this);
+  CampaignProvider call(String id) =>
+      CampaignProvider._(argument: id, from: this);
 
   @override
   String toString() => r'campaignProvider';
 }
 
-@ProviderFor(messagingBalance)
-final messagingBalanceProvider = MessagingBalanceProvider._();
+/// The workspace's SMS credit balance, from the plan.
 
-final class MessagingBalanceProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<MessagingBalance>,
-          MessagingBalance,
-          FutureOr<MessagingBalance>
-        >
-    with $FutureModifier<MessagingBalance>, $FutureProvider<MessagingBalance> {
-  MessagingBalanceProvider._()
+@ProviderFor(smsCredits)
+final smsCreditsProvider = SmsCreditsProvider._();
+
+/// The workspace's SMS credit balance, from the plan.
+
+final class SmsCreditsProvider
+    extends $FunctionalProvider<AsyncValue<int>, int, FutureOr<int>>
+    with $FutureModifier<int>, $FutureProvider<int> {
+  /// The workspace's SMS credit balance, from the plan.
+  SmsCreditsProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'messagingBalanceProvider',
+        name: r'smsCreditsProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$messagingBalanceHash();
+  String debugGetCreateSourceHash() => _$smsCreditsHash();
 
   @$internal
   @override
-  $FutureProviderElement<MessagingBalance> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  $FutureProviderElement<int> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
-  FutureOr<MessagingBalance> create(Ref ref) {
-    return messagingBalance(ref);
+  FutureOr<int> create(Ref ref) {
+    return smsCredits(ref);
   }
 }
 
-String _$messagingBalanceHash() => r'06d8898d13fec79b4eeb556338cd508e12a081c1';
+String _$smsCreditsHash() => r'5760dfcea7a81f72d409a0e23a37ffd1ab0f700d';
 
 @ProviderFor(campaignAudiences)
-final campaignAudiencesProvider = CampaignAudiencesProvider._();
+final campaignAudiencesProvider = CampaignAudiencesFamily._();
 
 final class CampaignAudiencesProvider
     extends
@@ -227,19 +227,26 @@ final class CampaignAudiencesProvider
           FutureOr<List<Audience>>
         >
     with $FutureModifier<List<Audience>>, $FutureProvider<List<Audience>> {
-  CampaignAudiencesProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'campaignAudiencesProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+  CampaignAudiencesProvider._({
+    required CampaignAudiencesFamily super.from,
+    required CampaignChannel super.argument,
+  }) : super(
+         retry: null,
+         name: r'campaignAudiencesProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$campaignAudiencesHash();
+
+  @override
+  String toString() {
+    return r'campaignAudiencesProvider'
+        ''
+        '($argument)';
+  }
 
   @$internal
   @override
@@ -249,11 +256,40 @@ final class CampaignAudiencesProvider
 
   @override
   FutureOr<List<Audience>> create(Ref ref) {
-    return campaignAudiences(ref);
+    final argument = this.argument as CampaignChannel;
+    return campaignAudiences(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is CampaignAudiencesProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
   }
 }
 
-String _$campaignAudiencesHash() => r'c8dd535b944dbc07bcce69e57dc5bfdfd0cf5fe7';
+String _$campaignAudiencesHash() => r'd1773e6a7e0425aeaf822ec5066d96c475309746';
+
+final class CampaignAudiencesFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<Audience>>, CampaignChannel> {
+  CampaignAudiencesFamily._()
+    : super(
+        retry: null,
+        name: r'campaignAudiencesProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  CampaignAudiencesProvider call(CampaignChannel channel) =>
+      CampaignAudiencesProvider._(argument: channel, from: this);
+
+  @override
+  String toString() => r'campaignAudiencesProvider';
+}
 
 @ProviderFor(smsTemplates)
 final smsTemplatesProvider = SmsTemplatesProvider._();
@@ -294,56 +330,17 @@ final class SmsTemplatesProvider
   }
 }
 
-String _$smsTemplatesHash() => r'6b257ba414e5d85db8b269767fa0765bb9df4331';
+String _$smsTemplatesHash() => r'd0167c9b4f505190f1d85b8c131663c31768836b';
 
-@ProviderFor(creditPacks)
-final creditPacksProvider = CreditPacksProvider._();
-
-final class CreditPacksProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<CreditPack>>,
-          List<CreditPack>,
-          FutureOr<List<CreditPack>>
-        >
-    with $FutureModifier<List<CreditPack>>, $FutureProvider<List<CreditPack>> {
-  CreditPacksProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'creditPacksProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$creditPacksHash();
-
-  @$internal
-  @override
-  $FutureProviderElement<List<CreditPack>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<CreditPack>> create(Ref ref) {
-    return creditPacks(ref);
-  }
-}
-
-String _$creditPacksHash() => r'b2f10910794e66a5e57f145b6990f67b98dfc848';
-
-/// Test sends, retries and cancellations; callers show the outcome.
+/// Cancelling a scheduled campaign; callers show the outcome.
 
 @ProviderFor(CampaignActions)
 final campaignActionsProvider = CampaignActionsProvider._();
 
-/// Test sends, retries and cancellations; callers show the outcome.
+/// Cancelling a scheduled campaign; callers show the outcome.
 final class CampaignActionsProvider
     extends $NotifierProvider<CampaignActions, void> {
-  /// Test sends, retries and cancellations; callers show the outcome.
+  /// Cancelling a scheduled campaign; callers show the outcome.
   CampaignActionsProvider._()
     : super(
         from: null,
@@ -371,9 +368,9 @@ final class CampaignActionsProvider
   }
 }
 
-String _$campaignActionsHash() => r'6f541a73faf7be97df62a4761ce5dc44a33b3c93';
+String _$campaignActionsHash() => r'098d682cc5970b9f7b7e0247a8bd76608ef48bb5';
 
-/// Test sends, retries and cancellations; callers show the outcome.
+/// Cancelling a scheduled campaign; callers show the outcome.
 
 abstract class _$CampaignActions extends $Notifier<void> {
   void build();
@@ -393,32 +390,32 @@ abstract class _$CampaignActions extends $Notifier<void> {
   }
 }
 
-/// Sending or scheduling a bulk SMS (#144).
+/// Sending or scheduling a bulk SMS (#144) or email (#145).
 
-@ProviderFor(SmsCampaignSubmit)
-final smsCampaignSubmitProvider = SmsCampaignSubmitProvider._();
+@ProviderFor(CampaignSubmit)
+final campaignSubmitProvider = CampaignSubmitProvider._();
 
-/// Sending or scheduling a bulk SMS (#144).
-final class SmsCampaignSubmitProvider
-    extends $NotifierProvider<SmsCampaignSubmit, AsyncValue<Campaign?>> {
-  /// Sending or scheduling a bulk SMS (#144).
-  SmsCampaignSubmitProvider._()
+/// Sending or scheduling a bulk SMS (#144) or email (#145).
+final class CampaignSubmitProvider
+    extends $NotifierProvider<CampaignSubmit, AsyncValue<Campaign?>> {
+  /// Sending or scheduling a bulk SMS (#144) or email (#145).
+  CampaignSubmitProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'smsCampaignSubmitProvider',
+        name: r'campaignSubmitProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$smsCampaignSubmitHash();
+  String debugGetCreateSourceHash() => _$campaignSubmitHash();
 
   @$internal
   @override
-  SmsCampaignSubmit create() => SmsCampaignSubmit();
+  CampaignSubmit create() => CampaignSubmit();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AsyncValue<Campaign?> value) {
@@ -429,11 +426,11 @@ final class SmsCampaignSubmitProvider
   }
 }
 
-String _$smsCampaignSubmitHash() => r'04fd678ad490d4e6be108bd0c060539961bd2302';
+String _$campaignSubmitHash() => r'7a98e94d3c33b96f5ac4881da9bb4b1c53d758a8';
 
-/// Sending or scheduling a bulk SMS (#144).
+/// Sending or scheduling a bulk SMS (#144) or email (#145).
 
-abstract class _$SmsCampaignSubmit extends $Notifier<AsyncValue<Campaign?>> {
+abstract class _$CampaignSubmit extends $Notifier<AsyncValue<Campaign?>> {
   AsyncValue<Campaign?> build();
   @$mustCallSuper
   @override
@@ -444,134 +441,6 @@ abstract class _$SmsCampaignSubmit extends $Notifier<AsyncValue<Campaign?>> {
             as $ClassProviderElement<
               AnyNotifier<AsyncValue<Campaign?>, AsyncValue<Campaign?>>,
               AsyncValue<Campaign?>,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
-/// Sending a bulk email (#145).
-
-@ProviderFor(EmailCampaignSubmit)
-final emailCampaignSubmitProvider = EmailCampaignSubmitProvider._();
-
-/// Sending a bulk email (#145).
-final class EmailCampaignSubmitProvider
-    extends $NotifierProvider<EmailCampaignSubmit, AsyncValue<Campaign?>> {
-  /// Sending a bulk email (#145).
-  EmailCampaignSubmitProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'emailCampaignSubmitProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$emailCampaignSubmitHash();
-
-  @$internal
-  @override
-  EmailCampaignSubmit create() => EmailCampaignSubmit();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AsyncValue<Campaign?> value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<AsyncValue<Campaign?>>(value),
-    );
-  }
-}
-
-String _$emailCampaignSubmitHash() =>
-    r'3f3dc7036c8f28c0cf893f00531b0da1257c22a0';
-
-/// Sending a bulk email (#145).
-
-abstract class _$EmailCampaignSubmit extends $Notifier<AsyncValue<Campaign?>> {
-  AsyncValue<Campaign?> build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<Campaign?>, AsyncValue<Campaign?>>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<AsyncValue<Campaign?>, AsyncValue<Campaign?>>,
-              AsyncValue<Campaign?>,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
-/// Buying an SMS credit pack (#147).
-
-@ProviderFor(CreditPurchase)
-final creditPurchaseProvider = CreditPurchaseProvider._();
-
-/// Buying an SMS credit pack (#147).
-final class CreditPurchaseProvider
-    extends $NotifierProvider<CreditPurchase, AsyncValue<MessagingBalance?>> {
-  /// Buying an SMS credit pack (#147).
-  CreditPurchaseProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'creditPurchaseProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$creditPurchaseHash();
-
-  @$internal
-  @override
-  CreditPurchase create() => CreditPurchase();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AsyncValue<MessagingBalance?> value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<AsyncValue<MessagingBalance?>>(
-        value,
-      ),
-    );
-  }
-}
-
-String _$creditPurchaseHash() => r'9be9dac506f9629f7c86f8b49f47e20bbdc4b703';
-
-/// Buying an SMS credit pack (#147).
-
-abstract class _$CreditPurchase
-    extends $Notifier<AsyncValue<MessagingBalance?>> {
-  AsyncValue<MessagingBalance?> build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref =
-        this.ref
-            as $Ref<
-              AsyncValue<MessagingBalance?>,
-              AsyncValue<MessagingBalance?>
-            >;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<
-                AsyncValue<MessagingBalance?>,
-                AsyncValue<MessagingBalance?>
-              >,
-              AsyncValue<MessagingBalance?>,
               Object?,
               Object?
             >;

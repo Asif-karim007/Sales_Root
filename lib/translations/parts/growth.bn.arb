@@ -1,30 +1,5 @@
 {
   "@@locale": "bn",
-  "growthAgoNow": "এখন",
-  "growthAgoMinutes": "{count} মি.",
-  "@growthAgoMinutes": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "growthAgoHours": "{count} ঘ.",
-  "@growthAgoHours": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "growthAgoDays": "{count} দিন",
-  "@growthAgoDays": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "growthSourceFacebook": "Facebook",
   "growthSourceWebsite": "ওয়েবসাইট",
   "growthSourceWhatsapp": "WhatsApp",
@@ -41,28 +16,12 @@
   "growthChannelGoogleAds": "Google Ads লিড ফর্ম",
   "growthFieldName": "নাম",
   "growthFieldMobile": "মোবাইল",
-  "growthFieldEmail": "ইমেইল",
   "growthFieldArea": "এলাকা",
-  "growthFieldCompany": "প্রতিষ্ঠান",
-  "growthFieldNote": "নোট",
-  "growthFieldCustom": "কাস্টম ঘর",
-  "growthFieldSkip": "নেবেন না",
-  "growthDestinationInbox": "নতুন লিড ইনবক্স",
-  "growthDestinationRules": "নতুন লিড ইনবক্স → বিতরণ নিয়ম",
   "growthModeMember": "একজন সদস্য",
   "growthModeRoundRobin": "রাউন্ড-রবিন",
   "growthModeByLoad": "যার কাজ কম",
   "growthModeQueue": "শেয়ার্ড কিউ",
-  "growthRejectSpam": "স্প্যাম বা ভুয়া",
-  "growthRejectWrongNumber": "ভুল নম্বর",
-  "growthRejectNotInterested": "আগ্রহ নেই",
-  "growthRejectDuplicate": "আগেই লিড আছে",
-  "growthRejectOutOfArea": "আমাদের এলাকার বাইরে",
-  "growthSegmentOverdue": "মেয়াদ পার পাওনা",
   "growthSegmentCustomers": "সব গ্রাহক",
-  "growthSegmentDealers": "সব ডিলার",
-  "growthSegmentHotLeads": "হট লিড",
-  "growthSegmentInterested": "আগ্রহী লিড",
   "growthSegmentOpenLeads": "সব চালু লিড",
   "growthAudienceEveryone": "সবাই",
   "growthAudienceSales": "বিক্রয় টিম",
@@ -74,19 +33,8 @@
   "growthChannelsTitle": "চ্যানেল",
   "growthChannelsSubtitle": "গ্রোথ অ্যাড-অন",
   "growthChannelsNote": "Nexzen-এর যাচাইকৃত Meta অ্যাপের মাধ্যমে আপনার নিজের পেজ ও নম্বর যুক্ত হয়; কোনো ডেভেলপার সেটআপ লাগে না।",
-  "growthChannelsLeadsTotal": "চ্যানেল থেকে লিড",
-  "growthChannelsLeadsWeek": "এই সপ্তাহে",
-  "growthChannelLeadsAll": "এ পর্যন্ত লিড",
   "growthChannelForms": "{count}টি ফর্ম",
   "@growthChannelForms": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "growthChannelLeads": "{count} লিড",
-  "@growthChannelLeads": {
     "placeholders": {
       "count": {
         "type": "String"
@@ -102,83 +50,26 @@
   "growthChannelDisconnect": "বিচ্ছিন্ন করুন",
   "growthChannelDisconnected": "চ্যানেল বিচ্ছিন্ন হয়েছে",
   "growthChannelConnectedDone": "চ্যানেল যুক্ত হয়েছে",
-  "growthChannelCodeAdded": "কোড বসিয়েছি",
   "growthChannelTurnOn": "ফর্ম চালু করুন",
   "growthChannelCopyCode": "কোড কপি করুন",
   "growthChannelCopyLink": "লিংক কপি করুন",
   "growthCopied": "কপি হয়েছে",
   "growthChannelWebsiteHint": "কন্টাক্ট পেজে </body> এর আগে এই কোডটি বসান। প্রতিটি এনকোয়ারি নতুন লিডে আসবে।",
   "growthChannelHostedHint": "আপনার লোগোসহ তৈরি এনকোয়ারি ফর্ম। লিংকটি Facebook, এসএমএস বা QR কোডে শেয়ার করুন।",
-  "growthChannelEmailHint": "এই ঠিকানায় আসা এনকোয়ারি পড়ে নতুন লিডে যোগ করা হবে।",
   "growthChannelGenericHint": "লিড পেতে এই চ্যানেলটি যুক্ত করুন।",
   "growthFacebookTitle": "Facebook লিড ফর্ম",
-  "growthFacebookStepSignIn": "সাইন ইন",
-  "growthFacebookStepPage": "পেজ",
-  "growthFacebookStepForms": "ফর্ম",
-  "growthFacebookStepFields": "ঘর",
   "growthFacebookSignInTitle": "আপনার Facebook পেজ যুক্ত করুন",
   "growthFacebookSignInBody": "যে Facebook অ্যাকাউন্ট পেজটি চালায় সেটি দিয়ে সাইন ইন করুন। SalesRoot শুধু লিড ফর্ম পড়ে; কখনো পোস্ট করে না।",
   "growthFacebookSignInPoint1": "ফর্মের নতুন লিড এক মিনিটের মধ্যে আসে",
   "growthFacebookSignInPoint2": "পেজের সাথে Messenger ও Instagram DM-ও আসে",
   "growthFacebookSignInPoint3": "এই স্ক্রিন থেকে যেকোনো সময় বিচ্ছিন্ন করা যায়",
-  "growthFacebookContinue": "Facebook দিয়ে এগিয়ে যান",
-  "growthFacebookPickPage": "একটি পেজ বেছে নিন",
-  "growthFacebookPageMeta": "অ্যাডমিন: {name} · {count} ফলোয়ার",
-  "@growthFacebookPageMeta": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "growthFacebookPageAdmin": "পেজ · অ্যাডমিন: {name} · টোকেন ঠিক আছে",
-  "@growthFacebookPageAdmin": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "growthFacebookTokenExpired": "অ্যাক্সেসের মেয়াদ শেষ; আবার সাইন ইন করুন",
-  "growthFacebookForms": "লিড ফর্ম",
-  "growthFacebookNoForms": "এই পেজে কোনো লিড ফর্ম নেই",
-  "growthFacebookNoFormsBody": "Meta Ads Manager-এ একটি লিড ফর্ম বানিয়ে আবার আসুন।",
-  "growthFacebookCampaign": "ক্যাম্পেইন: {name}",
-  "@growthFacebookCampaign": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "growthFacebookMapFields": "ঘর মেলান",
-  "growthFacebookTurnOnForm": "প্রশ্ন মেলাতে অন্তত একটি ফর্ম চালু করুন।",
-  "growthFacebookDestination": "নতুন লিড যাবে",
-  "growthFacebookConnect": "যুক্ত করুন",
-  "growthFacebookConnectedDone": "Facebook লিড ফর্ম যুক্ত হয়েছে",
-  "growthFacebookSaved": "Facebook সেটিং সেভ হয়েছে",
   "growthFacebookDisconnect": "এই পেজ বিচ্ছিন্ন করুন",
   "growthFacebookDisconnectTitle": "পেজ বিচ্ছিন্ন করবেন?",
   "growthFacebookDisconnectBody": "নতুন ফর্ম লিড ও Messenger চ্যাট আসা বন্ধ হবে। আগের লিডগুলো থাকবে।",
   "growthInboxTitle": "নতুন লিড",
-  "growthInboxAverage": "প্রথম উত্তরের গড় সময়: {count} মিনিট",
-  "@growthInboxAverage": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "growthInboxUnassigned": "বরাদ্দহীন",
   "growthInboxMine": "আমার",
-  "growthInboxLateFilter": "অপেক্ষায় >১৫ মি.",
-  "growthInboxMatchesExisting": "আগের রেকর্ডের সাথে নম্বর মিলেছে",
   "growthInboxNewTag": "নতুন",
-  "growthInboxLateTag": "দেরি",
-  "growthInboxDuplicateTag": "একই?",
   "growthInboxAssignedTag": "বরাদ্দ: {name}",
   "@growthInboxAssignedTag": {
     "placeholders": {
@@ -187,8 +78,6 @@
       }
     }
   },
-  "growthInboxAcceptedTag": "গৃহীত",
-  "growthInboxRejectedTag": "বাতিল",
   "growthInboxEmpty": "অপেক্ষায় কোনো নতুন লিড নেই",
   "growthInboxEmptyBody": "Facebook ফর্ম, WhatsApp ও ওয়েবসাইটের লিড প্রথমে এখানে আসে।",
   "growthInboxConnectChannels": "চ্যানেল যুক্ত করুন",
@@ -205,7 +94,6 @@
     }
   },
   "growthInboxReject": "বাতিল",
-  "growthInboxRejectWhy": "কেন বাতিল করছেন?",
   "growthInboxRejected": "{name} বাতিল হয়েছে",
   "@growthInboxRejected": {
     "placeholders": {
@@ -214,31 +102,7 @@
       }
     }
   },
-  "growthInboxForm": "ফর্ম",
-  "growthInboxCampaign": "ক্যাম্পেইন",
-  "growthInboxInterest": "জানতে চেয়েছেন",
-  "growthInboxConsent": "সম্মতি",
-  "growthInboxConsentYes": "হ্যাঁ · {time}",
-  "@growthInboxConsentYes": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "growthInboxMetaId": "Meta আইডি",
   "growthInboxReceived": "এসেছে",
-  "growthInboxWaiting": "অপেক্ষা {time}। {minutes} মিনিটের মধ্যে উত্তর দিন।",
-  "@growthInboxWaiting": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      },
-      "minutes": {
-        "type": "String"
-      }
-    }
-  },
   "growthInboxAssignedTo": "দায়িত্বে {name}",
   "@growthInboxAssignedTo": {
     "placeholders": {
@@ -247,29 +111,7 @@
       }
     }
   },
-  "growthInboxAssignedByRule": "“{rule}” নিয়মে দায়িত্বে {name}",
-  "@growthInboxAssignedByRule": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "rule": {
-        "type": "String"
-      }
-    }
-  },
-  "growthInboxAcceptedNote": "মূল লিড তালিকায় নেওয়া হয়েছে · {name}",
-  "@growthInboxAcceptedNote": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "growthInboxRejectedNote": "এই লিডটি বাতিল করা হয়েছে।",
-  "growthInboxNoDuplicate": "এই নম্বরে আগের কোনো লিড বা গ্রাহক নেই।",
   "growthInboxDuplicateLead": "এই নম্বরে আগেই একটি চালু লিড আছে",
-  "growthInboxDuplicateContact": "এই নম্বরটি একজন কনট্যাক্টের",
   "growthInboxDuplicateCustomer": "আগের গ্রাহকের সাথে নম্বর মিলেছে",
   "growthInboxOpen": "খুলুন",
   "growthMemberOnLeave": "ছুটিতে",
@@ -281,20 +123,6 @@
       }
     }
   },
-  "growthAcceptAssignTo": "দায়িত্বে",
-  "growthAcceptStage": "ধাপ",
-  "growthAcceptContact": "প্রতিষ্ঠান / কনট্যাক্ট",
-  "growthAcceptNewContact": "নতুন কনট্যাক্ট তৈরি হবে",
-  "growthAcceptLinkTo": "{name}-এর সাথে যুক্ত",
-  "@growthAcceptLinkTo": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "growthAcceptFollowUp": "প্রথম ফলো-আপ",
-  "growthAcceptFollowUpWhen": "আজ · কল · ১৫ মিনিটের মধ্যে",
   "growthAcceptConfirm": "গ্রহণ করুন",
   "growthAcceptDone": "{name} গৃহীত হয়েছে। লিডের বাকি তথ্য দিন।",
   "@growthAcceptDone": {
@@ -304,18 +132,6 @@
       }
     }
   },
-  "growthAcceptByRule": "নিয়ম অনুযায়ী → {name}",
-  "@growthAcceptByRule": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "growthAcceptByRuleShort": "নিয়ম অনুযায়ী",
-  "growthAcceptByRuleHint": "বিতরণ নিয়ম অনুযায়ী ঠিক হবে",
-  "growthAcceptChecking": "নিয়ম দেখা হচ্ছে…",
-  "growthAcceptMember": "টিম সদস্য",
   "growthRulesTitle": "বিতরণ নিয়ম",
   "growthRulesOn": "বিতরণ নিয়ম চালু",
   "growthRulesOnHint": "বন্ধ থাকলে সব লিড শেয়ার্ড কিউতে",
@@ -536,14 +352,6 @@
   "growthMessagesCustomer": "গ্রাহক",
   "growthMessagesLead": "লিড",
   "growthMessagesCreateLead": "লিড বানান",
-  "growthMessagesDue": "পাওনা {amount}",
-  "@growthMessagesDue": {
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
   "growthMessagesSuggested": "প্রস্তাবিত উত্তর: “{text}”",
   "@growthMessagesSuggested": {
     "placeholders": {
@@ -553,16 +361,6 @@
     }
   },
   "growthMessagesUse": "ব্যবহার",
-  "growthMessagesPdf": "PDF",
-  "growthMessagesWindowOpen": "২৪ ঘণ্টার জানালা খোলা: {time} পর্যন্ত মুক্ত উত্তর; পরে টেমপ্লেট লাগবে।",
-  "@growthMessagesWindowOpen": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "growthMessagesWindowClosed": "২৪ ঘণ্টার জানালা বন্ধ। অনুমোদিত টেমপ্লেট দিয়ে উত্তর দিন।",
   "growthMessagesReplyOn": "{channel}-এ উত্তর দিন",
   "@growthMessagesReplyOn": {
     "placeholders": {
@@ -571,7 +369,6 @@
       }
     }
   },
-  "growthMessagesPickTemplate": "অনুমোদিত টেমপ্লেট বেছে নিন",
   "growthMessagesTemplates": "টেমপ্লেট ও দ্রুত উত্তর",
   "growthMessagesApproved": "অনুমোদিত টেমপ্লেট · {text}",
   "@growthMessagesApproved": {
@@ -581,17 +378,10 @@
       }
     }
   },
-  "growthMessagesAttach": "সংযুক্ত করুন",
-  "growthMessagesAttachQuotation": "কোটেশন",
-  "growthMessagesAttachQuotationHint": "কোটেশন থেকে বেছে নিন বা বানান",
-  "growthMessagesAttachPriceList": "ডিলার দামের তালিকা (PDF)",
-  "growthMessagesAttachPriceListHint": "চলতি দামের তালিকা পাঠাবে",
   "growthCampaignsTitle": "ক্যাম্পেইন",
   "growthCampaignsEmpty": "এখনো কোনো ক্যাম্পেইন নেই",
   "growthCampaignsEmptyBody": "একসাথে অনেক গ্রাহককে অফার, দামের তালিকা বা পেমেন্ট রিমাইন্ডার পাঠান।",
   "growthCampaignsSmsCredits": "এসএমএস ক্রেডিট",
-  "growthCampaignsBuyMore": "কিনুন",
-  "growthCampaignsEmailMonth": "ইমেইল (এ মাস)",
   "growthCampaignsBulkSms": "বাল্ক এসএমএস",
   "growthCampaignsBulkEmail": "বাল্ক ইমেইল",
   "growthCampaignOf": "{used} / {total}",
@@ -661,22 +451,6 @@
       }
     }
   },
-  "growthCampaignLeads": "{count} লিড",
-  "@growthCampaignLeads": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "growthCampaignOpened": "{percent} খুলেছে",
-  "@growthCampaignOpened": {
-    "placeholders": {
-      "percent": {
-        "type": "String"
-      }
-    }
-  },
   "growthCampaignDoneTag": "শেষ",
   "growthCampaignScheduledTag": "নির্ধারিত",
   "growthCampaignSendingTag": "যাচ্ছে",
@@ -711,7 +485,6 @@
   "growthSmsCharacters": "অক্ষর",
   "growthSmsPerPerson": "প্রতি জনে এসএমএস",
   "growthSmsCredits": "মোট ক্রেডিট",
-  "growthSmsSender": "সেন্ডার",
   "growthSmsShort": "ক্রেডিট কম: দরকার {needed}, আছে {have}।",
   "@growthSmsShort": {
     "placeholders": {
@@ -723,14 +496,9 @@
       }
     }
   },
-  "growthSmsBuyCredits": "ক্রেডিট কিনুন",
   "growthSmsSendNow": "এখনই পাঠান",
   "growthSmsOrSchedule": "না হলে সময় ঠিক করুন",
   "growthSmsSchedule": "সময়",
-  "growthSmsExcludeDnc": "“যোগাযোগ করবেন না” বাদ",
-  "growthSmsTest": "নিজেকে টেস্ট",
-  "growthSmsTestSent": "আপনার নম্বরে টেস্ট এসএমএস গেছে",
-  "growthSmsWriteFirst": "আগে মেসেজ লিখুন",
   "growthSmsSendTo": "{count} জনকে পাঠান",
   "@growthSmsSendTo": {
     "placeholders": {
@@ -768,13 +536,6 @@
   "growthEmailSubjectHint": "যেমন নভেম্বরের দামের তালিকা ও ঈদ অফার",
   "growthEmailBody": "ইমেইল",
   "growthEmailBodyHint": "প্রিয় গ্রাহক, …",
-  "growthEmailAttach": "ফাইল যোগ",
-  "growthEmailOrderButton": "“অর্ডার দিন” বোতাম",
-  "growthEmailPlaceOrder": "অর্ডার দিন",
-  "growthEmailTracking": "ট্র্যাকিং",
-  "growthEmailTrackingHint": "খোলা ও ক্লিক",
-  "growthEmailFrom": "প্রেরক",
-  "growthEmailLimit": "এ মাসের সীমা",
   "growthEmailPreview": "প্রিভিউ",
   "growthEmailNoSubject": "এখনো বিষয় নেই",
   "growthEmailNoBody": "আপনার ইমেইল এখানে দেখা যাবে।",
@@ -791,85 +552,6 @@
   "growthCampaignKpiSent": "পাঠানো",
   "growthCampaignKpiDelivered": "পৌঁছেছে",
   "growthCampaignKpiReplies": "উত্তর",
-  "growthCampaignKpiLeads": "লিড",
-  "growthCampaignKpiOpened": "খুলেছে",
-  "growthCampaignKpiClicks": "ক্লিক",
-  "growthCampaignRepliesByHour": "ঘণ্টা অনুযায়ী উত্তর",
-  "growthCampaignOpensByHour": "ঘণ্টা অনুযায়ী খোলা",
-  "growthCampaignHour": "{count}ঘ",
-  "@growthCampaignHour": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "growthCampaignLeadsFromReplies": "উত্তর থেকে লিড · {count}",
-  "@growthCampaignLeadsFromReplies": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "growthCampaignNoReplies": "এখনো উত্তর আসেনি",
-  "growthCampaignNoRepliesBody": "যে উত্তর থেকে লিড বা কাজ হয় তা এখানে দেখা যাবে।",
-  "growthCampaignShowLess": "কম দেখান",
-  "growthCampaignReplyLead": "“{text}” → লিড তৈরি",
-  "@growthCampaignReplyLead": {
-    "placeholders": {
-      "text": {
-        "type": "String"
-      }
-    }
-  },
-  "growthCampaignReplyTask": "“{text}” → কাজ তৈরি",
-  "@growthCampaignReplyTask": {
-    "placeholders": {
-      "text": {
-        "type": "String"
-      }
-    }
-  },
-  "growthCampaignFailed": "ব্যর্থ · {count}",
-  "@growthCampaignFailed": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "growthCampaignFailedSplit": "ভুল নম্বর {wrong} · বন্ধ {off}",
-  "@growthCampaignFailedSplit": {
-    "placeholders": {
-      "wrong": {
-        "type": "String"
-      },
-      "off": {
-        "type": "String"
-      }
-    }
-  },
-  "growthCampaignTapRetry": "বন্ধ নম্বরে আবার পাঠাতে চাপুন",
-  "growthCampaignWrongNumbersHint": "ভুল নম্বরগুলো কনট্যাক্টে ঠিক করুন",
-  "growthCampaignRetry": "আবার পাঠান",
-  "growthCampaignRetryTitle": "বন্ধ নম্বরে আবার পাঠাবেন?",
-  "growthCampaignRetryBody": "{count}টি নম্বর বন্ধ ছিল। আবার পাঠাতে আবার ক্রেডিট লাগবে।",
-  "@growthCampaignRetryBody": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "growthCampaignRetried": "আরও {count} জনের কাছে পৌঁছেছে",
-  "@growthCampaignRetried": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "growthCampaignScheduledFor": "যাবে {time}",
   "@growthCampaignScheduledFor": {
     "placeholders": {
@@ -886,25 +568,7 @@
   "growthCampaignCancelledSms": "পাঠানোর আগেই ক্যাম্পেইনটি বাতিল হয়েছে। ক্রেডিট ফেরত দেওয়া হয়েছে।",
   "growthCampaignCancelledEmail": "পাঠানোর আগেই ক্যাম্পেইনটি বাতিল হয়েছে।",
   "growthCreditsTitle": "এসএমএস ক্রেডিট",
-  "growthCreditsLead": "সেন্ডার আইডি “{sender}” · সব অপারেটর · ক্রেডিটের মেয়াদ নেই",
-  "@growthCreditsLead": {
-    "placeholders": {
-      "sender": {
-        "type": "String"
-      }
-    }
-  },
-  "growthCreditsEach": "৳ {price}/টি",
-  "@growthCreditsEach": {
-    "placeholders": {
-      "price": {
-        "type": "String"
-      }
-    }
-  },
   "growthCreditsBalance": "বর্তমান ব্যালেন্স",
-  "growthCreditsUsed": "এ মাসে ব্যবহার",
-  "growthCreditsAverage": "গড় বাংলা এসএমএস",
   "growthCreditsAverageValue": "{count} ক্রেডিট",
   "@growthCreditsAverageValue": {
     "placeholders": {
@@ -914,49 +578,6 @@
     }
   },
   "growthCreditsRule": "বাংলা এসএমএস ৭০ অক্ষরে ১ ক্রেডিট; ইংরেজি ১৬০ অক্ষরে ১।",
-  "growthCreditsBuy": "{count} কিনুন · {price}",
-  "@growthCreditsBuy": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      },
-      "price": {
-        "type": "String"
-      }
-    }
-  },
-  "growthCreditsConfirmTitle": "{count} এসএমএস ক্রেডিট কিনবেন?",
-  "@growthCreditsConfirmTitle": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "growthCreditsConfirmBody": "আপনার প্ল্যানের কার্ড বা bKash থেকে {price} কাটা হবে।",
-  "@growthCreditsConfirmBody": {
-    "placeholders": {
-      "price": {
-        "type": "String"
-      }
-    }
-  },
-  "growthCreditsPay": "{price} দিন",
-  "@growthCreditsPay": {
-    "placeholders": {
-      "price": {
-        "type": "String"
-      }
-    }
-  },
-  "growthCreditsDone": "ক্রেডিট যোগ হয়েছে। ব্যালেন্স: {count}",
-  "@growthCreditsDone": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "growthNoticesTitle": "নোটিশ",
   "growthNoticesEmpty": "এখনো কোনো নোটিশ নেই",
   "growthNoticesEmptyBody": "ছুটি, দাম বদল ও টিমের নিয়ম এখানে দেখা যাবে।",
@@ -1103,5 +724,43 @@
   },
   "growthNoticePublish": "পাঠান",
   "growthNoticePublished": "নোটিশ পাঠানো হয়েছে",
-  "growthNoticeSmsShort": "এই দলের জন্য এসএমএস ক্রেডিট কম। এসএমএস বন্ধ করুন বা ক্রেডিট কিনুন।"
+  "growthNoticeSmsShort": "এই দলের জন্য এসএমএস ক্রেডিট কম। এসএমএস বন্ধ করুন বা ক্রেডিট কিনুন।",
+  "growthSegmentLost": "হারানো লিড",
+  "growthSegmentFacebook": "ফেসবুকের খোলা লিড",
+  "growthSegmentWebsite": "ওয়েবসাইটের খোলা লিড",
+  "growthInboxSource": "চ্যানেল",
+  "growthAcceptTakeHint": "কথোপকথনটি আপনার নামে আসবে, তারপর লিডের তথ্য পূরণ করুন।",
+  "growthInboxClosedTag": "বন্ধ",
+  "growthInboxClosedNote": "এই কথোপকথন বন্ধ করা হয়েছে।",
+  "growthInboxNotTaken": "এখনো কেউ নেননি। দ্রুত উত্তর দিলে লিড পাওয়ার সম্ভাবনা বেশি।",
+  "growthInboxLastMessage": "বার্তা",
+  "growthInboxLastActivity": "সর্বশেষ কার্যকলাপ",
+  "growthInboxRejectTitle": "লিডটি বাতিল করবেন?",
+  "growthInboxRejectBody": "কথোপকথনটি বন্ধ হয়ে ইনবক্স থেকে সরে যাবে।",
+  "growthInboxTake": "আমি নিচ্ছি",
+  "growthInboxTaken": "কথোপকথনটি এখন আপনার",
+  "growthChannelsConnected": "যুক্ত চ্যানেল",
+  "growthChannelsActiveForms": "চালু ফর্ম",
+  "growthChannelTurnOff": "ফর্ম বন্ধ করুন",
+  "growthChannelTurnedOff": "ফর্ম বন্ধ হয়েছে",
+  "growthChannelFormName": "ওয়েবসাইট জিজ্ঞাসা",
+  "growthChannelAccount": "অ্যাকাউন্ট",
+  "growthChannelStatus": "অবস্থা",
+  "growthChannelSince": "যুক্ত হয়েছে",
+  "growthWhatsappHint": "Meta Business Manager থেকে WhatsApp Cloud API নম্বরের তথ্য দিন। এই নম্বরে আসা বার্তা ইনবক্সে আসবে।",
+  "growthWhatsappPhoneId": "ফোন নম্বর আইডি",
+  "growthWhatsappWabaId": "WhatsApp Business অ্যাকাউন্ট আইডি",
+  "growthWhatsappToken": "অ্যাক্সেস টোকেন",
+  "growthWhatsappDisplayPhone": "গ্রাহকরা যে নম্বর দেখবেন",
+  "growthFacebookNotConnected": "এখনো কোনো পেজ যুক্ত হয়নি। ওয়ার্কস্পেসের মালিক ফেসবুকে সাইন ইন করে যুক্ত করবেন।",
+  "growthFacebookConnectedSince": "{date} থেকে যুক্ত",
+  "@growthFacebookConnectedSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "growthSmsEstimatedCost": "আনুমানিক খরচ",
+  "growthCampaignKpiFailed": "ব্যর্থ"
 }

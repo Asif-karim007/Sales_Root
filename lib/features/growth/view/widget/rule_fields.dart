@@ -6,9 +6,7 @@ import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/growth/models/distribution_rule.dart';
-import 'package:salesroot/features/growth/models/inbox_lead.dart';
 import 'package:salesroot/features/growth/providers/distribution_providers.dart';
-import 'package:salesroot/features/growth/providers/inbox_providers.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
 import 'package:salesroot/features/growth/view/widget/growth_labels.dart';
 import 'package:salesroot/features/growth/view/widget/inbox_actions.dart';
@@ -64,11 +62,11 @@ class RuleConditions extends ConsumerWidget {
 
   Future<void> _pickSources(BuildContext context) async {
     final l10n = context.l10n;
-    final picked = await showSrSheet<List<InboxSource>>(
+    final picked = await showSrSheet<List<RuleSource>>(
       context: context,
-      builder: (_) => SrMultiOptionSheet<InboxSource>(
+      builder: (_) => SrMultiOptionSheet<RuleSource>(
         title: l10n.growthRuleSource,
-        options: InboxSource.values,
+        options: RuleSource.values,
         labelOf: (s) => s.label(l10n),
         isSelected: (s) => draft.sources.contains(s.wire),
       ),
@@ -235,7 +233,7 @@ class RuleAssignment extends ConsumerWidget {
     if (draft.mode == AssignMode.member) {
       final member = await pickGrowthMember(
         context,
-        ref,
+        members: ref.read(ruleMembersProvider.future),
         title: l10n.growthRuleMember,
         selected: draft.memberIds.firstOrNull,
       );
@@ -245,7 +243,7 @@ class RuleAssignment extends ConsumerWidget {
     }
     final members = await runGrowthAction(
       context,
-      ref.read(growthMembersProvider.future),
+      ref.read(ruleMembersProvider.future),
     );
     if (members == null || !context.mounted) return;
     final fmt = context.fmt;
@@ -259,8 +257,8 @@ class RuleAssignment extends ConsumerWidget {
         subtitleOf: (m) => m.onLeave
             ? l10n.growthMemberOnLeave
             : m.checkedIn
-            ? l10n.growthMemberCheckedIn(fmt.number(m.openLeads))
-            : l10n.growthMemberLoad(fmt.number(m.openLeads)),
+            ? l10n.growthMemberCheckedIn(fmt.number(m.openLeads ?? 0))
+            : l10n.growthMemberLoad(fmt.number(m.openLeads ?? 0)),
         isSelected: (m) => draft.memberIds.contains(m.id),
       ),
     );
@@ -272,15 +270,15 @@ class RuleAssignment extends ConsumerWidget {
     final l10n = context.l10n;
     final members = await runGrowthAction(
       context,
-      ref.read(growthMembersProvider.future),
+      ref.read(ruleMembersProvider.future),
     );
     if (members == null || !context.mounted) return;
     final bangla = context.fmt.isBangla;
     final byId = {for (final m in members) m.id: m};
-    const queue = 0;
-    final picked = await showSrSheet<int>(
+    const queue = '';
+    final picked = await showSrSheet<String>(
       context: context,
-      builder: (_) => SrOptionSheet<int>(
+      builder: (_) => SrOptionSheet<String>(
         title: l10n.growthRuleFallback,
         options: [queue, ...byId.keys],
         labelOf: (id) => byId[id]?.nameOf(bangla) ?? l10n.growthModeQueue,

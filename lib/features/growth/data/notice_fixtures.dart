@@ -4,6 +4,12 @@ import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/features/growth/models/notice.dart';
 
 const growthNoticesTable = 'growth_notices';
+const noticeSmsWalletTable = 'growth_notice_sms';
+
+/// The SMS credits a notice sent by SMS spends.
+List<Map<String, dynamic>> noticeSmsWalletFixtures(SeedGraph graph) => [
+  {'Id': 1, 'SmsCredits': 5200},
+];
 
 /// Who a notice for [audience] reaches, leaving out its author.
 List<SeedMember> noticeAudience(

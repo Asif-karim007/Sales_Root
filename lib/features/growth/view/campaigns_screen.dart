@@ -32,22 +32,17 @@ class CampaignsScreen extends ConsumerWidget {
         value: ref.watch(campaignListProvider),
         onRetry: () => ref.invalidate(campaignListProvider),
         onUpgrade: () => context.push(Routes.planUsage),
-        data: (context, paged) => GrowthClock(
-          every: const Duration(minutes: 1),
-          builder: (context) => GrowthPagedList<Campaign>(
-            paged: paged,
-            title: l10n.growthCampaignsTitle,
-            onLoadMore: () =>
-                ref.read(campaignListProvider.notifier).loadMore(),
-            onRefresh: () => ref.read(campaignListProvider.notifier).refresh(),
-            header: [const _Balance(), if (canAdd) const _NewButtons()],
-            empty: SrEmptyState(
-              icon: Icons.campaign_outlined,
-              title: l10n.growthCampaignsEmpty,
-              message: l10n.growthCampaignsEmptyBody,
-            ),
-            row: (campaign) => _CampaignRow(campaign: campaign),
+        data: (context, paged) => GrowthPagedList<Campaign>(
+          paged: paged,
+          title: l10n.growthCampaignsTitle,
+          onRefresh: () => ref.read(campaignListProvider.notifier).refresh(),
+          header: [const _Balance(), if (canAdd) const _NewButtons()],
+          empty: SrEmptyState(
+            icon: Icons.campaign_outlined,
+            title: l10n.growthCampaignsEmpty,
+            message: l10n.growthCampaignsEmptyBody,
           ),
+          row: (campaign) => _CampaignRow(campaign: campaign),
         ),
       ),
     );
@@ -61,43 +56,22 @@ class _Balance extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
-    final fmt = context.fmt;
-    final canBuy = ref.watch(moduleAccessProvider(AppModule.campaign)).canAdd;
-    return switch (ref.watch(messagingBalanceProvider)) {
-      AsyncData(:final value) => SrStatGrid(
-        columns: 2,
-        tiles: [
-          _BalanceTile(
-            label: l10n.growthCampaignsSmsCredits,
-            value: fmt.number(value.smsCredits),
-            footer: canBuy
-                ? GestureDetector(
-                    onTap: () => context.push(Routes.campaignCredits),
-                    child: Text(
-                      l10n.growthCampaignsBuyMore,
-                      style: AppText.label(c.accent, size: 12.5),
-                    ),
-                  )
-                : null,
+    return switch (ref.watch(smsCreditsProvider)) {
+      AsyncData(:final value) => GestureDetector(
+        onTap: () => context.push(Routes.campaignCredits),
+        child: _BalanceTile(
+          label: l10n.growthCampaignsSmsCredits,
+          value: context.fmt.number(value),
+          footer: Text(
+            l10n.growthCreditsRule,
+            style: AppText.meta(c.ink2, size: 12),
           ),
-          _BalanceTile(
-            label: l10n.growthCampaignsEmailMonth,
-            value: l10n.growthCampaignOf(
-              fmt.number(value.emailUsed),
-              fmt.number(value.emailLimit),
-            ),
-            footer: SrProgressBar(
-              value: value.emailLimit == 0
-                  ? 0
-                  : value.emailUsed / value.emailLimit,
-            ),
-          ),
-        ],
+        ),
       ),
       AsyncError(:final error) => SrErrorState(
         error: error,
         compact: true,
-        onRetry: () => ref.invalidate(messagingBalanceProvider),
+        onRetry: () => ref.invalidate(planProvider),
       ),
       _ => const SrSkeletonBox(height: 84, radius: 14),
     };

@@ -13,30 +13,33 @@ String campaignChannelLabel(AppLocalizations l10n, CampaignChannel channel) =>
       CampaignChannel.email => l10n.growthCampaignEmail,
     };
 
+/// "19 people · All open leads", or just the count when the audience is not
+/// one of the app's segments.
+String campaignPeople(BuildContext context, Campaign campaign) {
+  final l10n = context.l10n;
+  final count = context.fmt.number(campaign.recipients);
+  final segment = campaign.segment;
+  return segment == null
+      ? l10n.growthCampaignCount(count)
+      : l10n.growthCampaignPeople(count, segment.label(l10n));
+}
+
 /// The results line under a campaign, or when and to whom it will go.
 String campaignSummary(BuildContext context, Campaign campaign) {
   final l10n = context.l10n;
   final fmt = context.fmt;
-  final people = l10n.growthCampaignPeople(
-    fmt.number(campaign.recipients),
-    campaign.segment.label(l10n),
-  );
+  final people = campaignPeople(context, campaign);
   final scheduledAt = campaign.scheduledAt;
   return switch (campaign.status) {
     CampaignStatus.scheduled when scheduledAt != null =>
       '$people · ${fmt.dayTime(scheduledAt)}',
     CampaignStatus.cancelled => '${l10n.growthCampaignCancelledTag} · $people',
-    _ when campaign.isSms => [
+    CampaignStatus.scheduled || CampaignStatus.sending => people,
+    CampaignStatus.done => [
       l10n.growthCampaignSent(fmt.number(campaign.sent)),
       l10n.growthCampaignDelivered(fmt.percent(campaign.deliveredShare * 100)),
       if (campaign.replies > 0)
         l10n.growthCampaignReplies(fmt.number(campaign.replies)),
-      if (campaign.leadsCreated > 0)
-        l10n.growthCampaignLeads(fmt.number(campaign.leadsCreated)),
-    ].join(' · '),
-    _ => [
-      people,
-      l10n.growthCampaignOpened(fmt.percent(campaign.openedShare * 100)),
     ].join(' · '),
   };
 }

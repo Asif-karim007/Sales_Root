@@ -13,15 +13,14 @@ import 'package:salesroot/features/growth/models/campaign.dart';
 import 'package:salesroot/features/growth/providers/campaign_providers.dart';
 import 'package:salesroot/features/growth/view/widget/campaign_text.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
-import 'package:salesroot/features/growth/view/widget/growth_labels.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #146 How a campaign did: delivery, replies, leads and failures.
+/// #146 How a campaign did: delivery, failures and replies.
 class CampaignResultScreen extends ConsumerWidget {
   const CampaignResultScreen({super.key, required this.id});
 
-  final int id;
+  final String id;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,16 +79,6 @@ class CampaignResultScreen extends ConsumerWidget {
             ],
             _ => [
               _Kpis(campaign: campaign),
-              if (campaign.repliesByHour.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                _RepliesChart(campaign: campaign),
-              ],
-              const SizedBox(height: 16),
-              _ReplyLeads(campaign: campaign),
-              if (campaign.isSms && campaign.failed > 0) ...[
-                const SizedBox(height: 16),
-                _Failed(campaign: campaign),
-              ],
               const SizedBox(height: 16),
               _MessageCard(campaign: campaign),
             ],
@@ -109,191 +98,21 @@ class _Kpis extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final tiles = campaign.isSms
-        ? [
-            (l10n.growthCampaignKpiSent, fmt.number(campaign.sent)),
-            (
-              l10n.growthCampaignKpiDelivered,
-              fmt.percent(campaign.deliveredShare * 100),
-            ),
-            (l10n.growthCampaignKpiReplies, fmt.number(campaign.replies)),
-            (l10n.growthCampaignKpiLeads, fmt.number(campaign.leadsCreated)),
-          ]
-        : [
-            (l10n.growthCampaignKpiSent, fmt.number(campaign.sent)),
-            (
-              l10n.growthCampaignKpiOpened,
-              fmt.percent(campaign.openedShare * 100),
-            ),
-            (l10n.growthCampaignKpiClicks, fmt.number(campaign.clicked)),
-            (l10n.growthCampaignKpiLeads, fmt.number(campaign.leadsCreated)),
-          ];
+    final tiles = [
+      (l10n.growthCampaignKpiSent, fmt.number(campaign.sent)),
+      (
+        l10n.growthCampaignKpiDelivered,
+        fmt.percent(campaign.deliveredShare * 100),
+      ),
+      (l10n.growthCampaignKpiFailed, fmt.number(campaign.failed)),
+      (l10n.growthCampaignKpiReplies, fmt.number(campaign.replies)),
+    ];
     return SrStatGrid(
       columns: 2,
       tiles: [
         for (final (label, value) in tiles)
           SrKpiTile(label: label, value: value),
       ],
-    );
-  }
-}
-
-class _RepliesChart extends StatelessWidget {
-  const _RepliesChart({required this.campaign});
-
-  final Campaign campaign;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = SrColors.of(context);
-    final l10n = context.l10n;
-    final fmt = context.fmt;
-    return SrCard(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            campaign.isSms
-                ? l10n.growthCampaignRepliesByHour
-                : l10n.growthCampaignOpensByHour,
-            style: AppText.rowTitle(c.ink, size: 14),
-          ),
-          const SizedBox(height: 10),
-          SrColumnChart(
-            height: 90,
-            showValues: true,
-            series: [
-              for (var i = 0; i < campaign.repliesByHour.length; i++)
-                SrSeries(
-                  label: l10n.growthCampaignHour(fmt.number(i + 1)),
-                  value: campaign.repliesByHour[i].toDouble(),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ReplyLeads extends StatefulWidget {
-  const _ReplyLeads({required this.campaign});
-
-  final Campaign campaign;
-
-  @override
-  State<_ReplyLeads> createState() => _ReplyLeadsState();
-}
-
-class _ReplyLeadsState extends State<_ReplyLeads> {
-  static const _preview = 3;
-  bool _all = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final fmt = context.fmt;
-    final campaign = widget.campaign;
-    final replies = campaign.replyLeads;
-    final shown = _all ? replies : replies.take(_preview).toList();
-    final title = l10n.growthCampaignLeadsFromReplies(
-      fmt.number(campaign.leadsCreated),
-    );
-    if (replies.isEmpty) {
-      return SrRowGroup(
-        title: title,
-        rows: [
-          SrListRow(
-            leading: const SrAvatar(icon: Icons.hourglass_empty_rounded),
-            title: l10n.growthCampaignNoReplies,
-            subtitle: l10n.growthCampaignNoRepliesBody,
-          ),
-        ],
-      );
-    }
-    return SrRowGroup(
-      title: title,
-      seeAllLabel: _all ? l10n.growthCampaignShowLess : l10n.commonSeeAll,
-      onSeeAll: replies.length > _preview
-          ? () => setState(() => _all = !_all)
-          : null,
-      rows: [
-        for (final reply in shown)
-          SrListRow(
-            leading: SrAvatar(name: reply.name),
-            title: reply.name,
-            subtitle: reply.createdTask
-                ? l10n.growthCampaignReplyTask(reply.text)
-                : l10n.growthCampaignReplyLead(reply.text),
-            trailing: SrTag(l10n.growthMessagesLead, tone: SrTone.accent),
-            chevron: reply.leadId != null,
-            onTap: switch (reply.leadId) {
-              final leadId? => () => context.push(Routes.leadFor(leadId)),
-              null => null,
-            },
-          ),
-      ],
-    );
-  }
-}
-
-class _Failed extends ConsumerWidget {
-  const _Failed({required this.campaign});
-
-  final Campaign campaign;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final fmt = context.fmt;
-    final canRetry =
-        ref.watch(moduleAccessProvider(AppModule.campaign)).canAdd &&
-        campaign.switchedOff > 0;
-    return SrRowGroup(
-      title: l10n.growthCampaignFailed(fmt.number(campaign.failed)),
-      rows: [
-        SrListRow(
-          leading: const SrAvatar(
-            icon: Icons.error_outline_rounded,
-            tone: SrAvatarTone.danger,
-          ),
-          title: l10n.growthCampaignFailedSplit(
-            fmt.number(campaign.wrongNumber),
-            fmt.number(campaign.switchedOff),
-          ),
-          subtitle: canRetry
-              ? l10n.growthCampaignTapRetry
-              : l10n.growthCampaignWrongNumbersHint,
-          chevron: canRetry,
-          onTap: canRetry ? () => _retry(context, ref) : null,
-        ),
-      ],
-    );
-  }
-
-  Future<void> _retry(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final fmt = context.fmt;
-    final confirmed = await showSrConfirm(
-      context,
-      title: l10n.growthCampaignRetryTitle,
-      message: l10n.growthCampaignRetryBody(fmt.number(campaign.switchedOff)),
-      confirmLabel: l10n.growthCampaignRetry,
-      icon: Icons.replay_rounded,
-    );
-    if (!confirmed || !context.mounted) return;
-    final updated = await runGrowthAction(
-      context,
-      ref.read(campaignActionsProvider.notifier).retry(campaign.id),
-      onQuota: () => context.push(Routes.campaignCredits),
-    );
-    if (updated == null || !context.mounted) return;
-    showSrSuccess(
-      context,
-      l10n.growthCampaignRetried(
-        fmt.number(updated.delivered - campaign.delivered),
-      ),
     );
   }
 }
@@ -308,19 +127,16 @@ class _ScheduledCard extends ConsumerWidget {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final at = campaign.scheduledAt;
-    final canCancel =
-        ref.watch(moduleAccessProvider(AppModule.campaign)).canDelete &&
-        campaign.canDelete;
+    final canCancel = ref
+        .watch(moduleAccessProvider(AppModule.campaign))
+        .canDelete;
     return SrNote(
       tone: SrNoteTone.gold,
       icon: Icons.schedule_rounded,
       title: at == null
           ? null
           : l10n.growthCampaignScheduledFor(fmt.dayTime(at)),
-      message: l10n.growthCampaignPeople(
-        fmt.number(campaign.recipients),
-        campaign.segment.label(l10n),
-      ),
+      message: campaignPeople(context, campaign),
       action: canCancel
           ? SrButton(
               label: l10n.growthCampaignCancel,
@@ -364,7 +180,7 @@ class _MessageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
-    final text = campaign.message ?? campaign.subject ?? '';
+    final text = campaign.message ?? '';
     if (text.isEmpty) return const SizedBox.shrink();
     return SrCard(
       padding: const EdgeInsets.all(14),
@@ -372,7 +188,7 @@ class _MessageCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            campaign.isSms ? l10n.growthSmsMessage : l10n.growthEmailSubject,
+            campaign.isSms ? l10n.growthSmsMessage : l10n.growthEmailBody,
             style: AppText.fieldLabel(c.ink2),
           ),
           const SizedBox(height: 6),

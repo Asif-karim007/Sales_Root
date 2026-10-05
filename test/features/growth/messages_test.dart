@@ -1,62 +1,60 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/features/growth/models/message_thread.dart';
+import 'package:salesroot/features/growth/models/conversation.dart';
+import 'package:salesroot/features/growth/providers/campaign_providers.dart';
 import 'package:salesroot/features/growth/providers/messages_providers.dart';
 
-import 'growth_harness.dart';
+import '../../helpers/api_stub.dart';
+import 'growth_test_helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('a sent message streams in and the customer replies', () async {
-    final container = await growthContainer();
-    final updates = <List<ThreadMessage>>[];
-    final sub = container.listen(threadMessagesProvider(1), (_, next) {
-      final messages = next.value;
-      if (messages != null) updates.add(messages);
-    }, fireImmediately: true);
-    addTearDown(sub.close);
-    final start = await container.read(threadMessagesProvider(1).future);
+  test('templates are asked for one channel', () async {
+    final stub = growthStub();
+    final container = await growthContainer(stub: stub);
 
-    await container
-        .read(messageActionsProvider.notifier)
-        .send(1, const SendMessageInput(text: 'Driver: 01711-223344'));
-    await Future<void>.delayed(const Duration(milliseconds: 120));
+    final templates = await container.read(
+      messageTemplatesProvider(ConversationChannel.whatsapp.wire).future,
+    );
+    expect(
+      stub.last('GET', 'templates')?.queryParameters['channel'],
+      'whatsapp',
+    );
+    expect(templates.first.approved, isTrue);
+    expect(templates.last.approved, isFalse);
 
-    final last = updates.last;
-    expect(last.length, start.length + 2);
-    expect(last[last.length - 2].mine, isTrue);
-    expect(last[last.length - 2].text, 'Driver: 01711-223344');
-    expect(last.last.mine, isFalse);
+    await container.read(smsTemplatesProvider.future);
+    expect(stub.last('GET', 'templates')?.queryParameters['channel'], 'sms');
   });
 
-  test('the filters count threads and Mine keeps my threads', () async {
-    final container = await growthContainer();
-    container.read(threadFilterProvider.notifier).set(ThreadFilter.mine);
-    final mine = await container.read(threadListProvider.future);
-    expect(mine.items, isNotEmpty);
-    expect(mine.items.every((t) => t.assignedToMe), isTrue);
-    expect(mine.facets['Counts']?['Mine'], mine.items.length);
+  test('the recorded empty template list parses', () async {
+    final container = await growthContainer(stub: growthStub(empty: true));
+    expect(await container.read(smsTemplatesProvider.future), isEmpty);
   });
 
-  test('a closed WhatsApp window only takes templates', () async {
-    final container = await growthContainer();
-    final id = await container
-        .read(messageActionsProvider.notifier)
-        .open(phone: '+8801999000111', name: 'Sohag Mia');
-    final thread = await container.read(messageThreadProvider(id).future);
-    expect(thread.needsTemplate, isTrue);
+  test('a conversation with a lead gets an AI follow-up draft', () async {
+    final stub = growthStub();
+    final container = await growthContainer(stub: stub);
 
-    final repository = container.read(messagesRepositoryProvider);
-    await expectLater(
-      repository.send(id, const SendMessageInput(text: 'Hello')),
-      throwsA(isA<ApiFailure>().having((f) => f.isValidation, '400', true)),
+    final draft = await container.read(
+      replyDraftProvider(conversationId(2)).future,
     );
-    final sent = await repository.send(
-      id,
-      const SendMessageInput(text: 'Hello Sohag', templateId: 3),
+    expect(draft, (fixture('growth_ai_draft') as Map)['text']);
+    expect(stub.lastBody('POST', 'ai/draft'), {
+      'purpose': 'followup',
+      'leadId': leadId,
+    });
+  });
+
+  test('no draft for a number the CRM does not know', () async {
+    final stub = growthStub();
+    final container = await growthContainer(stub: stub);
+
+    final draft = await container.read(
+      replyDraftProvider(conversationId(1)).future,
     );
-    expect(sent.mine, isTrue);
+    expect(draft, isNull);
+    expect(stub.last('POST', 'ai/draft'), isNull);
   });
 }

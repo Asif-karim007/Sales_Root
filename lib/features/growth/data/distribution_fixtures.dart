@@ -1,9 +1,16 @@
 import 'package:salesroot/core/fake/seed_graph.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
 
 const growthMembersTable = 'growth_members';
 const growthRulesTable = 'growth_rules';
 const growthDistributionTable = 'growth_distribution';
+
+/// Lead form and campaign names the rules can match.
+const distributionFormNames = [
+  'Dealer application',
+  'SolarOct26',
+  'Website enquiry',
+  'Eid offer 2026',
+];
 
 /// Members as distribution sees them today: leave, check-in and load.
 List<Map<String, dynamic>> growthMemberFixtures(SeedGraph graph) {
@@ -12,13 +19,13 @@ List<Map<String, dynamic>> growthMemberFixtures(SeedGraph graph) {
     for (final member in graph.members)
       {
         'Id': member.id,
-        'Name': member.name,
-        'NameBn': member.nameBn,
-        'IsTeamLead': member.role == WorkspaceRole.teamLead,
-        'OnLeave': member.id != SeedGraph.meId && member.id % 6 == 0,
-        'CheckedIn': member.id == SeedGraph.meId || member.id % 4 != 0,
-        'OpenLeads': graph.leadsOf(member.id).where((l) => l.isOpen).length,
-        'AssignedToday': random.nextInt(4),
+        'id': '${member.id}',
+        'name': member.name,
+        'nameBn': member.nameBn,
+        'onLeave': member.id != SeedGraph.meId && member.id % 6 == 0,
+        'checkedIn': member.id == SeedGraph.meId || member.id % 4 != 0,
+        'openLeads': graph.leadsOf(member.id).where((l) => l.isOpen).length,
+        'assignedToday': random.nextInt(4),
       },
   ];
 }

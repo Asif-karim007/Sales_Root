@@ -5,7 +5,6 @@ import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/growth/data/distribution_repository.dart';
 import 'package:salesroot/features/growth/data/fake_distribution_repository.dart';
 import 'package:salesroot/features/growth/models/distribution_rule.dart';
-import 'package:salesroot/features/growth/providers/inbox_providers.dart';
 
 part 'distribution_providers.g.dart';
 
@@ -36,7 +35,7 @@ class DistributionNotifier extends _$DistributionNotifier {
     }
   }
 
-  Future<void> setRuleEnabled(int id, bool enabled) async {
+  Future<void> setRuleEnabled(String id, bool enabled) async {
     final before = state.value;
     if (before == null) return;
     state = AsyncData(
@@ -75,12 +74,16 @@ class DistributionNotifier extends _$DistributionNotifier {
 Future<RuleTestResult> ruleTest(Ref ref) =>
     ref.watch(distributionRepositoryProvider).test();
 
-/// A rule to edit; 0 starts a new one.
+/// A rule to edit; [newRuleId] starts a new one.
 @riverpod
-Future<DistributionRule?> distributionRule(Ref ref, int id) async {
-  if (id == 0) return null;
+Future<DistributionRule?> distributionRule(Ref ref, String id) async {
+  if (id == newRuleId) return null;
   return ref.watch(distributionRepositoryProvider).rule(id);
 }
+
+@riverpod
+Future<List<GrowthMember>> ruleMembers(Ref ref) =>
+    ref.watch(distributionRepositoryProvider).members();
 
 @riverpod
 Future<List<String>> ruleForms(Ref ref) =>
@@ -90,17 +93,22 @@ Future<List<String>> ruleForms(Ref ref) =>
 Future<List<LocalizedName>> ruleAreas(Ref ref) =>
     ref.watch(distributionRepositoryProvider).areas();
 
+/// The route id that opens the rule editor on a new rule.
+const newRuleId = 'new';
+
 enum RuleOutcome { saved, deleted }
 
 /// Saving or deleting one rule (#140).
 @riverpod
 class RuleSubmit extends _$RuleSubmit {
   @override
-  AsyncValue<RuleOutcome?> build(int id) => const AsyncData(null);
+  AsyncValue<RuleOutcome?> build(String id) => const AsyncData(null);
 
   Future<void> save(RuleInput input) => _run(() async {
     final repository = ref.read(distributionRepositoryProvider);
-    id == 0 ? await repository.create(input) : await repository.save(id, input);
+    id == newRuleId
+        ? await repository.create(input)
+        : await repository.save(id, input);
     return RuleOutcome.saved;
   });
 
@@ -118,9 +126,8 @@ class RuleSubmit extends _$RuleSubmit {
     if (result.hasValue) {
       ref
         ..invalidate(distributionProvider)
-        ..invalidate(ruleTestProvider)
-        ..invalidate(inboxSuggestionProvider);
-      if (id != 0) ref.invalidate(distributionRuleProvider(id));
+        ..invalidate(ruleTestProvider);
+      if (id != newRuleId) ref.invalidate(distributionRuleProvider(id));
     }
   }
 }

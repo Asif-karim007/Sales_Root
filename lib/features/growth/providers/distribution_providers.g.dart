@@ -89,7 +89,7 @@ final class DistributionNotifierProvider
 }
 
 String _$distributionNotifierHash() =>
-    r'7f64cbc2c4f37a0f3c4c200a0fb98a082cb0b0e0';
+    r'ac78997cfd272523bbb3cf0c967be1827ad511d4';
 
 /// The rules screen (#139). Switches flip at once and roll back if the
 /// server refuses.
@@ -157,12 +157,12 @@ final class RuleTestProvider
 
 String _$ruleTestHash() => r'dc45862bbe1a1f240985f4895ad39d71913d53ac';
 
-/// A rule to edit; 0 starts a new one.
+/// A rule to edit; [newRuleId] starts a new one.
 
 @ProviderFor(distributionRule)
 final distributionRuleProvider = DistributionRuleFamily._();
 
-/// A rule to edit; 0 starts a new one.
+/// A rule to edit; [newRuleId] starts a new one.
 
 final class DistributionRuleProvider
     extends
@@ -174,10 +174,10 @@ final class DistributionRuleProvider
     with
         $FutureModifier<DistributionRule?>,
         $FutureProvider<DistributionRule?> {
-  /// A rule to edit; 0 starts a new one.
+  /// A rule to edit; [newRuleId] starts a new one.
   DistributionRuleProvider._({
     required DistributionRuleFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'distributionRuleProvider',
@@ -204,7 +204,7 @@ final class DistributionRuleProvider
 
   @override
   FutureOr<DistributionRule?> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return distributionRule(ref, argument);
   }
 
@@ -219,12 +219,12 @@ final class DistributionRuleProvider
   }
 }
 
-String _$distributionRuleHash() => r'db6f91c9823e770572c9c14f097d390795c76450';
+String _$distributionRuleHash() => r'e451f8d9e2082d1a54601567465b467c10a227a4';
 
-/// A rule to edit; 0 starts a new one.
+/// A rule to edit; [newRuleId] starts a new one.
 
 final class DistributionRuleFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<DistributionRule?>, int> {
+    with $FunctionalFamilyOverride<FutureOr<DistributionRule?>, String> {
   DistributionRuleFamily._()
     : super(
         retry: null,
@@ -234,14 +234,55 @@ final class DistributionRuleFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// A rule to edit; 0 starts a new one.
+  /// A rule to edit; [newRuleId] starts a new one.
 
-  DistributionRuleProvider call(int id) =>
+  DistributionRuleProvider call(String id) =>
       DistributionRuleProvider._(argument: id, from: this);
 
   @override
   String toString() => r'distributionRuleProvider';
 }
+
+@ProviderFor(ruleMembers)
+final ruleMembersProvider = RuleMembersProvider._();
+
+final class RuleMembersProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<GrowthMember>>,
+          List<GrowthMember>,
+          FutureOr<List<GrowthMember>>
+        >
+    with
+        $FutureModifier<List<GrowthMember>>,
+        $FutureProvider<List<GrowthMember>> {
+  RuleMembersProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'ruleMembersProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$ruleMembersHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<GrowthMember>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<GrowthMember>> create(Ref ref) {
+    return ruleMembers(ref);
+  }
+}
+
+String _$ruleMembersHash() => r'ef21d0ed78bce6abf2b8f695a2b14e19e2eee20a';
 
 @ProviderFor(ruleForms)
 final ruleFormsProvider = RuleFormsProvider._();
@@ -334,7 +375,7 @@ final class RuleSubmitProvider
   /// Saving or deleting one rule (#140).
   RuleSubmitProvider._({
     required RuleSubmitFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'ruleSubmitProvider',
@@ -376,7 +417,7 @@ final class RuleSubmitProvider
   }
 }
 
-String _$ruleSubmitHash() => r'71028d6103600e2ab0ea11fd2407a5203a4c7a31';
+String _$ruleSubmitHash() => r'e457447b78d9eb9b7974070e347818312658a307';
 
 /// Saving or deleting one rule (#140).
 
@@ -387,7 +428,7 @@ final class RuleSubmitFamily extends $Family
           AsyncValue<RuleOutcome?>,
           AsyncValue<RuleOutcome?>,
           AsyncValue<RuleOutcome?>,
-          int
+          String
         > {
   RuleSubmitFamily._()
     : super(
@@ -400,7 +441,7 @@ final class RuleSubmitFamily extends $Family
 
   /// Saving or deleting one rule (#140).
 
-  RuleSubmitProvider call(int id) =>
+  RuleSubmitProvider call(String id) =>
       RuleSubmitProvider._(argument: id, from: this);
 
   @override
@@ -410,10 +451,10 @@ final class RuleSubmitFamily extends $Family
 /// Saving or deleting one rule (#140).
 
 abstract class _$RuleSubmit extends $Notifier<AsyncValue<RuleOutcome?>> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  AsyncValue<RuleOutcome?> build(int id);
+  AsyncValue<RuleOutcome?> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

@@ -16,6 +16,25 @@ enum AssignMode {
   );
 }
 
+/// Where a lead came from, as a rule matches it.
+enum RuleSource {
+  facebook('Facebook'),
+  website('Website'),
+  whatsapp('WhatsApp'),
+  messenger('Messenger'),
+  sms('SMS'),
+  call('Phone call');
+
+  const RuleSource(this.wire);
+
+  final String wire;
+
+  static RuleSource fromWire(String? value) => values.firstWhere(
+    (source) => source.wire == value,
+    orElse: () => RuleSource.website,
+  );
+}
+
 /// One "if this, then assign" rule. Empty condition lists match anything.
 class DistributionRule {
   const DistributionRule({
@@ -41,7 +60,7 @@ class DistributionRule {
     this.canDelete = true,
   });
 
-  final int id;
+  final String id;
   final int position;
   final String name;
   final bool enabled;
@@ -55,10 +74,10 @@ class DistributionRule {
   /// Form or campaign names.
   final List<String> forms;
   final AssignMode mode;
-  final List<int> memberIds;
+  final List<String> memberIds;
   final bool onlyCheckedIn;
   final bool skipOnLeave;
-  final int? fallbackMemberId;
+  final String? fallbackMemberId;
   final int? escalateMinutes;
 
   /// ISO weekdays (1 = Monday) the rule runs on; empty means every day.
@@ -106,7 +125,7 @@ class DistributionRule {
 
   factory DistributionRule.fromJson(Map<String, dynamic> json) =>
       DistributionRule(
-        id: jsonInt(json['Id']) ?? 0,
+        id: jsonId(json['Id']) ?? '',
         position: jsonInt(json['Position']) ?? 0,
         name: json['Name'] as String? ?? '',
         enabled: json['Enabled'] != false,
@@ -114,10 +133,10 @@ class DistributionRule {
         areas: jsonStrings(json['Areas']),
         forms: jsonStrings(json['Forms']),
         mode: AssignMode.fromWire(json['Mode'] as String?),
-        memberIds: jsonInts(json['MemberIds']),
+        memberIds: jsonIds(json['MemberIds']),
         onlyCheckedIn: jsonBool(json['OnlyCheckedIn']),
         skipOnLeave: json['SkipOnLeave'] != false,
-        fallbackMemberId: jsonInt(json['FallbackMemberId']),
+        fallbackMemberId: jsonId(json['FallbackMemberId']),
         escalateMinutes: jsonInt(json['EscalateMinutes']),
         days: jsonInts(json['Days']),
         fromHour: jsonInt(json['FromHour']),
@@ -172,11 +191,11 @@ class RuleInput {
   final List<String> sources;
   final List<String> areas;
   final List<String> forms;
-  final List<int> memberIds;
+  final List<String> memberIds;
   final bool onlyCheckedIn;
   final bool skipOnLeave;
   final List<int> days;
-  final int? fallbackMemberId;
+  final String? fallbackMemberId;
   final int? escalateMinutes;
   final int? fromHour;
   final int? toHour;
@@ -189,11 +208,11 @@ class RuleInput {
     List<String>? sources,
     List<String>? areas,
     List<String>? forms,
-    List<int>? memberIds,
+    List<String>? memberIds,
     bool? onlyCheckedIn,
     bool? skipOnLeave,
     List<int>? days,
-    int? Function()? fallbackMemberId,
+    String? Function()? fallbackMemberId,
     int? Function()? escalateMinutes,
     (int?, int?)? hours,
     int? Function()? dailyCap,
@@ -254,26 +273,24 @@ class DistributionSettings {
       );
 }
 
-/// A team member as the rules see them today.
+/// A team member, with how distribution sees them today when known.
 class GrowthMember {
   const GrowthMember({
     required this.id,
     required this.name,
-    required this.nameBn,
-    this.isTeamLead = false,
+    this.nameBn = '',
     this.onLeave = false,
     this.checkedIn = false,
-    this.openLeads = 0,
+    this.openLeads,
     this.assignedToday = 0,
   });
 
-  final int id;
+  final String id;
   final String name;
   final String nameBn;
-  final bool isTeamLead;
   final bool onLeave;
   final bool checkedIn;
-  final int openLeads;
+  final int? openLeads;
   final int assignedToday;
 
   String nameOf(bool bangla) => bangla && nameBn.isNotEmpty ? nameBn : name;
@@ -282,22 +299,22 @@ class GrowthMember {
     id: id,
     name: name,
     nameBn: nameBn,
-    isTeamLead: isTeamLead,
     onLeave: onLeave,
     checkedIn: checkedIn,
-    openLeads: openLeads + 1,
+    openLeads: (openLeads ?? 0) + 1,
     assignedToday: assignedToday + 1,
   );
 
+  /// A `GET workspaces/members` row; the load fields come only from the
+  /// distribution desk.
   factory GrowthMember.fromJson(Map<String, dynamic> json) => GrowthMember(
-    id: jsonInt(json['Id']) ?? 0,
-    name: json['Name'] as String? ?? '',
-    nameBn: json['NameBn'] as String? ?? '',
-    isTeamLead: jsonBool(json['IsTeamLead']),
-    onLeave: jsonBool(json['OnLeave']),
-    checkedIn: jsonBool(json['CheckedIn']),
-    openLeads: jsonInt(json['OpenLeads']) ?? 0,
-    assignedToday: jsonInt(json['AssignedToday']) ?? 0,
+    id: jsonId(json['id']) ?? '',
+    name: json['name'] as String? ?? json['phone'] as String? ?? '',
+    nameBn: json['nameBn'] as String? ?? '',
+    onLeave: jsonBool(json['onLeave']),
+    checkedIn: jsonBool(json['checkedIn']),
+    openLeads: jsonInt(json['openLeads']),
+    assignedToday: jsonInt(json['assignedToday']) ?? 0,
   );
 }
 
@@ -327,12 +344,12 @@ class RuleTestRow {
     required this.count,
   });
 
-  final int ruleId;
+  final String ruleId;
   final int position;
   final int count;
 
   factory RuleTestRow.fromJson(Map<String, dynamic> json) => RuleTestRow(
-    ruleId: jsonInt(json['RuleId']) ?? 0,
+    ruleId: jsonId(json['RuleId']) ?? '',
     position: jsonInt(json['Position']) ?? 0,
     count: jsonInt(json['Count']) ?? 0,
   );

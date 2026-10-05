@@ -12,11 +12,12 @@ import 'package:salesroot/features/growth/models/lead_channel.dart';
 import 'package:salesroot/features/growth/providers/sources_providers.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
 import 'package:salesroot/features/growth/view/widget/growth_labels.dart';
+import 'package:salesroot/features/growth/view/widget/whatsapp_connect_form.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// Details of a non-Facebook channel: its embed code or link, and connect or
-/// disconnect.
+/// Details of a WhatsApp or form channel: its embed code or link, and
+/// connect, disconnect or switch on and off.
 class ChannelSheet extends ConsumerWidget {
   const ChannelSheet({super.key, required this.channel});
 
@@ -25,12 +26,13 @@ class ChannelSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final fmt = context.fmt;
     final canEdit = ref
         .watch(moduleAccessProvider(AppModule.leadSources))
         .canEdit;
-    final code = channel.embedCode;
-    final link = channel.shareUrl;
+    final code = channel.isConnected ? channel.embedCode : null;
+    final link = channel.isConnected ? channel.shareUrl : null;
+    final connectWhatsApp =
+        canEdit && channel.kind == ChannelKind.whatsapp && !channel.isConnected;
     return SrSheet(
       title: channel.kind.label(l10n),
       subtitle: channel.account,
@@ -39,15 +41,7 @@ class ChannelSheet extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (channel.isConnected)
-              GrowthInfoCard(
-                lines: [
-                  (l10n.growthChannelLeadsAll, fmt.number(channel.leadCount)),
-                  (
-                    l10n.growthChannelsLeadsWeek,
-                    fmt.number(channel.leadsThisWeek),
-                  ),
-                ],
-              )
+              _ConnectedCard(channel: channel)
             else
               SrNote(message: _hint(l10n)),
             if (code != null) ...[
@@ -65,30 +59,15 @@ class ChannelSheet extends ConsumerWidget {
               const SizedBox(height: 12),
               _CodeBox(text: link),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: SrButton(
-                      label: l10n.growthChannelCopyLink,
-                      icon: Icons.copy_rounded,
-                      variant: SrButtonVariant.secondary,
-                      onPressed: () => _copy(context, link),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: SrButton(
-                      label: l10n.commonShare,
-                      icon: Icons.share_outlined,
-                      variant: SrButtonVariant.secondary,
-                      onPressed: () =>
-                          SharePlus.instance.share(ShareParams(text: link)),
-                    ),
-                  ),
-                ],
-              ),
+              _LinkButtons(link: link, onCopy: () => _copy(context, link)),
             ],
-            if (canEdit) ...[const SizedBox(height: 16), _action(context, ref)],
+            if (connectWhatsApp) ...[
+              const SizedBox(height: 12),
+              const WhatsAppConnectForm(),
+            ] else if (canEdit) ...[
+              const SizedBox(height: 16),
+              _action(context, ref),
+            ],
           ],
         ),
       ),
@@ -98,47 +77,50 @@ class ChannelSheet extends ConsumerWidget {
   String _hint(AppLocalizations l10n) => switch (channel.kind) {
     ChannelKind.website => l10n.growthChannelWebsiteHint,
     ChannelKind.hostedForm => l10n.growthChannelHostedHint,
-    ChannelKind.email => l10n.growthChannelEmailHint,
+    ChannelKind.whatsapp => l10n.growthWhatsappHint,
     _ => l10n.growthChannelGenericHint,
   };
 
   Widget _action(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final actions = ref.read(channelActionsProvider.notifier);
-    if (channel.isConnected) {
+    final integration = channel.integration;
+    if (integration != null) {
       return SrButton(
         label: l10n.growthChannelDisconnect,
         variant: SrButtonVariant.danger,
         expand: true,
         onPressed: () => _run(
           context,
-          actions.disconnect(channel.id),
+          actions.disconnect(integration.id),
           l10n.growthChannelDisconnected,
         ),
       );
     }
+    final on = channel.isConnected;
     return SrButton(
-      label: switch (channel.kind) {
-        ChannelKind.website => l10n.growthChannelCodeAdded,
-        ChannelKind.hostedForm => l10n.growthChannelTurnOn,
-        _ => l10n.growthChannelConnect,
-      },
+      label: on ? l10n.growthChannelTurnOff : l10n.growthChannelTurnOn,
+      variant: on ? SrButtonVariant.danger : SrButtonVariant.primary,
       expand: true,
       onPressed: () => _run(
         context,
-        actions.connect(channel.id),
-        l10n.growthChannelConnectedDone,
+        actions.setForm(
+          channel.form,
+          active: !on,
+          name: l10n.growthChannelFormName,
+        ),
+        on ? l10n.growthChannelTurnedOff : l10n.growthChannelConnectedDone,
       ),
     );
   }
 
   Future<void> _run(
     BuildContext context,
-    Future<LeadChannel> work,
+    Future<Object?> work,
     String done,
   ) async {
-    final result = await runGrowthAction(context, work);
-    if (result == null || !context.mounted) return;
+    final finished = await runGrowthTask(context, work);
+    if (!finished || !context.mounted) return;
     showSrSuccess(context, done);
     Navigator.of(context).pop();
   }
@@ -146,6 +128,66 @@ class ChannelSheet extends ConsumerWidget {
   void _copy(BuildContext context, String text) {
     Clipboard.setData(ClipboardData(text: text));
     showSrInfo(context, context.l10n.growthCopied);
+  }
+}
+
+class _ConnectedCard extends StatelessWidget {
+  const _ConnectedCard({required this.channel});
+
+  final LeadChannel channel;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final fmt = context.fmt;
+    final since = channel.integration?.connectedAt;
+    final account = channel.account;
+    return GrowthInfoCard(
+      lines: [
+        if (account != null)
+          (
+            l10n.growthChannelAccount,
+            channel.kind == ChannelKind.whatsapp
+                ? growthPhone(context, account)
+                : account,
+          ),
+        (l10n.growthChannelStatus, l10n.growthChannelConnected),
+        if (since != null) (l10n.growthChannelSince, fmt.date(since)),
+      ],
+    );
+  }
+}
+
+class _LinkButtons extends StatelessWidget {
+  const _LinkButtons({required this.link, required this.onCopy});
+
+  final String link;
+  final VoidCallback onCopy;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Row(
+      children: [
+        Expanded(
+          child: SrButton(
+            label: l10n.growthChannelCopyLink,
+            icon: Icons.copy_rounded,
+            variant: SrButtonVariant.secondary,
+            onPressed: onCopy,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: SrButton(
+            label: l10n.commonShare,
+            icon: Icons.share_outlined,
+            variant: SrButtonVariant.secondary,
+            onPressed: () => SharePlus.instance.share(ShareParams(text: link)),
+          ),
+        ),
+      ],
+    );
   }
 }
 

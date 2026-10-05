@@ -1,34 +1,39 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/paging/paged.dart';
-import 'package:salesroot/features/growth/data/fake_messages_repository.dart';
+import 'package:salesroot/core/workspace/workspace_providers.dart';
+import 'package:salesroot/features/growth/data/api_messages_repository.dart';
 import 'package:salesroot/features/growth/data/messages_repository.dart';
-import 'package:salesroot/features/growth/models/message_thread.dart';
+import 'package:salesroot/features/growth/models/conversation.dart';
+import 'package:salesroot/features/growth/models/lead_channel.dart';
+import 'package:salesroot/features/growth/providers/inbox_providers.dart';
+import 'package:salesroot/features/growth/providers/sources_providers.dart';
 
 part 'messages_providers.g.dart';
 
 @Riverpod(keepAlive: true)
-MessagesRepository messagesRepository(Ref ref) =>
-    FakeMessagesRepository(ref.watch(fakeBackendProvider));
-
-@riverpod
-class ThreadFilterNotifier extends _$ThreadFilterNotifier {
-  @override
-  ThreadFilter build() => ThreadFilter.all;
-
-  void set(ThreadFilter filter) => state = filter;
+MessagesRepository messagesRepository(Ref ref) {
+  ref.watch(currentWorkspaceProvider.select((w) => w?.id));
+  return ApiMessagesRepository(ref.watch(growthApiProvider));
 }
 
-/// The unified inbox (#141), latest conversation first.
+@riverpod
+class ThreadBoxNotifier extends _$ThreadBoxNotifier {
+  @override
+  ConversationBox build() => ConversationBox.all;
+
+  void set(ConversationBox box) => state = box;
+}
+
+/// The unified inbox (#141): every conversation, latest first.
 @riverpod
 class ThreadListNotifier extends _$ThreadListNotifier {
   @override
-  Future<Paged<MessageThread>> build() async {
-    final filter = ref.watch(threadFilterProvider);
-    final page = await ref.watch(messagesRepositoryProvider).threads(filter);
-    return Paged.first(page, facetKeys: const ['Counts']);
+  Future<Paged<Conversation>> build() async {
+    final box = ref.watch(threadBoxProvider);
+    return Paged.first(await ref.watch(leadInboxRepositoryProvider).list(box));
   }
 
   Future<void> loadMore() async {
@@ -37,8 +42,8 @@ class ThreadListNotifier extends _$ThreadListNotifier {
     state = AsyncData(current.loadingMore());
     try {
       final next = await ref
-          .read(messagesRepositoryProvider)
-          .threads(ref.read(threadFilterProvider), page: current.page + 1);
+          .read(leadInboxRepositoryProvider)
+          .list(ref.read(threadBoxProvider), page: current.page + 1);
       if (!ref.mounted) return;
       state = AsyncData(current.append(next));
     } on ApiFailure catch (failure) {
@@ -53,55 +58,46 @@ class ThreadListNotifier extends _$ThreadListNotifier {
   }
 }
 
+/// The Page and number the inbox is connected to, e.g. "Rahim Traders ·
+/// +8801711…"; null when nothing is connected or the list is out of reach.
 @riverpod
-Future<MessagingAccount> messagingAccount(Ref ref) =>
-    ref.watch(messagesRepositoryProvider).account();
+String? messagingAccount(Ref ref) {
+  final integrations = ref.watch(integrationsProvider).value ?? const [];
+  final names = [
+    for (final provider in const [
+      IntegrationProvider.meta,
+      IntegrationProvider.whatsapp,
+    ])
+      ?integrations
+          .where((i) => i.provider == provider)
+          .firstOrNull
+          ?.displayName,
+  ];
+  return names.isEmpty ? null : names.join(' · ');
+}
 
+/// Templates for one channel, e.g. `whatsapp` or `sms`.
 @riverpod
-Future<MessageThread> messageThread(Ref ref, int id) =>
-    ref.watch(messagesRepositoryProvider).thread(id);
+Future<List<MessageTemplate>> messageTemplates(Ref ref, String channel) =>
+    ref.watch(messagesRepositoryProvider).templates(channel: channel);
 
+/// An AI reply for a conversation tied to a lead or customer; null when it
+/// is with someone the CRM doesn't know yet.
 @riverpod
-Stream<List<ThreadMessage>> threadMessages(Ref ref, int id) =>
-    ref.watch(messagesRepositoryProvider).watch(id);
-
-@riverpod
-Future<List<MessageTemplate>> messageTemplates(Ref ref) =>
-    ref.watch(messagesRepositoryProvider).templates();
-
-/// Sending, reading and assigning in a conversation; callers show the
-/// outcome.
-@Riverpod(keepAlive: true)
-class MessageActions extends _$MessageActions {
-  @override
-  void build() {}
-
-  Future<void> send(int threadId, SendMessageInput input) async {
-    await ref.read(messagesRepositoryProvider).send(threadId, input);
-    if (ref.mounted) _refresh(threadId);
-  }
-
-  Future<void> markRead(int threadId) async {
-    await ref.read(messagesRepositoryProvider).markRead(threadId);
-    if (ref.mounted) ref.invalidate(threadListProvider);
-  }
-
-  Future<void> assign(int threadId, int memberId) async {
-    await ref.read(messagesRepositoryProvider).assign(threadId, memberId);
-    if (ref.mounted) _refresh(threadId);
-  }
-
-  Future<int> open({required String phone, required String name}) async {
-    final id = await ref
-        .read(messagesRepositoryProvider)
-        .openThread(phone: phone, name: name);
-    if (ref.mounted) ref.invalidate(threadListProvider);
-    return id;
-  }
-
-  void _refresh(int threadId) {
-    ref
-      ..invalidate(messageThreadProvider(threadId))
-      ..invalidate(threadListProvider);
-  }
+Future<String?> replyDraft(Ref ref, String conversationId) async {
+  final repository = ref.watch(messagesRepositoryProvider);
+  final conversation = await ref.watch(
+    conversationProvider(conversationId).future,
+  );
+  final leadId = conversation.leadId;
+  final companyId = conversation.companyId;
+  if (leadId == null && companyId == null) return null;
+  final text = await repository.draft(
+    DraftAsk(
+      purpose: DraftAsk.followUp,
+      leadId: leadId,
+      companyId: leadId == null ? companyId : null,
+    ),
+  );
+  return text.trim().isEmpty ? null : text.trim();
 }

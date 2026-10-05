@@ -9,6 +9,47 @@ part of 'sources_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(growthApi)
+final growthApiProvider = GrowthApiProvider._();
+
+final class GrowthApiProvider
+    extends $FunctionalProvider<GrowthApi, GrowthApi, GrowthApi>
+    with $Provider<GrowthApi> {
+  GrowthApiProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'growthApiProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$growthApiHash();
+
+  @$internal
+  @override
+  $ProviderElement<GrowthApi> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  GrowthApi create(Ref ref) {
+    return growthApi(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(GrowthApi value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<GrowthApi>(value),
+    );
+  }
+}
+
+String _$growthApiHash() => r'5adfc1a3f2bcff60b8e718d6697ea9e78193fe36';
+
 @ProviderFor(leadSourcesRepository)
 final leadSourcesRepositoryProvider = LeadSourcesRepositoryProvider._();
 
@@ -55,10 +96,55 @@ final class LeadSourcesRepositoryProvider
 }
 
 String _$leadSourcesRepositoryHash() =>
-    r'5fc565813a5cab25b735de2ceb0aec17945ed9f7';
+    r'5e29d9603b27f987d99f842958c048597421008f';
+
+@ProviderFor(integrations)
+final integrationsProvider = IntegrationsProvider._();
+
+final class IntegrationsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Integration>>,
+          List<Integration>,
+          FutureOr<List<Integration>>
+        >
+    with
+        $FutureModifier<List<Integration>>,
+        $FutureProvider<List<Integration>> {
+  IntegrationsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'integrationsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$integrationsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<Integration>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<Integration>> create(Ref ref) {
+    return integrations(ref);
+  }
+}
+
+String _$integrationsHash() => r'5d8d79e2c9b05b6a2bf382291b45f756ea21e34b';
+
+/// Every channel (#134), connected or not.
 
 @ProviderFor(leadChannels)
 final leadChannelsProvider = LeadChannelsProvider._();
+
+/// Every channel (#134), connected or not.
 
 final class LeadChannelsProvider
     extends
@@ -70,6 +156,7 @@ final class LeadChannelsProvider
     with
         $FutureModifier<List<LeadChannel>>,
         $FutureProvider<List<LeadChannel>> {
+  /// Every channel (#134), connected or not.
   LeadChannelsProvider._()
     : super(
         from: null,
@@ -96,17 +183,61 @@ final class LeadChannelsProvider
   }
 }
 
-String _$leadChannelsHash() => r'386c536ba92fdd3c59ea2b07e419e02a96480d37';
+String _$leadChannelsHash() => r'11883ec135ca3a0e03f52edecae8b69b6fc4c12f';
 
-/// Connect and disconnect from the channel list; callers show the outcome.
+/// The connected Meta Page, or null (#135).
+
+@ProviderFor(facebookPage)
+final facebookPageProvider = FacebookPageProvider._();
+
+/// The connected Meta Page, or null (#135).
+
+final class FacebookPageProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<Integration?>,
+          Integration?,
+          FutureOr<Integration?>
+        >
+    with $FutureModifier<Integration?>, $FutureProvider<Integration?> {
+  /// The connected Meta Page, or null (#135).
+  FacebookPageProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'facebookPageProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$facebookPageHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<Integration?> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Integration?> create(Ref ref) {
+    return facebookPage(ref);
+  }
+}
+
+String _$facebookPageHash() => r'8b51ed936a994a05cb15998bed999a39747570c3';
+
+/// Connect, disconnect and switch forms on or off; callers show the outcome.
 
 @ProviderFor(ChannelActions)
 final channelActionsProvider = ChannelActionsProvider._();
 
-/// Connect and disconnect from the channel list; callers show the outcome.
+/// Connect, disconnect and switch forms on or off; callers show the outcome.
 final class ChannelActionsProvider
     extends $NotifierProvider<ChannelActions, void> {
-  /// Connect and disconnect from the channel list; callers show the outcome.
+  /// Connect, disconnect and switch forms on or off; callers show the outcome.
   ChannelActionsProvider._()
     : super(
         from: null,
@@ -134,9 +265,9 @@ final class ChannelActionsProvider
   }
 }
 
-String _$channelActionsHash() => r'66325a9bc91b36cd27b7302f9e8bd99f6266dc79';
+String _$channelActionsHash() => r'fcbccee29529dbf2a642cb572137ea92f3bfbedc';
 
-/// Connect and disconnect from the channel list; callers show the outcome.
+/// Connect, disconnect and switch forms on or off; callers show the outcome.
 
 abstract class _$ChannelActions extends $Notifier<void> {
   void build();
@@ -149,51 +280,6 @@ abstract class _$ChannelActions extends $Notifier<void> {
             as $ClassProviderElement<
               AnyNotifier<void, void>,
               void,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
-@ProviderFor(FacebookSetupNotifier)
-final facebookSetupProvider = FacebookSetupNotifierProvider._();
-
-final class FacebookSetupNotifierProvider
-    extends $AsyncNotifierProvider<FacebookSetupNotifier, FacebookDraft> {
-  FacebookSetupNotifierProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'facebookSetupProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$facebookSetupNotifierHash();
-
-  @$internal
-  @override
-  FacebookSetupNotifier create() => FacebookSetupNotifier();
-}
-
-String _$facebookSetupNotifierHash() =>
-    r'4a525230c05970eb4c663ac991782453fec22704';
-
-abstract class _$FacebookSetupNotifier extends $AsyncNotifier<FacebookDraft> {
-  FutureOr<FacebookDraft> build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<FacebookDraft>, FacebookDraft>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<AsyncValue<FacebookDraft>, FacebookDraft>,
-              AsyncValue<FacebookDraft>,
               Object?,
               Object?
             >;

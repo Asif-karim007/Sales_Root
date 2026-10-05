@@ -7,18 +7,18 @@ abstract interface class NoticeRepository {
   /// Pinned first, then newest first.
   Future<PageResult<Notice>> list({int page = 1});
 
-  Future<Notice> get(int id);
+  Future<Notice> get(String id);
 
-  Future<Notice> markRead(int id);
+  Future<Notice> markRead(String id);
 
-  Future<Notice> acknowledge(int id);
+  Future<Notice> acknowledge(String id);
 
   /// Nudges [memberIds] again; returns how many were reminded.
-  Future<int> remind(int id, List<int> memberIds);
+  Future<int> remind(String id, List<String> memberIds);
 
   Future<Notice> create(NoticeInput input);
 
-  Future<void> delete(int id);
+  Future<void> delete(String id);
 
   Future<Map<NoticeAudience, int>> audienceCounts();
 }

@@ -102,7 +102,7 @@ class _NoticeReadersState extends ConsumerState<NoticeReaders> {
     );
   }
 
-  Future<void> _remind(List<int> ids) async {
+  Future<void> _remind(List<String> ids) async {
     final count = await runGrowthAction(
       context,
       ref.read(noticeDetailProvider(_notice.id).notifier).remind(ids),

@@ -53,7 +53,7 @@ class NoticeListNotifier extends _$NoticeListNotifier {
 @riverpod
 class NoticeDetail extends _$NoticeDetail {
   @override
-  Future<Notice> build(int id) async {
+  Future<Notice> build(String id) async {
     final repository = ref.watch(noticeRepositoryProvider);
     final notice = await repository.get(id);
     if (notice.myState != NoticeState.unread) return notice;
@@ -66,7 +66,7 @@ class NoticeDetail extends _$NoticeDetail {
     return notice;
   }
 
-  Future<int> remind(List<int> memberIds) async {
+  Future<int> remind(List<String> memberIds) async {
     final repository = ref.read(noticeRepositoryProvider);
     final reminded = await repository.remind(id, memberIds);
     final notice = await repository.get(id);

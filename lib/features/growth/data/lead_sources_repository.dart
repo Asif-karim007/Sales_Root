@@ -1,19 +1,17 @@
 import 'package:salesroot/features/growth/models/lead_channel.dart';
 
-/// The channels leads arrive from, and the Facebook lead-form connection.
+/// The channels leads arrive from: Meta and WhatsApp connections and the
+/// hosted lead forms.
 abstract interface class LeadSourcesRepository {
-  Future<List<LeadChannel>> channels();
+  Future<List<Integration>> integrations();
 
-  Future<LeadChannel> connect(int channelId);
+  Future<List<LeadForm>> forms();
 
-  Future<LeadChannel> disconnect(int channelId);
+  Future<LeadForm> createForm(LeadFormInput input);
 
-  Future<FacebookSetup> facebook();
+  Future<LeadForm> updateForm(String id, LeadFormInput input);
 
-  /// The Pages the Facebook account manages, after Meta sign-in.
-  Future<List<FacebookPage>> facebookPages();
+  Future<Integration> connectWhatsApp(WhatsAppConnectInput input);
 
-  Future<List<LeadForm>> facebookForms(int pageId);
-
-  Future<FacebookSetup> saveFacebook(FacebookSetupInput input);
+  Future<void> disconnect(String integrationId);
 }

@@ -1,34 +1,17 @@
 import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/features/growth/models/campaign.dart';
-import 'package:salesroot/features/growth/models/message_thread.dart';
 
-/// Bulk SMS and email campaigns, and the SMS credit balance. Sending more
-/// than the balance covers fails with a 402 for `QuotaKind.smsCredits`.
+/// Bulk SMS and email campaigns. Sending more than the SMS credits cover
+/// fails with a 402.
 abstract interface class CampaignRepository {
-  /// Scheduled campaigns first, soonest on top, then the rest newest first.
-  Future<PageResult<Campaign>> list({int page = 1});
+  Future<PageResult<Campaign>> list();
 
-  Future<Campaign> get(int id);
+  Future<Campaign> get(String id);
 
-  Future<MessagingBalance> balance();
+  /// How many people each segment reaches on [channel] right now.
+  Future<List<Audience>> audiences(CampaignChannel channel);
 
-  Future<List<Audience>> audiences();
+  Future<Campaign> send(CampaignInput input);
 
-  Future<List<MessageTemplate>> smsTemplates();
-
-  Future<Campaign> sendSms(SmsCampaignInput input);
-
-  /// Sends [message] to the signed-in user's own number.
-  Future<void> testSms(String message);
-
-  Future<Campaign> sendEmail(EmailCampaignInput input);
-
-  /// Resends to the numbers that were switched off.
-  Future<Campaign> retryFailed(int id);
-
-  Future<Campaign> cancel(int id);
-
-  Future<List<CreditPack>> creditPacks();
-
-  Future<MessagingBalance> buyCredits(int packId);
+  Future<Campaign> cancel(String id);
 }

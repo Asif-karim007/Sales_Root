@@ -55,54 +55,53 @@ final class MessagesRepositoryProvider
 }
 
 String _$messagesRepositoryHash() =>
-    r'31f0b7831ac9548039a56cadf3221b76cf5add26';
+    r'4f8a2476ba08cfb8d4a33f2a48bb74d23bbad107';
 
-@ProviderFor(ThreadFilterNotifier)
-final threadFilterProvider = ThreadFilterNotifierProvider._();
+@ProviderFor(ThreadBoxNotifier)
+final threadBoxProvider = ThreadBoxNotifierProvider._();
 
-final class ThreadFilterNotifierProvider
-    extends $NotifierProvider<ThreadFilterNotifier, ThreadFilter> {
-  ThreadFilterNotifierProvider._()
+final class ThreadBoxNotifierProvider
+    extends $NotifierProvider<ThreadBoxNotifier, ConversationBox> {
+  ThreadBoxNotifierProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'threadFilterProvider',
+        name: r'threadBoxProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$threadFilterNotifierHash();
+  String debugGetCreateSourceHash() => _$threadBoxNotifierHash();
 
   @$internal
   @override
-  ThreadFilterNotifier create() => ThreadFilterNotifier();
+  ThreadBoxNotifier create() => ThreadBoxNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ThreadFilter value) {
+  Override overrideWithValue(ConversationBox value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<ThreadFilter>(value),
+      providerOverride: $SyncValueProvider<ConversationBox>(value),
     );
   }
 }
 
-String _$threadFilterNotifierHash() =>
-    r'aa2f276b8d9a26a0722bfbec09fc318ad49168ec';
+String _$threadBoxNotifierHash() => r'3850437c6ea35f992eba90fadbc6f5b1057066e7';
 
-abstract class _$ThreadFilterNotifier extends $Notifier<ThreadFilter> {
-  ThreadFilter build();
+abstract class _$ThreadBoxNotifier extends $Notifier<ConversationBox> {
+  ConversationBox build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<ThreadFilter, ThreadFilter>;
+    final ref = this.ref as $Ref<ConversationBox, ConversationBox>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<ThreadFilter, ThreadFilter>,
-              ThreadFilter,
+              AnyNotifier<ConversationBox, ConversationBox>,
+              ConversationBox,
               Object?,
               Object?
             >;
@@ -110,15 +109,15 @@ abstract class _$ThreadFilterNotifier extends $Notifier<ThreadFilter> {
   }
 }
 
-/// The unified inbox (#141), latest conversation first.
+/// The unified inbox (#141): every conversation, latest first.
 
 @ProviderFor(ThreadListNotifier)
 final threadListProvider = ThreadListNotifierProvider._();
 
-/// The unified inbox (#141), latest conversation first.
+/// The unified inbox (#141): every conversation, latest first.
 final class ThreadListNotifierProvider
-    extends $AsyncNotifierProvider<ThreadListNotifier, Paged<MessageThread>> {
-  /// The unified inbox (#141), latest conversation first.
+    extends $AsyncNotifierProvider<ThreadListNotifier, Paged<Conversation>> {
+  /// The unified inbox (#141): every conversation, latest first.
   ThreadListNotifierProvider._()
     : super(
         from: null,
@@ -139,27 +138,23 @@ final class ThreadListNotifierProvider
 }
 
 String _$threadListNotifierHash() =>
-    r'403857324df82b617dff0ed2936301877ac12a44';
+    r'32adfe62f85d25fe3b217e0382f4374bb581bc6b';
 
-/// The unified inbox (#141), latest conversation first.
+/// The unified inbox (#141): every conversation, latest first.
 
 abstract class _$ThreadListNotifier
-    extends $AsyncNotifier<Paged<MessageThread>> {
-  FutureOr<Paged<MessageThread>> build();
+    extends $AsyncNotifier<Paged<Conversation>> {
+  FutureOr<Paged<Conversation>> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
     final ref =
-        this.ref
-            as $Ref<AsyncValue<Paged<MessageThread>>, Paged<MessageThread>>;
+        this.ref as $Ref<AsyncValue<Paged<Conversation>>, Paged<Conversation>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<
-                AsyncValue<Paged<MessageThread>>,
-                Paged<MessageThread>
-              >,
-              AsyncValue<Paged<MessageThread>>,
+              AnyNotifier<AsyncValue<Paged<Conversation>>, Paged<Conversation>>,
+              AsyncValue<Paged<Conversation>>,
               Object?,
               Object?
             >;
@@ -167,17 +162,20 @@ abstract class _$ThreadListNotifier
   }
 }
 
+/// The Page and number the inbox is connected to, e.g. "Rahim Traders ·
+/// +8801711…"; null when nothing is connected or the list is out of reach.
+
 @ProviderFor(messagingAccount)
 final messagingAccountProvider = MessagingAccountProvider._();
 
+/// The Page and number the inbox is connected to, e.g. "Rahim Traders ·
+/// +8801711…"; null when nothing is connected or the list is out of reach.
+
 final class MessagingAccountProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<MessagingAccount>,
-          MessagingAccount,
-          FutureOr<MessagingAccount>
-        >
-    with $FutureModifier<MessagingAccount>, $FutureProvider<MessagingAccount> {
+    extends $FunctionalProvider<String?, String?, String?>
+    with $Provider<String?> {
+  /// The Page and number the inbox is connected to, e.g. "Rahim Traders ·
+  /// +8801711…"; null when nothing is connected or the list is out of reach.
   MessagingAccountProvider._()
     : super(
         from: null,
@@ -194,172 +192,31 @@ final class MessagingAccountProvider
 
   @$internal
   @override
-  $FutureProviderElement<MessagingAccount> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  $ProviderElement<String?> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
 
   @override
-  FutureOr<MessagingAccount> create(Ref ref) {
+  String? create(Ref ref) {
     return messagingAccount(ref);
   }
-}
 
-String _$messagingAccountHash() => r'b479c567a243ac6e913fd1d75a52185a88465688';
-
-@ProviderFor(messageThread)
-final messageThreadProvider = MessageThreadFamily._();
-
-final class MessageThreadProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<MessageThread>,
-          MessageThread,
-          FutureOr<MessageThread>
-        >
-    with $FutureModifier<MessageThread>, $FutureProvider<MessageThread> {
-  MessageThreadProvider._({
-    required MessageThreadFamily super.from,
-    required int super.argument,
-  }) : super(
-         retry: null,
-         name: r'messageThreadProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
-
-  @override
-  String debugGetCreateSourceHash() => _$messageThreadHash();
-
-  @override
-  String toString() {
-    return r'messageThreadProvider'
-        ''
-        '($argument)';
-  }
-
-  @$internal
-  @override
-  $FutureProviderElement<MessageThread> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<MessageThread> create(Ref ref) {
-    final argument = this.argument as int;
-    return messageThread(ref, argument);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is MessageThreadProvider && other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
   }
 }
 
-String _$messageThreadHash() => r'dbf58c43fb65b743aadebf2eacd2a6f2836b01f3';
+String _$messagingAccountHash() => r'6f72558cfd8734e958f499c16a5faa4132954b33';
 
-final class MessageThreadFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<MessageThread>, int> {
-  MessageThreadFamily._()
-    : super(
-        retry: null,
-        name: r'messageThreadProvider',
-        dependencies: null,
-        $allTransitiveDependencies: null,
-        isAutoDispose: true,
-      );
-
-  MessageThreadProvider call(int id) =>
-      MessageThreadProvider._(argument: id, from: this);
-
-  @override
-  String toString() => r'messageThreadProvider';
-}
-
-@ProviderFor(threadMessages)
-final threadMessagesProvider = ThreadMessagesFamily._();
-
-final class ThreadMessagesProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<ThreadMessage>>,
-          List<ThreadMessage>,
-          Stream<List<ThreadMessage>>
-        >
-    with
-        $FutureModifier<List<ThreadMessage>>,
-        $StreamProvider<List<ThreadMessage>> {
-  ThreadMessagesProvider._({
-    required ThreadMessagesFamily super.from,
-    required int super.argument,
-  }) : super(
-         retry: null,
-         name: r'threadMessagesProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
-
-  @override
-  String debugGetCreateSourceHash() => _$threadMessagesHash();
-
-  @override
-  String toString() {
-    return r'threadMessagesProvider'
-        ''
-        '($argument)';
-  }
-
-  @$internal
-  @override
-  $StreamProviderElement<List<ThreadMessage>> $createElement(
-    $ProviderPointer pointer,
-  ) => $StreamProviderElement(pointer);
-
-  @override
-  Stream<List<ThreadMessage>> create(Ref ref) {
-    final argument = this.argument as int;
-    return threadMessages(ref, argument);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is ThreadMessagesProvider && other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
-  }
-}
-
-String _$threadMessagesHash() => r'fdeaf1e51c2496a88ac4788702a95ec1d5b58309';
-
-final class ThreadMessagesFamily extends $Family
-    with $FunctionalFamilyOverride<Stream<List<ThreadMessage>>, int> {
-  ThreadMessagesFamily._()
-    : super(
-        retry: null,
-        name: r'threadMessagesProvider',
-        dependencies: null,
-        $allTransitiveDependencies: null,
-        isAutoDispose: true,
-      );
-
-  ThreadMessagesProvider call(int id) =>
-      ThreadMessagesProvider._(argument: id, from: this);
-
-  @override
-  String toString() => r'threadMessagesProvider';
-}
+/// Templates for one channel, e.g. `whatsapp` or `sms`.
 
 @ProviderFor(messageTemplates)
-final messageTemplatesProvider = MessageTemplatesProvider._();
+final messageTemplatesProvider = MessageTemplatesFamily._();
+
+/// Templates for one channel, e.g. `whatsapp` or `sms`.
 
 final class MessageTemplatesProvider
     extends
@@ -371,19 +228,27 @@ final class MessageTemplatesProvider
     with
         $FutureModifier<List<MessageTemplate>>,
         $FutureProvider<List<MessageTemplate>> {
-  MessageTemplatesProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'messageTemplatesProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+  /// Templates for one channel, e.g. `whatsapp` or `sms`.
+  MessageTemplatesProvider._({
+    required MessageTemplatesFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'messageTemplatesProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$messageTemplatesHash();
+
+  @override
+  String toString() {
+    return r'messageTemplatesProvider'
+        ''
+        '($argument)';
+  }
 
   @$internal
   @override
@@ -393,70 +258,124 @@ final class MessageTemplatesProvider
 
   @override
   FutureOr<List<MessageTemplate>> create(Ref ref) {
-    return messageTemplates(ref);
+    final argument = this.argument as String;
+    return messageTemplates(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MessageTemplatesProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
   }
 }
 
-String _$messageTemplatesHash() => r'61b5ceb8d01e80947b2ab9c08ba1d7a001b40294';
+String _$messageTemplatesHash() => r'42e459d85d78be30d4b2c58986bfe0a93ed95a5e';
 
-/// Sending, reading and assigning in a conversation; callers show the
-/// outcome.
+/// Templates for one channel, e.g. `whatsapp` or `sms`.
 
-@ProviderFor(MessageActions)
-final messageActionsProvider = MessageActionsProvider._();
-
-/// Sending, reading and assigning in a conversation; callers show the
-/// outcome.
-final class MessageActionsProvider
-    extends $NotifierProvider<MessageActions, void> {
-  /// Sending, reading and assigning in a conversation; callers show the
-  /// outcome.
-  MessageActionsProvider._()
+final class MessageTemplatesFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<MessageTemplate>>, String> {
+  MessageTemplatesFamily._()
     : super(
-        from: null,
-        argument: null,
         retry: null,
-        name: r'messageActionsProvider',
-        isAutoDispose: false,
+        name: r'messageTemplatesProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
+        isAutoDispose: true,
       );
 
+  /// Templates for one channel, e.g. `whatsapp` or `sms`.
+
+  MessageTemplatesProvider call(String channel) =>
+      MessageTemplatesProvider._(argument: channel, from: this);
+
   @override
-  String debugGetCreateSourceHash() => _$messageActionsHash();
+  String toString() => r'messageTemplatesProvider';
+}
+
+/// An AI reply for a conversation tied to a lead or customer; null when it
+/// is with someone the CRM doesn't know yet.
+
+@ProviderFor(replyDraft)
+final replyDraftProvider = ReplyDraftFamily._();
+
+/// An AI reply for a conversation tied to a lead or customer; null when it
+/// is with someone the CRM doesn't know yet.
+
+final class ReplyDraftProvider
+    extends $FunctionalProvider<AsyncValue<String?>, String?, FutureOr<String?>>
+    with $FutureModifier<String?>, $FutureProvider<String?> {
+  /// An AI reply for a conversation tied to a lead or customer; null when it
+  /// is with someone the CRM doesn't know yet.
+  ReplyDraftProvider._({
+    required ReplyDraftFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'replyDraftProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$replyDraftHash();
+
+  @override
+  String toString() {
+    return r'replyDraftProvider'
+        ''
+        '($argument)';
+  }
 
   @$internal
   @override
-  MessageActions create() => MessageActions();
+  $FutureProviderElement<String?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(void value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<void>(value),
-    );
+  @override
+  FutureOr<String?> create(Ref ref) {
+    final argument = this.argument as String;
+    return replyDraft(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ReplyDraftProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
   }
 }
 
-String _$messageActionsHash() => r'38b66b1413120f6c19902744c01602fe0d5e44c6';
+String _$replyDraftHash() => r'd4185d24f7e6fd863a3ae22c19b88d3215f05322';
 
-/// Sending, reading and assigning in a conversation; callers show the
-/// outcome.
+/// An AI reply for a conversation tied to a lead or customer; null when it
+/// is with someone the CRM doesn't know yet.
 
-abstract class _$MessageActions extends $Notifier<void> {
-  void build();
-  @$mustCallSuper
+final class ReplyDraftFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<String?>, String> {
+  ReplyDraftFamily._()
+    : super(
+        retry: null,
+        name: r'replyDraftProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// An AI reply for a conversation tied to a lead or customer; null when it
+  /// is with someone the CRM doesn't know yet.
+
+  ReplyDraftProvider call(String conversationId) =>
+      ReplyDraftProvider._(argument: conversationId, from: this);
+
   @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<void, void>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<void, void>,
-              void,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
+  String toString() => r'replyDraftProvider';
 }

@@ -55,54 +55,99 @@ final class LeadInboxRepositoryProvider
 }
 
 String _$leadInboxRepositoryHash() =>
-    r'73fbdd0ae92a66eee698ebcb9719df46402a7323';
+    r'a432caea6e718a55f8fb44bfde2994012af9228b';
 
-@ProviderFor(InboxFilterNotifier)
-final inboxFilterProvider = InboxFilterNotifierProvider._();
+/// The signed-in member's membership id, to tell their conversations apart.
 
-final class InboxFilterNotifierProvider
-    extends $NotifierProvider<InboxFilterNotifier, InboxFilter> {
-  InboxFilterNotifierProvider._()
+@ProviderFor(myMembershipId)
+final myMembershipIdProvider = MyMembershipIdProvider._();
+
+/// The signed-in member's membership id, to tell their conversations apart.
+
+final class MyMembershipIdProvider
+    extends $FunctionalProvider<String?, String?, String?>
+    with $Provider<String?> {
+  /// The signed-in member's membership id, to tell their conversations apart.
+  MyMembershipIdProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'inboxFilterProvider',
+        name: r'myMembershipIdProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$inboxFilterNotifierHash();
+  String debugGetCreateSourceHash() => _$myMembershipIdHash();
 
   @$internal
   @override
-  InboxFilterNotifier create() => InboxFilterNotifier();
+  $ProviderElement<String?> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  String? create(Ref ref) {
+    return myMembershipId(ref);
+  }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(InboxFilter value) {
+  Override overrideWithValue(String? value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<InboxFilter>(value),
+      providerOverride: $SyncValueProvider<String?>(value),
     );
   }
 }
 
-String _$inboxFilterNotifierHash() =>
-    r'e1d894ffda58bd0dddbf0bb26aa072b373d440d1';
+String _$myMembershipIdHash() => r'f68b0edd9b5ebd09e5d1e96190950a34877931be';
 
-abstract class _$InboxFilterNotifier extends $Notifier<InboxFilter> {
-  InboxFilter build();
+@ProviderFor(InboxBoxNotifier)
+final inboxBoxProvider = InboxBoxNotifierProvider._();
+
+final class InboxBoxNotifierProvider
+    extends $NotifierProvider<InboxBoxNotifier, ConversationBox> {
+  InboxBoxNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'inboxBoxProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$inboxBoxNotifierHash();
+
+  @$internal
+  @override
+  InboxBoxNotifier create() => InboxBoxNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ConversationBox value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ConversationBox>(value),
+    );
+  }
+}
+
+String _$inboxBoxNotifierHash() => r'e0a9b247b9cb08a90dd18708fa5aad64fe67b075';
+
+abstract class _$InboxBoxNotifier extends $Notifier<ConversationBox> {
+  ConversationBox build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<InboxFilter, InboxFilter>;
+    final ref = this.ref as $Ref<ConversationBox, ConversationBox>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<InboxFilter, InboxFilter>,
-              InboxFilter,
+              AnyNotifier<ConversationBox, ConversationBox>,
+              ConversationBox,
               Object?,
               Object?
             >;
@@ -110,15 +155,15 @@ abstract class _$InboxFilterNotifier extends $Notifier<InboxFilter> {
   }
 }
 
-/// The new-leads inbox (#136), most urgent first.
+/// The new-leads inbox (#136): open conversations, newest first.
 
 @ProviderFor(InboxListNotifier)
 final inboxListProvider = InboxListNotifierProvider._();
 
-/// The new-leads inbox (#136), most urgent first.
+/// The new-leads inbox (#136): open conversations, newest first.
 final class InboxListNotifierProvider
-    extends $AsyncNotifierProvider<InboxListNotifier, Paged<InboxLead>> {
-  /// The new-leads inbox (#136), most urgent first.
+    extends $AsyncNotifierProvider<InboxListNotifier, Paged<Conversation>> {
+  /// The new-leads inbox (#136): open conversations, newest first.
   InboxListNotifierProvider._()
     : super(
         from: null,
@@ -138,22 +183,22 @@ final class InboxListNotifierProvider
   InboxListNotifier create() => InboxListNotifier();
 }
 
-String _$inboxListNotifierHash() => r'fe6fe5dcff8e22bc0c47721ba44855bcd0b30a83';
+String _$inboxListNotifierHash() => r'e033d570bc3c1f61b18ba155a77d914ec23c112a';
 
-/// The new-leads inbox (#136), most urgent first.
+/// The new-leads inbox (#136): open conversations, newest first.
 
-abstract class _$InboxListNotifier extends $AsyncNotifier<Paged<InboxLead>> {
-  FutureOr<Paged<InboxLead>> build();
+abstract class _$InboxListNotifier extends $AsyncNotifier<Paged<Conversation>> {
+  FutureOr<Paged<Conversation>> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
     final ref =
-        this.ref as $Ref<AsyncValue<Paged<InboxLead>>, Paged<InboxLead>>;
+        this.ref as $Ref<AsyncValue<Paged<Conversation>>, Paged<Conversation>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<Paged<InboxLead>>, Paged<InboxLead>>,
-              AsyncValue<Paged<InboxLead>>,
+              AnyNotifier<AsyncValue<Paged<Conversation>>, Paged<Conversation>>,
+              AsyncValue<Paged<Conversation>>,
               Object?,
               Object?
             >;
@@ -161,129 +206,58 @@ abstract class _$InboxListNotifier extends $AsyncNotifier<Paged<InboxLead>> {
   }
 }
 
-@ProviderFor(inboxLead)
-final inboxLeadProvider = InboxLeadFamily._();
+/// One conversation with its messages.
 
-final class InboxLeadProvider
+@ProviderFor(conversation)
+final conversationProvider = ConversationFamily._();
+
+/// One conversation with its messages.
+
+final class ConversationProvider
     extends
         $FunctionalProvider<
-          AsyncValue<InboxLead>,
-          InboxLead,
-          FutureOr<InboxLead>
+          AsyncValue<Conversation>,
+          Conversation,
+          FutureOr<Conversation>
         >
-    with $FutureModifier<InboxLead>, $FutureProvider<InboxLead> {
-  InboxLeadProvider._({
-    required InboxLeadFamily super.from,
-    required int super.argument,
+    with $FutureModifier<Conversation>, $FutureProvider<Conversation> {
+  /// One conversation with its messages.
+  ConversationProvider._({
+    required ConversationFamily super.from,
+    required String super.argument,
   }) : super(
          retry: null,
-         name: r'inboxLeadProvider',
+         name: r'conversationProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$inboxLeadHash();
+  String debugGetCreateSourceHash() => _$conversationHash();
 
   @override
   String toString() {
-    return r'inboxLeadProvider'
+    return r'conversationProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  $FutureProviderElement<InboxLead> $createElement($ProviderPointer pointer) =>
-      $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<InboxLead> create(Ref ref) {
-    final argument = this.argument as int;
-    return inboxLead(ref, argument);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is InboxLeadProvider && other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
-  }
-}
-
-String _$inboxLeadHash() => r'64f8a84cc647c53cfc89176e7ceb6401ddc25090';
-
-final class InboxLeadFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<InboxLead>, int> {
-  InboxLeadFamily._()
-    : super(
-        retry: null,
-        name: r'inboxLeadProvider',
-        dependencies: null,
-        $allTransitiveDependencies: null,
-        isAutoDispose: true,
-      );
-
-  InboxLeadProvider call(int id) =>
-      InboxLeadProvider._(argument: id, from: this);
-
-  @override
-  String toString() => r'inboxLeadProvider';
-}
-
-@ProviderFor(inboxSuggestion)
-final inboxSuggestionProvider = InboxSuggestionFamily._();
-
-final class InboxSuggestionProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<AssigneeSuggestion>,
-          AssigneeSuggestion,
-          FutureOr<AssigneeSuggestion>
-        >
-    with
-        $FutureModifier<AssigneeSuggestion>,
-        $FutureProvider<AssigneeSuggestion> {
-  InboxSuggestionProvider._({
-    required InboxSuggestionFamily super.from,
-    required int super.argument,
-  }) : super(
-         retry: null,
-         name: r'inboxSuggestionProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
-
-  @override
-  String debugGetCreateSourceHash() => _$inboxSuggestionHash();
-
-  @override
-  String toString() {
-    return r'inboxSuggestionProvider'
-        ''
-        '($argument)';
-  }
-
-  @$internal
-  @override
-  $FutureProviderElement<AssigneeSuggestion> $createElement(
+  $FutureProviderElement<Conversation> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<AssigneeSuggestion> create(Ref ref) {
-    final argument = this.argument as int;
-    return inboxSuggestion(ref, argument);
+  FutureOr<Conversation> create(Ref ref) {
+    final argument = this.argument as String;
+    return conversation(ref, argument);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is InboxSuggestionProvider && other.argument == argument;
+    return other is ConversationProvider && other.argument == argument;
   }
 
   @override
@@ -292,30 +266,34 @@ final class InboxSuggestionProvider
   }
 }
 
-String _$inboxSuggestionHash() => r'ebf04aee6ab669332ac4a4106e1880bff139823d';
+String _$conversationHash() => r'119c176b67f39b85edc4dfd66ca00854d92c03d1';
 
-final class InboxSuggestionFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<AssigneeSuggestion>, int> {
-  InboxSuggestionFamily._()
+/// One conversation with its messages.
+
+final class ConversationFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<Conversation>, String> {
+  ConversationFamily._()
     : super(
         retry: null,
-        name: r'inboxSuggestionProvider',
+        name: r'conversationProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  InboxSuggestionProvider call(int id) =>
-      InboxSuggestionProvider._(argument: id, from: this);
+  /// One conversation with its messages.
+
+  ConversationProvider call(String id) =>
+      ConversationProvider._(argument: id, from: this);
 
   @override
-  String toString() => r'inboxSuggestionProvider';
+  String toString() => r'conversationProvider';
 }
 
-@ProviderFor(growthMembers)
-final growthMembersProvider = GrowthMembersProvider._();
+@ProviderFor(inboxMembers)
+final inboxMembersProvider = InboxMembersProvider._();
 
-final class GrowthMembersProvider
+final class InboxMembersProvider
     extends
         $FunctionalProvider<
           AsyncValue<List<GrowthMember>>,
@@ -325,19 +303,19 @@ final class GrowthMembersProvider
     with
         $FutureModifier<List<GrowthMember>>,
         $FutureProvider<List<GrowthMember>> {
-  GrowthMembersProvider._()
+  InboxMembersProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'growthMembersProvider',
+        name: r'inboxMembersProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$growthMembersHash();
+  String debugGetCreateSourceHash() => _$inboxMembersHash();
 
   @$internal
   @override
@@ -347,59 +325,23 @@ final class GrowthMembersProvider
 
   @override
   FutureOr<List<GrowthMember>> create(Ref ref) {
-    return growthMembers(ref);
+    return inboxMembers(ref);
   }
 }
 
-String _$growthMembersHash() => r'1f98ea0fc0596fe63b7e03a34c18c95d1c56cc79';
+String _$inboxMembersHash() => r'099a189fc3e81ffbc59ef1b61d7519b7a29ebfb9';
 
-@ProviderFor(leadStages)
-final leadStagesProvider = LeadStagesProvider._();
-
-final class LeadStagesProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<LeadStage>>,
-          List<LeadStage>,
-          FutureOr<List<LeadStage>>
-        >
-    with $FutureModifier<List<LeadStage>>, $FutureProvider<List<LeadStage>> {
-  LeadStagesProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'leadStagesProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$leadStagesHash();
-
-  @$internal
-  @override
-  $FutureProviderElement<List<LeadStage>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<LeadStage>> create(Ref ref) {
-    return leadStages(ref);
-  }
-}
-
-String _$leadStagesHash() => r'902b8f9317f85fbaf942ea0634650cd5ea00e967';
-
-/// Assign and reject from the list or the detail; callers show the outcome.
+/// Take, assign, close and reply, from the lists or a conversation;
+/// callers show the outcome.
 
 @ProviderFor(InboxActions)
 final inboxActionsProvider = InboxActionsProvider._();
 
-/// Assign and reject from the list or the detail; callers show the outcome.
+/// Take, assign, close and reply, from the lists or a conversation;
+/// callers show the outcome.
 final class InboxActionsProvider extends $NotifierProvider<InboxActions, void> {
-  /// Assign and reject from the list or the detail; callers show the outcome.
+  /// Take, assign, close and reply, from the lists or a conversation;
+  /// callers show the outcome.
   InboxActionsProvider._()
     : super(
         from: null,
@@ -427,9 +369,10 @@ final class InboxActionsProvider extends $NotifierProvider<InboxActions, void> {
   }
 }
 
-String _$inboxActionsHash() => r'92a80df0e9858e9bc6a94f788a3f5ff4ba16f5f1';
+String _$inboxActionsHash() => r'4db7859f875cdc63da087d7f214317602cdfca6b';
 
-/// Assign and reject from the list or the detail; callers show the outcome.
+/// Take, assign, close and reply, from the lists or a conversation;
+/// callers show the outcome.
 
 abstract class _$InboxActions extends $Notifier<void> {
   void build();
@@ -449,18 +392,21 @@ abstract class _$InboxActions extends $Notifier<void> {
   }
 }
 
-/// Accepting an inbox lead into the main list (#138).
+/// Accepting an enquiry (#138): the member takes the conversation, then
+/// finishes the lead.
 
 @ProviderFor(AcceptLeadSubmit)
 final acceptLeadSubmitProvider = AcceptLeadSubmitFamily._();
 
-/// Accepting an inbox lead into the main list (#138).
+/// Accepting an enquiry (#138): the member takes the conversation, then
+/// finishes the lead.
 final class AcceptLeadSubmitProvider
-    extends $NotifierProvider<AcceptLeadSubmit, AsyncValue<InboxLead?>> {
-  /// Accepting an inbox lead into the main list (#138).
+    extends $NotifierProvider<AcceptLeadSubmit, AsyncValue<Conversation?>> {
+  /// Accepting an enquiry (#138): the member takes the conversation, then
+  /// finishes the lead.
   AcceptLeadSubmitProvider._({
     required AcceptLeadSubmitFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'acceptLeadSubmitProvider',
@@ -484,10 +430,10 @@ final class AcceptLeadSubmitProvider
   AcceptLeadSubmit create() => AcceptLeadSubmit();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AsyncValue<InboxLead?> value) {
+  Override overrideWithValue(AsyncValue<Conversation?> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<AsyncValue<InboxLead?>>(value),
+      providerOverride: $SyncValueProvider<AsyncValue<Conversation?>>(value),
     );
   }
 
@@ -502,18 +448,19 @@ final class AcceptLeadSubmitProvider
   }
 }
 
-String _$acceptLeadSubmitHash() => r'bf9e2615382af89177de5510348749b100490cca';
+String _$acceptLeadSubmitHash() => r'39a32377b16655e81916225d2d84579fe6034d6a';
 
-/// Accepting an inbox lead into the main list (#138).
+/// Accepting an enquiry (#138): the member takes the conversation, then
+/// finishes the lead.
 
 final class AcceptLeadSubmitFamily extends $Family
     with
         $ClassFamilyOverride<
           AcceptLeadSubmit,
-          AsyncValue<InboxLead?>,
-          AsyncValue<InboxLead?>,
-          AsyncValue<InboxLead?>,
-          int
+          AsyncValue<Conversation?>,
+          AsyncValue<Conversation?>,
+          AsyncValue<Conversation?>,
+          String
         > {
   AcceptLeadSubmitFamily._()
     : super(
@@ -524,32 +471,34 @@ final class AcceptLeadSubmitFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Accepting an inbox lead into the main list (#138).
+  /// Accepting an enquiry (#138): the member takes the conversation, then
+  /// finishes the lead.
 
-  AcceptLeadSubmitProvider call(int id) =>
+  AcceptLeadSubmitProvider call(String id) =>
       AcceptLeadSubmitProvider._(argument: id, from: this);
 
   @override
   String toString() => r'acceptLeadSubmitProvider';
 }
 
-/// Accepting an inbox lead into the main list (#138).
+/// Accepting an enquiry (#138): the member takes the conversation, then
+/// finishes the lead.
 
-abstract class _$AcceptLeadSubmit extends $Notifier<AsyncValue<InboxLead?>> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+abstract class _$AcceptLeadSubmit extends $Notifier<AsyncValue<Conversation?>> {
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  AsyncValue<InboxLead?> build(int id);
+  AsyncValue<Conversation?> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
     final ref =
-        this.ref as $Ref<AsyncValue<InboxLead?>, AsyncValue<InboxLead?>>;
+        this.ref as $Ref<AsyncValue<Conversation?>, AsyncValue<Conversation?>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<InboxLead?>, AsyncValue<InboxLead?>>,
-              AsyncValue<InboxLead?>,
+              AnyNotifier<AsyncValue<Conversation?>, AsyncValue<Conversation?>>,
+              AsyncValue<Conversation?>,
               Object?,
               Object?
             >;

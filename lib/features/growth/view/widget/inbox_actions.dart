@@ -4,59 +4,59 @@ import 'package:go_router/go_router.dart';
 
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/routing/routes.dart';
+import 'package:salesroot/features/growth/models/conversation.dart';
 import 'package:salesroot/features/growth/models/distribution_rule.dart';
-import 'package:salesroot/features/growth/models/inbox_lead.dart';
 import 'package:salesroot/features/growth/providers/inbox_providers.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
 import 'package:salesroot/features/growth/view/widget/growth_labels.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// Picks a team member; null when the sheet is dismissed or the list fails.
+/// Picks one of [members]; null when the sheet is dismissed or the list
+/// fails.
 Future<GrowthMember?> pickGrowthMember(
-  BuildContext context,
-  WidgetRef ref, {
+  BuildContext context, {
+  required Future<List<GrowthMember>> members,
   required String title,
-  int? selected,
+  String? selected,
 }) async {
-  final members = await runGrowthAction(
-    context,
-    ref.read(growthMembersProvider.future),
-  );
-  if (members == null || !context.mounted) return null;
+  final list = await runGrowthAction(context, members);
+  if (list == null || !context.mounted) return null;
   final l10n = context.l10n;
   final fmt = context.fmt;
   return showSrSheet<GrowthMember>(
     context: context,
     builder: (_) => SrOptionSheet<GrowthMember>(
       title: title,
-      options: members,
+      options: list,
       withAvatar: true,
       labelOf: (m) => m.nameOf(fmt.isBangla),
-      subtitleOf: (m) => m.onLeave
-          ? l10n.growthMemberOnLeave
-          : l10n.growthMemberLoad(fmt.number(m.openLeads)),
+      subtitleOf: (m) => switch (m.openLeads) {
+        _ when m.onLeave => l10n.growthMemberOnLeave,
+        final open? => l10n.growthMemberLoad(fmt.number(open)),
+        null => null,
+      },
       isSelected: (m) => m.id == selected,
     ),
   );
 }
 
-Future<void> assignInboxLead(
+Future<void> assignConversation(
   BuildContext context,
   WidgetRef ref,
-  InboxLead lead,
+  Conversation conversation,
 ) async {
   final l10n = context.l10n;
   final member = await pickGrowthMember(
     context,
-    ref,
+    members: ref.read(inboxMembersProvider.future),
     title: l10n.growthInboxAssignTo,
-    selected: lead.assignedToId,
+    selected: conversation.assignedToId,
   );
   if (member == null || !context.mounted) return;
   final done = await runGrowthAction(
     context,
-    ref.read(inboxActionsProvider.notifier).assign(lead.id, member.id),
+    ref.read(inboxActionsProvider.notifier).assign(conversation.id, member.id),
   );
   if (done == null || !context.mounted) return;
   showSrSuccess(
@@ -65,32 +65,28 @@ Future<void> assignInboxLead(
   );
 }
 
-/// Asks for a reason and rejects; true when it went through.
-Future<bool> rejectInboxLead(
+/// Asks first, then closes the conversation; true when it went through.
+Future<bool> rejectConversation(
   BuildContext context,
   WidgetRef ref,
-  InboxLead lead,
+  Conversation conversation,
 ) async {
   final l10n = context.l10n;
-  final reason = await showSrSheet<RejectReason>(
-    context: context,
-    builder: (_) => SrOptionSheet<RejectReason>(
-      title: l10n.growthInboxRejectWhy,
-      options: [
-        ...RejectReason.values.where((r) => r != RejectReason.duplicate),
-        if (lead.duplicate != null) RejectReason.duplicate,
-      ],
-      labelOf: (r) => r.label(l10n),
-      isSelected: (_) => false,
-    ),
+  final confirmed = await showSrConfirm(
+    context,
+    title: l10n.growthInboxRejectTitle,
+    message: l10n.growthInboxRejectBody,
+    confirmLabel: l10n.growthInboxReject,
+    icon: Icons.block_rounded,
+    destructive: true,
   );
-  if (reason == null || !context.mounted) return false;
+  if (!confirmed || !context.mounted) return false;
   final done = await runGrowthAction(
     context,
-    ref.read(inboxActionsProvider.notifier).reject(lead.id, reason),
+    ref.read(inboxActionsProvider.notifier).close(conversation.id),
   );
   if (done == null || !context.mounted) return false;
-  showSrInfo(context, l10n.growthInboxRejected(lead.name));
+  showSrInfo(context, l10n.growthInboxRejected(conversation.name));
   return true;
 }
 
@@ -98,17 +94,17 @@ enum InboxQuickAction { accept, assign, reject }
 
 /// Long-press actions on an inbox row; pops with the one picked.
 class InboxQuickSheet extends StatelessWidget {
-  const InboxQuickSheet({super.key, required this.lead});
+  const InboxQuickSheet({super.key, required this.conversation});
 
-  final InboxLead lead;
+  final Conversation conversation;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final navigator = Navigator.of(context);
     return SrSheet(
-      title: lead.name,
-      subtitle: lead.source.label(l10n),
+      title: conversation.name,
+      subtitle: conversation.channel.label(l10n),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -137,19 +133,19 @@ class InboxQuickSheet extends StatelessWidget {
 Future<void> showInboxQuickActions(
   BuildContext context,
   WidgetRef ref,
-  InboxLead lead,
+  Conversation conversation,
 ) async {
   final action = await showSrSheet<InboxQuickAction>(
     context: context,
-    builder: (_) => InboxQuickSheet(lead: lead),
+    builder: (_) => InboxQuickSheet(conversation: conversation),
   );
   if (action == null || !context.mounted) return;
   switch (action) {
     case InboxQuickAction.accept:
-      context.push(Routes.newLeadAcceptFor(lead.id));
+      context.push(Routes.newLeadAcceptFor(conversation.id));
     case InboxQuickAction.assign:
-      await assignInboxLead(context, ref, lead);
+      await assignConversation(context, ref, conversation);
     case InboxQuickAction.reject:
-      await rejectInboxLead(context, ref, lead);
+      await rejectConversation(context, ref, conversation);
   }
 }

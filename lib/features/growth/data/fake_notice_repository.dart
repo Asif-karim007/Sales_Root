@@ -7,7 +7,6 @@ import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/core/workspace/workspace.dart';
-import 'package:salesroot/features/growth/data/campaign_fixtures.dart';
 import 'package:salesroot/features/growth/data/notice_fixtures.dart';
 import 'package:salesroot/features/growth/data/notice_repository.dart';
 import 'package:salesroot/features/growth/models/notice.dart';
@@ -19,7 +18,10 @@ class FakeNoticeRepository implements NoticeRepository {
 
   FakeTable get _notices => _backend.table(growthNoticesTable, noticeFixtures);
 
-  FakeTable get _balance => _backend.table(growthBalanceTable, balanceFixtures);
+  FakeTable get _wallet =>
+      _backend.table(noticeSmsWalletTable, noticeSmsWalletFixtures);
+
+  static int _key(String id) => int.tryParse(id) ?? -1;
 
   ModuleAccess get _grant =>
       ModuleAccess.fromPermission(roleGrant(_backend.role, AppModule.notice));
@@ -33,31 +35,32 @@ class FakeNoticeRepository implements NoticeRepository {
       }, module: AppModule.notice);
 
   @override
-  Future<Notice> get(int id) => _backend.run(
+  Future<Notice> get(String id) => _backend.run(
     'Notice',
-    () => Notice.fromJson(_shape(_notices.byId(id))),
+    () => Notice.fromJson(_shape(_notices.byId(_key(id)))),
     module: AppModule.notice,
   );
 
   @override
-  Future<Notice> markRead(int id) => _backend.run(
+  Future<Notice> markRead(String id) => _backend.run(
     'Notice read',
     () => Notice.fromJson(_shape(_stamp(id, acknowledge: false))),
     module: AppModule.notice,
   );
 
   @override
-  Future<Notice> acknowledge(int id) => _backend.run('Notice acknowledge', () {
-    if (_notices.byId(id)['RequiresAck'] != true) {
-      throw const ApiFailure(400, 'This notice needs no acknowledgement');
-    }
-    return Notice.fromJson(_shape(_stamp(id, acknowledge: true)));
-  }, module: AppModule.notice);
+  Future<Notice> acknowledge(String id) =>
+      _backend.run('Notice acknowledge', () {
+        if (_notices.byId(_key(id))['RequiresAck'] != true) {
+          throw const ApiFailure(400, 'This notice needs no acknowledgement');
+        }
+        return Notice.fromJson(_shape(_stamp(id, acknowledge: true)));
+      }, module: AppModule.notice);
 
   @override
-  Future<int> remind(int id, List<int> memberIds) =>
+  Future<int> remind(String id, List<String> memberIds) =>
       _backend.run('Notice remind', () {
-        final row = _notices.byId(id);
+        final row = _notices.byId(_key(id));
         if (!_seesReaders(row)) {
           throw const ApiFailure(403, 'Only the author can send reminders');
         }
@@ -65,7 +68,7 @@ class FakeNoticeRepository implements NoticeRepository {
         var reminded = 0;
         final recipients = [
           for (final recipient in _recipients(row))
-            if (memberIds.contains(recipient['MemberId']) &&
+            if (memberIds.contains('${recipient['MemberId']}') &&
                 recipient['AcknowledgedAt'] == null)
               {...recipient, 'RemindedAt': now}
             else
@@ -77,7 +80,7 @@ class FakeNoticeRepository implements NoticeRepository {
         if (reminded == 0) {
           throw const ApiFailure(400, 'Everyone picked has already seen it');
         }
-        _notices.update(id, {'Recipients': recipients});
+        _notices.update(_key(id), {'Recipients': recipients});
         return reminded;
       }, module: AppModule.notice);
 
@@ -124,9 +127,9 @@ class FakeNoticeRepository implements NoticeRepository {
   );
 
   @override
-  Future<void> delete(int id) => _backend.run(
+  Future<void> delete(String id) => _backend.run(
     'Notice delete',
-    () => _notices.delete(id),
+    () => _notices.delete(_key(id)),
     module: AppModule.notice,
     right: ModuleRight.delete,
   );
@@ -153,10 +156,10 @@ class FakeNoticeRepository implements NoticeRepository {
   bool _seesReaders(Map<String, dynamic> row) =>
       row['AuthorId'] == _backend.meId || _grant.canEdit;
 
-  Map<String, dynamic> _stamp(int id, {required bool acknowledge}) {
-    final row = _notices.byId(id);
+  Map<String, dynamic> _stamp(String id, {required bool acknowledge}) {
+    final row = _notices.byId(_key(id));
     final now = jsonUtc(DateTime.now());
-    return _notices.update(id, {
+    return _notices.update(_key(id), {
       'Recipients': [
         for (final recipient in _recipients(row))
           if (recipient['MemberId'] == _backend.meId)
@@ -198,9 +201,9 @@ class FakeNoticeRepository implements NoticeRepository {
   }
 
   void _spendSms(int credits) {
-    final wallet = _balance.rows.isEmpty
-        ? _balance.insert(balanceFixtures(_backend.graph).first)
-        : _balance.rows.first;
+    final wallet = _wallet.rows.isEmpty
+        ? _wallet.insert(noticeSmsWalletFixtures(_backend.graph).first)
+        : _wallet.rows.first;
     final have = jsonInt(wallet['SmsCredits']) ?? 0;
     if (credits > have) {
       throw ApiFailure(
@@ -209,7 +212,7 @@ class FakeNoticeRepository implements NoticeRepository {
         quota: QuotaKind.smsCredits,
       );
     }
-    _balance.update(jsonInt(wallet['Id']) ?? 1, {'SmsCredits': have - credits});
+    _wallet.update(jsonInt(wallet['Id']) ?? 1, {'SmsCredits': have - credits});
   }
 
   static int _pinnedThenNewest(Map<String, dynamic> a, Map<String, dynamic> b) {

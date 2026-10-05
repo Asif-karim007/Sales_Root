@@ -1,11 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/features/growth/models/notice.dart';
 import 'package:salesroot/features/growth/providers/notice_providers.dart';
 
-import 'growth_harness.dart';
+import 'growth_test_helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -13,25 +12,25 @@ void main() {
   test('opening marks it read and acknowledging counts once', () async {
     final container = await growthContainer();
     final repository = container.read(noticeRepositoryProvider);
-    final before = await repository.get(1);
+    final before = await repository.get('1');
     expect(before.requiresAck, isTrue);
     expect(before.myState, NoticeState.unread);
 
-    final sub = container.listen(noticeDetailProvider(1), (_, _) {});
+    final sub = container.listen(noticeDetailProvider('1'), (_, _) {});
     addTearDown(sub.close);
-    final opened = await container.read(noticeDetailProvider(1).future);
+    final opened = await container.read(noticeDetailProvider('1').future);
     expect(opened.myState, NoticeState.read);
     expect(opened.readCount, before.readCount + 1);
     expect(opened.needsMyAck, isTrue);
 
     final acknowledged = await container
-        .read(noticeDetailProvider(1).notifier)
+        .read(noticeDetailProvider('1').notifier)
         .acknowledge();
     expect(acknowledged.myState, NoticeState.acknowledged);
     expect(acknowledged.ackCount, before.ackCount + 1);
     expect(acknowledged.needsMyAck, isFalse);
 
-    final again = await repository.acknowledge(1);
+    final again = await repository.acknowledge('1');
     expect(again.ackCount, acknowledged.ackCount);
     expect(
       again.recipients.where((r) => r.hasAcknowledged).length,
@@ -42,18 +41,18 @@ void main() {
 
   test('reminders go only to people who still have to act', () async {
     final container = await growthContainer();
-    final notice = await container.read(noticeRepositoryProvider).get(1);
+    final notice = await container.read(noticeRepositoryProvider).get('1');
     final pending = [
       for (final r in notice.recipients)
         if (!r.hasAcknowledged) r.memberId,
     ];
     final everyone = [for (final r in notice.recipients) r.memberId];
 
-    final sub = container.listen(noticeDetailProvider(1), (_, _) {});
+    final sub = container.listen(noticeDetailProvider('1'), (_, _) {});
     addTearDown(sub.close);
-    await container.read(noticeDetailProvider(1).future);
+    await container.read(noticeDetailProvider('1').future);
     final reminded = await container
-        .read(noticeDetailProvider(1).notifier)
+        .read(noticeDetailProvider('1').notifier)
         .remind(everyone);
     expect(reminded, pending.length);
   });
@@ -108,12 +107,12 @@ void main() {
   });
 
   test('a member sees the notice but not who read it', () async {
-    final container = await growthContainer(role: WorkspaceRole.member);
-    final notice = await container.read(noticeRepositoryProvider).get(1);
+    final container = await growthContainer(role: 'executive');
+    final notice = await container.read(noticeRepositoryProvider).get('1');
     expect(notice.recipients, isEmpty);
     expect(notice.canEdit, isFalse);
     await expectLater(
-      container.read(noticeRepositoryProvider).remind(1, const [2]),
+      container.read(noticeRepositoryProvider).remind('1', const ['2']),
       throwsA(
         isA<ApiFailure>().having((f) => f.isForbidden, 'forbidden', true),
       ),

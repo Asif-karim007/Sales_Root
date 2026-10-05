@@ -48,9 +48,12 @@ class _ChannelList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final connected = channels.where((c) => c.isConnected);
-    final total = connected.fold<int>(0, (sum, c) => sum + c.leadCount);
-    final week = connected.fold<int>(0, (sum, c) => sum + c.leadsThisWeek);
+    final connected = channels.where(
+      (c) => c.isConnected && c.kind != ChannelKind.hostedForm,
+    );
+    final forms = channels
+        .where((c) => c.kind == ChannelKind.hostedForm)
+        .fold<int>(0, (sum, c) => sum + c.formCount);
     return RefreshIndicator(
       onRefresh: () => ref.refresh(leadChannelsProvider.future),
       child: ListView(
@@ -62,12 +65,12 @@ class _ChannelList extends ConsumerWidget {
             columns: 2,
             tiles: [
               SrKpiTile(
-                label: l10n.growthChannelsLeadsTotal,
-                value: fmt.number(total),
+                label: l10n.growthChannelsConnected,
+                value: fmt.number(connected.length),
               ),
               SrKpiTile(
-                label: l10n.growthChannelsLeadsWeek,
-                value: fmt.number(week),
+                label: l10n.growthChannelsActiveForms,
+                value: fmt.number(forms),
               ),
             ],
           ),
@@ -131,10 +134,8 @@ class _ChannelRow extends ConsumerWidget {
     if (!channel.isConnected) return accountText;
     return [
       if (accountText.isNotEmpty) accountText,
-      if (channel.formCount > 0)
+      if (channel.formCount > 1)
         l10n.growthChannelForms(fmt.number(channel.formCount)),
-      if (channel.leadCount > 0)
-        l10n.growthChannelLeads(fmt.number(channel.leadCount)),
       if (channel.kind == ChannelKind.messenger) l10n.growthChannelWithPage,
     ].join(' · ');
   }

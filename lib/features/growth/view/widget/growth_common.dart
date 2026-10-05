@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,16 +20,6 @@ class GrowthLanguageAction extends ConsumerWidget {
     onChanged: (isBangla) =>
         ref.read(appLocaleProvider.notifier).set(isBangla ? bangla : english),
   );
-}
-
-/// "4 min", "2 h", "3 d" for a wait or an age the server measured.
-String growthAgo(BuildContext context, Duration age) {
-  final l10n = context.l10n;
-  final fmt = context.fmt;
-  if (age.inMinutes < 1) return l10n.growthAgoNow;
-  if (age.inHours < 1) return l10n.growthAgoMinutes(fmt.number(age.inMinutes));
-  if (age.inDays < 1) return l10n.growthAgoHours(fmt.number(age.inHours));
-  return l10n.growthAgoDays(fmt.number(age.inDays));
 }
 
 /// "+880 1912 345 678" from "+8801912345678", in the screen's digits.
@@ -85,42 +73,6 @@ Future<bool> runGrowthTask(
     onQuota: onQuota,
   );
   return done ?? false;
-}
-
-/// Rebuilds [builder] every [every], for timers that count up on screen.
-class GrowthClock extends StatefulWidget {
-  const GrowthClock({
-    super.key,
-    required this.builder,
-    this.every = const Duration(seconds: 30),
-  });
-
-  final WidgetBuilder builder;
-  final Duration every;
-
-  @override
-  State<GrowthClock> createState() => _GrowthClockState();
-}
-
-class _GrowthClockState extends State<GrowthClock> {
-  late final Timer _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(widget.every, (_) {
-      if (mounted) setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => widget.builder(context);
 }
 
 /// The prototype's `.line`: a label on the left, a bold value on the right.
@@ -224,23 +176,27 @@ class GrowthPagedList<T> extends StatelessWidget {
     super.key,
     required this.paged,
     required this.row,
-    required this.onLoadMore,
     required this.onRefresh,
     required this.empty,
+    this.onLoadMore,
     this.header = const [],
     this.title,
   });
 
   final Paged<T> paged;
   final Widget Function(T item) row;
-  final VoidCallback onLoadMore;
+
+  /// Null when the server sends the whole list at once.
+  final VoidCallback? onLoadMore;
   final Future<void> Function() onRefresh;
   final Widget empty;
   final List<Widget> header;
   final String? title;
 
   bool _onScroll(ScrollNotification note) {
-    if (note.metrics.extentAfter < 320 &&
+    final onLoadMore = this.onLoadMore;
+    if (onLoadMore != null &&
+        note.metrics.extentAfter < 320 &&
         paged.hasMore &&
         !paged.isLoadingMore &&
         paged.loadMoreError == null) {

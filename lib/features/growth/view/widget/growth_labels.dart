@@ -1,30 +1,20 @@
 import 'package:flutter/material.dart';
 
 import 'package:salesroot/features/growth/models/campaign.dart';
+import 'package:salesroot/features/growth/models/conversation.dart';
 import 'package:salesroot/features/growth/models/distribution_rule.dart';
-import 'package:salesroot/features/growth/models/inbox_lead.dart';
 import 'package:salesroot/features/growth/models/lead_channel.dart';
-import 'package:salesroot/features/growth/models/message_thread.dart';
 import 'package:salesroot/features/growth/models/notice.dart';
 import 'package:salesroot/translations/translations.dart';
 
-extension InboxSourceLabel on InboxSource {
+extension RuleSourceLabel on RuleSource {
   String label(AppLocalizations l10n) => switch (this) {
-    InboxSource.facebook => l10n.growthSourceFacebook,
-    InboxSource.website => l10n.growthSourceWebsite,
-    InboxSource.whatsapp => l10n.growthSourceWhatsapp,
-    InboxSource.messenger => l10n.growthSourceMessenger,
-    InboxSource.sms => l10n.growthSourceSms,
-    InboxSource.call => l10n.growthSourceCall,
-  };
-
-  IconData get icon => switch (this) {
-    InboxSource.facebook => Icons.facebook_rounded,
-    InboxSource.website => Icons.language_rounded,
-    InboxSource.whatsapp => Icons.chat_rounded,
-    InboxSource.messenger => Icons.forum_rounded,
-    InboxSource.sms => Icons.sms_outlined,
-    InboxSource.call => Icons.call_outlined,
+    RuleSource.facebook => l10n.growthSourceFacebook,
+    RuleSource.website => l10n.growthSourceWebsite,
+    RuleSource.whatsapp => l10n.growthSourceWhatsapp,
+    RuleSource.messenger => l10n.growthSourceMessenger,
+    RuleSource.sms => l10n.growthSourceSms,
+    RuleSource.call => l10n.growthSourceCall,
   };
 }
 
@@ -52,26 +42,6 @@ extension ChannelKindLabel on ChannelKind {
   };
 }
 
-extension LeadFieldLabel on LeadField {
-  String label(AppLocalizations l10n) => switch (this) {
-    LeadField.name => l10n.growthFieldName,
-    LeadField.mobile => l10n.growthFieldMobile,
-    LeadField.email => l10n.growthFieldEmail,
-    LeadField.area => l10n.growthFieldArea,
-    LeadField.company => l10n.growthFieldCompany,
-    LeadField.note => l10n.growthFieldNote,
-    LeadField.custom => l10n.growthFieldCustom,
-    LeadField.skip => l10n.growthFieldSkip,
-  };
-}
-
-extension LeadDestinationLabel on LeadDestination {
-  String label(AppLocalizations l10n) => switch (this) {
-    LeadDestination.inbox => l10n.growthDestinationInbox,
-    LeadDestination.rules => l10n.growthDestinationRules,
-  };
-}
-
 extension AssignModeLabel on AssignMode {
   String label(AppLocalizations l10n) => switch (this) {
     AssignMode.member => l10n.growthModeMember,
@@ -81,32 +51,21 @@ extension AssignModeLabel on AssignMode {
   };
 }
 
-extension RejectReasonLabel on RejectReason {
+extension ConversationChannelLabel on ConversationChannel {
   String label(AppLocalizations l10n) => switch (this) {
-    RejectReason.spam => l10n.growthRejectSpam,
-    RejectReason.wrongNumber => l10n.growthRejectWrongNumber,
-    RejectReason.notInterested => l10n.growthRejectNotInterested,
-    RejectReason.duplicate => l10n.growthRejectDuplicate,
-    RejectReason.outOfArea => l10n.growthRejectOutOfArea,
-  };
-}
-
-extension ThreadChannelLabel on ThreadChannel {
-  String label(AppLocalizations l10n) => switch (this) {
-    ThreadChannel.whatsapp => l10n.growthSourceWhatsapp,
-    ThreadChannel.messenger => l10n.growthSourceMessenger,
-    ThreadChannel.sms => l10n.growthSourceSms,
+    ConversationChannel.whatsapp => l10n.growthSourceWhatsapp,
+    ConversationChannel.messenger => l10n.growthSourceMessenger,
+    ConversationChannel.sms => l10n.growthSourceSms,
   };
 }
 
 extension AudienceSegmentLabel on AudienceSegment {
   String label(AppLocalizations l10n) => switch (this) {
-    AudienceSegment.overdueCustomers => l10n.growthSegmentOverdue,
-    AudienceSegment.customers => l10n.growthSegmentCustomers,
-    AudienceSegment.dealers => l10n.growthSegmentDealers,
-    AudienceSegment.hotLeads => l10n.growthSegmentHotLeads,
-    AudienceSegment.interestedLeads => l10n.growthSegmentInterested,
     AudienceSegment.openLeads => l10n.growthSegmentOpenLeads,
+    AudienceSegment.customers => l10n.growthSegmentCustomers,
+    AudienceSegment.lostLeads => l10n.growthSegmentLost,
+    AudienceSegment.facebookLeads => l10n.growthSegmentFacebook,
+    AudienceSegment.websiteLeads => l10n.growthSegmentWebsite,
   };
 }
 

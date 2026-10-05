@@ -117,7 +117,7 @@ final class NoticeDetailProvider
   /// One notice (#150). Opening it marks it read.
   NoticeDetailProvider._({
     required NoticeDetailFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'noticeDetailProvider',
@@ -151,7 +151,7 @@ final class NoticeDetailProvider
   }
 }
 
-String _$noticeDetailHash() => r'5366efbf1d89e192ded4a8c0998da0bc0ce22575';
+String _$noticeDetailHash() => r'a1d7531bd0cdb2a83acfce8c61e1e06e9688c3ba';
 
 /// One notice (#150). Opening it marks it read.
 
@@ -162,7 +162,7 @@ final class NoticeDetailFamily extends $Family
           AsyncValue<Notice>,
           Notice,
           FutureOr<Notice>,
-          int
+          String
         > {
   NoticeDetailFamily._()
     : super(
@@ -175,7 +175,7 @@ final class NoticeDetailFamily extends $Family
 
   /// One notice (#150). Opening it marks it read.
 
-  NoticeDetailProvider call(int id) =>
+  NoticeDetailProvider call(String id) =>
       NoticeDetailProvider._(argument: id, from: this);
 
   @override
@@ -185,10 +185,10 @@ final class NoticeDetailFamily extends $Family
 /// One notice (#150). Opening it marks it read.
 
 abstract class _$NoticeDetail extends $AsyncNotifier<Notice> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  FutureOr<Notice> build(int id);
+  FutureOr<Notice> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

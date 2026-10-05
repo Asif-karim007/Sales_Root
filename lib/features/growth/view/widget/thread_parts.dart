@@ -6,13 +6,13 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
-import 'package:salesroot/features/growth/models/message_thread.dart';
+import 'package:salesroot/features/growth/models/conversation.dart';
 import 'package:salesroot/features/growth/providers/messages_providers.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// The conversation, newest at the bottom: who it is, the messages, a
-/// suggested reply and the WhatsApp window.
+/// The conversation, newest at the bottom: who it is, the messages and an
+/// AI-suggested reply.
 class ThreadMessages extends ConsumerWidget {
   const ThreadMessages({
     super.key,
@@ -21,33 +21,21 @@ class ThreadMessages extends ConsumerWidget {
     required this.onUseSuggestion,
   });
 
-  final MessageThread thread;
+  final Conversation thread;
   final bool canReply;
   final ValueChanged<String> onUseSuggestion;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final messages = ref.watch(threadMessagesProvider(thread.id));
-    final suggestion = thread.suggestedReply;
-    final bottom = <Widget>[
-      if (thread.windowLeft() != null) _WindowNote(thread: thread),
-      if (canReply && suggestion != null)
+    final suggestion = canReply && thread.open
+        ? ref.watch(replyDraftProvider(thread.id)).value
+        : null;
+    final children = [
+      if (suggestion != null)
         _Suggestion(text: suggestion, onUse: () => onUseSuggestion(suggestion)),
+      for (final message in thread.messages.reversed) _Bubble(message: message),
+      ThreadHeader(thread: thread),
     ];
-    final body = switch (messages) {
-      AsyncData(:final value) => [
-        for (final message in value.reversed) _Bubble(message: message),
-      ],
-      AsyncError(:final error) => [
-        SrErrorState(
-          error: error,
-          compact: true,
-          onRetry: () => ref.invalidate(threadMessagesProvider(thread.id)),
-        ),
-      ],
-      _ => [const SrSkeletonBox(height: 48), const SrSkeletonBox(height: 64)],
-    };
-    final children = [...bottom, ...body, ThreadHeader(thread: thread)];
     return ListView.separated(
       reverse: true,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -62,24 +50,17 @@ class ThreadMessages extends ConsumerWidget {
 class ThreadHeader extends StatelessWidget {
   const ThreadHeader({super.key, required this.thread});
 
-  final MessageThread thread;
+  final Conversation thread;
 
   @override
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
-    final fmt = context.fmt;
-    final due = thread.dueAmount;
-    final reference = thread.reference;
-    final summary = [
-      switch (thread.kind) {
-        ThreadPartyKind.customer => l10n.growthMessagesCustomer,
-        ThreadPartyKind.lead => l10n.growthMessagesLead,
-        ThreadPartyKind.unknown => l10n.growthMessagesUnknown,
-      },
-      ?reference,
-      if (due != null) l10n.growthMessagesDue(fmt.money(due)),
-    ].join(' · ');
+    final kind = thread.companyId != null
+        ? l10n.growthMessagesCustomer
+        : thread.leadId != null
+        ? l10n.growthMessagesLead
+        : l10n.growthMessagesUnknown;
     return SrCard(
       tone: SrCardTone.tint,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -92,7 +73,7 @@ class ThreadHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(thread.name, style: AppText.rowTitle(c.ink)),
-                Text(summary, style: AppText.meta(c.ink2, size: 12)),
+                Text(kind, style: AppText.meta(c.ink2, size: 12)),
               ],
             ),
           ),
@@ -107,7 +88,7 @@ class ThreadHeader extends StatelessWidget {
 class _RecordButton extends StatelessWidget {
   const _RecordButton({required this.thread});
 
-  final MessageThread thread;
+  final Conversation thread;
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +105,7 @@ class _RecordButton extends StatelessWidget {
             Uri(
               path: Routes.leadNew,
               queryParameters: {
-                if (thread.kind != ThreadPartyKind.unknown) 'name': thread.name,
+                'name': thread.name,
                 'phone': ?phone,
                 'source': thread.channel.wire,
               },
@@ -142,42 +123,31 @@ class _RecordButton extends StatelessWidget {
 class _Bubble extends StatelessWidget {
   const _Bubble({required this.message});
 
-  final ThreadMessage message;
+  final ConversationMessage message;
 
   @override
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
-    final l10n = context.l10n;
-    final fmt = context.fmt;
     final at = message.at;
-    final attachment = message.attachment;
     return SrChatBubble(
       text: message.text,
       mine: message.mine,
-      time: at == null ? null : fmt.time(at),
+      time: at == null ? null : context.fmt.time(at),
       trailing: message.mine
           ? Icon(
-              message.status == DeliveryStatus.sent
-                  ? Icons.done_rounded
-                  : Icons.done_all_rounded,
+              switch (message.status) {
+                DeliveryStatus.sent => Icons.done_rounded,
+                DeliveryStatus.failed => Icons.error_outline_rounded,
+                _ => Icons.done_all_rounded,
+              },
               size: 14,
-              color: message.status == DeliveryStatus.read ? c.accent2 : c.ink3,
+              color: switch (message.status) {
+                DeliveryStatus.read => c.accent2,
+                DeliveryStatus.failed => c.danger,
+                _ => c.ink3,
+              },
             )
           : null,
-      media: attachment == null
-          ? null
-          : SrBubbleMedia(
-              icon: Icons.picture_as_pdf_outlined,
-              height: 56,
-              child: Text(
-                [
-                  attachment.name,
-                  if (attachment.amount case final amount?) fmt.money(amount),
-                  l10n.growthMessagesPdf,
-                ].join(' · '),
-                style: AppText.meta(c.ink, size: 12),
-              ),
-            ),
     );
   }
 }
@@ -214,31 +184,6 @@ class _Suggestion extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _WindowNote extends StatelessWidget {
-  const _WindowNote({required this.thread});
-
-  final MessageThread thread;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final left = thread.windowLeft() ?? Duration.zero;
-    if (left == Duration.zero) {
-      return SrNote(
-        tone: SrNoteTone.err,
-        icon: Icons.lock_clock_outlined,
-        message: l10n.growthMessagesWindowClosed,
-      );
-    }
-    final until = DateTime.now().add(left);
-    return SrNote(
-      tone: SrNoteTone.gold,
-      icon: Icons.schedule_rounded,
-      message: l10n.growthMessagesWindowOpen(context.fmt.dayTime(until)),
     );
   }
 }

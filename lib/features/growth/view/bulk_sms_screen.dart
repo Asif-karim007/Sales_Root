@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:salesroot/core/access/access_providers.dart';
-import 'package:salesroot/core/access/experience_level.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/growth/models/campaign.dart';
-import 'package:salesroot/features/growth/models/message_thread.dart';
+import 'package:salesroot/features/growth/models/conversation.dart';
 import 'package:salesroot/features/growth/models/sms_count.dart';
 import 'package:salesroot/features/growth/providers/campaign_providers.dart';
 import 'package:salesroot/features/growth/view/widget/audience_field.dart';
@@ -20,7 +18,7 @@ import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #144 Write a bulk SMS: audience, message with segment counting, credit
-/// cost, schedule and a test send.
+/// cost and schedule.
 class BulkSmsScreen extends ConsumerStatefulWidget {
   const BulkSmsScreen({super.key});
 
@@ -30,10 +28,9 @@ class BulkSmsScreen extends ConsumerStatefulWidget {
 
 class _BulkSmsScreenState extends ConsumerState<BulkSmsScreen> {
   final _message = TextEditingController();
-  AudienceSegment _segment = AudienceSegment.overdueCustomers;
+  AudienceSegment _segment = AudienceSegment.openLeads;
   MessageTemplate? _template;
   bool _sendNow = false;
-  bool _excludeDoNotContact = true;
   DateTime _scheduleAt = _tomorrowAtTen();
 
   static DateTime _tomorrowAtTen() {
@@ -50,18 +47,16 @@ class _BulkSmsScreenState extends ConsumerState<BulkSmsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final submit = ref.watch(smsCampaignSubmitProvider);
-    ref.listen(smsCampaignSubmitProvider, _onSubmit);
-    final audiences = ref.watch(campaignAudiencesProvider);
-    final balance = ref.watch(messagingBalanceProvider).value;
+    final submit = ref.watch(campaignSubmitProvider);
+    ref.listen(campaignSubmitProvider, _onSubmit);
+    final audiences = ref.watch(campaignAudiencesProvider(CampaignChannel.sms));
+    final credits = ref.watch(smsCreditsProvider).value;
     final audience = audiences.value
         ?.where((a) => a.segment == _segment)
         .firstOrNull;
-    final reach =
-        audience?.reach(excludeDoNotContact: _excludeDoNotContact) ?? 0;
+    final reach = audience?.count ?? 0;
     final count = SmsCount.of(_message.text);
     final needed = count.segments * reach;
-    final credits = balance?.smsCredits;
     return SrScaffold(
       appBar: SrAppBar(
         title: l10n.growthCampaignsBulkSms,
@@ -69,7 +64,8 @@ class _BulkSmsScreenState extends ConsumerState<BulkSmsScreen> {
       ),
       body: SrAsyncView(
         value: audiences,
-        onRetry: () => ref.invalidate(campaignAudiencesProvider),
+        onRetry: () =>
+            ref.invalidate(campaignAudiencesProvider(CampaignChannel.sms)),
         onUpgrade: () => context.push(Routes.planUsage),
         loading: (_) => const SrSkeletonList(count: 5, cards: true),
         data: (context, list) => SrKeyboardDismiss(
@@ -85,7 +81,7 @@ class _BulkSmsScreenState extends ConsumerState<BulkSmsScreen> {
               const SizedBox(height: 12),
               SrDropdownField(
                 label: l10n.growthSmsTemplate,
-                value: _template?.name.of(context.fmt.isBangla),
+                value: _template?.name,
                 placeholder: l10n.growthSmsNoTemplate,
                 onTap: _pickTemplate,
               ),
@@ -105,7 +101,12 @@ class _BulkSmsScreenState extends ConsumerState<BulkSmsScreen> {
                 onInserted: () => setState(() {}),
               ),
               const SizedBox(height: 12),
-              _CostCard(count: count, needed: needed, balance: balance),
+              _CostCard(
+                count: count,
+                needed: needed,
+                credits: credits,
+                cost: audience?.estimatedCost,
+              ),
               if (credits != null && needed > credits) ...[
                 const SizedBox(height: 12),
                 _ShortNote(needed: needed, have: credits),
@@ -114,43 +115,26 @@ class _BulkSmsScreenState extends ConsumerState<BulkSmsScreen> {
               _ScheduleCard(
                 sendNow: _sendNow,
                 scheduleAt: _scheduleAt,
-                excludeDoNotContact: _excludeDoNotContact,
                 onSendNow: (v) => setState(() => _sendNow = v),
                 onSchedule: (at) => setState(() => _scheduleAt = at),
-                onExclude: (v) => setState(() => _excludeDoNotContact = v),
               ),
             ],
           ),
         ),
       ),
-      footer: Row(
-        children: [
-          Expanded(
-            child: SrButton(
-              label: l10n.growthSmsTest,
-              variant: SrButtonVariant.secondary,
-              onPressed: submit.isLoading ? null : _test,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: SrButton(
-              label: _sendNow
-                  ? l10n.growthSmsSendTo(context.fmt.number(reach))
-                  : l10n.growthSmsScheduleFor(context.fmt.number(reach)),
-              loading: submit.isLoading,
-              onPressed: reach == 0 ? null : _submit,
-            ),
-          ),
-        ],
+      footer: SrButton(
+        label: _sendNow
+            ? l10n.growthSmsSendTo(context.fmt.number(reach))
+            : l10n.growthSmsScheduleFor(context.fmt.number(reach)),
+        expand: true,
+        loading: submit.isLoading,
+        onPressed: reach == 0 ? null : _submit,
       ),
     );
   }
 
   String? _messageError(AsyncValue<Campaign?> submit) => switch (submit) {
-    AsyncError(:final ApiFailure error)
-        when error.fieldError('Message') != null =>
-      context.l10n.commonRequired,
+    AsyncError(:final ApiFailure error) => error.fieldError('body'),
     _ => null,
   };
 
@@ -158,31 +142,17 @@ class _BulkSmsScreenState extends ConsumerState<BulkSmsScreen> {
     final message = _message.text.trim();
     final words = message.split(RegExp(r'\s+')).take(4).join(' ');
     ref
-        .read(smsCampaignSubmitProvider.notifier)
+        .read(campaignSubmitProvider.notifier)
         .submit(
-          SmsCampaignInput(
-            name: _template?.name.en ?? words,
+          CampaignInput(
+            name: _template?.name ?? words,
+            channel: CampaignChannel.sms,
             segment: _segment,
-            message: message,
-            excludeDoNotContact: _excludeDoNotContact,
-            scheduleAt: _sendNow ? null : _scheduleAt,
+            body: message,
+            templateId: _template?.id,
+            scheduledAt: _sendNow ? null : _scheduleAt,
           ),
         );
-  }
-
-  Future<void> _test() async {
-    final l10n = context.l10n;
-    final message = _message.text.trim();
-    if (message.isEmpty) {
-      showSrWarning(context, l10n.growthSmsWriteFirst);
-      return;
-    }
-    final done = await runGrowthTask(
-      context,
-      ref.read(campaignActionsProvider.notifier).testSms(message),
-      onQuota: () => context.push(Routes.campaignCredits),
-    );
-    if (done && mounted) showSrSuccess(context, l10n.growthSmsTestSent);
   }
 
   void _onSubmit(AsyncValue<Campaign?>? _, AsyncValue<Campaign?> next) {
@@ -192,7 +162,7 @@ class _BulkSmsScreenState extends ConsumerState<BulkSmsScreen> {
         showSrWarning(context, l10n.growthSmsNotEnough);
         context.push(Routes.campaignCredits);
       case AsyncError(:final ApiFailure error)
-          when error.fieldError('Message') != null:
+          when error.fieldError('body') != null:
         return;
       case AsyncError(:final error):
         showSrError(context, growthFailureText(context, error));
@@ -211,7 +181,6 @@ class _BulkSmsScreenState extends ConsumerState<BulkSmsScreen> {
 
   Future<void> _pickTemplate() async {
     final l10n = context.l10n;
-    final bangla = context.fmt.isBangla;
     final templates = await runGrowthAction(
       context,
       ref.read(smsTemplatesProvider.future),
@@ -222,15 +191,15 @@ class _BulkSmsScreenState extends ConsumerState<BulkSmsScreen> {
       builder: (_) => SrOptionSheet<MessageTemplate>(
         title: l10n.growthSmsTemplate,
         options: templates,
-        labelOf: (t) => t.name.of(bangla),
-        subtitleOf: (t) => t.body.of(bangla),
+        labelOf: (t) => t.name,
+        subtitleOf: (t) => t.body,
         isSelected: (t) => t.id == _template?.id,
       ),
     );
     if (picked == null || !mounted) return;
     setState(() {
       _template = picked;
-      _message.text = picked.body.of(bangla);
+      _message.text = picked.body;
     });
   }
 }
@@ -239,20 +208,24 @@ class _CostCard extends StatelessWidget {
   const _CostCard({
     required this.count,
     required this.needed,
-    required this.balance,
+    required this.credits,
+    required this.cost,
   });
 
   final SmsCount count;
   final int needed;
-  final MessagingBalance? balance;
+  final int? credits;
+
+  /// The server's estimate for the whole send, in taka.
+  final double? cost;
 
   @override
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final balance = this.balance;
-    final credits = balance?.smsCredits;
+    final credits = this.credits;
+    final cost = this.cost;
     return SrCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: Column(
@@ -274,12 +247,14 @@ class _CostCard extends StatelessWidget {
                     fmt.number(credits),
                   ),
             valueColor: credits != null && needed > credits ? c.danger : null,
+            divider: cost != null,
           ),
-          GrowthInfoLine(
-            label: l10n.growthSmsSender,
-            value: balance?.senderId ?? '',
-            divider: false,
-          ),
+          if (cost != null)
+            GrowthInfoLine(
+              label: l10n.growthSmsEstimatedCost,
+              value: fmt.money(cost),
+              divider: false,
+            ),
         ],
       ),
     );
@@ -299,37 +274,26 @@ class _ShortNote extends StatelessWidget {
     return SrNote(
       tone: SrNoteTone.err,
       message: l10n.growthSmsShort(fmt.number(needed), fmt.number(have)),
-      action: SrButton(
-        label: l10n.growthSmsBuyCredits,
-        size: SrButtonSize.sm,
-        variant: SrButtonVariant.secondary,
-        onPressed: () => context.push(Routes.campaignCredits),
-      ),
     );
   }
 }
 
-class _ScheduleCard extends ConsumerWidget {
+class _ScheduleCard extends StatelessWidget {
   const _ScheduleCard({
     required this.sendNow,
     required this.scheduleAt,
-    required this.excludeDoNotContact,
     required this.onSendNow,
     required this.onSchedule,
-    required this.onExclude,
   });
 
   final bool sendNow;
   final DateTime scheduleAt;
-  final bool excludeDoNotContact;
   final ValueChanged<bool> onSendNow;
   final ValueChanged<DateTime> onSchedule;
-  final ValueChanged<bool> onExclude;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final easy = ref.watch(experienceLevelProvider) == ExperienceLevel.easy;
     return SrCard(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Column(
@@ -359,12 +323,6 @@ class _ScheduleCard extends ConsumerWidget {
                   if (picked != null) onSchedule(picked);
                 },
               ),
-            ),
-          if (!easy)
-            GrowthToggleRow(
-              title: l10n.growthSmsExcludeDnc,
-              value: excludeDoNotContact,
-              onChanged: onExclude,
             ),
         ],
       ),

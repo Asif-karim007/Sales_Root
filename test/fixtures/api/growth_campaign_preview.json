@@ -1,0 +1,33 @@
+{
+  "count": 6,
+  "estimatedCost": 2.1,
+  "sample": [
+    {
+      "leadId": "01a10101-8677-7574-99e6-9d13cce45bec",
+      "companyId": "01a10101-865e-7cd6-8e08-e7ddc9f97a57",
+      "phone": "+8801811000013",
+      "name": "Mita Fashion"
+    },
+    {
+      "leadId": "01a10101-8678-7b04-9411-1ed424b8994c",
+      "companyId": "01a10101-865d-7d16-b8ef-4fdc19486fc0",
+      "phone": "+8801811000011",
+      "name": "Karim Uddin"
+    },
+    {
+      "leadId": "01a10101-8678-78f2-94bd-510668758ed1",
+      "phone": "+8801911000030",
+      "name": "Nadia Chowdhury"
+    },
+    {
+      "leadId": "01a10101-8679-7816-9ab5-7315a70ac1a7",
+      "phone": "+8801911000031",
+      "name": "Bashundhara Steel"
+    },
+    {
+      "leadId": "01a106e8-5648-7dcf-9323-b3b0f0d52303",
+      "phone": "+8801717191994",
+      "name": "Asif karim"
+    }
+  ]
+}

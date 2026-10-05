@@ -10,7 +10,6 @@ import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/growth/models/distribution_rule.dart';
 import 'package:salesroot/features/growth/providers/distribution_providers.dart';
-import 'package:salesroot/features/growth/providers/inbox_providers.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
 import 'package:salesroot/features/growth/view/widget/rule_text.dart';
 import 'package:salesroot/translations/translations.dart';
@@ -33,7 +32,7 @@ class DistributionScreen extends ConsumerWidget {
             SrIconButton(
               icon: Icons.add_rounded,
               tooltip: l10n.growthRuleNew,
-              onTap: () => context.push(Routes.distributionRuleFor(0)),
+              onTap: () => context.push(Routes.distributionRuleFor(newRuleId)),
             ),
         ],
       ),
@@ -104,7 +103,7 @@ class _Rules extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final access = ref.watch(moduleAccessProvider(AppModule.distribution));
-    final members = ref.watch(growthMembersProvider).value ?? const [];
+    final members = ref.watch(ruleMembersProvider).value ?? const [];
     final areas = ref.watch(ruleAreasProvider).value ?? const [];
     final words = RuleVocabulary(
       members: {for (final m in members) m.id: m},
@@ -117,7 +116,7 @@ class _Rules extends ConsumerWidget {
         message: l10n.growthRulesEmptyBody,
         actionLabel: access.canAdd ? l10n.growthRuleNew : null,
         onAction: access.canAdd
-            ? () => context.push(Routes.distributionRuleFor(0))
+            ? () => context.push(Routes.distributionRuleFor(newRuleId))
             : null,
       );
     }

@@ -7,18 +7,21 @@ abstract interface class DistributionRepository {
 
   Future<void> setEnabled(bool enabled);
 
-  Future<DistributionRule> rule(int id);
+  Future<DistributionRule> rule(String id);
 
   Future<DistributionRule> create(RuleInput input);
 
-  Future<DistributionRule> save(int id, RuleInput input);
+  Future<DistributionRule> save(String id, RuleInput input);
 
-  Future<void> setRuleEnabled(int id, bool enabled);
+  Future<void> setRuleEnabled(String id, bool enabled);
 
-  Future<void> delete(int id);
+  Future<void> delete(String id);
 
   /// Replays the last [last] leads through the current rules.
   Future<RuleTestResult> test({int last = 50});
+
+  /// The members rules can assign to, with today's leave, check-in and load.
+  Future<List<GrowthMember>> members();
 
   /// Lead form and campaign names a rule can match.
   Future<List<String>> forms();

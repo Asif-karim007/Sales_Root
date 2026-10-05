@@ -8,7 +8,6 @@ import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/features/growth/models/distribution_rule.dart';
 import 'package:salesroot/features/growth/providers/distribution_providers.dart';
-import 'package:salesroot/features/growth/providers/inbox_providers.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
 import 'package:salesroot/features/growth/view/widget/rule_fields.dart';
 import 'package:salesroot/features/growth/view/widget/rule_text.dart';
@@ -16,11 +15,11 @@ import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// #140 One distribution rule: conditions, who gets the lead, schedule and
-/// caps. Id 0 makes a new rule.
+/// caps. [newRuleId] makes a new rule.
 class RuleEditScreen extends ConsumerStatefulWidget {
   const RuleEditScreen({super.key, required this.id});
 
-  final int id;
+  final String id;
 
   @override
   ConsumerState<RuleEditScreen> createState() => _RuleEditScreenState();
@@ -79,18 +78,22 @@ class _RuleEditScreenState extends ConsumerState<RuleEditScreen> {
     final access = ref.watch(moduleAccessProvider(AppModule.distribution));
     final rule = _rule;
     final draft = _draft;
-    final canSave = widget.id == 0
+    final canSave = widget.id == newRuleId
         ? access.canAdd
         : access.canEdit && (rule?.canEdit ?? false);
     final canDelete =
-        widget.id != 0 && access.canDelete && (rule?.canDelete ?? false);
+        widget.id != newRuleId &&
+        access.canDelete &&
+        (rule?.canDelete ?? false);
     final failure = switch (submit) {
       AsyncError(:final ApiFailure error) => error,
       _ => null,
     };
     return SrScaffold(
       appBar: SrAppBar(
-        title: widget.id == 0 ? l10n.growthRuleNew : l10n.growthRuleTitle,
+        title: widget.id == newRuleId
+            ? l10n.growthRuleNew
+            : l10n.growthRuleTitle,
         actions: const [GrowthLanguageAction()],
       ),
       body: SrAsyncView(
@@ -141,7 +144,7 @@ class _RuleEditScreenState extends ConsumerState<RuleEditScreen> {
   }
 
   RuleVocabulary _vocabulary() {
-    final members = ref.watch(growthMembersProvider).value ?? const [];
+    final members = ref.watch(ruleMembersProvider).value ?? const [];
     final areas = ref.watch(ruleAreasProvider).value ?? const [];
     return RuleVocabulary(
       members: {for (final m in members) m.id: m},

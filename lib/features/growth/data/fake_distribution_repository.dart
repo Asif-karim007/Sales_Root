@@ -9,7 +9,6 @@ import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/growth/data/distribution_engine.dart';
 import 'package:salesroot/features/growth/data/distribution_fixtures.dart';
 import 'package:salesroot/features/growth/data/distribution_repository.dart';
-import 'package:salesroot/features/growth/data/inbox_fixtures.dart';
 import 'package:salesroot/features/growth/models/distribution_rule.dart';
 
 /// The fake server's distribution desk, shared by the rules and the inbox.
@@ -30,7 +29,7 @@ class FakeDistributionDesk {
   bool get enabled =>
       settings.rows.isEmpty || settings.rows.first['Enabled'] != false;
 
-  Map<int, GrowthMember> memberMap() => {
+  Map<String, GrowthMember> memberMap() => {
     for (final member in members.rows.map(GrowthMember.fromJson))
       member.id: member,
   };
@@ -53,33 +52,26 @@ class FakeDistributionDesk {
     final rule = decision.rule;
     final cursor = decision.cursor;
     if (rule != null && cursor != null) {
-      rules.update(rule.id, {'Cursor': cursor});
+      rules.update(fakeKey(rule.id), {'Cursor': cursor});
     }
     final memberId = decision.memberId;
     if (memberId != null) loadUp(memberId);
     return decision;
   }
 
-  void loadUp(int memberId) {
-    final row = members.byIdOrNull(memberId);
+  void loadUp(String memberId) {
+    final key = fakeKey(memberId);
+    final row = members.byIdOrNull(key);
     if (row == null) return;
-    members.update(memberId, {
-      'OpenLeads': (jsonInt(row['OpenLeads']) ?? 0) + 1,
-      'AssignedToday': (jsonInt(row['AssignedToday']) ?? 0) + 1,
+    members.update(key, {
+      'openLeads': (jsonInt(row['openLeads']) ?? 0) + 1,
+      'assignedToday': (jsonInt(row['assignedToday']) ?? 0) + 1,
     });
   }
-
-  /// `<prefix>Id`, `<prefix>Name` and `<prefix>NameBn` for a member.
-  Map<String, dynamic> memberFields(int? id, String prefix) {
-    final row = id == null ? null : members.byIdOrNull(id);
-    if (row == null) return const {};
-    return {
-      '${prefix}Id': row['Id'],
-      '${prefix}Name': row['Name'],
-      '${prefix}NameBn': row['NameBn'],
-    };
-  }
 }
+
+/// The fake table key for a string id.
+int fakeKey(String id) => int.tryParse(id) ?? -1;
 
 class FakeDistributionRepository implements DistributionRepository {
   FakeDistributionRepository(this._backend)
@@ -117,9 +109,9 @@ class FakeDistributionRepository implements DistributionRepository {
   );
 
   @override
-  Future<DistributionRule> rule(int id) => _backend.run(
+  Future<DistributionRule> rule(String id) => _backend.run(
     'Distribution rule',
-    () => DistributionRule.fromJson(_shape(_desk.rules.byId(id))),
+    () => DistributionRule.fromJson(_shape(_desk.rules.byId(fakeKey(id)))),
     module: AppModule.distribution,
   );
 
@@ -153,13 +145,14 @@ class FakeDistributionRepository implements DistributionRepository {
   );
 
   @override
-  Future<DistributionRule> save(int id, RuleInput input) => _backend.run(
+  Future<DistributionRule> save(String id, RuleInput input) => _backend.run(
     'Distribution rule save',
     () {
       final body = input.toJson();
-      _validate(body, id);
-      final current = _desk.rules.byId(id);
-      final row = _desk.rules.update(id, {
+      final key = fakeKey(id);
+      _validate(body, key);
+      final current = _desk.rules.byId(key);
+      final row = _desk.rules.update(key, {
         for (final key in const [
           'FallbackMemberId',
           'EscalateMinutes',
@@ -178,18 +171,18 @@ class FakeDistributionRepository implements DistributionRepository {
   );
 
   @override
-  Future<void> setRuleEnabled(int id, bool enabled) => _backend.run(
+  Future<void> setRuleEnabled(String id, bool enabled) => _backend.run(
     'Distribution rule on/off',
-    () => _desk.rules.update(id, {'Enabled': enabled}),
+    () => _desk.rules.update(fakeKey(id), {'Enabled': enabled}),
     module: AppModule.distribution,
     right: ModuleRight.edit,
   );
 
   @override
-  Future<void> delete(int id) => _backend.run(
+  Future<void> delete(String id) => _backend.run(
     'Distribution rule delete',
     () {
-      _desk.rules.delete(id);
+      _desk.rules.delete(fakeKey(id));
       final ordered = _sortedRows();
       for (var i = 0; i < ordered.length; i++) {
         _desk.rules.update(jsonInt(ordered[i]['Id']) ?? 0, {'Position': i + 1});
@@ -207,7 +200,7 @@ class FakeDistributionRepository implements DistributionRepository {
           for (final row in _sortedRows()) Map<String, dynamic>.of(row),
         ];
         final members = _desk.memberMap();
-        final counts = <int, int>{};
+        final counts = <String, int>{};
         var queued = 0;
         for (final subject in subjects) {
           final decision = DistributionEngine.decide(
@@ -226,7 +219,7 @@ class FakeDistributionRepository implements DistributionRepository {
           }
           final cursor = decision.cursor;
           if (rule != null && cursor != null) {
-            rules.firstWhere((r) => r['Id'] == rule.id)['Cursor'] = cursor;
+            rules.firstWhere((r) => '${r['Id']}' == rule.id)['Cursor'] = cursor;
           }
           final member = memberId == null ? null : members[memberId];
           if (member != null) members[member.id] = member.withAssigned();
@@ -239,23 +232,25 @@ class FakeDistributionRepository implements DistributionRepository {
               {
                 'RuleId': row['Id'],
                 'Position': row['Position'],
-                'Count': counts[row['Id']] ?? 0,
+                'Count': counts['${row['Id']}'] ?? 0,
               },
           ],
         });
       }, module: AppModule.distribution);
 
   @override
-  Future<List<String>> forms() => _backend.run('Distribution forms', () {
-    final names = <String>{};
-    for (final row in _backend.table(growthInboxTable, inboxFixtures).rows) {
-      final form = row['FormName'];
-      final campaign = row['Campaign'];
-      if (form is String) names.add(form);
-      if (campaign is String) names.add(campaign);
-    }
-    return names.toList()..sort();
-  }, module: AppModule.distribution);
+  Future<List<GrowthMember>> members() => _backend.run(
+    'Distribution members',
+    () => _desk.memberMap().values.toList(),
+    module: AppModule.distribution,
+  );
+
+  @override
+  Future<List<String>> forms() => _backend.run(
+    'Distribution forms',
+    () => [...distributionFormNames]..sort(),
+    module: AppModule.distribution,
+  );
 
   @override
   Future<List<LocalizedName>> areas() => _backend.run(
@@ -282,7 +277,7 @@ class FakeDistributionRepository implements DistributionRepository {
   void _validate(Map<String, dynamic> body, int? id) {
     fakeRequire(body, ['Name']);
     final mode = AssignMode.fromWire(body['Mode'] as String?);
-    if (mode != AssignMode.queue && jsonInts(body['MemberIds']).isEmpty) {
+    if (mode != AssignMode.queue && jsonIds(body['MemberIds']).isEmpty) {
       throw const ApiFailure(
         400,
         'Pick at least one member',
@@ -299,8 +294,8 @@ class FakeDistributionRepository implements DistributionRepository {
   }
 
   bool _sameMembers(Map<String, dynamic> row, Map<String, dynamic> body) {
-    final before = jsonInts(row['MemberIds']);
-    final after = jsonInts(body['MemberIds']);
+    final before = jsonIds(row['MemberIds']);
+    final after = jsonIds(body['MemberIds']);
     if (before.length != after.length) return false;
     for (var i = 0; i < before.length; i++) {
       if (before[i] != after[i]) return false;
@@ -309,24 +304,15 @@ class FakeDistributionRepository implements DistributionRepository {
   }
 
   List<RuleSubject> _recentSubjects(int last) {
-    final inbox = [..._backend.table(growthInboxTable, inboxFixtures).rows]
-      ..sort((a, b) => '${b['ReceivedAt']}'.compareTo('${a['ReceivedAt']}'));
     final graph = _backend.graph;
     final leads = [...graph.leads]
       ..sort((a, b) => a.createdDaysAgo.compareTo(b.createdDaysAgo));
     return [
-      for (final row in inbox)
-        RuleSubject(
-          source: '${row['Source']}',
-          area: row['Area'] as String?,
-          form: row['FormName'] as String?,
-          campaign: row['Campaign'] as String?,
-        ),
-      for (final lead in leads)
+      for (final lead in leads.take(last))
         RuleSubject(
           source: lead.source,
           area: graph.company(lead.companyId).area.name,
         ),
-    ].take(last).toList();
+    ];
   }
 }

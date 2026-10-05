@@ -1,141 +1,167 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/core/utils/json_fields.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
-import 'package:salesroot/features/growth/data/inbox_fixtures.dart';
-import 'package:salesroot/features/growth/models/inbox_lead.dart';
+import 'package:salesroot/features/growth/models/conversation.dart';
 import 'package:salesroot/features/growth/providers/inbox_providers.dart';
+import 'package:salesroot/features/growth/providers/messages_providers.dart';
 
-import 'growth_harness.dart';
+import '../../helpers/api_stub.dart';
+import 'growth_test_helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('unanswered leads come first, longest waiting on top', () async {
-    final container = await growthContainer();
+  test('the recorded empty inbox parses', () async {
+    final container = await growthContainer(stub: growthStub(empty: true));
     final paged = await container.read(inboxListProvider.future);
-
-    final statuses = [for (final lead in paged.items) lead.status];
-    final firstAssigned = statuses.indexOf(InboxStatus.assigned);
-    expect(firstAssigned, greaterThan(0));
-    expect(statuses.skip(firstAssigned), everyElement(InboxStatus.assigned));
-    final fresh = paged.items.take(firstAssigned).toList();
-    for (var i = 1; i < fresh.length; i++) {
-      expect(
-        fresh[i - 1].waitingAtFetch,
-        greaterThanOrEqualTo(fresh[i].waitingAtFetch),
-      );
-    }
-    expect(fresh.first.name, 'Rokon Uddin');
-    expect(
-      paged.items.map((l) => l.status),
-      isNot(contains(InboxStatus.accepted)),
-    );
+    expect(paged.isEmpty, isTrue);
+    expect(paged.hasMore, isFalse);
   });
 
-  test('the late filter keeps only leads past the SLA', () async {
-    final container = await growthContainer();
-    container.read(inboxFilterProvider.notifier).set(InboxFilter.late);
-    final paged = await container.read(inboxListProvider.future);
-
-    expect(paged.items, isNotEmpty);
-    for (final lead in paged.items) {
-      expect(lead.status, InboxStatus.fresh);
-      expect(lead.waitingAtFetch.inMinutes, greaterThanOrEqualTo(15));
-    }
-    expect(paged.facets['Counts']?['Late'], paged.items.length);
-  });
-
-  test('pages load 20 at a time', () async {
-    final container = await growthContainer();
-    final table = backendOf(container).table(growthInboxTable, inboxFixtures);
-    for (var i = 0; i < 10; i++) {
-      table.insert({
-        'Name': 'Extra lead $i',
-        'Phone': '+88017000000$i',
-        'Source': 'Website',
-        'Status': 'New',
-        'ReceivedAt': jsonUtc(DateTime.now()),
-      });
-    }
+  test('new leads page by offset over open conversations', () async {
+    final stub = growthStub();
+    stubInbox(stub, [for (var n = 1; n <= 25; n++) conversationRow(n)]);
+    final container = await growthContainer(stub: stub);
+    final sub = container.listen(inboxListProvider, (_, _) {});
+    addTearDown(sub.close);
 
     final first = await container.read(inboxListProvider.future);
     expect(first.items, hasLength(20));
-    expect(first.hasMore, isTrue);
+    expect(first.totalCount, 25);
+    final query = stub.last('GET', 'inbox')?.queryParameters;
+    expect(query?['offset'], 0);
+    expect(query?['limit'], 20);
+    expect(query?['status'], 'open');
+    expect(query?.containsKey('box'), isFalse);
 
     await container.read(inboxListProvider.notifier).loadMore();
-    final next = container.read(inboxListProvider).requireValue;
-    expect(next.items.length, first.totalCount);
-    expect(next.hasMore, isFalse);
+    final all = container.read(inboxListProvider).requireValue;
+    expect(stub.last('GET', 'inbox')?.queryParameters['offset'], 20);
+    expect(all.items, hasLength(25));
+    expect(all.hasMore, isFalse);
+
+    container.read(inboxBoxProvider.notifier).set(ConversationBox.unassigned);
+    await container.read(inboxListProvider.future);
+    expect(stub.last('GET', 'inbox')?.queryParameters['box'], 'unassigned');
   });
 
-  test(
-    'accepting assigns by rule and takes the lead out of the inbox',
-    () async {
-      final container = await growthContainer();
-      await container.read(inboxListProvider.future);
-      final notifier = container.read(acceptLeadSubmitProvider(1).notifier);
-      final sub = container.listen(acceptLeadSubmitProvider(1), (_, _) {});
-      addTearDown(sub.close);
-
-      await notifier.submit(const AcceptInput(stageId: 1));
-
-      final accepted = container.read(acceptLeadSubmitProvider(1)).requireValue;
-      expect(accepted?.status, InboxStatus.accepted);
-      expect(accepted?.assignedToId, 5);
-      expect(accepted?.assignedByRule, 'Uttara & Mirpur → Dhaka North');
-      final paged = await container.read(inboxListProvider.future);
-      expect(paged.items.map((l) => l.id), isNot(contains(1)));
-
-      await expectLater(
-        container
-            .read(leadInboxRepositoryProvider)
-            .accept(1, const AcceptInput(stageId: 1)),
-        throwsA(isA<ApiFailure>().having((f) => f.statusCode, 'status', 409)),
-      );
-    },
-  );
-
-  test('rejecting and assigning update the inbox', () async {
-    final container = await growthContainer();
-    final actions = container.read(inboxActionsProvider.notifier);
-
-    final rejected = await actions.reject(2, RejectReason.spam);
-    expect(rejected.status, InboxStatus.rejected);
-
-    final assigned = await actions.assign(3, 1);
-    expect(assigned.status, InboxStatus.assigned);
-    expect(assigned.assignedTo?.en, 'Karim Hossain');
-
-    container.read(inboxFilterProvider.notifier).set(InboxFilter.mine);
-    final mine = await container.read(inboxListProvider.future);
-    expect(mine.items.map((l) => l.id), contains(3));
-    expect(mine.items.map((l) => l.id), isNot(contains(2)));
-  });
-
-  test('a duplicate number is flagged', () async {
-    final container = await growthContainer();
-    final lead = await container.read(inboxLeadProvider(4).future);
-    expect(lead.duplicate, isNotNull);
-    expect(lead.duplicate?.companyName, lead.name);
-  });
-
-  test('a member cannot accept, and offline fails with status 0', () async {
-    final member = await growthContainer(role: WorkspaceRole.member);
-    await expectLater(
-      member
-          .read(leadInboxRepositoryProvider)
-          .accept(1, const AcceptInput(stageId: 1)),
-      throwsA(
-        isA<ApiFailure>().having((f) => f.isForbidden, 'forbidden', true),
-      ),
+  test('the messages list asks for every status', () async {
+    final stub = growthStub();
+    final container = await growthContainer(stub: stub);
+    final paged = await container.read(threadListProvider.future);
+    expect(paged.items, hasLength(4));
+    expect(
+      stub.last('GET', 'inbox')?.queryParameters.containsKey('status'),
+      isFalse,
     );
 
-    final offline = await growthContainer();
-    goOffline(offline);
+    final closed = paged.items.last;
+    expect(closed.open, isFalse);
+    final mine = paged.items[1];
+    expect(mine.isMine(container.read(myMembershipIdProvider)), isTrue);
+    expect(mine.leadId, leadId);
+    expect(mine.channel, ConversationChannel.whatsapp);
+  });
+
+  test('a conversation reads its wrapped detail and messages', () async {
+    final container = await growthContainer();
+    final conversation = await container.read(
+      conversationProvider(conversationId(2)).future,
+    );
+    expect(conversation.name, 'Customer 2');
+    expect(conversation.assignedTo, 'Rafi Ahmed');
+    expect(conversation.messages, hasLength(2));
+    expect(conversation.messages.first.mine, isFalse);
+    expect(conversation.messages.last.status, DeliveryStatus.read);
+  });
+
+  test('take, assign and close post to their paths and reload', () async {
+    final stub = growthStub()
+      ..on('POST', 'inbox/{id}/take', const StubReply(204))
+      ..on('POST', 'inbox/{id}/assign/{membershipId}', const StubReply(204))
+      ..on('POST', 'inbox/{id}/close', const StubReply(204));
+    final container = await growthContainer(stub: stub);
+    final actions = container.read(inboxActionsProvider.notifier);
+    final id = conversationId(1);
+
+    await actions.take(id);
+    expect(stub.last('POST', 'inbox/{id}/take')?.uri.path, contains(id));
+    await actions.assign(id, bushra);
+    expect(
+      stub.last('POST', 'inbox/{id}/assign/{membershipId}')?.uri.path,
+      endsWith('$id/assign/$bushra'),
+    );
+    final closed = await actions.close(id);
+    expect(stub.last('POST', 'inbox/{id}/close'), isNotNull);
+    expect(closed.id, id);
+  });
+
+  test('someone else took it first: accepting shows the 409', () async {
+    final stub = growthStub()
+      ..on(
+        'POST',
+        'inbox/{id}/take',
+        fixture('growth_inbox_taken'),
+        status: 409,
+      );
+    final container = await growthContainer(stub: stub);
+    final provider = acceptLeadSubmitProvider(conversationId(1));
+    final sub = container.listen(provider, (_, _) {});
+    addTearDown(sub.close);
+
+    await container.read(provider.notifier).submit();
+    final error = container.read(provider).error;
+    expect(error, isA<ApiFailure>());
+    expect((error as ApiFailure?)?.isConflict, isTrue);
+  });
+
+  test('a reply sends text, or an approved template with params', () async {
+    final stub = growthStub()
+      ..on('POST', 'inbox/{id}/reply', const StubReply(204));
+    final container = await growthContainer(stub: stub);
+    final actions = container.read(inboxActionsProvider.notifier);
+    final id = conversationId(2);
+
+    await actions.reply(id, const ReplyInput(text: ' Sending now '));
+    expect(stub.lastBody('POST', 'inbox/{id}/reply'), {
+      'text': 'Sending now',
+      'params': <Object>[],
+    });
+
+    await actions.reply(
+      id,
+      const ReplyInput(templateName: 'price_list', params: ['Karim']),
+    );
+    expect(stub.lastBody('POST', 'inbox/{id}/reply'), {
+      'templateName': 'price_list',
+      'params': ['Karim'],
+    });
+  });
+
+  test('only active members can be assigned', () async {
+    final members = [
+      for (final row in fixture('growth_members') as List)
+        Map<String, dynamic>.of(row as Map<String, dynamic>),
+    ];
+    final stub = growthStub()
+      ..on('GET', 'workspaces/members', [
+        ...members,
+        {...members.first, 'id': 'invited', 'status': 'invited'},
+      ]);
+    final container = await growthContainer(stub: stub);
+
+    final list = await container.read(inboxMembersProvider.future);
+    expect(list, hasLength(members.length));
+    expect(list.map((m) => m.id), contains(rafi));
+    expect(list.first.openLeads, isNull);
+  });
+
+  test('offline, the list fails as status 0', () async {
+    final stub = growthStub();
+    final container = await growthContainer(stub: stub);
+    stub.offline = true;
     await expectLater(
-      offline.read(inboxListProvider.future),
+      container.read(inboxListProvider.future),
       throwsA(isA<ApiFailure>().having((f) => f.isOffline, 'offline', true)),
     );
   });

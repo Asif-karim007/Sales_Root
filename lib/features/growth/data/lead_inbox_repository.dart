@@ -1,28 +1,29 @@
 import 'package:salesroot/core/paging/paged.dart';
+import 'package:salesroot/features/growth/models/conversation.dart';
 import 'package:salesroot/features/growth/models/distribution_rule.dart';
-import 'package:salesroot/features/growth/models/inbox_lead.dart';
 
-/// New leads from every channel, waiting to be accepted, assigned or
-/// rejected. Pages carry the `Counts` facet keyed by [InboxFilter.wire] and
-/// the `Stats` facet with `AvgFirstResponseMinutes` and `SlaMinutes`.
+/// Customer conversations and the enquiries waiting in them.
 abstract interface class LeadInboxRepository {
-  /// Open leads, most urgent first: unanswered ones by how long they have
-  /// waited, then assigned ones.
-  Future<PageResult<InboxLead>> list(InboxFilter filter, {int page = 1});
+  /// One page of [box]; [openOnly] leaves out closed conversations.
+  Future<PageResult<Conversation>> list(
+    ConversationBox box, {
+    bool openOnly = false,
+    int page = 1,
+  });
 
-  Future<InboxLead> get(int id);
+  /// The conversation with its messages.
+  Future<Conversation> get(String id);
 
-  /// Who the distribution rules would give this lead to right now.
-  Future<AssigneeSuggestion> suggestAssignee(int id);
+  /// Assigns it to the signed-in member.
+  Future<Conversation> take(String id);
 
-  Future<InboxLead> accept(int id, AcceptInput input);
+  Future<Conversation> assign(String id, String membershipId);
 
-  Future<InboxLead> assign(int id, int memberId);
+  Future<Conversation> close(String id);
 
-  Future<InboxLead> reject(int id, RejectReason reason);
+  /// Sends a message to the customer on the conversation's channel.
+  Future<Conversation> reply(String id, ReplyInput input);
 
+  /// Active members a conversation can be assigned to.
   Future<List<GrowthMember>> members();
-
-  /// The open pipeline stages an accepted lead can start in.
-  Future<List<LeadStage>> stages();
 }

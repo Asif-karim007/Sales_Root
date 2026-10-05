@@ -9,9 +9,8 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
-import 'package:salesroot/features/growth/models/inbox_lead.dart';
+import 'package:salesroot/features/growth/models/conversation.dart';
 import 'package:salesroot/features/growth/providers/inbox_providers.dart';
-import 'package:salesroot/features/growth/providers/messages_providers.dart';
 import 'package:salesroot/features/growth/view/widget/accept_lead_sheet.dart';
 import 'package:salesroot/features/growth/view/widget/growth_common.dart';
 import 'package:salesroot/features/growth/view/widget/growth_labels.dart';
@@ -19,12 +18,12 @@ import 'package:salesroot/features/growth/view/widget/inbox_actions.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #137 One new lead; with [openAccept] (#138) the accept sheet opens as
-/// soon as it loads.
+/// #137 One enquiry; with [openAccept] (#138) the accept sheet opens as soon
+/// as it loads.
 class NewLeadScreen extends ConsumerStatefulWidget {
   const NewLeadScreen({super.key, required this.id, this.openAccept = false});
 
-  final int id;
+  final String id;
   final bool openAccept;
 
   @override
@@ -38,12 +37,12 @@ class _NewLeadScreenState extends ConsumerState<NewLeadScreen> {
   void initState() {
     super.initState();
     if (!widget.openAccept) return;
-    ref.listenManual(inboxLeadProvider(widget.id), (_, next) {
-      final lead = next.value;
-      if (_acceptShown || lead == null || !lead.isOpen) return;
+    ref.listenManual(conversationProvider(widget.id), (_, next) {
+      final conversation = next.value;
+      if (_acceptShown || conversation == null || !conversation.open) return;
       _acceptShown = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) showAcceptLeadSheet(context, lead);
+        if (mounted) showAcceptLeadSheet(context, conversation);
       });
     }, fireImmediately: true);
   }
@@ -51,11 +50,10 @@ class _NewLeadScreenState extends ConsumerState<NewLeadScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final value = ref.watch(inboxLeadProvider(widget.id));
-    final lead = value.value;
+    final value = ref.watch(conversationProvider(widget.id));
+    final conversation = value.value;
     final access = ref.watch(moduleAccessProvider(AppModule.inbox));
-    final canAct =
-        lead != null && lead.isOpen && access.canEdit && lead.canEdit;
+    final canAct = conversation != null && conversation.open && access.canEdit;
     return SrScaffold(
       appBar: SrAppBar(
         title: l10n.growthInboxLeadTitle,
@@ -65,17 +63,16 @@ class _NewLeadScreenState extends ConsumerState<NewLeadScreen> {
             SrIconButton(
               icon: Icons.person_add_alt_rounded,
               tooltip: l10n.growthInboxAssign,
-              onTap: () => assignInboxLead(context, ref, lead),
+              onTap: () => assignConversation(context, ref, conversation),
             ),
         ],
       ),
       body: SrAsyncView(
         value: value,
-        onRetry: () => ref.invalidate(inboxLeadProvider(widget.id)),
+        onRetry: () => ref.invalidate(conversationProvider(widget.id)),
         onUpgrade: () => context.push(Routes.planUsage),
         loading: (_) => const SrSkeletonList(count: 4, cards: true),
-        data: (context, lead) =>
-            GrowthClock(builder: (context) => _Details(lead: lead)),
+        data: (context, conversation) => _Details(conversation: conversation),
       ),
       footer: canAct
           ? Row(
@@ -85,10 +82,10 @@ class _NewLeadScreenState extends ConsumerState<NewLeadScreen> {
                     label: l10n.growthInboxReject,
                     variant: SrButtonVariant.danger,
                     onPressed: () async {
-                      final rejected = await rejectInboxLead(
+                      final rejected = await rejectConversation(
                         context,
                         ref,
-                        lead,
+                        conversation,
                       );
                       if (rejected && context.mounted && context.canPop()) {
                         context.pop();
@@ -100,7 +97,7 @@ class _NewLeadScreenState extends ConsumerState<NewLeadScreen> {
                 Expanded(
                   child: SrButton(
                     label: l10n.growthInboxAccept,
-                    onPressed: () => showAcceptLeadSheet(context, lead),
+                    onPressed: () => showAcceptLeadSheet(context, conversation),
                   ),
                 ),
               ],
@@ -111,220 +108,181 @@ class _NewLeadScreenState extends ConsumerState<NewLeadScreen> {
 }
 
 class _Details extends StatelessWidget {
-  const _Details({required this.lead});
+  const _Details({required this.conversation});
 
-  final InboxLead lead;
+  final Conversation conversation;
 
   @override
   Widget build(BuildContext context) {
+    final linked = _linkedNote(context, conversation);
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 32),
       children: [
-        _Header(lead: lead),
+        _Header(conversation: conversation),
         const SizedBox(height: 12),
-        _Answers(lead: lead),
+        _Facts(conversation: conversation),
         const SizedBox(height: 12),
-        _StatusNote(lead: lead),
+        _StatusNote(conversation: conversation),
+        if (linked != null) ...[const SizedBox(height: 12), linked],
         const SizedBox(height: 12),
-        _DuplicateNote(lead: lead),
-        const SizedBox(height: 12),
-        _ContactButtons(lead: lead),
+        _ContactButtons(conversation: conversation),
       ],
     );
   }
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.lead});
+  const _Header({required this.conversation});
 
-  final InboxLead lead;
+  final Conversation conversation;
 
   @override
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
-    final fmt = context.fmt;
-    final area = lead.area?.of(fmt.isBangla);
+    final phone = conversation.phone;
     return SrCard(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [
-          SrAvatar(name: lead.name, tone: SrAvatarTone.accent, size: 44),
+          SrAvatar(
+            name: conversation.name,
+            tone: SrAvatarTone.accent,
+            size: 44,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(lead.name, style: AppText.rowTitle(c.ink, size: 16)),
                 Text(
-                  [growthPhone(context, lead.phone), ?area].join(' · '),
-                  style: AppText.meta(c.ink2),
+                  conversation.name,
+                  style: AppText.rowTitle(c.ink, size: 16),
                 ),
+                if (phone != null)
+                  Text(
+                    growthPhone(context, phone),
+                    style: AppText.meta(c.ink2),
+                  ),
               ],
             ),
           ),
-          SrTag(lead.source.label(l10n), tone: SrTone.accent),
+          SrTag(conversation.channel.label(l10n), tone: SrTone.accent),
         ],
       ),
     );
   }
 }
 
-class _Answers extends StatelessWidget {
-  const _Answers({required this.lead});
+class _Facts extends StatelessWidget {
+  const _Facts({required this.conversation});
 
-  final InboxLead lead;
+  final Conversation conversation;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final consent = lead.consentAt;
-    final received = lead.receivedAt;
-    final externalId = lead.externalId;
+    final received = conversation.createdAt;
+    final last = conversation.lastAt;
     return GrowthInfoCard(
       lines: [
-        if (lead.formName case final form?) (l10n.growthInboxForm, form),
-        if (lead.campaign case final campaign?)
-          (l10n.growthInboxCampaign, campaign),
-        if (lead.interest case final interest?)
-          (l10n.growthInboxInterest, interest),
-        for (final answer in lead.answers)
-          (answer.label.of(fmt.isBangla), answer.value),
-        if (lead.email case final email?) (l10n.growthFieldEmail, email),
-        if (lead.company case final company?)
-          (l10n.growthFieldCompany, company),
-        if (consent != null)
-          (
-            l10n.growthInboxConsent,
-            l10n.growthInboxConsentYes(
-              '${fmt.dayMonth(consent)} ${fmt.time(consent)}',
-            ),
-          ),
-        if (externalId != null) (l10n.growthInboxMetaId, _short(externalId)),
+        if (conversation.lastMessage case final message?)
+          (l10n.growthInboxLastMessage, message),
         if (received != null) (l10n.growthInboxReceived, fmt.dayTime(received)),
+        if (last != null && last != received)
+          (l10n.growthInboxLastActivity, fmt.relative(last)),
+        (l10n.growthInboxSource, conversation.channel.label(l10n)),
       ],
     );
   }
-
-  String _short(String id) => id.length > 10
-      ? '${id.substring(0, 6)}…${id.substring(id.length - 2)}'
-      : id;
 }
 
 class _StatusNote extends StatelessWidget {
-  const _StatusNote({required this.lead});
+  const _StatusNote({required this.conversation});
 
-  final InboxLead lead;
+  final Conversation conversation;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final fmt = context.fmt;
-    final assignee = lead.assignedTo?.of(fmt.isBangla) ?? '';
-    final rule = lead.assignedByRule;
-    return switch (lead.status) {
-      InboxStatus.fresh => SrNote(
-        tone: lead.isLate() ? SrNoteTone.err : SrNoteTone.neutral,
-        icon: Icons.timer_outlined,
-        message: l10n.growthInboxWaiting(
-          growthAgo(context, lead.waiting()),
-          fmt.number(lead.slaMinutes),
-        ),
-      ),
-      InboxStatus.assigned => SrNote(
-        icon: Icons.person_outline_rounded,
-        message: rule == null
-            ? l10n.growthInboxAssignedTo(assignee)
-            : l10n.growthInboxAssignedByRule(assignee, rule),
-      ),
-      InboxStatus.accepted => SrNote(
-        icon: Icons.check_circle_outline_rounded,
-        message: l10n.growthInboxAcceptedNote(assignee),
-      ),
-      InboxStatus.rejected => SrNote(
+    if (!conversation.open) {
+      return SrNote(
         tone: SrNoteTone.neutral,
         icon: Icons.block_rounded,
-        message: l10n.growthInboxRejectedNote,
-      ),
-    };
-  }
-}
-
-class _DuplicateNote extends StatelessWidget {
-  const _DuplicateNote({required this.lead});
-
-  final InboxLead lead;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final duplicate = lead.duplicate;
-    if (duplicate == null) {
-      return SrNote(message: l10n.growthInboxNoDuplicate);
+        message: l10n.growthInboxClosedNote,
+      );
     }
-    final companyId = duplicate.companyId;
-    final route = switch (duplicate.kind) {
-      DuplicateKind.lead => Routes.leadFor(duplicate.id),
-      DuplicateKind.contact => Routes.contactFor(duplicate.id),
-      DuplicateKind.customer => Routes.customerFor(companyId ?? duplicate.id),
-    };
+    final assignee = conversation.assignedTo;
+    if (conversation.isUnassigned || assignee == null) {
+      return SrNote(
+        icon: Icons.timer_outlined,
+        message: l10n.growthInboxNotTaken,
+      );
+    }
     return SrNote(
-      tone: SrNoteTone.gold,
-      icon: Icons.content_copy_rounded,
-      title: switch (duplicate.kind) {
-        DuplicateKind.lead => l10n.growthInboxDuplicateLead,
-        DuplicateKind.contact => l10n.growthInboxDuplicateContact,
-        DuplicateKind.customer => l10n.growthInboxDuplicateCustomer,
-      },
-      message: {duplicate.name, ?duplicate.companyName}.join(' · '),
-      action: SrButton(
-        label: l10n.growthInboxOpen,
-        size: SrButtonSize.sm,
-        variant: SrButtonVariant.secondary,
-        onPressed: () => context.push(route),
-      ),
+      icon: Icons.person_outline_rounded,
+      message: l10n.growthInboxAssignedTo(assignee),
     );
   }
 }
 
-class _ContactButtons extends ConsumerWidget {
-  const _ContactButtons({required this.lead});
+/// The lead or customer this number already belongs to, if any.
+Widget? _linkedNote(BuildContext context, Conversation conversation) {
+  final l10n = context.l10n;
+  final leadId = conversation.leadId;
+  final companyId = conversation.companyId;
+  final (title, route) = leadId != null
+      ? (l10n.growthInboxDuplicateLead, Routes.leadFor(leadId))
+      : companyId != null
+      ? (l10n.growthInboxDuplicateCustomer, Routes.customerFor(companyId))
+      : (null, null);
+  if (title == null || route == null) return null;
+  return SrNote(
+    tone: SrNoteTone.gold,
+    icon: Icons.content_copy_rounded,
+    title: title,
+    message: conversation.name,
+    action: SrButton(
+      label: l10n.growthInboxOpen,
+      size: SrButtonSize.sm,
+      variant: SrButtonVariant.secondary,
+      onPressed: () => context.push(route),
+    ),
+  );
+}
 
-  final InboxLead lead;
+class _ContactButtons extends StatelessWidget {
+  const _ContactButtons({required this.conversation});
+
+  final Conversation conversation;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final phone = conversation.phone;
     return Row(
       children: [
-        Expanded(
-          child: SrButton(
-            label: l10n.commonCall,
-            icon: Icons.call_outlined,
-            size: SrButtonSize.sm,
-            variant: SrButtonVariant.secondary,
-            onPressed: () => launchUrl(Uri(scheme: 'tel', path: lead.phone)),
+        if (phone != null) ...[
+          Expanded(
+            child: SrButton(
+              label: l10n.commonCall,
+              icon: Icons.call_outlined,
+              size: SrButtonSize.sm,
+              variant: SrButtonVariant.secondary,
+              onPressed: () => launchUrl(Uri(scheme: 'tel', path: phone)),
+            ),
           ),
-        ),
-        const SizedBox(width: 10),
+          const SizedBox(width: 10),
+        ],
         Expanded(
           child: SrButton(
-            label: l10n.growthSourceWhatsapp,
+            label: conversation.channel.label(l10n),
             icon: Icons.chat_rounded,
             size: SrButtonSize.sm,
             variant: SrButtonVariant.secondary,
-            onPressed: () async {
-              final id = await runGrowthAction(
-                context,
-                ref
-                    .read(messageActionsProvider.notifier)
-                    .open(phone: lead.phone, name: lead.name),
-              );
-              if (id != null && context.mounted) {
-                context.push(Routes.messageThreadFor(id));
-              }
-            },
+            onPressed: () =>
+                context.push(Routes.messageThreadFor(conversation.id)),
           ),
         ),
       ],

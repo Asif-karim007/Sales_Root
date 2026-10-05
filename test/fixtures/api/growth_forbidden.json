@@ -1,0 +1,10 @@
+{
+  "code": "E-403",
+  "message": {
+    "bn": "এটি করার অনুমতি আপনার নেই। ম্যানেজারকে বলুন",
+    "en": "You don't have permission for this. Ask your manager"
+  },
+  "data": {
+    "permission": "forms.create"
+  }
+}

@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/growth/models/distribution_rule.dart';
-import 'package:salesroot/features/growth/models/inbox_lead.dart';
 import 'package:salesroot/features/growth/view/widget/growth_labels.dart';
 import 'package:salesroot/translations/translations.dart';
 
@@ -11,12 +10,12 @@ import 'package:salesroot/translations/translations.dart';
 class RuleVocabulary {
   const RuleVocabulary({this.members = const {}, this.areas = const {}});
 
-  final Map<int, GrowthMember> members;
+  final Map<String, GrowthMember> members;
 
   /// Keyed by the English area name rules store.
   final Map<String, LocalizedName> areas;
 
-  String member(BuildContext context, int? id) {
+  String member(BuildContext context, String? id) {
     final member = members[id];
     if (member == null) return context.l10n.growthModeQueue;
     return member.nameOf(context.fmt.isBangla);
@@ -26,7 +25,7 @@ class RuleVocabulary {
     final l10n = context.l10n;
     if (wires.isEmpty) return l10n.growthRuleAny;
     return [
-      for (final wire in wires) InboxSource.fromWire(wire).label(l10n),
+      for (final wire in wires) RuleSource.fromWire(wire).label(l10n),
     ].join(', ');
   }
 
@@ -41,7 +40,7 @@ class RuleVocabulary {
   String forms(BuildContext context, List<String> names) =>
       names.isEmpty ? context.l10n.growthRuleAny : names.join(', ');
 
-  String memberNames(BuildContext context, List<int> ids) {
+  String memberNames(BuildContext context, List<String> ids) {
     if (ids.isEmpty) return context.l10n.growthRuleNobody;
     return [for (final id in ids) member(context, id)].join(', ');
   }

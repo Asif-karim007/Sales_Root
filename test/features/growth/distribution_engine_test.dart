@@ -4,45 +4,20 @@ import 'package:salesroot/features/growth/data/distribution_engine.dart';
 import 'package:salesroot/features/growth/models/distribution_rule.dart';
 import 'package:salesroot/features/growth/providers/distribution_providers.dart';
 
-import 'growth_harness.dart';
+import 'growth_test_helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   final members = {
     for (final member in const [
+      GrowthMember(id: '1', name: 'Karim', checkedIn: true, openLeads: 9),
+      GrowthMember(id: '2', name: 'Kamal', checkedIn: true, openLeads: 3),
+      GrowthMember(id: '3', name: 'Rafiq', checkedIn: false, openLeads: 1),
+      GrowthMember(id: '4', name: 'Rumpa', checkedIn: true, onLeave: true),
       GrowthMember(
-        id: 1,
-        name: 'Karim',
-        nameBn: '',
-        checkedIn: true,
-        openLeads: 9,
-      ),
-      GrowthMember(
-        id: 2,
-        name: 'Kamal',
-        nameBn: '',
-        checkedIn: true,
-        openLeads: 3,
-      ),
-      GrowthMember(
-        id: 3,
-        name: 'Rafiq',
-        nameBn: '',
-        checkedIn: false,
-        openLeads: 1,
-      ),
-      GrowthMember(
-        id: 4,
-        name: 'Rumpa',
-        nameBn: '',
-        checkedIn: true,
-        onLeave: true,
-      ),
-      GrowthMember(
-        id: 5,
+        id: '5',
         name: 'Bushra',
-        nameBn: '',
         checkedIn: true,
         openLeads: 5,
         assignedToday: 8,
@@ -66,34 +41,34 @@ void main() {
   );
 
   const dealer = DistributionRule(
-    id: 1,
+    id: '1',
     position: 1,
     name: 'Dealers',
     mode: AssignMode.member,
     forms: ['Dealer application'],
-    memberIds: [3],
+    memberIds: ['3'],
     skipOnLeave: false,
   );
   const north = DistributionRule(
-    id: 2,
+    id: '2',
     position: 2,
     name: 'North',
     mode: AssignMode.roundRobin,
     areas: ['Uttara', 'Mirpur'],
-    memberIds: [3, 4, 2, 1],
+    memberIds: ['3', '4', '2', '1'],
     onlyCheckedIn: true,
     cursor: 0,
   );
   const website = DistributionRule(
-    id: 3,
+    id: '3',
     position: 3,
     name: 'Website',
     mode: AssignMode.byLoad,
     sources: ['Website'],
-    memberIds: [1, 2, 5],
+    memberIds: ['1', '2', '5'],
   );
   const queue = DistributionRule(
-    id: 4,
+    id: '4',
     position: 4,
     name: 'Rest',
     mode: AssignMode.queue,
@@ -104,7 +79,7 @@ void main() {
     const uttara = RuleSubject(source: 'Facebook', area: 'Uttara');
     final first = decide(rules, uttara);
     expect(first.rule?.id, north.id);
-    expect(first.memberId, 2);
+    expect(first.memberId, '2');
     expect(first.cursor, 3);
 
     final moved = DistributionRule.fromJson({
@@ -118,7 +93,7 @@ void main() {
       'Cursor': first.cursor,
     });
     final second = decide([queue, website, moved, dealer], uttara);
-    expect(second.memberId, 1);
+    expect(second.memberId, '1');
     expect(second.cursor, 0);
   });
 
@@ -132,7 +107,7 @@ void main() {
       ),
     );
     expect(decision.rule?.id, dealer.id);
-    expect(decision.memberId, 3);
+    expect(decision.memberId, '3');
   });
 
   test('a source rule by load picks the least busy member under the cap', () {
@@ -141,7 +116,7 @@ void main() {
       const RuleSubject(source: 'Website', area: 'Gulshan'),
     );
     expect(decision.rule?.id, website.id);
-    expect(decision.memberId, 2);
+    expect(decision.memberId, '2');
 
     final capped = DistributionRule.fromJson({
       'Id': 3,
@@ -154,7 +129,7 @@ void main() {
       'FallbackMemberId': 1,
     });
     final fallback = decide([capped], const RuleSubject(source: 'Website'));
-    expect(fallback.memberId, 1);
+    expect(fallback.memberId, '1');
   });
 
   test('anything unmatched goes to the shared queue', () {
@@ -185,7 +160,7 @@ void main() {
       'ToHour': 18,
     });
     const subject = RuleSubject(source: 'Website');
-    expect(decide([office], subject).memberId, 1);
+    expect(decide([office], subject).memberId, '1');
     expect(
       decide([office], subject, at: DateTime(2026, 10, 5, 20)).rule,
       isNull,

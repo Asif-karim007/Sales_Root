@@ -1,245 +1,207 @@
+import 'package:salesroot/core/network/api_extras.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 
 enum ChannelKind {
-  facebook('Facebook'),
-  whatsapp('WhatsApp'),
-  messenger('Messenger'),
-  website('Website'),
-  hostedForm('HostedForm'),
-  email('Email'),
-  linkedin('LinkedIn'),
-  googleAds('GoogleAds');
+  facebook,
+  whatsapp,
+  messenger,
+  website,
+  hostedForm,
+  email,
+  linkedin,
+  googleAds,
+}
 
-  const ChannelKind(this.wire);
+enum ChannelStatus { connected, available, soon }
+
+/// What an integration connects: a Meta Page (lead forms and Messenger), a
+/// WhatsApp Cloud number or an SMS gateway.
+enum IntegrationProvider {
+  meta('meta'),
+  whatsapp('whatsapp'),
+  gateway('gateway');
+
+  const IntegrationProvider(this.wire);
 
   final String wire;
 
-  static ChannelKind fromWire(String? value) => values.firstWhere(
-    (kind) => kind.wire == value,
-    orElse: () => ChannelKind.website,
-  );
+  static IntegrationProvider? fromWire(String? value) =>
+      values.where((provider) => provider.wire == value).firstOrNull;
 }
 
-enum ChannelStatus {
-  connected('Connected'),
-  available('Available'),
-  soon('Soon');
-
-  const ChannelStatus(this.wire);
-
-  final String wire;
-
-  static ChannelStatus fromWire(String? value) => values.firstWhere(
-    (status) => status.wire == value,
-    orElse: () => ChannelStatus.available,
-  );
-}
-
-/// One place leads come in from: a Page, a number, a form or a mailbox.
-class LeadChannel {
-  const LeadChannel({
+/// One row of `GET integrations`.
+class Integration {
+  const Integration({
     required this.id,
-    required this.kind,
-    required this.status,
-    this.account,
-    this.formCount = 0,
-    this.leadCount = 0,
-    this.leadsThisWeek = 0,
-    this.embedCode,
-    this.shareUrl,
+    required this.provider,
+    this.displayName,
+    this.connectedAt,
   });
 
-  final int id;
-  final ChannelKind kind;
-  final ChannelStatus status;
+  final String id;
+  final IntegrationProvider? provider;
+  final String? displayName;
+  final DateTime? connectedAt;
 
-  /// The Page name, number, address or URL the channel is tied to.
-  final String? account;
-  final int formCount;
-  final int leadCount;
-  final int leadsThisWeek;
-  final String? embedCode;
-  final String? shareUrl;
-
-  bool get isConnected => status == ChannelStatus.connected;
-
-  factory LeadChannel.fromJson(Map<String, dynamic> json) => LeadChannel(
-    id: jsonInt(json['Id']) ?? 0,
-    kind: ChannelKind.fromWire(json['Kind'] as String?),
-    status: ChannelStatus.fromWire(json['Status'] as String?),
-    account: json['Account'] as String?,
-    formCount: jsonInt(json['FormCount']) ?? 0,
-    leadCount: jsonInt(json['LeadCount']) ?? 0,
-    leadsThisWeek: jsonInt(json['LeadsThisWeek']) ?? 0,
-    embedCode: json['EmbedCode'] as String?,
-    shareUrl: json['ShareUrl'] as String?,
+  factory Integration.fromJson(Map<String, dynamic> json) => Integration(
+    id: jsonId(json['id']) ?? '',
+    provider: IntegrationProvider.fromWire(
+      json['provider'] as String? ?? json['kind'] as String?,
+    ),
+    displayName:
+        json['displayName'] as String? ?? json['displayPhone'] as String?,
+    connectedAt: jsonDate(json['createdAt']),
   );
 }
 
-class FacebookPage {
-  const FacebookPage({
-    required this.id,
-    required this.name,
-    required this.adminName,
-    this.tokenOk = true,
-    this.followers = 0,
-  });
-
-  final int id;
-  final String name;
-  final String adminName;
-  final bool tokenOk;
-  final int followers;
-
-  factory FacebookPage.fromJson(Map<String, dynamic> json) => FacebookPage(
-    id: jsonInt(json['Id']) ?? 0,
-    name: json['Name'] as String? ?? '',
-    adminName: json['AdminName'] as String? ?? '',
-    tokenOk: json['TokenOk'] != false,
-    followers: jsonInt(json['Followers']) ?? 0,
-  );
-}
-
+/// A hosted lead form (`GET forms`), shared as a link or embedded on a site.
 class LeadForm {
   const LeadForm({
     required this.id,
     required this.name,
-    this.campaign,
-    this.leadCount = 0,
-    this.enabled = false,
-    this.fields = const [],
+    required this.isActive,
+    this.slug,
   });
 
-  final int id;
+  final String id;
   final String name;
-  final String? campaign;
-  final int leadCount;
-  final bool enabled;
+  final String? slug;
+  final bool isActive;
 
-  /// The form's question keys, e.g. `full_name`, `roof_size`.
-  final List<String> fields;
+  /// The public page at `/f/{slug}`, outside the versioned API.
+  String? get shareUrl {
+    final slug = this.slug;
+    if (slug == null || slug.isEmpty) return null;
+    return Uri.parse(ApiConfig.baseUrl).resolve('/f/$slug').toString();
+  }
 
-  LeadForm copyWith({bool? enabled}) => LeadForm(
-    id: id,
-    name: name,
-    campaign: campaign,
-    leadCount: leadCount,
-    enabled: enabled ?? this.enabled,
-    fields: fields,
-  );
+  String? get embedCode {
+    final url = shareUrl;
+    return url == null ? null : '<script src="$url/embed.js" async></script>';
+  }
 
   factory LeadForm.fromJson(Map<String, dynamic> json) => LeadForm(
-    id: jsonInt(json['Id']) ?? 0,
-    name: json['Name'] as String? ?? '',
-    campaign: json['Campaign'] as String?,
-    leadCount: jsonInt(json['LeadCount']) ?? 0,
-    enabled: jsonBool(json['Enabled']),
-    fields: jsonStrings(json['Fields']),
+    id: jsonId(json['id']) ?? '',
+    name: json['name'] as String? ?? '',
+    slug: json['slug'] as String?,
+    isActive: json['isActive'] != false,
   );
 }
 
-/// The lead field a form question fills.
-enum LeadField {
-  name('Name'),
-  mobile('Mobile'),
-  email('Email'),
-  area('Area'),
-  company('Company'),
-  note('Note'),
-  custom('Custom'),
-  skip('Skip');
+/// `FormUpsert`. The server makes the slug when none is given.
+class LeadFormInput {
+  const LeadFormInput({required this.name, this.isActive = true, this.fields});
 
-  const LeadField(this.wire);
+  final String name;
+  final bool isActive;
 
-  final String wire;
+  /// The questions, as the form builder stores them; null keeps them.
+  final List<Map<String, dynamic>>? fields;
 
-  static LeadField fromWire(String? value) => values.firstWhere(
-    (field) => field.wire == value,
-    orElse: () => LeadField.custom,
-  );
+  /// A new form asking for a name, a phone number and a message.
+  static const enquiryFields = [
+    {'key': 'name', 'type': 'text', 'required': true},
+    {'key': 'phone', 'type': 'phone', 'required': true},
+    {'key': 'message', 'type': 'textarea', 'required': false},
+  ];
 
-  /// The usual target for a Meta form question key.
-  static LeadField guess(String key) => switch (key) {
-    'full_name' || 'first_name' || 'name' => LeadField.name,
-    'phone_number' || 'phone' || 'mobile' => LeadField.mobile,
-    'email' => LeadField.email,
-    'city' || 'area' || 'district' => LeadField.area,
-    'company_name' || 'company' || 'business_name' => LeadField.company,
-    'message' || 'comments' => LeadField.note,
-    _ => LeadField.custom,
-  };
+  Map<String, dynamic> toJson() =>
+      {'name': name.trim(), 'isActive': isActive, 'fields': fields}
+        ..removeWhere((_, value) => value == null);
 }
 
-class FieldMapping {
-  const FieldMapping({required this.field, required this.target});
-
-  final String field;
-  final LeadField target;
-
-  factory FieldMapping.fromJson(Map<String, dynamic> json) => FieldMapping(
-    field: json['Field'] as String? ?? '',
-    target: LeadField.fromWire(json['Target'] as String?),
-  );
-
-  Map<String, dynamic> toJson() => {'Field': field, 'Target': target.wire};
-}
-
-enum LeadDestination {
-  inbox('Inbox'),
-  rules('Rules');
-
-  const LeadDestination(this.wire);
-
-  final String wire;
-
-  static LeadDestination fromWire(String? value) => values.firstWhere(
-    (destination) => destination.wire == value,
-    orElse: () => LeadDestination.rules,
-  );
-}
-
-/// The Facebook connection: the Page, its lead forms and how their answers
-/// map onto lead fields.
-class FacebookSetup {
-  const FacebookSetup({
-    this.page,
-    this.forms = const [],
-    this.mappings = const [],
-    this.destination = LeadDestination.rules,
+/// `WhatsAppConnect`: a WhatsApp Cloud API number from Meta Business.
+class WhatsAppConnectInput {
+  const WhatsAppConnectInput({
+    required this.phoneNumberId,
+    required this.wabaId,
+    required this.accessToken,
+    this.displayPhone,
   });
 
-  final FacebookPage? page;
-  final List<LeadForm> forms;
-  final List<FieldMapping> mappings;
-  final LeadDestination destination;
-
-  bool get isConnected => page != null;
-
-  factory FacebookSetup.fromJson(Map<String, dynamic> json) => FacebookSetup(
-    page: jsonObject(json['Page'], FacebookPage.fromJson),
-    forms: jsonList(json['Forms'], LeadForm.fromJson),
-    mappings: jsonList(json['Mappings'], FieldMapping.fromJson),
-    destination: LeadDestination.fromWire(json['Destination'] as String?),
-  );
-}
-
-class FacebookSetupInput {
-  const FacebookSetupInput({
-    required this.pageId,
-    required this.formIds,
-    required this.mappings,
-    required this.destination,
-  });
-
-  final int pageId;
-  final List<int> formIds;
-  final List<FieldMapping> mappings;
-  final LeadDestination destination;
+  final String phoneNumberId;
+  final String wabaId;
+  final String accessToken;
+  final String? displayPhone;
 
   Map<String, dynamic> toJson() => {
-    'PageId': pageId,
-    'FormIds': formIds,
-    'Mappings': [for (final mapping in mappings) mapping.toJson()],
-    'Destination': destination.wire,
-  };
+    'phoneNumberId': phoneNumberId.trim(),
+    'wabaId': wabaId.trim(),
+    'accessToken': accessToken.trim(),
+    'displayPhone': displayPhone?.trim(),
+  }..removeWhere((_, value) => value == null || value == '');
+}
+
+/// One place leads come in from, built from the integrations and forms.
+class LeadChannel {
+  const LeadChannel({
+    required this.kind,
+    required this.status,
+    this.account,
+    this.integration,
+    this.form,
+    this.formCount = 0,
+  });
+
+  final ChannelKind kind;
+  final ChannelStatus status;
+
+  /// The Page name, number or form name the channel is tied to.
+  final String? account;
+  final Integration? integration;
+
+  /// The form a website or hosted channel shares.
+  final LeadForm? form;
+  final int formCount;
+
+  bool get isConnected => status == ChannelStatus.connected;
+
+  String? get embedCode => kind == ChannelKind.website ? form?.embedCode : null;
+
+  String? get shareUrl =>
+      kind == ChannelKind.hostedForm ? form?.shareUrl : null;
+
+  /// Every channel, connected or not, from what the server has.
+  static List<LeadChannel> from(
+    List<Integration> integrations,
+    List<LeadForm> forms,
+  ) {
+    Integration? find(IntegrationProvider provider) =>
+        integrations.where((i) => i.provider == provider).firstOrNull;
+    final meta = find(IntegrationProvider.meta);
+    final whatsapp = find(IntegrationProvider.whatsapp);
+    final active = forms.where((f) => f.isActive).toList();
+    final form = active.firstOrNull ?? forms.firstOrNull;
+    LeadChannel connection(ChannelKind kind, Integration? integration) =>
+        LeadChannel(
+          kind: kind,
+          status: integration == null
+              ? ChannelStatus.available
+              : ChannelStatus.connected,
+          account: integration?.displayName,
+          integration: integration,
+        );
+    LeadChannel hosted(ChannelKind kind) => LeadChannel(
+      kind: kind,
+      status: active.isEmpty
+          ? ChannelStatus.available
+          : ChannelStatus.connected,
+      account: form?.name,
+      form: form,
+      formCount: active.length,
+    );
+    return [
+      connection(ChannelKind.facebook, meta),
+      connection(ChannelKind.whatsapp, whatsapp),
+      connection(ChannelKind.messenger, meta),
+      hosted(ChannelKind.website),
+      hosted(ChannelKind.hostedForm),
+      for (final kind in const [
+        ChannelKind.email,
+        ChannelKind.linkedin,
+        ChannelKind.googleAds,
+      ])
+        LeadChannel(kind: kind, status: ChannelStatus.soon),
+    ];
+  }
 }
