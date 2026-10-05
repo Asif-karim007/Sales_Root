@@ -1,7 +1,6 @@
 import 'package:salesroot/core/fake/fake_backend.dart';
 import 'package:salesroot/core/fake/fake_store.dart';
 import 'package:salesroot/core/paging/paged.dart';
-import 'package:salesroot/features/support/data/fake_page.dart';
 import 'package:salesroot/features/support/data/help_fixtures.dart';
 import 'package:salesroot/features/support/data/help_repository.dart';
 import 'package:salesroot/features/support/models/help_article.dart';
@@ -23,7 +22,7 @@ class FakeHelpRepository implements HelpRepository {
             .where((row) => matchesHelpTerm(row, query.term))
             .toList();
         return PageResult.fromJson(
-          fakeApiPage(rows, page),
+          fakePage(rows, page: page),
           HelpArticle.fromJson,
         );
       });

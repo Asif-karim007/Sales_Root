@@ -5,7 +5,6 @@ import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/support/data/academy_fixtures.dart';
 import 'package:salesroot/features/support/data/academy_repository.dart';
-import 'package:salesroot/features/support/data/fake_page.dart';
 import 'package:salesroot/features/support/models/lesson.dart';
 
 class FakeAcademyRepository implements AcademyRepository {
@@ -42,7 +41,7 @@ class FakeAcademyRepository implements AcademyRepository {
                 .where((row) => row['Category'] == category.wire)
                 .toList()
               ..sort((a, b) => _order(a).compareTo(_order(b)));
-        return PageResult.fromJson(fakeApiPage(rows, page), Lesson.fromJson);
+        return PageResult.fromJson(fakePage(rows, page: page), Lesson.fromJson);
       });
 
   @override

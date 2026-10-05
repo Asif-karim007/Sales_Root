@@ -11,7 +11,6 @@ import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/features/team/data/fake_file_bytes.dart';
-import 'package:salesroot/features/team/data/fake_page.dart';
 import 'package:salesroot/features/team/data/files_fixtures.dart';
 import 'package:salesroot/features/team/data/files_repository.dart';
 import 'package:salesroot/features/team/models/team_file.dart';
@@ -49,7 +48,7 @@ class FakeFilesRepository implements FilesRepository {
                 fakeMatches(f, query.search, ['Name']),
           )
           .sorted((a, b) => '${b['UpdatedAt']}'.compareTo('${a['UpdatedAt']}'));
-      final page = serverPage([
+      final page = fakePage([
         for (final row in rows) _present(row),
       ], page: query.page);
       return PageResult.fromJson(page, TeamFile.fromJson);

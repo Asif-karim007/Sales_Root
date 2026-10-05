@@ -17,7 +17,6 @@ import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/team/data/chat_fixtures.dart';
 import 'package:salesroot/features/team/data/chat_repository.dart';
 import 'package:salesroot/features/team/data/fake_file_bytes.dart';
-import 'package:salesroot/features/team/data/fake_page.dart';
 import 'package:salesroot/features/team/models/chat.dart';
 import 'package:salesroot/features/team/models/member.dart';
 
@@ -259,7 +258,7 @@ class FakeChatRepository implements ChatRepository {
                   (beforeId == null || (m['Id'] as int) < beforeId),
             )
             .sorted((a, b) => (b['Id'] as int).compareTo(a['Id'] as int));
-        final page = serverPage([for (final m in older) _message(m)], page: 1);
+        final page = fakePage([for (final m in older) _message(m)], page: 1);
         return PageResult.fromJson(page, ChatMessage.fromJson);
       }, module: AppModule.chat);
 
@@ -364,10 +363,7 @@ class FakeChatRepository implements ChatRepository {
     final matches = rows
         .where((row) => fakeMatches(row, term, ['Title', 'Subtitle']))
         .toList();
-    return PageResult.fromJson(
-      serverPage(matches, page: page),
-      ChatRef.fromJson,
-    );
+    return PageResult.fromJson(fakePage(matches, page: page), ChatRef.fromJson);
   }, module: AppModule.chat);
 
   List<int> _people(Map<String, dynamic> thread) =>
@@ -428,7 +424,7 @@ class FakeChatRepository implements ChatRepository {
     int count(ChatKind kind) =>
         matching.where((t) => t['Kind'] == kind.wire).length;
     return PageResult.fromJson(
-      serverPage(
+      fakePage(
         scoped,
         page: query.page,
         extra: {

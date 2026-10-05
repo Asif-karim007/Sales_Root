@@ -94,9 +94,7 @@ void main() {
       final container = await apiContainer(stub);
       await container.read(sessionProvider.future);
 
-      await container
-          .read(sessionProvider.notifier)
-          .switchWorkspace('other');
+      await container.read(sessionProvider.notifier).switchWorkspace('other');
 
       final session = container.read(sessionProvider).value;
       expect(session?.token, 'switched');

@@ -123,13 +123,14 @@ class ApiStub implements HttpClientAdapter {
   @override
   void close({bool force = false}) {}
 
-  static ResponseBody _json(Object? body, int status) => ResponseBody.fromString(
-    body == null ? '' : jsonEncode(body),
-    status,
-    headers: {
-      Headers.contentTypeHeader: [Headers.jsonContentType],
-    },
-  );
+  static ResponseBody _json(Object? body, int status) =>
+      ResponseBody.fromString(
+        body == null ? '' : jsonEncode(body),
+        status,
+        headers: {
+          Headers.contentTypeHeader: [Headers.jsonContentType],
+        },
+      );
 
   static String _relative(RequestOptions options) {
     final base = Uri.parse(ApiConfig.baseUrl).path;
