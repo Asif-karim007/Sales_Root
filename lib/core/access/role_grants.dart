@@ -83,18 +83,18 @@ ModulePermission _member(AppModule module) => switch (module) {
   AppModule.expense ||
   AppModule.cardScan ||
   AppModule.support ||
+  AppModule.order ||
+  AppModule.invoice ||
+  AppModule.inbox ||
   AppModule.referral => _work(module),
   AppModule.task ||
   AppModule.calendar ||
   AppModule.chat ||
   AppModule.files => _work(module, delete: true),
   AppModule.product ||
-  AppModule.order ||
-  AppModule.invoice ||
   AppModule.team ||
   AppModule.reports ||
   AppModule.notice ||
-  AppModule.inbox ||
   AppModule.payroll => _viewOnly(module),
   _ => ModulePermission(module: module),
 };

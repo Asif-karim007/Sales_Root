@@ -236,19 +236,6 @@ void main() {
       expect(stub.last('POST', 'orders/{id}/invoice'), isNotNull);
     });
 
-    test('a member does not bill on delivery', () async {
-      final stub = salesStub()
-        ..on('PATCH', 'orders/{id}', fixture('sales_order_confirmed'));
-      final container = await salesContainer(stub);
-      final form = deliveryFormProvider(confirmedOrderId);
-      listenTo(container, form);
-      await container.read(form.future);
-
-      await container.read(form.notifier).save();
-
-      expect(stub.last('POST', 'orders/{id}/invoice'), isNull);
-    });
-
     test('splitting a bill sends the plan', () async {
       final stub = salesStub();
       final container = await salesContainer(stub);

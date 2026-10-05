@@ -146,7 +146,7 @@ void main() {
     expect(hasReject(), isTrue);
   });
 
-  testWidgets('a member can read an enquiry but not act on it', (tester) async {
+  testWidgets('a member can act on an enquiry', (tester) async {
     final container = await _container(
       tester,
       stub: growthStub(),
@@ -154,7 +154,7 @@ void main() {
     );
     await _show(tester, container, NewLeadScreen(id: conversationId(1)));
     expect(find.text('Customer 1'), findsWidgets);
-    expect(hasReject(), isFalse);
+    expect(hasReject(), isTrue);
   });
 
   testWidgets('a sent campaign shows its four numbers', (tester) async {
