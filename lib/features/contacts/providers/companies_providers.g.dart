@@ -42,7 +42,7 @@ final class CompaniesFilterNotifierProvider
 }
 
 String _$companiesFilterNotifierHash() =>
-    r'da5290e433de91e56a50c5b31e599f384a31924e';
+    r'e53ccf691ff27156573b93f0869dc0539a8f30b4';
 
 abstract class _$CompaniesFilterNotifier extends $Notifier<CompaniesFilter> {
   CompaniesFilter build();
@@ -87,7 +87,7 @@ final class CompaniesListNotifierProvider
 }
 
 String _$companiesListNotifierHash() =>
-    r'd0802bdc90f4ba4a6d11f616b423dbdaa52ca54a';
+    r'd4322b0e4256c193eb50339348915914ea554828';
 
 abstract class _$CompaniesListNotifier extends $AsyncNotifier<Paged<Company>> {
   FutureOr<Paged<Company>> build();
@@ -107,6 +107,120 @@ abstract class _$CompaniesListNotifier extends $AsyncNotifier<Paged<Company>> {
   }
 }
 
+@ProviderFor(companyCounts)
+final companyCountsProvider = CompanyCountsProvider._();
+
+final class CompanyCountsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<CompanyCounts>,
+          CompanyCounts,
+          FutureOr<CompanyCounts>
+        >
+    with $FutureModifier<CompanyCounts>, $FutureProvider<CompanyCounts> {
+  CompanyCountsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'companyCountsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$companyCountsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<CompanyCounts> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<CompanyCounts> create(Ref ref) {
+    return companyCounts(ref);
+  }
+}
+
+String _$companyCountsHash() => r'275ac95fe18af14f1f4b1d74e971a669f4e60d8e';
+
+@ProviderFor(companyDetail)
+final companyDetailProvider = CompanyDetailFamily._();
+
+final class CompanyDetailProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<CompanyDetail>,
+          CompanyDetail,
+          FutureOr<CompanyDetail>
+        >
+    with $FutureModifier<CompanyDetail>, $FutureProvider<CompanyDetail> {
+  CompanyDetailProvider._({
+    required CompanyDetailFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'companyDetailProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$companyDetailHash();
+
+  @override
+  String toString() {
+    return r'companyDetailProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<CompanyDetail> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<CompanyDetail> create(Ref ref) {
+    final argument = this.argument as String;
+    return companyDetail(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is CompanyDetailProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$companyDetailHash() => r'3f67b8516fbe0a26fa9ded8cae803c02f2a13b84';
+
+final class CompanyDetailFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<CompanyDetail>, String> {
+  CompanyDetailFamily._()
+    : super(
+        retry: null,
+        name: r'companyDetailProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  CompanyDetailProvider call(String id) =>
+      CompanyDetailProvider._(argument: id, from: this);
+
+  @override
+  String toString() => r'companyDetailProvider';
+}
+
 @ProviderFor(company)
 final companyProvider = CompanyFamily._();
 
@@ -115,7 +229,7 @@ final class CompanyProvider
     with $FutureModifier<Company>, $FutureProvider<Company> {
   CompanyProvider._({
     required CompanyFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'companyProvider',
@@ -141,7 +255,7 @@ final class CompanyProvider
 
   @override
   FutureOr<Company> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return company(ref, argument);
   }
 
@@ -156,10 +270,10 @@ final class CompanyProvider
   }
 }
 
-String _$companyHash() => r'4de76b44e67a815691b1930917f2b913b21fbe22';
+String _$companyHash() => r'c9c3fbbc8d77601d3083b4f9e72760cd5c13cb34';
 
 final class CompanyFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Company>, int> {
+    with $FunctionalFamilyOverride<FutureOr<Company>, String> {
   CompanyFamily._()
     : super(
         retry: null,
@@ -169,7 +283,8 @@ final class CompanyFamily extends $Family
         isAutoDispose: true,
       );
 
-  CompanyProvider call(int id) => CompanyProvider._(argument: id, from: this);
+  CompanyProvider call(String id) =>
+      CompanyProvider._(argument: id, from: this);
 
   @override
   String toString() => r'companyProvider';
@@ -188,7 +303,7 @@ final class CompanyContactsProvider
     with $FutureModifier<List<Contact>>, $FutureProvider<List<Contact>> {
   CompanyContactsProvider._({
     required CompanyContactsFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'companyContactsProvider',
@@ -215,7 +330,7 @@ final class CompanyContactsProvider
 
   @override
   FutureOr<List<Contact>> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return companyContacts(ref, argument);
   }
 
@@ -230,10 +345,10 @@ final class CompanyContactsProvider
   }
 }
 
-String _$companyContactsHash() => r'bdec9888e1bf0fb572eaa02fc0fab06f6fb96acd';
+String _$companyContactsHash() => r'de8b000c0849e640bd63f43fd3ea15ac5974a1db';
 
 final class CompanyContactsFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<List<Contact>>, int> {
+    with $FunctionalFamilyOverride<FutureOr<List<Contact>>, String> {
   CompanyContactsFamily._()
     : super(
         retry: null,
@@ -243,7 +358,7 @@ final class CompanyContactsFamily extends $Family
         isAutoDispose: true,
       );
 
-  CompanyContactsProvider call(int id) =>
+  CompanyContactsProvider call(String id) =>
       CompanyContactsProvider._(argument: id, from: this);
 
   @override
@@ -263,7 +378,7 @@ final class CompanyLeadsProvider
     with $FutureModifier<List<LinkedLead>>, $FutureProvider<List<LinkedLead>> {
   CompanyLeadsProvider._({
     required CompanyLeadsFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'companyLeadsProvider',
@@ -290,7 +405,7 @@ final class CompanyLeadsProvider
 
   @override
   FutureOr<List<LinkedLead>> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return companyLeads(ref, argument);
   }
 
@@ -305,10 +420,10 @@ final class CompanyLeadsProvider
   }
 }
 
-String _$companyLeadsHash() => r'bfdb63f091e2c35684d5a82a55acadb2e007a3a4';
+String _$companyLeadsHash() => r'b50f95c7f2c3fa7ae8cdcd4e442b216c0936d650';
 
 final class CompanyLeadsFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<List<LinkedLead>>, int> {
+    with $FunctionalFamilyOverride<FutureOr<List<LinkedLead>>, String> {
   CompanyLeadsFamily._()
     : super(
         retry: null,
@@ -318,64 +433,67 @@ final class CompanyLeadsFamily extends $Family
         isAutoDispose: true,
       );
 
-  CompanyLeadsProvider call(int id) =>
+  CompanyLeadsProvider call(String id) =>
       CompanyLeadsProvider._(argument: id, from: this);
 
   @override
   String toString() => r'companyLeadsProvider';
 }
 
-@ProviderFor(companyLookups)
-final companyLookupsProvider = CompanyLookupsProvider._();
+@ProviderFor(contactsPack)
+final contactsPackProvider = ContactsPackProvider._();
 
-final class CompanyLookupsProvider
+final class ContactsPackProvider
     extends
         $FunctionalProvider<
-          AsyncValue<CompanyLookups>,
-          CompanyLookups,
-          FutureOr<CompanyLookups>
+          AsyncValue<ContactsPack>,
+          ContactsPack,
+          FutureOr<ContactsPack>
         >
-    with $FutureModifier<CompanyLookups>, $FutureProvider<CompanyLookups> {
-  CompanyLookupsProvider._()
+    with $FutureModifier<ContactsPack>, $FutureProvider<ContactsPack> {
+  ContactsPackProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'companyLookupsProvider',
+        name: r'contactsPackProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$companyLookupsHash();
+  String debugGetCreateSourceHash() => _$contactsPackHash();
 
   @$internal
   @override
-  $FutureProviderElement<CompanyLookups> $createElement(
+  $FutureProviderElement<ContactsPack> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<CompanyLookups> create(Ref ref) {
-    return companyLookups(ref);
+  FutureOr<ContactsPack> create(Ref ref) {
+    return contactsPack(ref);
   }
 }
 
-String _$companyLookupsHash() => r'be1eaca37a3e6b7d166d25482ab2a39b85fe6def';
+String _$contactsPackHash() => r'3cfb0cdc654ad9583d51b993ae110e78812c92d6';
 
-/// Saves the company form; [id] 0 creates. A 409 comes back as [Duplicates].
+/// Saves the company form; an empty [id] creates. A 409 comes back as
+/// [Duplicates].
 
 @ProviderFor(CompanySaveNotifier)
 final companySaveProvider = CompanySaveNotifierFamily._();
 
-/// Saves the company form; [id] 0 creates. A 409 comes back as [Duplicates].
+/// Saves the company form; an empty [id] creates. A 409 comes back as
+/// [Duplicates].
 final class CompanySaveNotifierProvider
     extends $AsyncNotifierProvider<CompanySaveNotifier, SaveOutcome<Company>?> {
-  /// Saves the company form; [id] 0 creates. A 409 comes back as [Duplicates].
+  /// Saves the company form; an empty [id] creates. A 409 comes back as
+  /// [Duplicates].
   CompanySaveNotifierProvider._({
     required CompanySaveNotifierFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'companySaveProvider',
@@ -410,9 +528,10 @@ final class CompanySaveNotifierProvider
 }
 
 String _$companySaveNotifierHash() =>
-    r'73460153a5f1ae19abca41ea6ee891c216755a8e';
+    r'fe66725ef2ddac81fc907db4c42097230b8d4710';
 
-/// Saves the company form; [id] 0 creates. A 409 comes back as [Duplicates].
+/// Saves the company form; an empty [id] creates. A 409 comes back as
+/// [Duplicates].
 
 final class CompanySaveNotifierFamily extends $Family
     with
@@ -421,7 +540,7 @@ final class CompanySaveNotifierFamily extends $Family
           AsyncValue<SaveOutcome<Company>?>,
           SaveOutcome<Company>?,
           FutureOr<SaveOutcome<Company>?>,
-          int
+          String
         > {
   CompanySaveNotifierFamily._()
     : super(
@@ -432,23 +551,25 @@ final class CompanySaveNotifierFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Saves the company form; [id] 0 creates. A 409 comes back as [Duplicates].
+  /// Saves the company form; an empty [id] creates. A 409 comes back as
+  /// [Duplicates].
 
-  CompanySaveNotifierProvider call(int id) =>
+  CompanySaveNotifierProvider call(String id) =>
       CompanySaveNotifierProvider._(argument: id, from: this);
 
   @override
   String toString() => r'companySaveProvider';
 }
 
-/// Saves the company form; [id] 0 creates. A 409 comes back as [Duplicates].
+/// Saves the company form; an empty [id] creates. A 409 comes back as
+/// [Duplicates].
 
 abstract class _$CompanySaveNotifier
     extends $AsyncNotifier<SaveOutcome<Company>?> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  FutureOr<SaveOutcome<Company>?> build(int id);
+  FutureOr<SaveOutcome<Company>?> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
@@ -470,21 +591,18 @@ abstract class _$CompanySaveNotifier
   }
 }
 
-/// Deletes a company or changes its concern persons; screens listen for the
-/// [RecordChange] to react.
+/// Deletes a company; true once it is gone.
 
 @ProviderFor(CompanyMutationNotifier)
 final companyMutationProvider = CompanyMutationNotifierFamily._();
 
-/// Deletes a company or changes its concern persons; screens listen for the
-/// [RecordChange] to react.
+/// Deletes a company; true once it is gone.
 final class CompanyMutationNotifierProvider
-    extends $AsyncNotifierProvider<CompanyMutationNotifier, RecordChange?> {
-  /// Deletes a company or changes its concern persons; screens listen for the
-  /// [RecordChange] to react.
+    extends $AsyncNotifierProvider<CompanyMutationNotifier, bool> {
+  /// Deletes a company; true once it is gone.
   CompanyMutationNotifierProvider._({
     required CompanyMutationNotifierFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'companyMutationProvider',
@@ -520,19 +638,18 @@ final class CompanyMutationNotifierProvider
 }
 
 String _$companyMutationNotifierHash() =>
-    r'8aa819827a0d48a8a291311cd6276ae66809706c';
+    r'5f08b976fc996f0d08abcd42c890cad466471f4d';
 
-/// Deletes a company or changes its concern persons; screens listen for the
-/// [RecordChange] to react.
+/// Deletes a company; true once it is gone.
 
 final class CompanyMutationNotifierFamily extends $Family
     with
         $ClassFamilyOverride<
           CompanyMutationNotifier,
-          AsyncValue<RecordChange?>,
-          RecordChange?,
-          FutureOr<RecordChange?>,
-          int
+          AsyncValue<bool>,
+          bool,
+          FutureOr<bool>,
+          String
         > {
   CompanyMutationNotifierFamily._()
     : super(
@@ -543,33 +660,31 @@ final class CompanyMutationNotifierFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Deletes a company or changes its concern persons; screens listen for the
-  /// [RecordChange] to react.
+  /// Deletes a company; true once it is gone.
 
-  CompanyMutationNotifierProvider call(int id) =>
+  CompanyMutationNotifierProvider call(String id) =>
       CompanyMutationNotifierProvider._(argument: id, from: this);
 
   @override
   String toString() => r'companyMutationProvider';
 }
 
-/// Deletes a company or changes its concern persons; screens listen for the
-/// [RecordChange] to react.
+/// Deletes a company; true once it is gone.
 
-abstract class _$CompanyMutationNotifier extends $AsyncNotifier<RecordChange?> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+abstract class _$CompanyMutationNotifier extends $AsyncNotifier<bool> {
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  FutureOr<RecordChange?> build(int id);
+  FutureOr<bool> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<RecordChange?>, RecordChange?>;
+    final ref = this.ref as $Ref<AsyncValue<bool>, bool>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<RecordChange?>, RecordChange?>,
-              AsyncValue<RecordChange?>,
+              AnyNotifier<AsyncValue<bool>, bool>,
+              AsyncValue<bool>,
               Object?,
               Object?
             >;

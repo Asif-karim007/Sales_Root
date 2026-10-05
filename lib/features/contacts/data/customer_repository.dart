@@ -2,17 +2,12 @@ import 'dart:typed_data';
 
 import 'package:salesroot/features/contacts/models/customer.dart';
 
-/// The Customer 360 view and the customer's documents.
+/// The Customer 360 view and the customer's files.
 abstract interface class CustomerRepository {
-  Future<CustomerSummary> summary(int companyId);
-
-  /// Newest first.
-  Future<List<CustomerDocument>> documents(int companyId);
+  Future<CustomerSummary> summary(String companyId);
 
   /// Counts against the storage quota (402 when full).
-  Future<CustomerDocument> upload(int companyId, DocumentUpload upload);
+  Future<void> upload(String companyId, DocumentUpload upload);
 
-  Future<Uint8List> download(int documentId);
-
-  Future<void> deleteDocument(int documentId);
+  Future<Uint8List> download(CustomerDocument document);
 }

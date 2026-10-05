@@ -63,12 +63,7 @@
   "contactsCompanySearchHint": "প্রতিষ্ঠানের নাম, এলাকা বা নম্বর",
   "contactsImportFromPhone": "ফোন থেকে আনুন",
   "contactsScanCard": "কার্ড স্ক্যান",
-  "contactsGroupPrimary": "প্রধান",
-  "contactsGroupRecent": "নতুন যোগ",
   "contactsIndependent": "নিজস্ব",
-  "contactsLetterAll": "A–Z",
-  "contactsLetterTitle": "নামের প্রথম অক্ষর",
-  "contactsLetterClear": "সব অক্ষর দেখান",
   "contactsNoMatchTitle": "কিছু মেলেনি",
   "contactsNoMatchBody": "অন্য নাম বা নম্বর দিয়ে খুঁজুন, অথবা ফিল্টার মুছুন।",
   "contactsClearFilters": "ফিল্টার মুছুন",
@@ -80,10 +75,7 @@
   "contactsAddCompany": "প্রতিষ্ঠান যোগ করুন",
   "contactsCustomer": "গ্রাহক",
   "contactsCustomers": "গ্রাহক",
-  "contactsIndustry": "শিল্প",
   "contactsArea": "এলাকা",
-  "contactsAllIndustries": "সব শিল্প",
-  "contactsAllAreas": "সব এলাকা",
   "contactsWhatsApp": "WhatsApp",
   "contactsSms": "SMS",
   "contactsEmail": "ইমেইল",
@@ -105,13 +97,10 @@
   "contactsDeleteContactTitle": "কনট্যাক্ট মুছবেন?",
   "contactsDeleteContactBody": "কনট্যাক্ট মুছে গেলেও তার লিড ও কাজ থেকে যাবে।",
   "contactsDeleted": "কনট্যাক্ট মুছে ফেলা হয়েছে",
-  "contactsPrimaryContact": "প্রধান কনট্যাক্ট",
-  "contactsPrimary": "প্রধান",
   "contactsMobile": "মোবাইল",
   "contactsDesignation": "পদবি",
   "contactsAddress": "ঠিকানা",
   "contactsBirthday": "জন্মদিন",
-  "contactsSource": "উৎস",
   "contactsAddedOn": "যোগ হয়েছে",
   "contactsLeadsWithContact": "এই কনট্যাক্টের লিড",
   "contactsLeadsWithContactCount": "এই কনট্যাক্টের লিড · {n}",
@@ -139,16 +128,6 @@
   "contactsDeleteCompanyTitle": "প্রতিষ্ঠান মুছবেন?",
   "contactsDeleteCompanyBody": "এর কনট্যাক্টরা থেকে যাবেন, শুধু প্রতিষ্ঠান থেকে আলাদা হবেন।",
   "contactsCompanyDeleted": "প্রতিষ্ঠান মুছে ফেলা হয়েছে",
-  "contactsPrimarySet": "প্রধান কনট্যাক্ট বদলানো হয়েছে",
-  "contactsDetached": "প্রতিষ্ঠান থেকে সরানো হয়েছে",
-  "contactsCustomerSince": "গ্রাহক {year} থেকে",
-  "@contactsCustomerSince": {
-    "placeholders": {
-      "year": {
-        "type": "String"
-      }
-    }
-  },
   "contactsTotalSales": "মোট বিক্রি",
   "contactsOutstanding": "পাওনা",
   "contactsOpenLeads": "খোলা লিড",
@@ -168,19 +147,6 @@
     }
   },
   "contactsAssignedTo": "দায়িত্বে",
-  "contactsCode": "কোড",
-  "contactsSetPrimary": "প্রধান কনট্যাক্ট করুন",
-  "contactsRemoveFromCompany": "প্রতিষ্ঠান থেকে সরান",
-  "contactsRemoveFromCompanyTitle": "{name} কে সরাবেন?",
-  "@contactsRemoveFromCompanyTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "contactsRemoveFromCompanyBody": "কনট্যাক্ট মুছবে না, শুধু এই প্রতিষ্ঠানের তালিকা থেকে সরে যাবে।",
-  "contactsRemove": "সরান",
   "contactsConcernPersons": "কনসার্ন পারসন · {n}",
   "@contactsConcernPersons": {
     "placeholders": {
@@ -316,10 +282,10 @@
       }
     }
   },
-  "contactsEventReceipt": "ইনভয়েস {invoice} · রসিদ পাঠানো",
+  "contactsEventReceipt": "রসিদ {number}",
   "@contactsEventReceipt": {
     "placeholders": {
-      "invoice": {
+      "number": {
         "type": "String"
       }
     }
@@ -366,70 +332,15 @@
       }
     }
   },
-  "contactsEventWhatsApp": "WhatsApp · {n} মেসেজ",
-  "@contactsEventWhatsApp": {
-    "placeholders": {
-      "n": {
-        "type": "String"
-      }
-    }
-  },
-  "contactsReceipts": "রসিদ",
-  "contactsAgreements": "চুক্তি",
   "contactsPhotos": "ছবি",
   "contactsOtherDocuments": "অন্যান্য",
-  "contactsDeleteDocumentTitle": "ডকুমেন্ট মুছবেন?",
-  "contactsDeleteDocumentBody": "\"{title}\" মুছে গেলে আর ফেরত আনা যাবে না।",
-  "@contactsDeleteDocumentBody": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "contactsOpen": "খুলুন",
   "contactsUploaded": "ডকুমেন্ট আপলোড হয়েছে",
-  "contactsDocumentDeleted": "ডকুমেন্ট মুছে ফেলা হয়েছে",
   "contactsUpload": "আপলোড",
   "contactsNoDocumentsTitle": "কোনো ডকুমেন্ট নেই",
   "contactsNoDocumentsBody": "কোটেশন, ইনভয়েস, চুক্তি বা সাইটের ছবি এখানে রাখুন।",
   "contactsPdf": "PDF",
   "contactsImage": "ছবি",
   "contactsFile": "ফাইল",
-  "contactsSentBySms": "SMS ও PDF",
-  "contactsUploadedBy": "আপলোড: {name}",
-  "@contactsUploadedBy": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "contactsViewed": "দেখেছেন",
-  "contactsQuotationNumber": "কোটেশন {number}",
-  "@contactsQuotationNumber": {
-    "placeholders": {
-      "number": {
-        "type": "String"
-      }
-    }
-  },
-  "contactsInvoiceNumber": "ইনভয়েস {number}",
-  "@contactsInvoiceNumber": {
-    "placeholders": {
-      "number": {
-        "type": "String"
-      }
-    }
-  },
-  "contactsReceiptNumber": "রসিদ {number}",
-  "@contactsReceiptNumber": {
-    "placeholders": {
-      "number": {
-        "type": "String"
-      }
-    }
-  },
   "contactsSizeKb": "{n} KB",
   "@contactsSizeKb": {
     "placeholders": {
@@ -454,10 +365,15 @@
   "contactsTakePhoto": "ছবি তুলুন",
   "contactsFromGallery": "গ্যালারি থেকে",
   "contactsDocumentTitle": "ডকুমেন্টের নাম",
-  "contactsDocumentCategory": "ধরন",
-  "contactsInvoice": "ইনভয়েস",
-  "contactsReceipt": "রসিদ",
-  "contactsAgreement": "চুক্তি",
-  "contactsPhoto": "ছবি",
-  "contactsOtherDocument": "অন্যান্য"
+  "contactsType": "ধরন",
+  "contactsAreaHint": "যেমন মিরপুর ১০",
+  "contactsStatusDraft": "খসড়া",
+  "contactsStatusCancelled": "বাতিল",
+  "contactsMethodCash": "ক্যাশ",
+  "contactsMethodBkash": "বিকাশ",
+  "contactsMethodNagad": "নগদ",
+  "contactsMethodRocket": "রকেট",
+  "contactsMethodBank": "ব্যাংক",
+  "contactsMethodCheque": "চেক",
+  "contactsMethodCard": "কার্ড"
 }

@@ -55,7 +55,7 @@ final class DeviceContactsSourceProvider
 }
 
 String _$deviceContactsSourceHash() =>
-    r'14e4a723f1312afd978ed62c2c2cd654cd16e873';
+    r'b6bfb885538ad925e2bc5ac29472275d1d367643';
 
 /// The phone book with saved numbers marked, the user's picks and the import.
 
@@ -86,7 +86,7 @@ final class ContactImportNotifierProvider
 }
 
 String _$contactImportNotifierHash() =>
-    r'3b0dd190f8b7e9e093560d2ae33bcced56e450f8';
+    r'ab9b7d9b39d84bbf065f4c10102a06e9a6bbba3c';
 
 /// The phone book with saved numbers marked, the user's picks and the import.
 

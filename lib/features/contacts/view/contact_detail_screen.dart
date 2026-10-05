@@ -18,6 +18,7 @@ import 'package:salesroot/features/contacts/view/widget/contact_rows.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_feedback.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_header.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_sheets.dart';
+import 'package:salesroot/features/contacts/view/widget/contacts_terms.dart';
 import 'package:salesroot/features/contacts/view/widget/detail_parts.dart';
 import 'package:salesroot/features/contacts/view/widget/info_lines.dart';
 import 'package:salesroot/translations/translations.dart';
@@ -27,7 +28,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class ContactDetailScreen extends ConsumerWidget {
   const ContactDetailScreen({super.key, required this.id});
 
-  final int id;
+  final String id;
 
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
@@ -50,13 +51,13 @@ class ContactDetailScreen extends ConsumerWidget {
       context,
       title: contact.name,
       actions: [
-        if (access.canEdit && contact.canEdit)
+        if (access.canEdit)
           SheetAction(
             icon: Icons.edit_outlined,
             label: l10n.commonEdit,
             onTap: () => context.push(ContactsPaths.contactEditFor(id)),
           ),
-        if (access.canDelete && contact.canDelete)
+        if (access.canDelete)
           SheetAction(
             icon: Icons.delete_outline_rounded,
             label: l10n.commonDelete,
@@ -73,13 +74,10 @@ class ContactDetailScreen extends ConsumerWidget {
     final contact = ref.watch(contactProvider(id));
     final access = ref.watch(moduleAccessProvider(AppModule.contact));
     final loaded = contact.value;
-    final hasMenu =
-        loaded != null &&
-        ((access.canEdit && loaded.canEdit) ||
-            (access.canDelete && loaded.canDelete));
+    final hasMenu = loaded != null && (access.canEdit || access.canDelete);
 
     ref.listen(contactMutationProvider(id), (_, next) {
-      if (next.value == RecordChange.deleted) {
+      if (next.value == true) {
         showSrSuccess(context, l10n.contactsDeleted);
         context.pop();
       } else if (next.error case final error?) {
@@ -122,12 +120,7 @@ class _Body extends ConsumerWidget {
 
     return RefreshIndicator(
       color: SrColors.of(context).accent,
-      onRefresh: () {
-        ref
-          ..invalidate(contactLeadsProvider(contact.id))
-          ..invalidate(contactActivityProvider(contact.id));
-        return ref.refresh(contactProvider(contact.id).future);
-      },
+      onRefresh: () => ref.refresh(contactDetailProvider(contact.id).future),
       child: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
@@ -135,8 +128,6 @@ class _Body extends ConsumerWidget {
             name: contact.name,
             subtitle: subtitle,
             tags: [
-              if (contact.isPrimary)
-                SrTag(l10n.contactsPrimaryContact, tone: SrTone.accent),
               if (contact.isIndependent) SrTag(l10n.contactsIndependent),
               for (final tag in contact.tags) SrTag(tag),
             ],
@@ -194,8 +185,8 @@ class _Body extends ConsumerWidget {
         InfoLine(l10n.contactsAddress, address),
       if (birthday != null)
         InfoLine(l10n.contactsBirthday, fmt.dayMonth(birthday)),
-      if (contact.source case final source?)
-        InfoLine(l10n.contactsSource, source),
+      if (contact.ownerName case final owner?)
+        InfoLine(l10n.contactsAssignedTo, owner),
       if (created != null) InfoLine(l10n.contactsAddedOn, fmt.date(created)),
     ];
   }
@@ -262,12 +253,10 @@ class _CompanySection extends ConsumerWidget {
         ? ref.watch(companyProvider(companyId)).value
         : null;
     final people = company?.contactCount;
-    final role = contact.isPrimary
-        ? l10n.contactsPrimaryContact
-        : contact.designation;
+    final role = contact.designation;
 
     return SrRowGroup(
-      title: l10n.contactsCompany,
+      title: companyTerm(context, ref),
       rows: [
         SrListRow(
           title: company?.name ?? contact.companyName ?? '',
@@ -284,7 +273,7 @@ class _CompanySection extends ConsumerWidget {
           onTap: canOpen
               ? () => context.push(Routes.companyFor(companyId))
               : null,
-          trailing: contact.companyIsClient
+          trailing: company?.isClient ?? false
               ? SrTag(l10n.contactsCustomer, tone: SrTone.ok)
               : null,
         ),
@@ -308,10 +297,7 @@ class _LeadsSection extends ConsumerWidget {
     final count = leads.value?.length;
     final newLead = Uri(
       path: Routes.leadQuick,
-      queryParameters: {
-        if (companyId != null) 'companyId': '$companyId',
-        'contactId': '${contact.id}',
-      },
+      queryParameters: {'companyId': ?companyId, 'contactId': contact.id},
     ).toString();
 
     return Column(
@@ -347,7 +333,7 @@ class _LeadsSection extends ConsumerWidget {
 class _ActivitySection extends ConsumerWidget {
   const _ActivitySection({required this.id});
 
-  final int id;
+  final String id;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

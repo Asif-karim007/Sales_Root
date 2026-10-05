@@ -1,0 +1,81 @@
+{
+  "company": {
+    "id": "01a10101-865d-7e81-90c1-c811923c2adf",
+    "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+    "name": "Green Agro Ltd.",
+    "type": "wholesale",
+    "phone": "+8801811000012",
+    "email": null,
+    "website": null,
+    "address": null,
+    "area": "Savar",
+    "district": "Dhaka",
+    "lat": null,
+    "lng": null,
+    "ownerMembershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+    "creditLimit": 300000.0,
+    "creditDays": 15,
+    "tags": [],
+    "custom": "{}",
+    "isCustomer": true,
+    "notes": null,
+    "createdBy": null,
+    "createdAt": "2026-10-03T09:03:59.542506Z",
+    "updatedAt": "2026-10-03T09:03:59.542506Z",
+    "deletedAt": null,
+    "version": 17,
+    "ownerName": "Rafi Ahmed",
+    "contactCount": 1,
+    "openLeads": 0,
+    "outstanding": 50000.0,
+    "overdue": 0,
+    "maxAgeDays": 0,
+    "lastActivityAt": null
+  },
+  "people": [
+    {
+      "id": "01a10101-8669-7b1f-8763-4f3c6c7b6b40",
+      "name": "Farhana Islam",
+      "phone": "+8801811000012",
+      "email": null,
+      "designation": "Purchase officer",
+      "roleInCompany": "payer",
+      "doNotMessage": false
+    }
+  ],
+  "leads": [],
+  "orders": [
+    {
+      "id": "01a10101-869f-7916-b997-939393716475",
+      "number": "SO-2026-00001",
+      "status": "delivered",
+      "total": 100000.0,
+      "deliveryDate": "2026-09-23T00:00:00",
+      "createdAt": "2026-10-03T09:03:59.542506Z"
+    }
+  ],
+  "dues": [
+    {
+      "id": "01a10101-86b7-7436-8647-06f0f499818b",
+      "label": "2nd instalment",
+      "amount": 50000.0,
+      "paidAmt": 0.0,
+      "dueDate": "2026-10-23T00:00:00",
+      "status": "due",
+      "ageDays": 0
+    }
+  ],
+  "payments": [
+    {
+      "id": "01a10101-86b7-7e01-8f91-9b87ec1e2fb0",
+      "receiptNo": "RCPT-2026-00001",
+      "amount": 50000.0,
+      "method": "bkash",
+      "reference": "BKX7H2K9Q1",
+      "receivedAt": "2026-09-30T09:03:59.542506Z",
+      "status": "posted"
+    }
+  ],
+  "timeline": [],
+  "files": []
+}

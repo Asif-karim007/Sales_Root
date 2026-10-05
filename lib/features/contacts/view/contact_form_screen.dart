@@ -17,6 +17,7 @@ import 'package:salesroot/features/contacts/providers/contacts_providers.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_feedback.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_header.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_sheets.dart';
+import 'package:salesroot/features/contacts/view/widget/contacts_terms.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
@@ -24,26 +25,26 @@ import 'package:salesroot/widgets/widgets.dart';
 class ContactPrefill {
   const ContactPrefill({this.companyId, this.name, this.phone, this.email});
 
-  final int? companyId;
+  final String? companyId;
   final String? name;
   final String? phone;
   final String? email;
 }
 
-/// New and edit contact, in the lead form's style. [id] 0 creates.
+/// New and edit contact, in the lead form's style. An empty [id] creates.
 class ContactFormScreen extends ConsumerWidget {
   const ContactFormScreen({
     super.key,
-    this.id = 0,
+    this.id = '',
     this.prefill = const ContactPrefill(),
   });
 
-  final int id;
+  final String id;
   final ContactPrefill prefill;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (id == 0) return _ContactForm(id: 0, prefill: prefill);
+    if (id.isEmpty) return _ContactForm(id: id, prefill: prefill);
     final contact = ref.watch(contactProvider(id));
     final loaded = contact.value;
     if (loaded != null) {
@@ -64,7 +65,7 @@ class ContactFormScreen extends ConsumerWidget {
 class _ContactForm extends ConsumerStatefulWidget {
   const _ContactForm({required this.id, required this.prefill, this.initial});
 
-  final int id;
+  final String id;
   final ContactPrefill prefill;
   final Contact? initial;
 
@@ -90,7 +91,7 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
   );
   late final _address = TextEditingController(text: widget.initial?.address);
   late final _note = TextEditingController(text: widget.initial?.note);
-  late int? _companyId = widget.initial == null
+  late String? _companyId = widget.initial == null
       ? widget.prefill.companyId
       : widget.initial?.companyId;
   late String? _companyName = widget.initial?.companyName;
@@ -132,31 +133,23 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
     };
   }
 
-  void _save({bool allowDuplicate = false}) {
+  void _save() {
     final errors = _validate(context.l10n);
     setState(() => _errors = errors);
     if (errors.isNotEmpty) return;
-    final base = widget.initial;
     final email = _email.text.trim();
     final input = ContactInput(
       name: _name.text,
       designation: _designation.text,
       companyId: _companyId,
-      mobiles: [
-        ?BdPhone.mobile(_mobile.text),
-        ?BdPhone.mobile(_mobile2.text),
-        ...?base?.mobiles.skip(2),
-      ],
-      emails: [if (email.isNotEmpty) email, ...?base?.emails.skip(1)],
+      mobiles: [?BdPhone.mobile(_mobile.text), ?BdPhone.mobile(_mobile2.text)],
+      emails: [if (email.isNotEmpty) email],
       address: _address.text,
       dateOfBirth: _birthday,
       note: _note.text,
-      tags: base?.tags ?? const [],
-      source: base?.source,
+      tags: widget.initial?.tags ?? const [],
     );
-    ref
-        .read(contactSaveProvider(widget.id).notifier)
-        .save(input, allowDuplicate: allowDuplicate);
+    ref.read(contactSaveProvider(widget.id).notifier).save(input);
   }
 
   Future<void> _pickCompany() async {
@@ -172,7 +165,7 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
           CompanyQuery(search: term, page: page),
         )).items,
         labelOf: (company) => company.name,
-        subtitleOf: (company) => company.zoneName,
+        subtitleOf: (company) => company.area,
         isSelected: (company) => company.id == _companyId,
       ),
     );
@@ -204,21 +197,18 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
     switch (choice) {
       case OpenExisting(:final match):
         context.pushReplacement(Routes.contactFor(match.id));
-      case SaveAnyway():
-        _save(allowDuplicate: true);
-      case null:
+      case SaveAnyway() || null:
     }
   }
 
   void _onFailure(Object error) {
-    final l10n = context.l10n;
     if (error is ApiFailure && error.isValidation) {
       setState(
         () => _errors = {
-          if (error.fieldError('Name') != null)
-            'name': l10n.contactsNameRequired,
-          if (error.fieldError('Mobiles') != null)
-            'mobile': l10n.contactsMobileInvalid,
+          'name': ?error.fieldError('name'),
+          'mobile': ?error.fieldError('phone'),
+          'mobile2': ?error.fieldError('phone2'),
+          'email': ?error.fieldError('email'),
         },
       );
       if (_errors.isNotEmpty) return;
@@ -242,7 +232,7 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
       switch (next) {
         case AsyncData(value: Saved(:final value)):
           showSrSuccess(context, l10n.contactsSaved);
-          widget.id == 0
+          widget.id.isEmpty
               ? context.pushReplacement(Routes.contactFor(value.id))
               : context.pop();
         case AsyncData(value: Duplicates(:final matches)):
@@ -255,7 +245,7 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
 
     return SrScaffold(
       appBar: SrAppBar(
-        title: widget.id == 0
+        title: widget.id.isEmpty
             ? l10n.contactsNewContact
             : l10n.contactsEditContact,
         subtitle: easy ? null : l10n.contactsFullForm,
@@ -282,7 +272,7 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
                   error: _errors['name'],
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
-                  autofocus: widget.id == 0 && widget.prefill.name == null,
+                  autofocus: widget.id.isEmpty && widget.prefill.name == null,
                 ),
                 SrTextField(
                   controller: _mobile,
@@ -294,12 +284,15 @@ class _ContactFormState extends ConsumerState<_ContactForm> {
                   textInputAction: TextInputAction.next,
                 ),
                 _CompanyField(
+                  label: companyTerm(context, ref),
                   name: companyName,
                   onPick: _pickCompany,
-                  onClear: () => setState(() {
-                    _companyId = null;
-                    _companyName = null;
-                  }),
+                  onClear: widget.initial?.companyId != null
+                      ? null
+                      : () => setState(() {
+                          _companyId = null;
+                          _companyName = null;
+                        }),
                 ),
                 SrTextField(
                   controller: _designation,
@@ -366,23 +359,29 @@ class _CompanyField extends StatelessWidget {
   const _CompanyField({
     required this.name,
     required this.onPick,
+    required this.label,
     required this.onClear,
   });
 
+  final String label;
   final String? name;
   final VoidCallback onPick;
-  final VoidCallback onClear;
+
+  /// Null once the contact is saved at a company: the server cannot take a
+  /// contact off its company, only move it to another.
+  final VoidCallback? onClear;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final onClear = this.onClear;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       spacing: 8,
       children: [
         Expanded(
           child: SrDropdownField(
-            label: l10n.contactsCompany,
+            label: label,
             optional: true,
             icon: Icons.apartment_rounded,
             placeholder: l10n.contactsPickCompany,
@@ -390,7 +389,7 @@ class _CompanyField extends StatelessWidget {
             onTap: onPick,
           ),
         ),
-        if (name != null)
+        if (name != null && onClear != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 5),
             child: SrIconButton(

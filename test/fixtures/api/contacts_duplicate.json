@@ -1,0 +1,12 @@
+{
+  "code": "V-003",
+  "message": {
+    "bn": "এই নম্বর আগে থেকেই আছে: Mr Rahim। খুলবেন?",
+    "en": "This number already exists: Mr Rahim. Open it?"
+  },
+  "field": "phone",
+  "data": {
+    "id": "01a10101-865e-7196-8bd5-2cf8d667f937",
+    "kind": "contact"
+  }
+}

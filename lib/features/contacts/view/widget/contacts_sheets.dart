@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/contacts/models/bd_phone.dart';
 import 'package:salesroot/features/contacts/models/linked_records.dart';
+import 'package:salesroot/features/contacts/view/widget/contacts_terms.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
@@ -23,8 +25,8 @@ class SaveAnyway extends DuplicateChoice {
   const SaveAnyway();
 }
 
-/// The 409 sheet: the saved records this one clashes with, to open one of
-/// them or save as a separate record.
+/// The duplicate sheet: the saved records this one clashes with, to open one
+/// of them or, for a company, save it as a separate record.
 Future<DuplicateChoice?> showDuplicateSheet(
   BuildContext context, {
   required List<DuplicateMatch> matches,
@@ -78,13 +80,15 @@ class _DuplicateSheet extends StatelessWidget {
               ),
               const SizedBox(height: 8),
             ],
-            SrButton(
-              label: l10n.contactsDuplicateKeepSeparate,
-              expand: true,
-              variant: SrButtonVariant.secondary,
-              onPressed: () => Navigator.of(context).pop(const SaveAnyway()),
-            ),
-            const SizedBox(height: 4),
+            if (company) ...[
+              SrButton(
+                label: l10n.contactsDuplicateKeepSeparate,
+                expand: true,
+                variant: SrButtonVariant.secondary,
+                onPressed: () => Navigator.of(context).pop(const SaveAnyway()),
+              ),
+              const SizedBox(height: 4),
+            ],
             SrButton(
               label: l10n.commonCancel,
               expand: true,
@@ -98,15 +102,14 @@ class _DuplicateSheet extends StatelessWidget {
   }
 }
 
-class _MatchRow extends StatelessWidget {
+class _MatchRow extends ConsumerWidget {
   const _MatchRow({required this.match, required this.company});
 
   final DuplicateMatch match;
   final bool company;
 
   @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
+  Widget build(BuildContext context, WidgetRef ref) {
     final phone = match.phone;
     final subtitle = [
       if (match.subtitle case final text? when text.isNotEmpty) text,
@@ -117,7 +120,7 @@ class _MatchRow extends StatelessWidget {
       subtitle: subtitle,
       leading: SrAvatar(name: match.name, square: company),
       trailing: SrTag(
-        company ? l10n.contactsCompany : l10n.contactsContact,
+        company ? companyTerm(context, ref) : contactTerm(context, ref),
         tone: SrTone.accent,
       ),
       onTap: () => Navigator.of(context).pop(OpenExisting(match)),

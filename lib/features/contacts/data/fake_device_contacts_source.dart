@@ -1,4 +1,3 @@
-import 'package:salesroot/core/fake/fake_backend.dart';
 import 'package:salesroot/features/contacts/data/device_contacts_source.dart';
 import 'package:salesroot/features/contacts/models/phone_book_entry.dart';
 
@@ -25,40 +24,21 @@ const List<(String, String, String?)> _phoneBook = [
   ('Tania Akter', '01687 889 900', null),
 ];
 
-/// A realistic phone book. A few entries are numbers already saved as
-/// contacts, written the way a phone stores them, so the import can mark them.
+/// A sample phone book, standing in until a contacts plugin is added.
 class FakeDeviceContactsSource implements DeviceContactsSource {
-  FakeDeviceContactsSource(this._backend);
-
-  final FakeBackend _backend;
+  const FakeDeviceContactsSource();
 
   @override
-  Future<bool> requestAccess() =>
-      _backend.network('Device contacts access', () => true);
+  Future<bool> requestAccess() async => true;
 
   @override
-  Future<List<PhoneBookEntry>> entries() =>
-      _backend.network('Device contacts', () {
-        final graph = _backend.graph;
-        final saved = [
-          for (final contact in graph.contacts.take(40))
-            if (contact.id % 9 == 1) contact,
-        ];
-        return [
-          for (final (i, (name, phone, company)) in _phoneBook.indexed)
-            PhoneBookEntry(
-              deviceId: 'pb-$i',
-              name: name,
-              phones: [phone],
-              company: company,
-            ),
-          for (final contact in saved)
-            PhoneBookEntry(
-              deviceId: 'pb-saved-${contact.id}',
-              name: contact.name,
-              phones: ['0${contact.phone.substring(4)}'],
-              email: contact.email,
-            ),
-        ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-      });
+  Future<List<PhoneBookEntry>> entries() async => [
+    for (final (i, (name, phone, company)) in _phoneBook.indexed)
+      PhoneBookEntry(
+        deviceId: 'pb-$i',
+        name: name,
+        phones: [phone],
+        company: company,
+      ),
+  ];
 }

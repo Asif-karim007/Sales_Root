@@ -9,7 +9,6 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
-import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/contacts/models/bd_phone.dart';
 import 'package:salesroot/features/contacts/models/company.dart';
 import 'package:salesroot/features/contacts/models/linked_records.dart';
@@ -20,18 +19,18 @@ import 'package:salesroot/features/contacts/view/widget/contacts_sheets.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// New and edit company, in the lead form's style. [id] 0 creates.
+/// New and edit company, in the lead form's style. An empty [id] creates.
 class CompanyFormScreen extends ConsumerWidget {
-  const CompanyFormScreen({super.key, this.id = 0, this.name});
+  const CompanyFormScreen({super.key, this.id = '', this.name});
 
-  final int id;
+  final String id;
 
   /// Prefills the name of a new company.
   final String? name;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (id == 0) return _CompanyForm(id: 0, name: name);
+    if (id.isEmpty) return _CompanyForm(id: id, name: name);
     final company = ref.watch(companyProvider(id));
     final loaded = company.value;
     if (loaded != null) return _CompanyForm(id: id, initial: loaded);
@@ -50,7 +49,7 @@ class CompanyFormScreen extends ConsumerWidget {
 class _CompanyForm extends ConsumerStatefulWidget {
   const _CompanyForm({required this.id, this.initial, this.name});
 
-  final int id;
+  final String id;
   final Company? initial;
   final String? name;
 
@@ -69,19 +68,20 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
     },
   );
   late final _address = TextEditingController(text: widget.initial?.address);
-  late final _website = TextEditingController(
-    text: widget.initial?.websiteProspect,
-  );
+  late final _area = TextEditingController(text: widget.initial?.area);
+  late final _website = TextEditingController(text: widget.initial?.website);
   late final _email = TextEditingController(text: widget.initial?.email);
   late final _creditLimit = TextEditingController(
-    text: widget.initial?.creditLimit?.toString(),
+    text: widget.initial?.creditLimit?.round().toString(),
   );
   late final _creditDays = TextEditingController(
     text: widget.initial?.creditDays?.toString(),
   );
   late final _note = TextEditingController(text: widget.initial?.note);
-  late String? _industry = widget.initial?.industryType;
-  late String? _area = widget.initial?.zoneName;
+  late final Map<String, String> _custom = {
+    for (final MapEntry(:key, :value) in (widget.initial?.custom ?? {}).entries)
+      if (value != null) key: '$value',
+  };
   Map<String, String> _errors = const {};
 
   @override
@@ -90,6 +90,7 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
       _name,
       _phone,
       _address,
+      _area,
       _website,
       _email,
       _creditLimit,
@@ -117,48 +118,36 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
     final errors = _validate(context.l10n);
     setState(() => _errors = errors);
     if (errors.isNotEmpty) return;
-    final base = widget.initial;
     final phone = _phone.text.trim();
-    final area = _area;
-    final keepPin = base != null && base.zoneName == area;
     final input = CompanyInput(
       name: _name.text,
-      industryType: _industry,
-      zoneName: area,
+      area: _area.text,
       contactNumber: phone.isEmpty ? null : BdPhone.any(phone),
       email: _email.text,
-      websiteProspect: _website.text,
+      website: _website.text,
       address: _address.text,
-      latitude: keepPin ? base.latitude : null,
-      longitude: keepPin ? base.longitude : null,
       note: _note.text,
-      tags: base?.tags ?? const [],
-      creditLimit: int.tryParse(_creditLimit.text.trim()),
+      creditLimit: double.tryParse(_creditLimit.text.trim()),
       creditDays: int.tryParse(_creditDays.text.trim()),
+      custom: _custom,
     );
     ref
         .read(companySaveProvider(widget.id).notifier)
         .save(input, allowDuplicate: allowDuplicate);
   }
 
-  Future<void> _pick({
-    required String title,
-    required List<LocalizedName> options,
-    required String? selected,
-    required ValueChanged<String> onPicked,
-  }) async {
-    final bangla = context.fmt.isBangla;
-    final picked = await showSrSheet<LocalizedName>(
+  Future<void> _pick(CompanyField field) async {
+    final picked = await showSrSheet<String>(
       context: context,
-      builder: (_) => SrOptionSheet<LocalizedName>(
-        title: title,
-        options: options,
-        labelOf: (option) => option.of(bangla),
-        isSelected: (option) => option.en == selected,
+      builder: (_) => SrOptionSheet<String>(
+        title: field.label.of(context.fmt.isBangla),
+        options: field.options,
+        labelOf: (option) => option,
+        isSelected: (option) => option == _custom[field.key],
       ),
     );
     if (picked == null) return;
-    setState(() => onPicked(picked.en));
+    setState(() => _custom[field.key] = picked);
   }
 
   Future<void> _onDuplicates(List<DuplicateMatch> matches) async {
@@ -178,14 +167,12 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
   }
 
   void _onFailure(Object error) {
-    final l10n = context.l10n;
     if (error is ApiFailure && error.isValidation) {
       setState(
         () => _errors = {
-          if (error.fieldError('Name') != null)
-            'name': l10n.contactsCompanyNameRequired,
-          if (error.fieldError('ContactNumber') != null)
-            'phone': l10n.contactsPhoneInvalid,
+          'name': ?error.fieldError('name'),
+          'phone': ?error.fieldError('phone'),
+          'email': ?error.fieldError('email'),
         },
       );
       if (_errors.isNotEmpty) return;
@@ -193,24 +180,18 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
     showFailure(context, error);
   }
 
-  String? _labelOf(List<LocalizedName>? options, String? value) {
-    if (value == null) return null;
-    final match = options?.where((o) => o.en == value).firstOrNull;
-    return match?.of(context.fmt.isBangla) ?? value;
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final saving = ref.watch(companySaveProvider(widget.id)).isLoading;
     final easy = ref.watch(experienceLevelProvider) == ExperienceLevel.easy;
-    final lookups = ref.watch(companyLookupsProvider).value;
+    final fields = ref.watch(contactsPackProvider).value?.companyFields;
 
     ref.listen(companySaveProvider(widget.id), (_, next) {
       switch (next) {
         case AsyncData(value: Saved(:final value)):
           showSrSuccess(context, l10n.contactsCompanySaved);
-          widget.id == 0
+          widget.id.isEmpty
               ? context.pushReplacement(Routes.companyFor(value.id))
               : context.pop();
         case AsyncData(value: Duplicates(:final matches)):
@@ -223,7 +204,7 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
 
     return SrScaffold(
       appBar: SrAppBar(
-        title: widget.id == 0
+        title: widget.id.isEmpty
             ? l10n.contactsNewCompany
             : l10n.contactsEditCompany,
         subtitle: easy ? null : l10n.contactsFullForm,
@@ -249,7 +230,7 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
                   hint: l10n.contactsCompanyNameHint,
                   error: _errors['name'],
                   textCapitalization: TextCapitalization.words,
-                  autofocus: widget.id == 0 && widget.name == null,
+                  autofocus: widget.id.isEmpty && widget.name == null,
                 ),
                 SrTextField(
                   controller: _phone,
@@ -260,43 +241,12 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
                   prefixIcon: Icons.call_outlined,
                   keyboardType: TextInputType.phone,
                 ),
-                Row(
-                  spacing: 10,
-                  children: [
-                    if (!easy)
-                      Expanded(
-                        child: SrDropdownField(
-                          label: l10n.contactsIndustry,
-                          optional: true,
-                          placeholder: l10n.contactsPick,
-                          value: _labelOf(lookups?.industries, _industry),
-                          onTap: lookups == null
-                              ? null
-                              : () => _pick(
-                                  title: l10n.contactsIndustry,
-                                  options: lookups.industries,
-                                  selected: _industry,
-                                  onPicked: (value) => _industry = value,
-                                ),
-                        ),
-                      ),
-                    Expanded(
-                      child: SrDropdownField(
-                        label: l10n.contactsArea,
-                        optional: true,
-                        placeholder: l10n.contactsPick,
-                        value: _labelOf(lookups?.areas, _area),
-                        onTap: lookups == null
-                            ? null
-                            : () => _pick(
-                                title: l10n.contactsArea,
-                                options: lookups.areas,
-                                selected: _area,
-                                onPicked: (value) => _area = value,
-                              ),
-                      ),
-                    ),
-                  ],
+                SrTextField(
+                  controller: _area,
+                  label: l10n.contactsArea,
+                  optional: true,
+                  hint: l10n.contactsAreaHint,
+                  textCapitalization: TextCapitalization.words,
                 ),
                 SrTextField(
                   controller: _address,
@@ -305,6 +255,13 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
                   hint: l10n.contactsCompanyAddressHint,
                   prefixIcon: Icons.place_outlined,
                 ),
+                for (final field in fields ?? const <CompanyField>[])
+                  _CustomField(
+                    field: field,
+                    value: _custom[field.key],
+                    onChanged: (value) => _custom[field.key] = value,
+                    onPick: () => _pick(field),
+                  ),
                 if (!easy) ..._moreFields(l10n),
               ],
             ),
@@ -366,4 +323,55 @@ class _CompanyFormState extends ConsumerState<_CompanyForm> {
       multiline: true,
     ),
   ];
+}
+
+/// One of the workspace's company fields: a picker for a `select` field,
+/// otherwise free text.
+class _CustomField extends StatefulWidget {
+  const _CustomField({
+    required this.field,
+    required this.value,
+    required this.onChanged,
+    required this.onPick,
+  });
+
+  final CompanyField field;
+  final String? value;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onPick;
+
+  @override
+  State<_CustomField> createState() => _CustomFieldState();
+}
+
+class _CustomFieldState extends State<_CustomField> {
+  late final _text = TextEditingController(text: widget.value);
+
+  @override
+  void dispose() {
+    _text.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final field = widget.field;
+    final label = field.label.of(context.fmt.isBangla);
+    if (field.options.isNotEmpty) {
+      return SrDropdownField(
+        label: label,
+        optional: true,
+        placeholder: l10n.contactsPick,
+        value: widget.value,
+        onTap: widget.onPick,
+      );
+    }
+    return SrTextField(
+      controller: _text,
+      label: label,
+      optional: true,
+      onChanged: widget.onChanged,
+    );
+  }
 }

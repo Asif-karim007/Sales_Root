@@ -1,9 +1,9 @@
 import 'package:salesroot/core/utils/json_fields.dart';
 
 enum LeadStatus {
-  open('Open'),
-  won('Won'),
-  lost('Lost');
+  open('open'),
+  won('won'),
+  lost('lost');
 
   const LeadStatus(this.wire);
 
@@ -23,38 +23,30 @@ class LinkedLead {
     required this.stage,
     required this.status,
     required this.value,
-    this.ownerName,
-    this.updatedOn,
   });
 
-  final int id;
+  final String id;
   final String title;
   final LocalizedName stage;
   final LeadStatus status;
-  final int value;
-  final String? ownerName;
-  final DateTime? updatedOn;
+  final double value;
 
   factory LinkedLead.fromJson(Map<String, dynamic> json) => LinkedLead(
-    id: jsonInt(json['Id']) ?? 0,
-    title: json['Title'] as String? ?? '',
-    stage:
-        jsonObject(json['Stage'], LocalizedName.fromJson) ??
-        const LocalizedName('', ''),
-    status: LeadStatus.fromWire(json['Status'] as String?),
-    value: jsonInt(json['Value']) ?? 0,
-    ownerName: json['OwnerName'] as String?,
-    updatedOn: jsonDate(json['UpdatedOn']),
+    id: jsonId(json['id']) ?? '',
+    title: json['title'] as String? ?? '',
+    stage: LocalizedName.pair(json, 'stageName'),
+    status: LeadStatus.fromWire(json['status'] as String?),
+    value: jsonDouble(json['amount']) ?? 0,
   );
 }
 
 enum ActivityType {
-  call('Call'),
-  whatsApp('WhatsApp'),
-  sms('Sms'),
-  email('Email'),
-  visit('Visit'),
-  note('Note');
+  call('call'),
+  whatsApp('whatsapp'),
+  sms('sms'),
+  email('email'),
+  visit('visit'),
+  note('note');
 
   const ActivityType(this.wire);
 
@@ -66,7 +58,7 @@ enum ActivityType {
   );
 }
 
-/// One touch with a contact: a call, message, visit or note.
+/// One touch with a contact or company: a call, message, visit or note.
 class ContactActivity {
   const ContactActivity({
     required this.id,
@@ -78,27 +70,32 @@ class ContactActivity {
     this.durationMinutes,
   });
 
-  final int id;
+  final String id;
   final ActivityType type;
   final DateTime on;
   final String? note;
   final String? byName;
-  final int? leadId;
+  final String? leadId;
   final int? durationMinutes;
 
-  factory ContactActivity.fromJson(Map<String, dynamic> json) =>
-      ContactActivity(
-        id: jsonInt(json['Id']) ?? 0,
-        type: ActivityType.fromWire(json['Type'] as String?),
-        on: jsonDate(json['On']) ?? DateTime(2000),
-        note: json['Note'] as String?,
-        byName: json['ByName'] as String?,
-        leadId: jsonInt(json['LeadId']),
-        durationMinutes: jsonInt(json['DurationMinutes']),
-      );
+  factory ContactActivity.fromJson(Map<String, dynamic> json) {
+    final seconds = jsonInt(json['durationSec']);
+    final body = json['body'] as String?;
+    return ContactActivity(
+      id: jsonId(json['id']) ?? '',
+      type: ActivityType.fromWire(json['type'] as String?),
+      on: jsonDate(json['occurredAt']) ?? DateTime(2000),
+      note: body == null || body.trim().isEmpty ? null : body,
+      byName: json['byName'] as String?,
+      leadId: jsonId(json['leadId']),
+      durationMinutes: seconds == null || seconds <= 0
+          ? null
+          : (seconds / 60).ceil(),
+    );
+  }
 }
 
-/// An existing record a new one would duplicate, from the 409 check.
+/// An existing record a new one would duplicate.
 class DuplicateMatch {
   const DuplicateMatch({
     required this.id,
@@ -108,23 +105,15 @@ class DuplicateMatch {
     this.isCompany = false,
   });
 
-  final int id;
+  final String id;
   final String name;
   final String? subtitle;
   final String? phone;
   final bool isCompany;
-
-  factory DuplicateMatch.fromJson(Map<String, dynamic> json) => DuplicateMatch(
-    id: jsonInt(json['Id']) ?? 0,
-    name: json['Name'] as String? ?? '',
-    subtitle: json['Subtitle'] as String?,
-    phone: json['Phone'] as String?,
-    isCompany: json['Kind'] == 'Company',
-  );
 }
 
 /// What a save came back with: the saved record, or the records it clashes
-/// with when the server answered 409.
+/// with when the server refused it as a duplicate.
 sealed class SaveOutcome<T> {
   const SaveOutcome();
 }

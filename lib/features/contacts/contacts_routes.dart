@@ -36,7 +36,7 @@ final List<RouteBase> contactsRoutes = [
     redirect: requireAccess(AppModule.contact, ModuleRight.add),
     builder: (context, state) => ContactFormScreen(
       prefill: ContactPrefill(
-        companyId: int.tryParse(_query(state, 'companyId') ?? ''),
+        companyId: _query(state, 'companyId'),
         name: _query(state, 'name'),
         phone: _query(state, 'phone'),
         email: _query(state, 'email'),

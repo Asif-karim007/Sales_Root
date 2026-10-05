@@ -22,7 +22,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class Customer360Screen extends ConsumerWidget {
   const Customer360Screen({super.key, required this.companyId});
 
-  final int companyId;
+  final String companyId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -188,8 +188,7 @@ class _Tiles extends ConsumerWidget {
           : SingleChildScrollView(
               child: SrRowGroup(
                 rows: [
-                  for (final lead in summary.leads)
-                    LinkedLeadRow(lead: lead, showOwner: true),
+                  for (final lead in summary.leads) LinkedLeadRow(lead: lead),
                 ],
               ),
             ),
@@ -200,7 +199,7 @@ class _Tiles extends ConsumerWidget {
     BuildContext context, {
     required String title,
     required List<SalesDocRef> docs,
-    required String Function(int id)? routeOf,
+    required String Function(String id)? routeOf,
   }) => showSrSheet<void>(
     context: context,
     builder: (_) => SrSheet(
@@ -279,13 +278,15 @@ class _Tiles extends ConsumerWidget {
 
 String docStatusLabel(AppLocalizations l10n, String? status) =>
     switch (status) {
-      'Sent' => l10n.contactsStatusSent,
-      'Accepted' => l10n.contactsStatusAccepted,
-      'Processing' => l10n.contactsStatusProcessing,
-      'Delivered' => l10n.contactsStatusDelivered,
-      'Paid' => l10n.contactsStatusPaid,
-      'Partial' => l10n.contactsStatusPartial,
-      'Unpaid' => l10n.contactsStatusUnpaid,
+      'draft' => l10n.contactsStatusDraft,
+      'sent' => l10n.contactsStatusSent,
+      'accepted' => l10n.contactsStatusAccepted,
+      'confirmed' || 'processing' => l10n.contactsStatusProcessing,
+      'delivered' => l10n.contactsStatusDelivered,
+      'paid' => l10n.contactsStatusPaid,
+      'partial' => l10n.contactsStatusPartial,
+      'due' || 'unpaid' || 'overdue' => l10n.contactsStatusUnpaid,
+      'cancelled' => l10n.contactsStatusCancelled,
       _ => status ?? '',
     };
 
@@ -293,7 +294,7 @@ class _DocRow extends StatelessWidget {
   const _DocRow({required this.doc, required this.routeOf});
 
   final SalesDocRef doc;
-  final String Function(int id)? routeOf;
+  final String Function(String id)? routeOf;
 
   @override
   Widget build(BuildContext context) {
