@@ -13,23 +13,16 @@ class PingUploadResult {
 abstract interface class TrackingRepository {
   Future<TrackingSettings> settings();
 
+  /// Owner only.
   Future<TrackingSettings> saveSettings(TrackingSettings settings);
-
-  Future<TrackingConsent> consent();
-
-  Future<TrackingConsent> setConsent({required bool given});
 
   /// This member's tracking schedule.
   Future<TrackerConfig> trackerConfig();
 
-  /// Accepts a batch of buffered pings; bad coordinates are rejected but the
-  /// batch still counts as delivered.
   Future<PingUploadResult> uploadPings(List<TrackerPing> pings);
 
-  /// Logs a pause the member took while tracking.
-  Future<void> logPause(DateTime start, DateTime end);
-
+  /// Where each member the user may see is today.
   Future<List<LiveMember>> live();
 
-  Future<MemberDay> memberDay(int memberId, DateTime date);
+  Future<MemberDay> memberDay(String memberId, DateTime date);
 }

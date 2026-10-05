@@ -6,24 +6,21 @@ import 'package:salesroot/features/field_force/view/widget/ff_format.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// Worked time against the shift, as a ring with "5:18 WORKED" inside.
+/// Worked time against an eight-hour day, as a ring with "5:18 WORKED"
+/// inside.
 class WorkedRing extends StatelessWidget {
-  const WorkedRing({
-    super.key,
-    required this.minutes,
-    required this.shiftMinutes,
-    this.size = 64,
-  });
+  const WorkedRing({super.key, required this.minutes, this.size = 64});
+
+  static const dayMinutes = 8 * 60;
 
   final int minutes;
-  final int shiftMinutes;
   final double size;
 
   @override
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     return SrRing(
-      value: shiftMinutes <= 0 ? 0 : minutes / shiftMinutes,
+      value: (minutes / dayMinutes).clamp(0, 1).toDouble(),
       size: size,
       thickness: size * 0.12,
       child: Column(

@@ -5,26 +5,43 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/field_force/models/attendance.dart';
-import 'package:salesroot/features/field_force/view/widget/duty_hours_sheet.dart';
 import 'package:salesroot/translations/translations.dart';
+
+/// The working week in Bangladesh order, as `DateTime.weekday` values.
+const weekOrder = [6, 7, 1, 2, 3, 4, 5];
+
+String weekdayShort(AppLocalizations l10n, int weekday) => switch (weekday) {
+  DateTime.saturday => l10n.ffDaySat,
+  DateTime.sunday => l10n.ffDaySun,
+  DateTime.monday => l10n.ffDayMon,
+  DateTime.tuesday => l10n.ffDayTue,
+  DateTime.wednesday => l10n.ffDayWed,
+  DateTime.thursday => l10n.ffDayThu,
+  _ => l10n.ffDayFri,
+};
 
 /// Fill and ink for a day's status, as the prototype's calendar draws it.
 (Color, Color) attendanceColors(SrColors c, AttendanceStatus status) =>
     switch (status) {
       AttendanceStatus.present => (c.successTint, c.success),
-      AttendanceStatus.late => (c.warningTint, c.warning),
+      AttendanceStatus.late ||
+      AttendanceStatus.halfDay => (c.warningTint, c.warning),
       AttendanceStatus.absent => (c.dangerTint, c.danger),
       AttendanceStatus.leave => (c.avatarBg, c.ink2),
-      AttendanceStatus.off || AttendanceStatus.upcoming => (c.surface, c.ink3),
+      AttendanceStatus.off ||
+      AttendanceStatus.none ||
+      AttendanceStatus.upcoming => (c.surface, c.ink3),
     };
 
 String attendanceLabel(AppLocalizations l10n, AttendanceStatus status) =>
     switch (status) {
       AttendanceStatus.present => l10n.ffPresent,
       AttendanceStatus.late => l10n.ffLate,
+      AttendanceStatus.halfDay => l10n.ffHalfDay,
       AttendanceStatus.leave => l10n.ffLeave,
       AttendanceStatus.absent => l10n.ffAbsent,
       AttendanceStatus.off => l10n.ffOff,
+      AttendanceStatus.none => l10n.ffNoRecord,
       AttendanceStatus.upcoming => l10n.ffNotYet,
     };
 
@@ -76,15 +93,15 @@ class _DayTile extends StatelessWidget {
         : attendanceColors(c, day.status);
     final icon = switch (day.status) {
       AttendanceStatus.present => Icons.check_rounded,
-      AttendanceStatus.late => Icons.schedule_rounded,
+      AttendanceStatus.late ||
+      AttendanceStatus.halfDay => Icons.schedule_rounded,
       AttendanceStatus.absent => Icons.close_rounded,
       AttendanceStatus.leave => Icons.beach_access_outlined,
-      AttendanceStatus.off || AttendanceStatus.upcoming => null,
+      AttendanceStatus.off ||
+      AttendanceStatus.none ||
+      AttendanceStatus.upcoming => null,
     };
-    final outlined =
-        !today &&
-        (day.status == AttendanceStatus.off ||
-            day.status == AttendanceStatus.upcoming);
+    final outlined = !today && icon == null;
     return Container(
       width: 32,
       height: 32,

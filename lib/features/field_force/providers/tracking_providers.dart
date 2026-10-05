@@ -3,20 +3,21 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
 import 'package:salesroot/core/format/app_date_utils.dart';
 import 'package:salesroot/core/workspace/workspace_providers.dart';
-import 'package:salesroot/features/field_force/data/fake_tracking_repository.dart';
+import 'package:salesroot/features/field_force/data/api_tracking_repository.dart';
+import 'package:salesroot/features/field_force/data/tracker_prefs.dart';
 import 'package:salesroot/features/field_force/data/tracking_repository.dart';
 import 'package:salesroot/features/field_force/models/tracking.dart';
+import 'package:salesroot/features/field_force/providers/attendance_providers.dart';
 
 part 'tracking_providers.g.dart';
 
 @Riverpod(keepAlive: true)
-TrackingRepository trackingRepository(Ref ref) => FakeTrackingRepository(
-  ref.watch(fakeBackendProvider),
-  workspaceName: ref.watch(currentWorkspaceProvider.select((w) => w?.name)),
-);
+TrackingRepository trackingRepository(Ref ref) {
+  ref.watch(currentWorkspaceProvider.select((w) => w?.id));
+  return ApiTrackingRepository(ref.watch(fieldApiProvider));
+}
 
 @riverpod
 class TrackingSettingsNotifier extends _$TrackingSettingsNotifier {
@@ -30,17 +31,17 @@ class TrackingSettingsNotifier extends _$TrackingSettingsNotifier {
         .saveSettings(settings);
     if (!ref.mounted) return;
     state = AsyncData(saved);
+    ref.invalidate(attendanceTodayProvider);
   }
 }
 
-enum LiveFilter { all, checkedIn, onVisit, notTracking }
+enum LiveFilter { all, checkedIn, offDuty }
 
 extension LiveFilterMatch on LiveFilter {
   bool matches(LiveMember member) => switch (this) {
     LiveFilter.all => true,
-    LiveFilter.checkedIn => member.checkedIn,
-    LiveFilter.onVisit => member.status == LiveStatus.onVisit,
-    LiveFilter.notTracking => member.status == LiveStatus.notTracking,
+    LiveFilter.checkedIn => member.status == LiveStatus.live,
+    LiveFilter.offDuty => member.status != LiveStatus.live,
   };
 }
 
@@ -68,16 +69,19 @@ class LiveTeamNotifier extends _$LiveTeamNotifier {
 @riverpod
 class MemberDayDate extends _$MemberDayDate {
   @override
-  DateTime build(int memberId) => AppDateUtils.dateOnly(DateTime.now());
+  DateTime build(String memberId) => AppDateUtils.dateOnly(DateTime.now());
 
   void set(DateTime day) => state = AppDateUtils.dateOnly(day);
 }
 
 @riverpod
-Future<MemberDay> memberDay(Ref ref, int memberId) => ref
+Future<MemberDay> memberDay(Ref ref, String memberId) => ref
     .watch(trackingRepositoryProvider)
     .memberDay(memberId, ref.watch(memberDayDateProvider(memberId)));
 
+/// When this member agreed to live tracking on this phone, if they did.
 @riverpod
-Future<TrackingConsent> trackingConsent(Ref ref) =>
-    ref.watch(trackingRepositoryProvider).consent();
+Future<TrackingConsent> trackingConsent(Ref ref) async => TrackingConsent(
+  at: await TrackerPrefs.consentAt(),
+  workspaceName: ref.watch(currentWorkspaceProvider.select((w) => w?.name)),
+);

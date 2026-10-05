@@ -8,8 +8,10 @@ class TrackerPing {
     required this.longitude,
     required this.locationTimeUtc,
     required this.createdAt,
-    this.locationText,
     this.battery,
+    this.accuracy,
+    this.speed,
+    this.mock = false,
     this.kind = TrackerPingKind.heartbeat,
   });
 
@@ -20,10 +22,18 @@ class TrackerPing {
   final double longitude;
   final DateTime locationTimeUtc;
   final DateTime createdAt;
-  final String? locationText;
 
   /// Whole percent.
   final int? battery;
+
+  /// Metres.
+  final double? accuracy;
+
+  /// Metres per second.
+  final double? speed;
+
+  /// The phone reported the fix as coming from a mock-location app.
+  final bool mock;
 
   /// Stored locally only: the upload contract has no field for it.
   final TrackerPingKind kind;
@@ -35,8 +45,10 @@ class TrackerPing {
     locationTimeUtc:
         DateTime.tryParse('${row['locationTimeUtc']}')?.toUtc() ??
         DateTime.utc(2000),
-    locationText: row['locationText'] as String?,
     battery: row['battery'] as int?,
+    accuracy: (row['accuracy'] as num?)?.toDouble(),
+    speed: (row['speed'] as num?)?.toDouble(),
+    mock: row['mock'] == 1,
     createdAt:
         DateTime.tryParse('${row['createdAt']}')?.toUtc() ?? DateTime.utc(2000),
     kind: TrackerPingKind.values.firstWhere(
@@ -50,19 +62,23 @@ class TrackerPing {
     'lat': latitude,
     'lng': longitude,
     'locationTimeUtc': isoUtc(locationTimeUtc),
-    'locationText': locationText,
     'battery': battery,
+    'accuracy': accuracy,
+    'speed': speed,
+    'mock': mock ? 1 : 0,
     'createdAt': isoUtc(createdAt),
     'kind': kind.name,
   };
 
-  /// The upload shape: PascalCase, ISO-8601 UTC with `Z` and no fraction.
+  /// One `LocationPoint` of `POST locations`, timed in ISO-8601 UTC.
   Map<String, dynamic> toApiJson() => {
-    'Latitude': latitude,
-    'Longitude': longitude,
-    'LocationTime': isoUtc(locationTimeUtc),
-    'Location': ?locationText,
-    'Battery': ?battery,
+    'at': isoUtc(locationTimeUtc),
+    'lat': latitude,
+    'lng': longitude,
+    'accuracy': ?accuracy,
+    'speed': ?speed,
+    'battery': ?battery,
+    'mock': mock,
   };
 
   static String isoUtc(DateTime value) {

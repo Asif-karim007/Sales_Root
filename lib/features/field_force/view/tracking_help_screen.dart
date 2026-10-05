@@ -80,7 +80,6 @@ class _HelpBody extends ConsumerWidget {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final stoppedAt = status.stoppedAt;
-    final pausedAt = status.pausedAt;
     final rows = [
       for (final row in status.checklist)
         if (row.level != PermissionLevel.notApplicable) row,
@@ -88,8 +87,6 @@ class _HelpBody extends ConsumerWidget {
 
     final (message, tone) = stoppedAt != null && !status.isActive
         ? (l10n.ffHelpStopped(fmt.time(stoppedAt)), SrNoteTone.err)
-        : pausedAt != null
-        ? (l10n.ffTrackingPausedSince(fmt.time(pausedAt)), SrNoteTone.gold)
         : status.isActive
         ? (l10n.ffHelpSharing, SrNoteTone.tint)
         : status.state == TrackerState.available

@@ -9,18 +9,16 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
-import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/field_force/models/visit_report.dart';
 import 'package:salesroot/features/field_force/providers/visit_providers.dart';
 import 'package:salesroot/features/field_force/service/csv_export.dart';
-import 'package:salesroot/features/field_force/view/widget/ff_format.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_language_toggle.dart';
 import 'package:salesroot/features/field_force/view/widget/field_force_gate.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #129 visitreport: planned against done per period and member, and the
-/// far check-ins, with a CSV export.
+/// #129 visitreport: visits and productive visits per period and member,
+/// and the far check-ins, with a CSV export.
 class VisitReportScreen extends ConsumerWidget {
   const VisitReportScreen({super.key});
 
@@ -80,30 +78,21 @@ class VisitReportScreen extends ConsumerWidget {
 
   Future<void> _export(BuildContext context, VisitReport report) {
     final l10n = context.l10n;
-    final bangla = context.fmt.isBangla;
     final day = AppDateUtils.toApiDateOnly;
     return shareCsv(
       fileName: 'visit-report-${day(report.from)}-${day(report.to)}.csv',
       subject: l10n.ffReportTitle,
       rows: [
-        [l10n.ffCsvMember, l10n.ffKpiPlanned, l10n.ffKpiDone, l10n.ffKpiFar],
+        [l10n.ffCsvMember, l10n.ffKpiVisits, l10n.ffKpiProductive],
         for (final m in report.byMember)
-          [m.name.of(bangla), '${m.planned}', '${m.done}', '${m.far}'],
+          [m.name, '${m.visits}', '${m.productive}'],
         [],
-        [
-          l10n.ffCsvMember,
-          l10n.ffCsvCompany,
-          l10n.ffCsvDate,
-          l10n.ffCsvDistance,
-          l10n.ffCsvReason,
-        ],
+        [l10n.ffCsvMember, l10n.ffCsvCompany, l10n.ffCsvDate],
         for (final f in report.farCheckIns)
           [
-            f.memberName.of(bangla),
+            f.memberName,
             f.company,
             if (f.date case final date?) day(date) else '',
-            '${f.distance}',
-            f.reason ?? '',
           ],
       ],
     );
@@ -116,28 +105,26 @@ class _Filters extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final bangla = context.fmt.isBangla;
     final filter = ref.watch(visitReportFilterProvider);
     final notifier = ref.read(visitReportFilterProvider.notifier);
     final members = ref.watch(visitReportMembersProvider).value ?? const [];
     final member = members.where((m) => m.id == filter.memberId).firstOrNull;
 
     Future<void> pickMember() async {
-      final everyone = ReportMember(
-        id: 0,
-        name: LocalizedName(l10n.ffEveryone, l10n.ffEveryone),
-      );
+      final everyone = ReportMember(id: '', name: l10n.ffEveryone);
       final picked = await showSrSheet<ReportMember>(
         context: context,
         builder: (_) => SrOptionSheet<ReportMember>(
           title: l10n.ffReportMember,
           options: [everyone, ...members],
-          labelOf: (m) => m.name.of(bangla),
-          isSelected: (m) => m.id == (filter.memberId ?? 0),
+          labelOf: (m) => m.name,
+          isSelected: (m) => m.id == (filter.memberId ?? ''),
           withAvatar: true,
         ),
       );
-      if (picked != null) notifier.setMember(picked.id == 0 ? null : picked.id);
+      if (picked != null) {
+        notifier.setMember(picked.id.isEmpty ? null : picked.id);
+      }
     }
 
     final chips = [
@@ -153,7 +140,7 @@ class _Filters extends ConsumerWidget {
       ),
       if (members.length > 1)
         SrChip(
-          label: l10n.ffMemberChip(member?.name.of(bangla) ?? l10n.ffEveryone),
+          label: l10n.ffMemberChip(member?.name ?? l10n.ffEveryone),
           icon: Icons.expand_more_rounded,
           selected: member != null,
           onTap: pickMember,
@@ -196,22 +183,19 @@ class _ReportBody extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SrStatGrid(
-          columns: 4,
-          spacing: 8,
           tiles: [
             SrKpiTile(
-              label: l10n.ffKpiPlanned,
-              value: fmt.number(report.planned),
+              label: l10n.ffKpiVisits,
+              value: fmt.number(report.visits),
             ),
-            SrKpiTile(label: l10n.ffKpiDone, value: fmt.number(report.done)),
             SrKpiTile(
-              label: l10n.ffKpiMissed,
-              value: fmt.number(report.missed),
+              label: l10n.ffKpiProductive,
+              value: fmt.number(report.productive),
             ),
             SrKpiTile(label: l10n.ffKpiFar, value: fmt.number(report.far)),
           ],
         ),
-        if (report.planned == 0) ...[
+        if (report.visits == 0) ...[
           const SizedBox(height: 12),
           SrCard(
             child: SrEmptyState(
@@ -255,7 +239,7 @@ class _MemberBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final fmt = context.fmt;
-    final name = stat.name.of(fmt.isBangla).split(' ').first;
+    final name = stat.name.split(' ').first;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
@@ -273,7 +257,7 @@ class _MemberBar extends StatelessWidget {
           SizedBox(
             width: 60,
             child: Text(
-              '${fmt.number(stat.done)}/${fmt.number(stat.planned)}',
+              '${fmt.number(stat.productive)}/${fmt.number(stat.visits)}',
               textAlign: TextAlign.end,
               style: AppText.rowTitle(c.ink, size: 12.5),
             ),
@@ -293,25 +277,22 @@ class _FarRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final name = far.memberName.of(fmt.isBangla);
-    final reason = far.reason;
+    final name = far.memberName;
     final date = far.date;
+    final memberId = far.memberId;
     final canTrack = ref.watch(
       moduleAccessProvider(AppModule.liveTracking).select((a) => a.canView),
     );
     return SrListRow(
       leading: SrAvatar(name: name),
       title: l10n.ffFarRowTitle(name, far.company),
-      subtitle: [
-        if (date != null) fmt.weekdayDate(date),
-        reason == null ? l10n.ffNoReason : l10n.ffReasonIs(reason),
-      ].join(' · '),
-      trailing: SrTag(context.ffDistance(far.distance), tone: SrTone.warn),
+      subtitle: date == null ? null : fmt.weekdayDate(date),
+      trailing: SrTag(l10n.ffKpiFar, tone: SrTone.warn),
       chevron: true,
       onTap: () => context.push(
-        canTrack
+        canTrack && memberId != null
             ? Uri(
-                path: Routes.trackingMemberFor(far.memberId),
+                path: Routes.trackingMemberFor(memberId),
                 queryParameters: {
                   if (date != null) 'date': AppDateUtils.toApiDateOnly(date),
                 },

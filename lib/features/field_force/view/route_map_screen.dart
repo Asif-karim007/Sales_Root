@@ -4,10 +4,10 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/format/app_format.dart';
-import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/field_force/models/visit.dart';
+import 'package:salesroot/features/field_force/providers/attendance_providers.dart';
 import 'package:salesroot/features/field_force/providers/visit_providers.dart';
 import 'package:salesroot/features/field_force/service/geo.dart';
 import 'package:salesroot/features/field_force/service/route_plan.dart';
@@ -18,33 +18,30 @@ import 'package:salesroot/features/field_force/view/widget/field_force_gate.dart
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #121 routemap: today's stops on the map, in an order the user can drag,
-/// and navigation through the ones still to do.
+/// #121 routemap: today's stops on the map, and navigation through the
+/// ones still to do.
 class RouteMapScreen extends ConsumerWidget {
   const RouteMapScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final visits = ref.watch(visitsProvider);
-    final items = visits.value?.items ?? const <Visit>[];
-    final plan = RoutePlan.of(items);
+    final plan = ref.watch(todayPlanProvider);
+    final items = plan.value ?? const <PlanStop>[];
+    final route = RoutePlan.of(items);
     final remaining = [
-      for (final visit in items)
-        if (!visit.isDone &&
-            visit.status != VisitStatus.missed &&
-            visit.latitude != null &&
-            visit.longitude != null)
-          visit,
+      for (final stop in items)
+        if (!stop.isDone && stop.latitude != null && stop.longitude != null)
+          stop,
     ];
 
     return SrScaffold(
       appBar: SrAppBar(
         title: l10n.ffRouteTitle,
-        subtitle: visits.hasValue
+        subtitle: plan.hasValue
             ? l10n.ffRouteSubtitle(
                 context.fmt.number(items.length),
-                context.ffKm(plan.km),
+                context.ffKm(route.km),
               )
             : null,
         actions: const [FfLanguageToggle()],
@@ -59,18 +56,16 @@ class RouteMapScreen extends ConsumerWidget {
       ),
       body: FieldForceGate(
         module: AppModule.visit,
-        child: switch (visits) {
-          AsyncValue(:final value?) when value.items.isEmpty => SrEmptyState(
+        child: switch (plan) {
+          AsyncValue(:final value?) when value.isEmpty => SrEmptyState(
             icon: Icons.route_outlined,
             title: l10n.ffVisitsEmptyTitle,
             message: l10n.ffVisitsEmptyBody,
           ),
-          AsyncValue(:final value?) => _RouteBody(
-            plan: RoutePlan.of(value.items),
-          ),
+          AsyncValue(:final value?) => _RouteBody(plan: RoutePlan.of(value)),
           AsyncError(:final error) => SrErrorState(
             error: error,
-            onRetry: () => ref.invalidate(visitsProvider),
+            onRetry: () => ref.invalidate(attendanceTodayProvider),
           ),
           _ => const SrSkeletonList(count: 4),
         },
@@ -78,8 +73,8 @@ class RouteMapScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _navigate(BuildContext context, List<Visit> stops) async {
-    String spot(Visit v) => '${v.latitude},${v.longitude}';
+  Future<void> _navigate(BuildContext context, List<PlanStop> stops) async {
+    String spot(PlanStop s) => '${s.latitude},${s.longitude}';
     final uri = Uri.https('www.google.com', '/maps/dir/', {
       'api': '1',
       'destination': spot(stops.last),
@@ -94,24 +89,16 @@ class RouteMapScreen extends ConsumerWidget {
   }
 }
 
-class _RouteBody extends ConsumerWidget {
+class _RouteBody extends StatelessWidget {
   const _RouteBody({required this.plan});
 
   final RoutePlan plan;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     final stops = plan.stops;
     final fmt = context.fmt;
-
-    Future<void> reorder(int from, int to) async {
-      try {
-        await ref.read(visitsProvider.notifier).move(from, to);
-      } on ApiFailure catch (failure) {
-        if (context.mounted) showSrError(context, failure.message);
-      }
-    }
 
     return ListView(
       physics: const SrScrollPhysics(),
@@ -124,7 +111,7 @@ class _RouteBody extends ConsumerWidget {
               if (stops[i].latitude case final lat?)
                 if (stops[i].longitude case final lng?)
                   FfMapPin(
-                    id: 'visit${stops[i].id}',
+                    id: stops[i].key,
                     latitude: lat,
                     longitude: lng,
                     title: '${fmt.number(i + 1)}. ${stops[i].title}',
@@ -142,23 +129,20 @@ class _RouteBody extends ConsumerWidget {
         const SizedBox(height: 12),
         SrCard(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-          child: ReorderableListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            buildDefaultDragHandles: false,
-            itemCount: stops.length,
-            onReorderItem: reorder,
-            itemBuilder: (context, i) => _StopRow(
-              key: ValueKey(stops[i].id),
-              index: i,
-              visit: stops[i],
-              leg: plan.legs[i],
-              last: i == stops.length - 1,
-            ),
+          child: Column(
+            children: [
+              for (var i = 0; i < stops.length; i++)
+                _StopRow(
+                  index: i,
+                  stop: stops[i],
+                  leg: plan.legs[i],
+                  last: i == stops.length - 1,
+                ),
+            ],
           ),
         ),
         const SizedBox(height: 12),
-        SrNote(message: l10n.ffRouteHint, icon: Icons.drag_indicator_rounded),
+        SrNote(message: l10n.ffRouteMapsHint, icon: Icons.map_outlined),
       ],
     );
   }
@@ -166,15 +150,14 @@ class _RouteBody extends ConsumerWidget {
 
 class _StopRow extends StatelessWidget {
   const _StopRow({
-    super.key,
     required this.index,
-    required this.visit,
+    required this.stop,
     required this.leg,
     required this.last,
   });
 
   final int index;
-  final Visit visit;
+  final PlanStop stop;
   final RouteLeg? leg;
   final bool last;
 
@@ -183,11 +166,11 @@ class _StopRow extends StatelessWidget {
     final c = SrColors.of(context);
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final planned = visit.plannedAt;
+    final time = stop.time;
     final leg = this.leg;
     final meta = [
-      if (planned != null) fmt.time(planned),
-      if (visit.isDone)
+      if (time != null) fmt.time(time),
+      if (stop.isDone)
         l10n.ffRouteDone
       else if (leg != null) ...[
         context.ffKm(leg.km),
@@ -206,7 +189,7 @@ class _StopRow extends StatelessWidget {
           SrAvatar(
             name: fmt.number(index + 1),
             size: 28,
-            tone: index == 0 || visit.isDone
+            tone: index == 0 || stop.isDone
                 ? SrAvatarTone.accent
                 : SrAvatarTone.neutral,
           ),
@@ -217,17 +200,10 @@ class _StopRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(visit.title, style: AppText.rowTitle(c.ink)),
+                  Text(stop.title, style: AppText.rowTitle(c.ink)),
                   Text(meta, style: AppText.meta(c.ink2)),
                 ],
               ),
-            ),
-          ),
-          ReorderableDragStartListener(
-            index: index,
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Icon(Icons.drag_indicator_rounded, color: c.ink3),
             ),
           ),
         ],

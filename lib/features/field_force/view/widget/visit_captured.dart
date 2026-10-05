@@ -1,32 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/field_force/models/visit.dart';
-import 'package:salesroot/features/field_force/providers/visit_providers.dart';
 import 'package:salesroot/features/field_force/view/widget/photo_capture.dart';
-import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// What was recorded on a visit: notes, photos and the samples shown.
-class VisitCaptured extends ConsumerWidget {
-  const VisitCaptured({super.key, required this.visit});
+/// The notes and photos taken on this phone during a visit, sent with the
+/// check-out.
+class VisitCaptured extends StatelessWidget {
+  const VisitCaptured({super.key, required this.draft});
 
-  final Visit visit;
+  final VisitDraft draft;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final c = SrColors.of(context);
-    final l10n = context.l10n;
     final fmt = context.fmt;
-    final samples = visit.sampleProductIds;
-    if (visit.notes.isEmpty && visit.photos.isEmpty && samples.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    final products = ref.watch(visitProductsProvider).value ?? const [];
-    final names = {for (final p in products) p.id: p.name};
+    final photos = draft.photoPaths;
+    if (draft.notes.isEmpty && photos.isEmpty) return const SizedBox.shrink();
 
     return Padding(
       padding: const EdgeInsets.only(top: 16),
@@ -34,7 +27,7 @@ class VisitCaptured extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (final note in visit.notes) ...[
+            for (final note in draft.notes) ...[
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -46,40 +39,21 @@ class VisitCaptured extends ConsumerWidget {
                       style: AppText.body(c.ink, size: 14),
                     ),
                   ),
-                  if (note.time case final time?)
-                    Text(fmt.time(time), style: AppText.meta(c.ink3)),
+                  Text(fmt.time(note.time), style: AppText.meta(c.ink3)),
                 ],
               ),
               const SizedBox(height: 10),
             ],
-            if (visit.photos.isNotEmpty) ...[
+            if (photos.isNotEmpty)
               SizedBox(
                 height: 64,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount: visit.photos.length,
+                  itemCount: photos.length,
                   separatorBuilder: (_, _) => const SizedBox(width: 8),
-                  itemBuilder: (_, i) =>
-                      FfPhotoThumb(path: visit.photos[i].path),
+                  itemBuilder: (_, i) => FfPhotoThumb(path: photos[i]),
                 ),
               ),
-              const SizedBox(height: 10),
-            ],
-            if (samples.isNotEmpty) ...[
-              Text(l10n.ffSamplesShown, style: AppText.fieldLabel(c.ink2)),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  for (final id in samples)
-                    SrTag(
-                      names[id] ?? '#$id',
-                      icon: Icons.inventory_2_outlined,
-                    ),
-                ],
-              ),
-            ],
           ],
         ),
       ),

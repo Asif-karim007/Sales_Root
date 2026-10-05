@@ -3,35 +3,32 @@ import 'package:salesroot/features/field_force/models/visit.dart';
 import 'package:salesroot/features/field_force/models/visit_report.dart';
 
 abstract interface class VisitRepository {
-  /// One member's visits on one day, in route order.
   Future<PageResult<Visit>> list(VisitQuery query);
 
-  Future<Visit> get(int id);
+  Future<Visit> get(String id);
 
-  /// Plans a visit to a lead.
-  Future<Visit> create(VisitInput input);
+  /// Starts a visit at a customer where the phone is.
+  Future<Visit> start(VisitStartInput input);
 
-  /// Saves the route order the user dragged the stops into.
-  Future<void> reorder(List<int> ids);
+  /// Ends [id] with an outcome; [photoPaths] are uploaded first and sent as
+  /// file keys.
+  Future<Visit> end(
+    String id,
+    VisitEndInput input, {
+    List<String> photoPaths = const [],
+  });
 
-  /// 409 when another visit is still open; 400 when a far check-in has no
-  /// reason or photo.
-  Future<Visit> checkIn(int id, VisitCheckInInput input);
-
-  Future<Visit> addNote(int id, String text);
-
-  Future<Visit> addPhoto(int id, String path);
-
-  Future<Visit> setSamples(int id, List<int> productIds);
-
-  Future<Visit> checkOut(int id, VisitEndInput input);
-
-  /// Leads the user can plan a visit to.
+  /// Customers the user can visit.
   Future<PageResult<VisitTarget>> targets(String term, int page);
 
-  Future<VisitTarget> target(int leadId);
+  Future<VisitTarget> target(String companyId);
 
-  Future<List<VisitProduct>> products();
+  /// The lead's customer, with the lead attached; null when the lead has
+  /// no customer.
+  Future<VisitTarget?> leadTarget(String leadId);
+
+  /// The workspace's visit outcomes.
+  Future<List<VisitOutcomeOption>> outcomes();
 
   Future<VisitReport> report(VisitReportQuery query);
 

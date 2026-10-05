@@ -5,16 +5,14 @@ import 'package:go_router/go_router.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/features/field_force/providers/tracker_providers.dart';
-import 'package:salesroot/features/field_force/providers/tracking_providers.dart';
 import 'package:salesroot/features/field_force/service/tracker_machine.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_info_line.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// "live tracking on", "paused", "stopped"… for the duty card.
+/// "live tracking on", "stopped"… for the duty card.
 String trackingLabel(AppLocalizations l10n, TrackerStatus? status) {
   if (status == null) return l10n.ffTrackingLabelOff;
-  if (status.pausedAt != null) return l10n.ffTrackingLabelPaused;
   if (status.stoppedAt != null && !status.isActive) {
     return l10n.ffTrackingLabelStopped;
   }
@@ -68,10 +66,7 @@ class _Body extends ConsumerWidget {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final tracker = ref.read(trackerProvider.notifier);
-    final allowPauses =
-        ref.watch(trackingSettingsProvider).value?.allowPauses ?? false;
     final lastUpload = status.lastUploadAt;
-    final paused = status.pausedAt != null;
 
     void go(String route) {
       Navigator.of(context).pop();
@@ -114,17 +109,7 @@ class _Body extends ConsumerWidget {
             expand: true,
             onPressed: () => go(Routes.trackingHelp),
           ),
-        if (paused)
-          SrButton(
-            label: l10n.ffTrackingResume,
-            icon: Icons.play_arrow_rounded,
-            expand: true,
-            onPressed: () {
-              Navigator.of(context).pop();
-              tracker.resume();
-            },
-          )
-        else if (status.state == TrackerState.ready)
+        if (status.state == TrackerState.ready)
           SrButton(
             label: l10n.ffTrackingStart,
             icon: Icons.play_arrow_rounded,
@@ -132,17 +117,6 @@ class _Body extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).pop();
               tracker.start();
-            },
-          ),
-        if (status.isActive && allowPauses)
-          SrButton(
-            label: l10n.ffTrackingPause,
-            icon: Icons.pause_rounded,
-            variant: SrButtonVariant.secondary,
-            expand: true,
-            onPressed: () {
-              Navigator.of(context).pop();
-              tracker.pause();
             },
           ),
         const SizedBox(height: 8),
@@ -157,9 +131,7 @@ class _Body extends ConsumerWidget {
   }
 
   String _message(AppLocalizations l10n, AppFormat fmt) {
-    final pausedAt = status.pausedAt;
     final stoppedAt = status.stoppedAt;
-    if (pausedAt != null) return l10n.ffTrackingPausedSince(fmt.time(pausedAt));
     if (status.isActive) {
       return status.insideWindow
           ? l10n.ffTrackingOnBody

@@ -12,12 +12,11 @@ import 'package:salesroot/features/field_force/providers/attendance_providers.da
 import 'package:salesroot/features/field_force/providers/tracker_providers.dart';
 import 'package:salesroot/features/field_force/providers/tracking_providers.dart';
 import 'package:salesroot/features/field_force/service/tracker_machine.dart';
-import 'package:salesroot/features/field_force/view/widget/ff_format.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_language_toggle.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #125 consent: the member agrees to live tracking during duty hours, then
+/// #125 consent: the member agrees to live tracking while checked in, then
 /// the phone asks for location "always".
 class TrackingConsentScreen extends ConsumerStatefulWidget {
   const TrackingConsentScreen({super.key});
@@ -105,7 +104,7 @@ class _TrackingConsentScreenState extends ConsumerState<TrackingConsentScreen> {
         AsyncValue(:final value?) => _ConsentBody(
           settings: value,
           workspace: consent?.workspaceName ?? l10n.ffYourTeam,
-          agreedAt: consent?.given ?? false ? consent?.at : null,
+          agreedAt: consent?.at,
         ),
         AsyncError(:final error) => SrErrorState(
           error: error,
@@ -134,16 +133,12 @@ class _ConsentBody extends StatelessWidget {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final agreedAt = this.agreedAt;
-    final interval = settings.updateMinutes == 0
-        ? l10n.ffConsentAdaptive
-        : l10n.ffConsentEvery(fmt.number(settings.updateMinutes));
     final points = [
-      l10n.ffConsentDuty(
-        context.ffWindow(settings.dutyStart, settings.dutyEnd),
+      l10n.ffConsentWhileCheckedIn,
+      l10n.ffConsentWhoSees,
+      l10n.ffConsentEvery(
+        fmt.number(settings.heartbeatMinutes.round().clamp(1, 60)),
       ),
-      l10n.ffConsentWho(fmt.number(settings.retentionDays)),
-      interval,
-      if (settings.allowPauses) l10n.ffConsentPause,
       l10n.ffConsentNeverSold,
     ];
 

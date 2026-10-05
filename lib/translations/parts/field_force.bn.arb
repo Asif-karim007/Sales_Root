@@ -1,14 +1,6 @@
 {
   "@@locale": "bn",
   "ffTrackerNotificationTitle": "SalesRoot আপনার লোকেশন শেয়ার করছে",
-  "ffTrackerNotificationBody": "ডিউটির সময় {window} · খুলতে চাপুন",
-  "@ffTrackerNotificationBody": {
-    "placeholders": {
-      "window": {
-        "type": "String"
-      }
-    }
-  },
   "ffTrackerChannel": "লাইভ লোকেশন শেয়ার",
   "ffMetres": "{metres} মি.",
   "@ffMetres": {
@@ -45,23 +37,6 @@
       }
     }
   },
-  "ffMinutesAgo": "{minutes} মিনিট আগে",
-  "@ffMinutesAgo": {
-    "placeholders": {
-      "minutes": {
-        "type": "String"
-      }
-    }
-  },
-  "ffJustNow": "এইমাত্র",
-  "ffDays": "{count} দিন",
-  "@ffDays": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "ffWorked": "কাজ",
   "ffLoading": "লোড হচ্ছে…",
   "ffRetry": "আবার চেষ্টা",
@@ -87,14 +62,6 @@
     }
   },
   "ffPickDay": "দিন বেছে নিন",
-  "ffWithin": "{distance} ভেতরে",
-  "@ffWithin": {
-    "placeholders": {
-      "distance": {
-        "type": "String"
-      }
-    }
-  },
   "ffAway": "{distance} দূরে",
   "@ffAway": {
     "placeholders": {
@@ -119,10 +86,7 @@
   "ffCsvMember": "সদস্য",
   "ffCsvCompany": "কোম্পানি",
   "ffCsvDate": "তারিখ",
-  "ffCsvDistance": "দূরত্ব (মি.)",
-  "ffCsvReason": "কারণ",
   "ffCsvStatus": "অবস্থা",
-  "ffCsvWorkedMinutes": "কাজ (মিনিট)",
   "ffVisitsTitle": "ভিজিট",
   "ffAttendanceTitle": "হাজিরা",
   "ffNotCheckedIn": "চেক-ইন হয়নি",
@@ -134,17 +98,6 @@
         "type": "String"
       },
       "place": {
-        "type": "String"
-      }
-    }
-  },
-  "ffDutyLine": "ডিউটি {window} · {tracking}",
-  "@ffDutyLine": {
-    "placeholders": {
-      "window": {
-        "type": "String"
-      },
-      "tracking": {
         "type": "String"
       }
     }
@@ -183,30 +136,20 @@
   "ffKpiDistance": "দূরত্ব",
   "ffKpiVisits": "ভিজিট",
   "ffKpiMoving": "চলাফেরা",
-  "ffKpiPlanned": "পরিকল্পিত",
-  "ffKpiMissed": "মিস",
   "ffKpiFar": "দূরে",
   "ffRouteMapButton": "আজকের রুট ম্যাপ",
   "ffVisitList": "ভিজিটের তালিকা",
   "ffVisitNew": "নতুন",
   "ffVisitsEmptyTitle": "আজ কোনো ভিজিট নেই",
-  "ffVisitsEmptyBody": "কোনো লিডে ভিজিটের পরিকল্পনা করুন, বা গ্রাহকের কাছে পৌঁছে এখনই শুরু করুন।",
-  "ffVisitPlanned": "ভিজিটের পরিকল্পনা হয়েছে",
+  "ffVisitsEmptyBody": "গ্রাহকের কাছে পৌঁছে ভিজিট শুরু করুন। আপনার রুট প্ল্যানও এখানে দেখাবে।",
   "ffSlotDone": "হয়েছে",
   "ffSlotInProgress": "চলছে",
   "ffSlotNext": "এখন",
   "ffSlotLater": "পরে",
-  "ffSlotMissed": "মিস",
   "ffNewVisitTitle": "নতুন ভিজিট",
-  "ffNewVisitLead": "লিড",
-  "ffNewVisitPickLead": "লিড বেছে নিন",
-  "ffNewVisitSearchHint": "কোম্পানি বা লিড খুঁজুন",
+  "ffNewVisitSearchHint": "গ্রাহক খুঁজুন",
   "ffNewVisitLeadRequired": "কার কাছে যাচ্ছেন বেছে নিন",
-  "ffNewVisitWhen": "কখন",
-  "ffNewVisitPurpose": "উদ্দেশ্য",
-  "ffNewVisitPurposeHint": "যেমন: স্যাম্পল দেখানো, কালেকশন",
   "ffNewVisitCheckInNow": "এখনই চেক-ইন",
-  "ffNewVisitPlan": "পরের জন্য রাখুন",
   "ffRouteTitle": "রুট",
   "ffRouteSubtitle": "{stops} স্টপ · {km}",
   "@ffRouteSubtitle": {
@@ -220,15 +163,12 @@
     }
   },
   "ffRouteNavigate": "নেভিগেশন শুরু",
-  "ffRouteHint": "টেনে ক্রম বদলান। Google Maps-এ নেভিগেশন খুলবে।",
   "ffRouteDone": "হয়েছে",
   "ffRouteNoMaps": "এই ফোনে Google Maps খোলা গেল না।",
   "ffCheckInTitle": "চেক-ইন",
-  "ffOpenVisit": "ভিজিট খুলুন",
   "ffYouAreHere": "আপনি এখানে",
   "ffGps": "জিপিএস",
   "ffTime": "সময়",
-  "ffPurpose": "উদ্দেশ্য",
   "ffGpsSearching": "খুঁজছে…",
   "ffGpsNoFix": "এখনো পাওয়া যায়নি",
   "ffGpsMatched": "মিলেছে · নির্ভুলতা {accuracy}",
@@ -248,19 +188,8 @@
     }
   },
   "ffLocating": "খুঁজছে…",
-  "ffPlannedAt": "পরিকল্পিত {time}",
-  "@ffPlannedAt": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "ffPhoto": "ছবি",
-  "ffRetakePhoto": "আবার ছবি তুলুন",
-  "ffTakePhoto": "ছবি তুলুন",
   "ffNote": "নোট",
-  "ffEditNote": "নোট বদলান",
   "ffCheckInNote": "চেক-ইনের সাথে আপনার জিপিএস অবস্থান ও সময় রাখা হয়।",
   "ffCheckedInVisit": "{company}-এ চেক-ইন হয়েছে",
   "@ffCheckedInVisit": {
@@ -281,20 +210,9 @@
   "ffPhotoSiteHint": "দোকান, অফিস বা সাইট",
   "ffPhotoCameraDenied": "ক্যামেরার অনুমতি বন্ধ। ছবি তুলতে সেটিংসে অনুমতি দিন।",
   "ffFarTitle": "আপনি জায়গা থেকে দূরে",
-  "ffFarDistance": "পরিকল্পিত জায়গা থেকে {distance} দূরে",
-  "@ffFarDistance": {
-    "placeholders": {
-      "distance": {
-        "type": "String"
-      }
-    }
-  },
-  "ffFarBody": "চেক-ইন হবে, তবে টিম লিড দূরত্বটি দেখবেন। কারণ লিখুন ও একটি ছবি দিন।",
   "ffFarReason": "কারণ",
   "ffFarReasonHint": "যেমন: গ্রাহক তার গুদামে ডেকেছেন",
   "ffFarReasonRequired": "এখান থেকে কেন চেক-ইন করছেন লিখুন",
-  "ffFarPhoto": "আপনি যেখানে আছেন তার ছবি",
-  "ffFarPhotoRequired": "দূর থেকে চেক-ইনে ছবি লাগবে",
   "ffFarConfirm": "তবুও চেক-ইন",
   "ffNoteTitle": "নোট",
   "ffNoteHint": "কী নিয়ে কথা হলো?",
@@ -313,29 +231,11 @@
       }
     }
   },
-  "ffFarFlag": "দূর থেকে চেক-ইন · {distance}",
-  "@ffFarFlag": {
-    "placeholders": {
-      "distance": {
-        "type": "String"
-      }
-    }
-  },
   "ffDuringVisit": "এই ভিজিটে",
-  "ffSamples": "স্যাম্পল",
-  "ffSamplesTitle": "দেখানো স্যাম্পল",
-  "ffSamplesSearch": "পণ্য খুঁজুন",
-  "ffSamplesShown": "দেখানো স্যাম্পল",
   "ffQuotation": "কোটেশন",
   "ffCollection": "কালেকশন",
   "ffExpense": "খরচ",
   "ffOutcome": "ফলাফল",
-  "ffOutcomeInterested": "আগ্রহী",
-  "ffOutcomeOrder": "অর্ডার",
-  "ffOutcomeLater": "পরে আবার",
-  "ffOutcomeNotInterested": "আগ্রহ নেই",
-  "ffOutcomeIgnored": "ফলাফল নেই (Ignored)",
-  "ffOutcomeBlankHint": "ফলাফল না দিলে ভিজিটটি “Ignored” হিসেবে রাখা হবে।",
   "ffWhatHappened": "কী হলো",
   "ffWhatHappenedHint": "যেমন: কোটেশন v2 নিয়ে কথা হলো; সোমবার সিদ্ধান্ত।",
   "ffNextFollowUp": "পরের ফলো-আপ",
@@ -349,36 +249,22 @@
     }
   },
   "ffCheckedOutVisit": "ভিজিট চেক-আউট হয়েছে",
-  "ffCheckedOutIgnored": "চেক-আউট হয়েছে · ফলাফল নেই, “Ignored” হিসেবে রাখা হলো",
-  "ffPlanned": "পরিকল্পিত",
   "ffCheckedInLabel": "চেক-ইন",
   "ffCheckedOutLabel": "চেক-আউট",
   "ffDurationLabel": "সময়কাল",
-  "ffMissedNote": "ভিজিটটি পরিকল্পিত ছিল, কিন্তু কেউ চেক-ইন করেননি।",
   "ffTrackingLabelOff": "লাইভ ট্র্যাকিং বন্ধ",
   "ffTrackingLabelNotSetUp": "লাইভ ট্র্যাকিং চালু হয়নি",
   "ffTrackingLabelAttention": "লাইভ ট্র্যাকিংয়ে সমস্যা",
   "ffTrackingLabelReady": "লাইভ ট্র্যাকিং প্রস্তুত",
   "ffTrackingLabelOn": "লাইভ ট্র্যাকিং চালু",
-  "ffTrackingLabelPaused": "লাইভ ট্র্যাকিং বিরতিতে",
   "ffTrackingLabelStopped": "লাইভ ট্র্যাকিং থেমে গেছে",
   "ffTrackingSheetTitle": "লাইভ ট্র্যাকিং",
   "ffTrackingLastSent": "শেষ পাঠানো",
   "ffTrackingWaiting": "পাঠানোর অপেক্ষায়",
   "ffTrackingSetUp": "চালু করুন",
   "ffTrackingFix": "ঠিক করুন",
-  "ffTrackingResume": "আবার শেয়ার করুন",
   "ffTrackingStart": "শেয়ার শুরু করুন",
-  "ffTrackingPause": "বিরতি দিন",
   "ffTrackingHelp": "ট্র্যাকিং সাহায্য",
-  "ffTrackingPausedSince": "{time} থেকে শেয়ার বিরতিতে। বিরতি লগ হচ্ছে।",
-  "@ffTrackingPausedSince": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
   "ffTrackingOnBody": "ডিউটির সময়ে আপনার লোকেশন টিম লিডের সাথে শেয়ার হচ্ছে।",
   "ffTrackingOutsideWindow": "শেয়ার চালু, তবে ডিউটির বাইরে কিছু রাখা হয় না।",
   "ffTrackingStoppedAt": "লোকেশন শেয়ার {time} থেকে বন্ধ।",
@@ -403,23 +289,6 @@
       }
     }
   },
-  "ffConsentDuty": "শুধু ডিউটির সময়ে ({window}), চেক-ইন থাকলে",
-  "@ffConsentDuty": {
-    "placeholders": {
-      "window": {
-        "type": "String"
-      }
-    }
-  },
-  "ffConsentWho": "টিম লিড ও মালিক দেখতে পারেন; {days} দিন পর মুছে যায়",
-  "@ffConsentWho": {
-    "placeholders": {
-      "days": {
-        "type": "String"
-      }
-    }
-  },
-  "ffConsentAdaptive": "ব্যাটারি খরচ কম রাখতে ২–৫ মিনিট পরপর",
   "ffConsentEvery": "প্রতি {minutes} মিনিট পরপর",
   "@ffConsentEvery": {
     "placeholders": {
@@ -428,7 +297,6 @@
       }
     }
   },
-  "ffConsentPause": "যেকোনো সময় থামাতে পারবেন; থামানো লগ হয়",
   "ffConsentNeverSold": "কখনো বিক্রি বা বাইরে শেয়ার হয় না",
   "ffConsentNextStep": "পরের ধাপে ফোন “সবসময় লোকেশন” অনুমতি চাইবে।",
   "ffConsentAgreedOn": "আপনি {date} তারিখে সম্মতি দিয়েছেন। ট্র্যাকিং সাহায্য থেকে শেয়ার বন্ধ করতে পারবেন।",
@@ -497,13 +365,8 @@
   "ffLiveTitle": "লাইভ ম্যাপ",
   "ffLiveAll": "সব",
   "ffLiveCheckedIn": "চেক-ইন",
-  "ffLiveOnVisit": "ভিজিটে",
-  "ffLiveNotTracking": "ট্র্যাকিং নেই",
   "ffLiveOffDuty": "ডিউটিতে নেই",
   "ffLiveLive": "লাইভ",
-  "ffLiveStatusOnVisit": "ভিজিটে",
-  "ffLiveStatusMoving": "চলছেন",
-  "ffLiveStatusIdle": "থেমে আছেন",
   "ffLiveCheckedOut": "চেক-আউট করেছেন",
   "ffLastSeen": "শেষ দেখা {time}",
   "@ffLastSeen": {
@@ -548,7 +411,7 @@
       }
     }
   },
-  "ffEventCheckIn": "চেক-ইন · অফিস",
+  "ffEventCheckIn": "চেক-ইন · {place}",
   "ffEventVisit": "{company} · {duration}",
   "@ffEventVisit": {
     "placeholders": {
@@ -568,16 +431,6 @@
       }
     }
   },
-  "ffEventPause": "ট্র্যাকিং বিরতি · {duration}",
-  "@ffEventPause": {
-    "placeholders": {
-      "duration": {
-        "type": "String"
-      }
-    }
-  },
-  "ffEventPauseDetail": "সদস্য থামিয়েছেন · লগ হয়েছে",
-  "ffEventBreak": "বিরতি",
   "ffEventCheckOut": "চেক-আউট",
   "ffReportTitle": "ভিজিট রিপোর্ট",
   "ffReportMember": "সদস্য",
@@ -602,37 +455,11 @@
       }
     }
   },
-  "ffNoReason": "কারণ নেই",
-  "ffReasonIs": "কারণ: {reason}",
-  "@ffReasonIs": {
-    "placeholders": {
-      "reason": {
-        "type": "String"
-      }
-    }
-  },
   "ffReportEmptyTitle": "এ সময়ে কোনো ভিজিট নেই",
-  "ffReportEmptyBody": "দিন শেষ হলে হওয়া ও মিস হওয়া ভিজিট এখানে দেখা যাবে।",
+  "ffReportEmptyBody": "চেক-আউট হওয়া ভিজিট এখানে দেখাবে।",
   "ffSettingsTitle": "ট্র্যাকিং সেটিংস",
-  "ffDutyHours": "ডিউটির সময়",
-  "ffDutyHoursValue": "{window} · {days}",
-  "@ffDutyHoursValue": {
-    "placeholders": {
-      "window": {
-        "type": "String"
-      },
-      "days": {
-        "type": "String"
-      }
-    }
-  },
-  "ffDutyStart": "শুরু",
-  "ffDutyEnd": "শেষ",
-  "ffDutyEndAfterStart": "শুরুর পরে হতে হবে",
-  "ffDutyDays": "ডিউটির দিন",
   "ffRadius": "চেক-ইন দূরত্বের সীমা",
   "ffUpdateInterval": "লোকেশন আপডেট",
-  "ffUpdateAdaptive": "প্রতি ২–৫ মিনিট (স্বয়ংক্রিয়)",
   "ffUpdateEvery": "প্রতি {minutes} মিনিট",
   "@ffUpdateEvery": {
     "placeholders": {
@@ -641,30 +468,8 @@
       }
     }
   },
-  "ffRetention": "লোকেশন রাখা হবে",
-  "ffLiveTracking": "লাইভ ট্র্যাকিং",
-  "ffLiveTrackingHint": "সদস্যের সম্মতি লাগবে",
-  "ffOffOutsideDuty": "ডিউটির বাইরে বন্ধ",
-  "ffAllowPauses": "বিরতি দিতে দিন",
-  "ffAllowPausesHint": "বিরতি লগ হবে",
-  "ffFlagMock": "ভুয়া লোকেশন চিহ্নিত করুন",
-  "ffWhoCanSee": "কে দেখতে পারে",
-  "ffSeeTeamLead": "টিম লিড: নিজের সদস্য",
-  "ffSeeManager": "ম্যানেজার: বিভাগ",
-  "ffSeeOwner": "মালিক: সবাই",
   "ffSettingsNotify": "এই সেটিংস বদলালে সদস্যরা নোটিফিকেশন পাবেন।",
   "ffSettingsSaved": "ট্র্যাকিং সেটিংস সেভ হয়েছে",
-  "ffAttendanceSubtitle": "{day} · ডিউটি {shift}",
-  "@ffAttendanceSubtitle": {
-    "placeholders": {
-      "day": {
-        "type": "String"
-      },
-      "shift": {
-        "type": "String"
-      }
-    }
-  },
   "ffMonthCalendar": "মাসের ক্যালেন্ডার",
   "ffPresent": "উপস্থিত",
   "ffLate": "দেরি",
@@ -673,40 +478,10 @@
   "ffOff": "বন্ধ",
   "ffNotYet": "এখনো আসেননি",
   "ffTodayEmpty": "আজ এখনো কিছু নেই। দিন শুরু করতে চেক-ইন করুন।",
-  "ffBreak": "বিরতি",
-  "ffEndBreak": "বিরতি শেষ",
-  "ffOnBreak": "বিরতিতে",
   "ffWorkedToday": "আজ কাজ {duration}",
   "@ffWorkedToday": {
     "placeholders": {
       "duration": {
-        "type": "String"
-      }
-    }
-  },
-  "ffShiftStarts": "ডিউটি শুরু {time}",
-  "@ffShiftStarts": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "ffShiftEndsIn": "ডিউটি শেষ {time} · {left} বাকি",
-  "@ffShiftEndsIn": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      },
-      "left": {
-        "type": "String"
-      }
-    }
-  },
-  "ffShiftOver": "ডিউটি শেষ হয়েছে {time}",
-  "@ffShiftOver": {
-    "placeholders": {
-      "time": {
         "type": "String"
       }
     }
@@ -725,38 +500,7 @@
       }
     }
   },
-  "ffAskCorrection": "সংশোধন চাইতে টিম লিডকে বলুন",
-  "ffCorrectionPending": "সংশোধন চাওয়া হয়েছে · টিম লিডের অপেক্ষায়",
-  "ffCorrectionWasRejected": "সংশোধন অনুমোদন হয়নি",
-  "ffCorrectionWasApproved": "সংশোধন অনুমোদিত",
-  "ffCorrectionTitle": "সংশোধন চান",
-  "ffCorrectionReason": "কী হয়েছিল?",
-  "ffCorrectionReasonHint": "যেমন: ফোন বন্ধ ছিল, ৯:৩০ থেকে সাভারের সাইটে ছিলাম",
-  "ffCorrectionReasonRequired": "কী হয়েছিল টিম লিডকে জানান",
-  "ffCorrectionSend": "টিম লিডকে পাঠান",
-  "ffCorrectionSent": "সংশোধনের অনুরোধ টিম লিডের কাছে গেছে",
-  "ffCorrectionReviewTitle": "{name}-এর সংশোধন",
-  "@ffCorrectionReviewTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "ffCorrectionReviewBody": "অনুমোদন দিলে দিনটি উপস্থিত ধরা হবে। দুই ক্ষেত্রেই সদস্য জানতে পারবেন।",
-  "ffCorrectionApprove": "অনুমোদন",
-  "ffCorrectionReject": "বাতিল",
-  "ffCorrectionApproved": "সংশোধন অনুমোদিত",
-  "ffCorrectionRejected": "সংশোধন বাতিল হয়েছে",
   "ffTeamTitle": "টিমের হাজিরা",
-  "ffCorrectionsChip": "সংশোধন বাকি {count}",
-  "@ffCorrectionsChip": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "ffDownloadMonthly": "মাসিক রিপোর্ট ডাউনলোড",
   "ffTeamEmptyTitle": "দেখানোর মতো কেউ নেই",
   "ffTeamEmptyBody": "এই তালিকায় কোনো সদস্য নেই।",
@@ -774,7 +518,6 @@
       }
     }
   },
-  "ffTeamAskedCorrection": "চেক-ইন হয়নি · সংশোধন চেয়েছেন",
   "ffTeamIn": "চেক-ইন {time} · {place}",
   "@ffTeamIn": {
     "placeholders": {
@@ -786,19 +529,51 @@
       }
     }
   },
-  "ffTeamInLate": "চেক-ইন {time} · {minutes} মিনিট দেরি",
-  "@ffTeamInLate": {
+  "ffTeamOnLeave": "ছুটি · অনুমোদিত",
+  "ffTeamNotYet": "এখনো চেক-ইন হয়নি",
+  "ffTeamNoCheckIn": "চেক-ইন হয়নি",
+  "ffTrackerNotificationWhileIn": "চেক-ইন থাকা অবস্থায় · খুলতে ট্যাপ করুন",
+  "ffOutsideOffice": "অফিসের বাইরে",
+  "ffDutyTrackingLine": "আজ · {tracking}",
+  "@ffDutyTrackingLine": {
     "placeholders": {
-      "time": {
-        "type": "String"
-      },
-      "minutes": {
+      "tracking": {
         "type": "String"
       }
     }
   },
-  "ffTeamOnLeave": "ছুটি · অনুমোদিত",
-  "ffTeamNotYet": "এখনো চেক-ইন হয়নি",
-  "ffTeamNoCheckIn": "চেক-ইন হয়নি",
-  "ffTeamCorrect": "সংশোধন"
+  "ffNewVisitCustomer": "গ্রাহক",
+  "ffNewVisitPickCustomer": "গ্রাহক বেছে নিন",
+  "ffFarVisitNote": "আপনি চেক-ইন সীমার বাইরে। ভিজিট শুরু হবে, তবে টিম লিড এটি চিহ্নিত দেখবেন।",
+  "ffFarReasonBody": "আপনার চেক-ইন অফিসের বাইরে। কারণ লিখুন; টিম লিড দেখতে পাবেন।",
+  "ffOutcomeRequired": "ভিজিটের ফলাফল বেছে নিন",
+  "ffFarFlagged": "গ্রাহকের জায়গা থেকে দূরে শুরু · চিহ্নিত",
+  "ffVisitBy": "করেছেন",
+  "ffPhotos": "ছবি",
+  "ffHalfDay": "অর্ধদিবস",
+  "ffNoRecord": "রেকর্ড নেই",
+  "ffCsvDistanceKm": "দূরত্ব (কিমি)",
+  "ffKpiProductive": "ফলপ্রসূ",
+  "ffRouteMapsHint": "নেভিগেশন গুগল ম্যাপসে খুলবে।",
+  "ffVisitCount": "{count}টি ভিজিট",
+  "@ffVisitCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "ffMockFlag": "নকল লোকেশন",
+  "ffUpdateOff": "বন্ধ",
+  "ffSelfieOnCheckIn": "চেক-ইনে সেলফি",
+  "ffSelfieOnCheckInHint": "দিনের চেক-ইনে সদস্যরা সেলফি তুলবেন",
+  "ffConsentWhileCheckedIn": "শুধু দিনের চেক-ইন থাকা অবস্থায়",
+  "ffConsentWhoSees": "আপনার টিম লিড ও মালিক দেখতে পাবেন",
+  "@ffEventCheckIn": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  }
 }

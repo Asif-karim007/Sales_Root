@@ -55,7 +55,7 @@ final class TrackingRepositoryProvider
 }
 
 String _$trackingRepositoryHash() =>
-    r'af3b09db743a99dae250896a6edefc0b0f0d5e50';
+    r'd7729ae7cbef782ad63bea62b1eac3e7269a5288';
 
 @ProviderFor(TrackingSettingsNotifier)
 final trackingSettingsProvider = TrackingSettingsNotifierProvider._();
@@ -82,7 +82,7 @@ final class TrackingSettingsNotifierProvider
 }
 
 String _$trackingSettingsNotifierHash() =>
-    r'bb70e6443014bcdbe471342e7fdbef2e13598619';
+    r'8a8023ce8903f508d4bfee175be0908f3853b47a';
 
 abstract class _$TrackingSettingsNotifier
     extends $AsyncNotifier<TrackingSettings> {
@@ -215,7 +215,7 @@ final class MemberDayDateProvider
     extends $NotifierProvider<MemberDayDate, DateTime> {
   MemberDayDateProvider._({
     required MemberDayDateFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'memberDayDateProvider',
@@ -257,11 +257,17 @@ final class MemberDayDateProvider
   }
 }
 
-String _$memberDayDateHash() => r'3a6337c6d16768611ed28e1b1c6434bc4f5e914e';
+String _$memberDayDateHash() => r'16664cb2a68740fd187c531a767fe7f4fbf6f1cc';
 
 final class MemberDayDateFamily extends $Family
     with
-        $ClassFamilyOverride<MemberDayDate, DateTime, DateTime, DateTime, int> {
+        $ClassFamilyOverride<
+          MemberDayDate,
+          DateTime,
+          DateTime,
+          DateTime,
+          String
+        > {
   MemberDayDateFamily._()
     : super(
         retry: null,
@@ -271,7 +277,7 @@ final class MemberDayDateFamily extends $Family
         isAutoDispose: true,
       );
 
-  MemberDayDateProvider call(int memberId) =>
+  MemberDayDateProvider call(String memberId) =>
       MemberDayDateProvider._(argument: memberId, from: this);
 
   @override
@@ -279,10 +285,10 @@ final class MemberDayDateFamily extends $Family
 }
 
 abstract class _$MemberDayDate extends $Notifier<DateTime> {
-  late final _$args = ref.$arg as int;
-  int get memberId => _$args;
+  late final _$args = ref.$arg as String;
+  String get memberId => _$args;
 
-  DateTime build(int memberId);
+  DateTime build(String memberId);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
@@ -312,7 +318,7 @@ final class MemberDayProvider
     with $FutureModifier<MemberDay>, $FutureProvider<MemberDay> {
   MemberDayProvider._({
     required MemberDayFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'memberDayProvider',
@@ -338,7 +344,7 @@ final class MemberDayProvider
 
   @override
   FutureOr<MemberDay> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return memberDay(ref, argument);
   }
 
@@ -353,10 +359,10 @@ final class MemberDayProvider
   }
 }
 
-String _$memberDayHash() => r'47515273b2cb448867941af9f0de7c8f4ca53d5c';
+String _$memberDayHash() => r'a0932be5b3c4e1b011afe31e4d3320fed3ab0b6c';
 
 final class MemberDayFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<MemberDay>, int> {
+    with $FunctionalFamilyOverride<FutureOr<MemberDay>, String> {
   MemberDayFamily._()
     : super(
         retry: null,
@@ -366,15 +372,19 @@ final class MemberDayFamily extends $Family
         isAutoDispose: true,
       );
 
-  MemberDayProvider call(int memberId) =>
+  MemberDayProvider call(String memberId) =>
       MemberDayProvider._(argument: memberId, from: this);
 
   @override
   String toString() => r'memberDayProvider';
 }
 
+/// When this member agreed to live tracking on this phone, if they did.
+
 @ProviderFor(trackingConsent)
 final trackingConsentProvider = TrackingConsentProvider._();
+
+/// When this member agreed to live tracking on this phone, if they did.
 
 final class TrackingConsentProvider
     extends
@@ -384,6 +394,7 @@ final class TrackingConsentProvider
           FutureOr<TrackingConsent>
         >
     with $FutureModifier<TrackingConsent>, $FutureProvider<TrackingConsent> {
+  /// When this member agreed to live tracking on this phone, if they did.
   TrackingConsentProvider._()
     : super(
         from: null,
@@ -410,4 +421,4 @@ final class TrackingConsentProvider
   }
 }
 
-String _$trackingConsentHash() => r'8ac728bc53046d5baac94d8c3e204c45fc6e370c';
+String _$trackingConsentHash() => r'2947e87589411f01233e0c4bbad518bc317919a8';

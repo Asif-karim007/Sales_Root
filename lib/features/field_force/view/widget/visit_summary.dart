@@ -1,59 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/field_force/models/visit.dart';
+import 'package:salesroot/features/field_force/providers/visit_providers.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_format.dart';
 import 'package:salesroot/features/field_force/view/widget/ff_info_line.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// The label for a visit outcome.
-String outcomeLabel(AppLocalizations l10n, VisitOutcome outcome) =>
-    switch (outcome) {
-      VisitOutcome.interested => l10n.ffOutcomeInterested,
-      VisitOutcome.order => l10n.ffOutcomeOrder,
-      VisitOutcome.comeBackLater => l10n.ffOutcomeLater,
-      VisitOutcome.notInterested => l10n.ffOutcomeNotInterested,
-      VisitOutcome.ignored => l10n.ffOutcomeIgnored,
-    };
-
-/// A planned, missed or finished visit at a glance.
-class VisitSummary extends StatelessWidget {
+/// A finished visit at a glance.
+class VisitSummary extends ConsumerWidget {
   const VisitSummary({super.key, required this.visit});
 
   final Visit visit;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final planned = visit.plannedAt;
-    final checkedIn = visit.start?.time;
-    final checkedOut = visit.end?.time;
-    final outcome = visit.outcome;
+    final checkedIn = visit.startedAt;
+    final checkedOut = visit.endedAt;
     final note = visit.note;
-    final distance = visit.checkInDistance;
+    final outcome = visit.outcome;
+    final choices = ref.watch(visitOutcomesProvider).value ?? const [];
+    final outcomeName = choices
+        .where((choice) => choice.key == outcome)
+        .firstOrNull
+        ?.name
+        .of(fmt.isBangla);
     final lines = <(String, String, Color?)>[
-      if (planned != null) (l10n.ffPlanned, fmt.dayTime(planned), null),
-      if (visit.purpose case final purpose?) (l10n.ffPurpose, purpose, null),
+      if (visit.memberName case final member?) (l10n.ffVisitBy, member, null),
       if (checkedIn != null)
         (
           l10n.ffCheckedInLabel,
-          [
-            fmt.time(checkedIn),
-            if (distance != null) l10n.ffAway(context.ffDistance(distance)),
-          ].join(' · '),
-          visit.isFarCheckIn ? c.warning : null,
+          fmt.time(checkedIn),
+          visit.locationMismatch ? c.warning : null,
         ),
-      if (visit.farReason case final reason?) (l10n.ffFarReason, reason, null),
       if (checkedOut != null)
         (l10n.ffCheckedOutLabel, fmt.time(checkedOut), null),
       if (visit.durationMinutes case final minutes?)
         (l10n.ffDurationLabel, context.ffDuration(minutes), null),
-      if (outcome != null) (l10n.ffOutcome, outcomeLabel(l10n, outcome), null),
+      if (outcome != null) (l10n.ffOutcome, outcomeName ?? outcome, null),
+      if (visit.photos.isNotEmpty)
+        (l10n.ffPhotos, fmt.number(visit.photos.length), null),
     ];
 
     return Column(
@@ -73,13 +66,17 @@ class VisitSummary extends StatelessWidget {
             ],
           ),
         ),
+        if (visit.locationMismatch) ...[
+          const SizedBox(height: 12),
+          SrNote(
+            message: l10n.ffFarFlagged,
+            tone: SrNoteTone.gold,
+            icon: Icons.wrong_location_outlined,
+          ),
+        ],
         if (note != null && note.isNotEmpty) ...[
           const SizedBox(height: 12),
           SrCard(child: Text(note, style: AppText.body(c.ink, size: 14))),
-        ],
-        if (visit.status == VisitStatus.missed) ...[
-          const SizedBox(height: 12),
-          SrNote(message: l10n.ffMissedNote, tone: SrNoteTone.err),
         ],
       ],
     );

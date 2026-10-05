@@ -1,0 +1,12 @@
+{
+    "day": "2026-10-05",
+    "visits": [],
+    "route": {
+        "stops": []
+    },
+    "settings": {
+        "geofenceM": 200,
+        "trackIntervalSec": 600,
+        "selfieOnCheckIn": false
+    }
+}

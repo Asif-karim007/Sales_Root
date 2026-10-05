@@ -21,7 +21,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class MemberDayScreen extends ConsumerStatefulWidget {
   const MemberDayScreen({super.key, required this.memberId, this.date});
 
-  final int memberId;
+  final String memberId;
 
   /// Opens on this day instead of today, as `?date=2026-10-01` does.
   final DateTime? date;
@@ -31,7 +31,7 @@ class MemberDayScreen extends ConsumerStatefulWidget {
 }
 
 class _MemberDayScreenState extends ConsumerState<MemberDayScreen> {
-  int get memberId => widget.memberId;
+  String get memberId => widget.memberId;
 
   @override
   void initState() {
@@ -59,7 +59,10 @@ class _MemberDayScreenState extends ConsumerState<MemberDayScreen> {
 
     return SrScaffold(
       appBar: SrAppBar(
-        title: day.value?.name.of(fmt.isBangla) ?? l10n.ffMemberDayTitle,
+        title: switch (day.value?.name) {
+          final name? when name.isNotEmpty => name,
+          _ => l10n.ffMemberDayTitle,
+        },
         subtitle: dayLabel,
         actions: [
           const FfLanguageToggle(),

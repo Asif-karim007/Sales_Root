@@ -38,6 +38,15 @@ Future<String?> takeVisitPhoto(BuildContext context) async {
     ),
   );
   if (camera == null || !context.mounted) return null;
+  return _shoot(context, camera);
+}
+
+/// Opens the front camera for the check-in selfie and returns the path.
+Future<String?> takeSelfie(BuildContext context) =>
+    _shoot(context, CameraDevice.front);
+
+Future<String?> _shoot(BuildContext context, CameraDevice camera) async {
+  final denied = context.l10n.ffPhotoCameraDenied;
   try {
     final file = await ImagePicker().pickImage(
       source: ImageSource.camera,
@@ -47,7 +56,7 @@ Future<String?> takeVisitPhoto(BuildContext context) async {
     );
     return file?.path;
   } on PlatformException {
-    if (context.mounted) showSrError(context, l10n.ffPhotoCameraDenied);
+    if (context.mounted) showSrError(context, denied);
     return null;
   }
 }

@@ -49,70 +49,105 @@ final class VisitRepositoryProvider
   }
 }
 
-String _$visitRepositoryHash() => r'74b5181f508f11ff32a6bd8b00014c2f74283472';
+String _$visitRepositoryHash() => r'364aea5af4061702abee6fab2ce5cd4fba7e1c10';
 
-/// Today's visits for the signed-in user, in route order.
+/// Today's visits, then the route stops still to visit.
 
-@ProviderFor(VisitsNotifier)
-final visitsProvider = VisitsNotifierProvider._();
+@ProviderFor(todayPlan)
+final todayPlanProvider = TodayPlanProvider._();
 
-/// Today's visits for the signed-in user, in route order.
-final class VisitsNotifierProvider
-    extends $AsyncNotifierProvider<VisitsNotifier, Paged<Visit>> {
-  /// Today's visits for the signed-in user, in route order.
-  VisitsNotifierProvider._()
+/// Today's visits, then the route stops still to visit.
+
+final class TodayPlanProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<PlanStop>>,
+          List<PlanStop>,
+          FutureOr<List<PlanStop>>
+        >
+    with $FutureModifier<List<PlanStop>>, $FutureProvider<List<PlanStop>> {
+  /// Today's visits, then the route stops still to visit.
+  TodayPlanProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'visitsProvider',
+        name: r'todayPlanProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$visitsNotifierHash();
+  String debugGetCreateSourceHash() => _$todayPlanHash();
 
   @$internal
   @override
-  VisitsNotifier create() => VisitsNotifier();
-}
+  $FutureProviderElement<List<PlanStop>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
-String _$visitsNotifierHash() => r'590e50a1f7a5a10422f22850f349984d7c696804';
-
-/// Today's visits for the signed-in user, in route order.
-
-abstract class _$VisitsNotifier extends $AsyncNotifier<Paged<Visit>> {
-  FutureOr<Paged<Visit>> build();
-  @$mustCallSuper
   @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<Paged<Visit>>, Paged<Visit>>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<AsyncValue<Paged<Visit>>, Paged<Visit>>,
-              AsyncValue<Paged<Visit>>,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
+  FutureOr<List<PlanStop>> create(Ref ref) {
+    return todayPlan(ref);
   }
 }
 
-/// One visit, with the actions taken during it.
+String _$todayPlanHash() => r'9894c1af7efd5fc5d376dd0d6ebef566b8575934';
+
+@ProviderFor(visitOutcomes)
+final visitOutcomesProvider = VisitOutcomesProvider._();
+
+final class VisitOutcomesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<VisitOutcomeOption>>,
+          List<VisitOutcomeOption>,
+          FutureOr<List<VisitOutcomeOption>>
+        >
+    with
+        $FutureModifier<List<VisitOutcomeOption>>,
+        $FutureProvider<List<VisitOutcomeOption>> {
+  VisitOutcomesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'visitOutcomesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$visitOutcomesHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<VisitOutcomeOption>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<VisitOutcomeOption>> create(Ref ref) {
+    return visitOutcomes(ref);
+  }
+}
+
+String _$visitOutcomesHash() => r'0d0f7ed852f684c880de49f6eea9a68b090ba583';
+
+/// One visit, with the notes and photos taken on this phone during it.
 
 @ProviderFor(VisitDetailNotifier)
 final visitDetailProvider = VisitDetailNotifierFamily._();
 
-/// One visit, with the actions taken during it.
+/// One visit, with the notes and photos taken on this phone during it.
 final class VisitDetailNotifierProvider
-    extends $AsyncNotifierProvider<VisitDetailNotifier, Visit> {
-  /// One visit, with the actions taken during it.
+    extends $AsyncNotifierProvider<VisitDetailNotifier, VisitDraft> {
+  /// One visit, with the notes and photos taken on this phone during it.
   VisitDetailNotifierProvider._({
     required VisitDetailNotifierFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'visitDetailProvider',
@@ -147,18 +182,18 @@ final class VisitDetailNotifierProvider
 }
 
 String _$visitDetailNotifierHash() =>
-    r'2517c7901585259dc31ffad69371c09501391b9e';
+    r'd7d2d308389e1ad9494e79e12cf19ea28837456f';
 
-/// One visit, with the actions taken during it.
+/// One visit, with the notes and photos taken on this phone during it.
 
 final class VisitDetailNotifierFamily extends $Family
     with
         $ClassFamilyOverride<
           VisitDetailNotifier,
-          AsyncValue<Visit>,
-          Visit,
-          FutureOr<Visit>,
-          int
+          AsyncValue<VisitDraft>,
+          VisitDraft,
+          FutureOr<VisitDraft>,
+          String
         > {
   VisitDetailNotifierFamily._()
     : super(
@@ -169,31 +204,31 @@ final class VisitDetailNotifierFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// One visit, with the actions taken during it.
+  /// One visit, with the notes and photos taken on this phone during it.
 
-  VisitDetailNotifierProvider call(int id) =>
+  VisitDetailNotifierProvider call(String id) =>
       VisitDetailNotifierProvider._(argument: id, from: this);
 
   @override
   String toString() => r'visitDetailProvider';
 }
 
-/// One visit, with the actions taken during it.
+/// One visit, with the notes and photos taken on this phone during it.
 
-abstract class _$VisitDetailNotifier extends $AsyncNotifier<Visit> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+abstract class _$VisitDetailNotifier extends $AsyncNotifier<VisitDraft> {
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  FutureOr<Visit> build(int id);
+  FutureOr<VisitDraft> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<Visit>, Visit>;
+    final ref = this.ref as $Ref<AsyncValue<VisitDraft>, VisitDraft>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<Visit>, Visit>,
-              AsyncValue<Visit>,
+              AnyNotifier<AsyncValue<VisitDraft>, VisitDraft>,
+              AsyncValue<VisitDraft>,
               Object?,
               Object?
             >;
@@ -212,7 +247,7 @@ final class CheckInNotifierProvider
   /// The check-in screen: where the phone is against where the customer is.
   CheckInNotifierProvider._({
     required CheckInNotifierFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'checkInProvider',
@@ -246,7 +281,7 @@ final class CheckInNotifierProvider
   }
 }
 
-String _$checkInNotifierHash() => r'4968898c94c38ccb288fcd072b161f39dbcb5b05';
+String _$checkInNotifierHash() => r'4e9183e66473954b00e3038180c998b7b6980e60';
 
 /// The check-in screen: where the phone is against where the customer is.
 
@@ -257,7 +292,7 @@ final class CheckInNotifierFamily extends $Family
           AsyncValue<CheckInState>,
           CheckInState,
           FutureOr<CheckInState>,
-          int
+          String
         > {
   CheckInNotifierFamily._()
     : super(
@@ -270,8 +305,8 @@ final class CheckInNotifierFamily extends $Family
 
   /// The check-in screen: where the phone is against where the customer is.
 
-  CheckInNotifierProvider call(int visitId) =>
-      CheckInNotifierProvider._(argument: visitId, from: this);
+  CheckInNotifierProvider call(String companyId) =>
+      CheckInNotifierProvider._(argument: companyId, from: this);
 
   @override
   String toString() => r'checkInProvider';
@@ -280,10 +315,10 @@ final class CheckInNotifierFamily extends $Family
 /// The check-in screen: where the phone is against where the customer is.
 
 abstract class _$CheckInNotifier extends $AsyncNotifier<CheckInState> {
-  late final _$args = ref.$arg as int;
-  int get visitId => _$args;
+  late final _$args = ref.$arg as String;
+  String get companyId => _$args;
 
-  FutureOr<CheckInState> build(int visitId);
+  FutureOr<CheckInState> build(String companyId);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
@@ -332,7 +367,7 @@ final class VisitReportFilterProvider
   }
 }
 
-String _$visitReportFilterHash() => r'c1a34ad90eaea08751bbb538cadb8952bbf09862';
+String _$visitReportFilterHash() => r'b60564bd14001a59a8c95faa3b368296ed6bfd82';
 
 abstract class _$VisitReportFilter extends $Notifier<VisitReportQuery> {
   VisitReportQuery build();
@@ -432,44 +467,3 @@ final class VisitReportMembersProvider
 
 String _$visitReportMembersHash() =>
     r'154a823b2cd10252a6f57837d48967c265fe8f74';
-
-@ProviderFor(visitProducts)
-final visitProductsProvider = VisitProductsProvider._();
-
-final class VisitProductsProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<VisitProduct>>,
-          List<VisitProduct>,
-          FutureOr<List<VisitProduct>>
-        >
-    with
-        $FutureModifier<List<VisitProduct>>,
-        $FutureProvider<List<VisitProduct>> {
-  VisitProductsProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'visitProductsProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$visitProductsHash();
-
-  @$internal
-  @override
-  $FutureProviderElement<List<VisitProduct>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<VisitProduct>> create(Ref ref) {
-    return visitProducts(ref);
-  }
-}
-
-String _$visitProductsHash() => r'fcdd4cc57e77b01eb8a1857988c54a20f26c8df3';

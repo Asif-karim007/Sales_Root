@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 
 import 'package:salesroot/core/format/app_format.dart';
-import 'package:salesroot/features/field_force/models/attendance.dart';
 import 'package:salesroot/translations/translations.dart';
 
 /// Field-force units: distances, durations and wall-clock times.
@@ -28,11 +27,8 @@ extension FieldForceFormat on BuildContext {
   String ffClockDuration(int minutes) => fmt.digits(
     '${minutes ~/ 60}:${(minutes % 60).toString().padLeft(2, '0')}',
   );
-
-  /// A "09:00" wall-clock string in the user's time format.
-  String ffWallClock(String clock) => fmt.time(clockOn(DateTime.now(), clock));
-
-  /// "9:00–18:00".
-  String ffWindow(String start, String end) =>
-      '${ffWallClock(start)}–${ffWallClock(end)}';
 }
+
+/// Where a check-in happened: the office, or outside it.
+String placeLabel(AppLocalizations l10n, bool? inOffice) =>
+    inOffice == false ? l10n.ffOutsideOffice : l10n.ffOffice;
