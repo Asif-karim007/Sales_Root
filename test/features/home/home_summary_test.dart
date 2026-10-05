@@ -1,38 +1,25 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/experience_level.dart';
-import 'package:salesroot/core/fake/fake_providers.dart';
-import 'package:salesroot/core/fake/seed_graph.dart';
 import 'package:salesroot/core/network/api_failure.dart';
+import 'package:salesroot/core/session/session_provider.dart';
 import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/features/home/models/home_summary.dart';
 import 'package:salesroot/features/home/models/home_variant.dart';
+import 'package:salesroot/features/home/models/money_summary.dart';
 import 'package:salesroot/features/home/providers/home_providers.dart';
 
+import '../../helpers/api_stub.dart';
 import 'home_test_setup.dart';
 
 void main() {
-  group('homeVariantFor', () {
+  group('homeLayoutFor', () {
     HomeVariant pick(
       WorkspaceRole role,
       ExperienceLevel level, {
-      bool isNew = false,
       bool ownerDashboard = true,
-    }) => homeVariantFor(
-      isNew: isNew,
-      role: role,
-      level: level,
-      ownerDashboard: ownerDashboard,
-    );
-
-    test('an empty workspace always gets the new-user home', () {
-      for (final role in WorkspaceRole.values) {
-        for (final level in ExperienceLevel.values) {
-          expect(pick(role, level, isNew: true), HomeVariant.newUser);
-        }
-      }
-    });
+    }) =>
+        homeLayoutFor(role: role, level: level, ownerDashboard: ownerDashboard);
 
     test('members get Easy or Standard by level', () {
       expect(
@@ -51,10 +38,6 @@ void main() {
 
     test('team leads get the team home, managers at Advanced', () {
       expect(
-        pick(WorkspaceRole.teamLead, ExperienceLevel.easy),
-        HomeVariant.teamLead,
-      );
-      expect(
         pick(WorkspaceRole.teamLead, ExperienceLevel.standard),
         HomeVariant.teamLead,
       );
@@ -71,10 +54,6 @@ void main() {
         HomeVariant.owner,
       );
       expect(
-        pick(WorkspaceRole.owner, ExperienceLevel.advanced),
-        HomeVariant.owner,
-      );
-      expect(
         pick(
           WorkspaceRole.owner,
           ExperienceLevel.standard,
@@ -85,174 +64,252 @@ void main() {
     });
   });
 
-  group('homeVariantProvider', () {
-    Future<HomeVariant?> variantFor(
-      WorkspaceRole? role, {
-      ExperienceLevel? level,
-      bool empty = false,
-    }) async {
-      final container = await homeContainer(role: role, empty: empty);
-      if (level != null) {
-        container.read(experienceLevelProvider.notifier).set(level);
-      }
-      container.listen(homeVariantProvider, (_, _) {});
-      await container.read(homeSummaryProvider.future);
-      return container.read(homeVariantProvider);
-    }
+  group('GET home', () {
+    test('parses counts and today’s plan', () {
+      final summary = HomeSummary.fromJson(fixtureMap('home_home'));
 
-    test('a member starts on the Easy home', () async {
-      expect(await variantFor(WorkspaceRole.member), HomeVariant.easy);
+      expect(summary.isNew, isFalse);
+      expect(summary.followUpsDue, 2);
+      expect(summary.openLeads, 3);
+      expect(summary.agenda, hasLength(4));
+      final visit = summary.agenda.first;
+      expect(visit.kind, AgendaKind.visit);
+      expect(visit.leadId, '01a10101-866a-7007-90bc-2326bcdb9d50');
+      expect(visit.who, 'Mr Rahim');
+      expect(visit.isOverdue, isTrue);
+      expect(summary.agenda[2].kind, AgendaKind.collect);
+      final followUp = summary.agenda.last;
+      expect(followUp.kind, AgendaKind.followUp);
+      expect(followUp.isOverdue, isFalse);
+      expect(summary.followUpsOverdue, 3);
+      expect(summary.visitsToday, 0);
     });
 
-    test('a member at Standard gets the Standard home', () async {
-      expect(
-        await variantFor(WorkspaceRole.member, level: ExperienceLevel.standard),
-        HomeVariant.standard,
-      );
+    test('a workspace with nothing in it is new', () {
+      final summary = HomeSummary.fromJson(emptyHome());
+      expect(summary.isNew, isTrue);
+      expect(summary.onboarding.done, 1);
     });
 
-    test('a team lead gets the team home, or the manager home', () async {
-      expect(await variantFor(WorkspaceRole.teamLead), HomeVariant.teamLead);
-      expect(
-        await variantFor(
-          WorkspaceRole.teamLead,
-          level: ExperienceLevel.advanced,
-        ),
-        HomeVariant.manager,
-      );
-    });
-
-    test('an owner gets the money dashboard', () async {
-      expect(await variantFor(WorkspaceRole.owner), HomeVariant.owner);
-    });
-
-    test('the empty-workspace switch shows the new-user home', () async {
-      expect(
-        await variantFor(WorkspaceRole.owner, empty: true),
-        HomeVariant.newUser,
-      );
+    test('a task already planned counts as a follow-up set', () {
+      final json = emptyHome()..['today'] = fixtureMap('home_home')['today'];
+      final summary = HomeSummary.fromJson(json);
+      expect(summary.isNew, isTrue);
+      expect(summary.onboarding.done, 2);
     });
   });
 
-  group('home summary', () {
-    test('a member sees their own pipeline and today\'s work', () async {
-      final container = await homeContainer(role: WorkspaceRole.member);
-      container.listen(homeSummaryProvider, (_, _) {});
-      final summary = await container.read(homeSummaryProvider.future);
-      final graph = container.read(seedGraphProvider);
-      final mine = graph.leadsOf(SeedGraph.meId);
+  group('summary by role', () {
+    test('an empty workspace shows the new-user home from real data', () async {
+      final stub = homeStub()..on('GET', 'home', emptyHome());
+      final container = await homeContainer(stub);
+      container.listen(homeVariantProvider, (_, _) {});
 
-      expect(summary.isNew, isFalse);
-      for (final stage in summary.pipeline) {
-        expect(
-          stage.count,
-          mine.where((l) => l.stageId == stage.stageId).length,
-          reason: 'stage ${stage.stageId}',
-        );
-      }
-      expect(summary.openLeads, mine.where((l) => l.isOpen).length);
-      expect(
-        summary.openDealsValue,
-        mine.where((l) => l.isOpen).fold<int>(0, (s, l) => s + l.value),
-      );
-      expect(summary.agenda.length, lessThanOrEqualTo(6));
-      expect(summary.followUpsDue, greaterThanOrEqualTo(summary.agenda.length));
-      expect(
-        summary.agenda.where((a) => a.isOverdue).length,
-        lessThanOrEqualTo(summary.followUpsOverdue),
-      );
-      for (final item in summary.agenda) {
-        final leadId = item.leadId;
-        if (leadId == null) continue;
-        expect(graph.lead(leadId).ownerId, SeedGraph.meId);
-        expect(item.title, graph.lead(leadId).title);
-      }
-      expect(summary.team, isNull);
-      expect(summary.money, isNull);
+      await container.read(homeSummaryProvider.future);
+      expect(container.read(homeVariantProvider), HomeVariant.newUser);
+      expect(stub.last('GET', 'reports/me'), isNull);
     });
 
-    test('an owner gets money that adds up from won leads', () async {
-      final container = await homeContainer(role: WorkspaceRole.owner);
-      container.listen(homeSummaryProvider, (_, _) {});
-      final summary = await container.read(homeSummaryProvider.future);
-      final graph = container.read(seedGraphProvider);
-      final money = summary.money;
-      final won = graph.leads.where((l) => l.stageId == 5);
+    test('Easy adds the last seven days of calls', () async {
+      final stub = homeStub();
+      final container = await homeContainer(stub);
+      container.listen(homeVariantProvider, (_, _) {});
 
-      expect(money, isNotNull);
-      if (money == null) return;
-      expect(money.salesMonth, won.fold<int>(0, (s, l) => s + l.value));
-      expect(money.forecastWeeks.last, money.salesMonth);
-      expect(money.topSellers, isNotEmpty);
-      for (var i = 1; i < money.topSellers.length; i++) {
-        expect(
-          money.topSellers[i - 1].amount,
-          greaterThanOrEqualTo(money.topSellers[i].amount),
-        );
-      }
-      final pipelineTotal = summary.pipeline.fold<int>(
-        0,
-        (s, stage) => s + stage.count,
-      );
-      expect(pipelineTotal, graph.leads.where((l) => l.stageId <= 5).length);
+      final summary = await container.read(homeSummaryProvider.future);
+      expect(container.read(homeVariantProvider), HomeVariant.easy);
       expect(
-        money.today.cash + money.today.mobile + money.today.bank,
-        money.today.total,
+        stub.last('GET', 'reports/me')?.queryParameters['preset'],
+        'last_7',
       );
+      expect(summary.week?.callsToday, 1);
+      expect(summary.week?.callsYesterday, 0);
+      expect(summary.week?.calls, 2);
+      expect(summary.week?.teamCalls, 0.7);
     });
 
-    test('a team lead gets the team and its approvals', () async {
-      final container = await homeContainer(role: WorkspaceRole.teamLead);
-      container.listen(homeSummaryProvider, (_, _) {});
+    test('Standard adds the pipeline, target and quotations', () async {
+      final stub = homeStub();
+      final container = await homeContainer(stub, level: 'standard');
+
+      final summary = await container.read(homeSummaryProvider.future);
+      expect(summary.pipeline.map((s) => s.name.en), [
+        'To contact',
+        'Visited',
+        'Sample given',
+        'Ordered',
+      ]);
+      expect(summary.openDealsValue, 221410);
+      expect(summary.targetPercent, isNull);
+      expect(stub.last('GET', 'quotes')?.queryParameters['status'], 'sent');
+      final quote = summary.quotations.single;
+      expect(quote.companyName, 'Rahim Traders');
+      expect(quote.amount, 206400);
+      expect(quote.sentDaysAgo, 2);
+      expect(quote.needsFollowUp, isTrue);
+    });
+
+    test('a set target shows as a percent', () async {
+      final report = fixtureMap('home_targets_report');
+      final stub = homeStub()
+        ..on('GET', 'reports/targets', {
+          ...report,
+          'summary': {'sales_target': 400000, 'sales_actual': 100000},
+        });
+      final container = await homeContainer(stub, level: 'standard');
+
+      final summary = await container.read(homeSummaryProvider.future);
+      expect(summary.targetPercent, 25);
+    });
+
+    test('a report the role may not see is left out', () async {
+      final stub = homeStub()
+        ..fail('GET', 'reports/pipeline', 403, message: 'Forbidden');
+      final container = await homeContainer(stub, level: 'standard');
+
+      final summary = await container.read(homeSummaryProvider.future);
+      expect(summary.pipeline, isEmpty);
+      expect(summary.quotations, hasLength(1));
+    });
+
+    test('a team lead sees members, their calls and approvals', () async {
+      final stub = homeStub()
+        ..on('GET', 'ai/daily-summary', {
+          ...fixtureMap('home_daily_summary'),
+          'numbers': {'pendingApprovals': 3},
+        });
+      final container = await homeContainer(
+        stub,
+        role: 'teamlead',
+        level: 'standard',
+      );
+
       final summary = await container.read(homeSummaryProvider.future);
       final team = summary.team;
-
       expect(team, isNotNull);
-      if (team == null) return;
-      expect(team.members, isNotEmpty);
+      expect(team?.activityToday, 0);
+      expect(team?.noFollowUp, 0);
+      expect(team?.approvalsCount, 3);
+      expect(team?.members.single.name, 'Rafi Ahmed');
       expect(
-        team.activityToday,
-        greaterThanOrEqualTo(
-          team.members.fold<int>(0, (s, m) => s + m.calls + m.visits),
-        ),
+        stub.last('GET', 'ai/daily-summary')?.queryParameters['day'],
+        matches(RegExp(r'^\d{4}-\d{2}-\d{2}$')),
       );
-      expect(team.approvalsCount, greaterThanOrEqualTo(team.approvals.length));
     });
 
-    test('the empty workspace comes back new and empty', () async {
-      final container = await homeContainer(empty: true);
-      container.listen(homeSummaryProvider, (_, _) {});
-      final summary = await container.read(homeSummaryProvider.future);
+    test('the owner’s money comes from collection and targets', () async {
+      final stub = homeStub();
+      final container = await homeContainer(
+        stub,
+        role: 'owner',
+        level: 'standard',
+      );
 
-      expect(summary.isNew, isTrue);
-      expect(summary.agenda, isEmpty);
-      expect(summary.onboarding.done, 1);
-      expect(summary.onboarding.leadAdded, isFalse);
+      final money = (await container.read(homeSummaryProvider.future)).money;
+      expect(money, isNotNull);
+      expect(money?.receivable, 118000);
+      expect(money?.overdue, 68000);
+      expect(money?.month.total, 0);
+      expect(money?.month.previous, 50000);
+      expect(money?.month.changePercent, -100);
+      expect(money?.today.previous, 0);
+      expect(money?.today.changePercent, isNull);
+      expect(money?.teamToday.headcount, 1);
+      expect(money?.topSellers, isEmpty);
     });
 
-    test('offline surfaces an offline failure', () async {
-      final container = await homeContainer();
-      goOffline(container);
-      container.listen(homeSummaryProvider, (_, _) {});
+    test('the manager sees overdue dues, forecast and teams', () async {
+      final stub = homeStub();
+      final container = await homeContainer(
+        stub,
+        role: 'manager',
+        level: 'advanced',
+      );
+
+      final money = (await container.read(homeSummaryProvider.future)).money;
+      expect(stub.last('GET', 'dues')?.queryParameters['bucket'], 'overdue');
+      expect(money?.overdueCustomers, 1);
+      expect(money?.overdueCustomer?.name, 'Rahim Traders');
+      expect(money?.overdueCustomer?.days, 44);
+      expect(money?.forecastWeeks, hasLength(5));
+      expect(money?.forecastPipeline, closeTo(99631, 1));
+      expect(money?.departments, isEmpty);
+    });
+
+    test('offline fails the whole home', () async {
+      final stub = homeStub();
+      final container = await homeContainer(stub);
+      stub.offline = true;
 
       await expectLater(
         container.read(homeSummaryProvider.future),
         throwsA(isA<ApiFailure>().having((f) => f.isOffline, 'offline', true)),
       );
     });
+
+    test('switching workspace loads the home again', () async {
+      final me = meWith(role: 'executive', level: 'easy');
+      final first = (me['workspaces'] as List).first as Map<String, dynamic>;
+      final tokens = fixtureMap('auth_tokens');
+      final stub = homeStub()
+        ..on('GET', 'auth/me', {
+          ...me,
+          'workspaces': [
+            first,
+            {...first, 'id': 'other', 'name': 'Karim Textiles'},
+          ],
+        })
+        ..on('POST', 'auth/workspace/{id}', {
+          ...tokens,
+          'me': {
+            ...tokens['me'] as Map<String, dynamic>,
+            'workspaceId': 'other',
+          },
+        });
+      final container = await homeContainer(stub);
+      container.listen(homeSummaryProvider, (_, _) {});
+      await container.read(homeSummaryProvider.future);
+      int homeCalls() =>
+          stub.requests.where((r) => r.uri.path.endsWith('/home')).length;
+      final before = homeCalls();
+
+      await container.read(sessionProvider.notifier).switchWorkspace('other');
+      await container.read(homeSummaryProvider.future);
+
+      expect(homeCalls(), before + 1);
+    });
   });
 
-  test('summary JSON parses tolerantly', () {
-    final summary = HomeSummary.fromJson(const {
-      'IsNewWorkspace': false,
-      'CallsToday': '4',
-      'Agenda': [
-        {'TaskId': 3, 'Kind': 'Visit', 'Title': 'Delta Power', 'LeadId': 2},
-        'garbage',
-      ],
-    });
-    expect(summary.callsToday, 4);
-    expect(summary.agenda.single.kind, AgendaKind.visit);
-    expect(summary.onboarding.done, 1);
+  test('teams are scored against their members’ targets', () {
+    const people = [
+      TopSeller(
+        memberId: 'a',
+        name: 'A',
+        amount: 0,
+        teamId: 't1',
+        teamName: 'North',
+      ),
+      TopSeller(
+        memberId: 'b',
+        name: 'B',
+        amount: 0,
+        teamId: 't1',
+        teamName: 'North',
+      ),
+      TopSeller(
+        memberId: 'c',
+        name: 'C',
+        amount: 0,
+        teamId: 't2',
+        teamName: 'South',
+      ),
+      TopSeller(memberId: 'd', name: 'D', amount: 0),
+    ];
+    final scores = DepartmentScore.of(people, const [
+      PersonTarget(memberId: 'a', actual: 50000, target: 100000),
+      PersonTarget(memberId: 'b', actual: 30000, target: 60000),
+      PersonTarget(memberId: 'c', actual: 10000, target: 0),
+      PersonTarget(memberId: 'd', actual: 10000, target: 10000),
+    ]);
+    expect(scores.map((s) => (s.name, s.percent)), [('North', 50)]);
   });
 }

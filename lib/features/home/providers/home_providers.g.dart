@@ -9,6 +9,47 @@ part of 'home_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(homeApi)
+final homeApiProvider = HomeApiProvider._();
+
+final class HomeApiProvider
+    extends $FunctionalProvider<HomeApi, HomeApi, HomeApi>
+    with $Provider<HomeApi> {
+  HomeApiProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'homeApiProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$homeApiHash();
+
+  @$internal
+  @override
+  $ProviderElement<HomeApi> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  HomeApi create(Ref ref) {
+    return homeApi(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(HomeApi value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<HomeApi>(value),
+    );
+  }
+}
+
+String _$homeApiHash() => r'3459940f7a408d5e0f1c40c79105f5a10bdefd4a';
+
 @ProviderFor(homeRepository)
 final homeRepositoryProvider = HomeRepositoryProvider._();
 
@@ -48,7 +89,53 @@ final class HomeRepositoryProvider
   }
 }
 
-String _$homeRepositoryHash() => r'1556e207b267165d3d9810406edb0e60257f4092';
+String _$homeRepositoryHash() => r'159bc459724e7719fd2a4a1645fa85d25107519e';
+
+/// The home the role and level call for once the workspace has data.
+
+@ProviderFor(homeLayout)
+final homeLayoutProvider = HomeLayoutProvider._();
+
+/// The home the role and level call for once the workspace has data.
+
+final class HomeLayoutProvider
+    extends $FunctionalProvider<HomeVariant, HomeVariant, HomeVariant>
+    with $Provider<HomeVariant> {
+  /// The home the role and level call for once the workspace has data.
+  HomeLayoutProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'homeLayoutProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$homeLayoutHash();
+
+  @$internal
+  @override
+  $ProviderElement<HomeVariant> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  HomeVariant create(Ref ref) {
+    return homeLayout(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(HomeVariant value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<HomeVariant>(value),
+    );
+  }
+}
+
+String _$homeLayoutHash() => r'68ce312b765c4bf6cf9f6bdb6c316e5982480403';
 
 @ProviderFor(homeSummary)
 final homeSummaryProvider = HomeSummaryProvider._();
@@ -87,7 +174,7 @@ final class HomeSummaryProvider
   }
 }
 
-String _$homeSummaryHash() => r'dd3d3baa493e4a65873ea92ae0f9de9900650b0c';
+String _$homeSummaryHash() => r'5181a30419221214f128472027f584fb9eb21b79';
 
 /// The home to show once the summary has said whether the workspace is new.
 
@@ -133,4 +220,4 @@ final class HomeVariantProvider
   }
 }
 
-String _$homeVariantHash() => r'abac1d561b40e615bf9561b9a0df45c6d217b16f';
+String _$homeVariantHash() => r'd70232d04c399f7b065d8de3f43cf3a55a83eb56';

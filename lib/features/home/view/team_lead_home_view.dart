@@ -29,7 +29,7 @@ class TeamLeadHomeView extends ConsumerWidget {
       children: [
         _TeamTiles(team: team),
         _MembersToday(members: team.members),
-        if (approvals) _PendingApprovals(team: team),
+        if (approvals) _PendingApprovals(count: team.approvalsCount),
       ],
     );
   }
@@ -53,25 +53,26 @@ class _TeamTiles extends ConsumerWidget {
     final reports = ref.watch(
       moduleAccessProvider(AppModule.reports).select((a) => a.visible),
     );
-    return SrStatGrid(
-      tiles: [
-        SrKpiTile(
-          label: l10n.homeTeamActivity,
-          value: fmt.number(team.activityToday),
-          onTap: teamAccess ? () => context.go(Routes.team) : null,
-        ),
-        SrKpiTile(
-          label: l10n.homeNoFollowUp,
-          value: fmt.number(team.noFollowUp),
-          onTap: leads ? () => context.go(Routes.leads) : null,
-        ),
+    final target = team.targetPercent;
+    final tiles = [
+      SrKpiTile(
+        label: l10n.homeTeamActivity,
+        value: fmt.number(team.activityToday),
+        onTap: teamAccess ? () => context.go(Routes.team) : null,
+      ),
+      SrKpiTile(
+        label: l10n.homeNoFollowUp,
+        value: fmt.number(team.noFollowUp),
+        onTap: leads ? () => context.go(Routes.leads) : null,
+      ),
+      if (target != null)
         SrKpiTile(
           label: l10n.homeTeamTarget,
-          value: fmt.percent(team.targetPercent),
+          value: fmt.percent(target),
           onTap: reports ? () => context.push(Routes.reportSales) : null,
         ),
-      ],
-    );
+    ];
+    return SrStatGrid(columns: tiles.length, tiles: tiles);
   }
 }
 
@@ -127,7 +128,7 @@ class _MemberRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final name = member.name.of(fmt.isBangla);
+    final name = member.name;
     final checkIn = member.checkInAt;
     return SrListRow(
       title: name,
@@ -155,17 +156,17 @@ class _MemberRow extends StatelessWidget {
   }
 }
 
-/// Leave and expense requests from the team, opening the approvals inbox.
+/// How many leave, expense and other requests wait for the team lead; a tap
+/// opens the approvals inbox.
 class _PendingApprovals extends StatelessWidget {
-  const _PendingApprovals({required this.team});
+  const _PendingApprovals({required this.count});
 
-  final TeamSummary team;
+  final int count;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final fmt = context.fmt;
-    if (team.approvals.isEmpty) {
+    if (count == 0) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -182,46 +183,17 @@ class _PendingApprovals extends StatelessWidget {
     }
     return SrRowGroup(
       title: l10n.homePendingApprovals,
-      seeAllLabel: team.approvalsCount > team.approvals.length
-          ? l10n.homeSeeAllCount(fmt.number(team.approvalsCount))
-          : null,
-      onSeeAll: () => context.push(Routes.approvals),
       rows: [
-        for (final approval in team.approvals) _ApprovalRow(approval: approval),
+        SrListRow(
+          title: l10n.homeApprovalsWaiting(context.fmt.number(count)),
+          leading: const SrAvatar(
+            icon: Icons.verified_outlined,
+            tone: SrAvatarTone.gold,
+          ),
+          chevron: true,
+          onTap: () => context.push(Routes.approvals),
+        ),
       ],
     );
-  }
-}
-
-class _ApprovalRow extends StatelessWidget {
-  const _ApprovalRow({required this.approval});
-
-  final PendingApproval approval;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final fmt = context.fmt;
-    final name = approval.memberName.of(fmt.isBangla);
-    final leave = approval.kind == ApprovalKind.leave;
-    return SrListRow(
-      title: leave
-          ? l10n.homeApprovalLeave(name, _dates(fmt))
-          : l10n.homeApprovalExpense(name, fmt.money(approval.amount ?? 0)),
-      leading: SrAvatar(
-        icon: leave ? Icons.event_busy_outlined : Icons.receipt_long_outlined,
-        tone: leave ? SrAvatarTone.accent : SrAvatarTone.gold,
-      ),
-      chevron: true,
-      onTap: () => context.push(Routes.approvals),
-    );
-  }
-
-  String _dates(AppFormat fmt) {
-    final from = approval.from;
-    final to = approval.to;
-    if (from == null) return '';
-    if (to == null || to == from) return fmt.dayMonth(from);
-    return '${fmt.dayMonth(from)} – ${fmt.dayMonth(to)}';
   }
 }

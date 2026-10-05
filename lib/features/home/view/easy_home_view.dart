@@ -25,18 +25,24 @@ class EasyHomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final mine = fmt.percent(summary.meetingRate);
-    final team = fmt.percent(summary.teamMeetingRate);
+    final week = summary.week;
     return HomeScrollView(
       children: [
         _DayTiles(summary: summary),
         const HomeQuickActions(),
         AgendaCard(items: summary.agenda),
-        AiHintCard(
-          message: summary.meetingRate >= summary.teamMeetingRate
-              ? l10n.homeAiRateAhead(mine, team)
-              : l10n.homeAiRateBehind(mine, team),
-        ),
+        if (week != null)
+          AiHintCard(
+            message: week.calls >= week.teamCalls
+                ? l10n.homeAiCallsAhead(
+                    fmt.number(week.calls),
+                    fmt.number(week.teamCalls, decimals: 1),
+                  )
+                : l10n.homeAiCallsBehind(
+                    fmt.number(week.calls),
+                    fmt.number(week.teamCalls, decimals: 1),
+                  ),
+          ),
       ],
     );
   }
@@ -61,47 +67,48 @@ class _DayTiles extends ConsumerWidget {
       moduleAccessProvider(AppModule.lead).select((a) => a.canView),
     );
     final overdue = summary.followUpsOverdue;
+    final week = summary.week;
     final openTasks = tasks ? () => context.go(Routes.tasks) : null;
-    return SrStatGrid(
-      tiles: [
+    final tiles = [
+      if (week != null)
         SrKpiTile(
           label: l10n.homeCallsToday,
-          value: fmt.number(summary.callsToday),
-          delta: l10n.homeCallsYesterday(fmt.number(summary.callsYesterday)),
-          deltaUp: summary.callsToday >= summary.callsYesterday,
+          value: fmt.number(week.callsToday),
+          delta: l10n.homeCallsYesterday(fmt.number(week.callsYesterday)),
+          deltaUp: week.callsToday >= week.callsYesterday,
           onTap: openTasks,
         ),
+      SrKpiTile(
+        label: l10n.homeFollowUpsDue,
+        value: fmt.number(summary.followUpsDue),
+        delta: overdue > 0
+            ? l10n.homeFollowUpsOverdue(fmt.number(overdue))
+            : l10n.homeFollowUpsNoneOverdue,
+        deltaUp: overdue > 0 ? true : null,
+        upIsGood: false,
+        onTap: openTasks,
+      ),
+      if (visits)
         SrKpiTile(
-          label: l10n.homeFollowUpsDue,
-          value: fmt.number(summary.followUpsDue),
-          delta: overdue > 0
-              ? l10n.homeFollowUpsOverdue(fmt.number(overdue))
-              : l10n.homeFollowUpsNoneOverdue,
-          deltaUp: overdue > 0 ? true : null,
-          upIsGood: false,
-          onTap: openTasks,
-        ),
-        if (visits)
-          SrKpiTile(
-            label: l10n.homeVisits,
-            value: fmt.number(summary.visitsToday),
-            delta: summary.visitsToday > 1
-                ? l10n.homeRouteReady
-                : summary.visitsToday == 0
-                ? l10n.homeNoVisits
-                : null,
-            deltaUp: summary.visitsToday > 1 ? true : null,
-            onTap: () => context.push(
-              summary.visitsToday > 1 ? Routes.visitRoute : Routes.visits,
-            ),
-          )
-        else
-          SrKpiTile(
-            label: l10n.homeOpenLeads,
-            value: fmt.number(summary.openLeads),
-            onTap: leads ? () => context.go(Routes.leads) : null,
+          label: l10n.homeVisits,
+          value: fmt.number(summary.visitsToday),
+          delta: summary.visitsToday > 1
+              ? l10n.homeRouteReady
+              : summary.visitsToday == 0
+              ? l10n.homeNoVisits
+              : null,
+          deltaUp: summary.visitsToday > 1 ? true : null,
+          onTap: () => context.push(
+            summary.visitsToday > 1 ? Routes.visitRoute : Routes.visits,
           ),
-      ],
-    );
+        )
+      else
+        SrKpiTile(
+          label: l10n.homeOpenLeads,
+          value: fmt.number(summary.openLeads),
+          onTap: leads ? () => context.go(Routes.leads) : null,
+        ),
+    ];
+    return SrStatGrid(columns: tiles.length, tiles: tiles);
   }
 }

@@ -41,18 +41,16 @@ class SearchHit {
     required this.title,
     this.subtitle,
     this.stage,
-    this.stageId,
     this.value,
     this.dueAt,
     this.isDone = false,
   });
 
   final SearchKind kind;
-  final int id;
+  final String id;
   final String title;
   final String? subtitle;
   final LocalizedName? stage;
-  final int? stageId;
   final int? value;
   final DateTime? dueAt;
   final bool isDone;
@@ -67,11 +65,10 @@ class SearchHit {
   factory SearchHit.fromJson(SearchKind kind, Map<String, dynamic> json) =>
       SearchHit(
         kind: kind,
-        id: jsonInt(json['Id']) ?? 0,
+        id: jsonId(json['Id']) ?? '',
         title: json['Title'] as String? ?? '',
         subtitle: json['Subtitle'] as String?,
         stage: jsonObject(json['Stage'], LocalizedName.fromJson),
-        stageId: jsonInt(json['StageId']),
         value: jsonInt(json['Value']),
         dueAt: jsonDate(json['DueAt']),
         isDone: jsonBool(json['IsDone']),

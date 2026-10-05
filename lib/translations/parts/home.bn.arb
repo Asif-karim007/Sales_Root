@@ -20,21 +20,11 @@
   "homeRoleManager": "ম্যানেজার",
   "homeWorkspaceSwitch": "ওয়ার্কস্পেস বদলান",
   "homeWorkspaces": "ওয়ার্কস্পেস",
-  "homeWorkspacePersonal": "ব্যক্তিগত · {count} লিড",
-  "@homeWorkspacePersonal": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "homeWorkspaceTeam": "টিম · {role} · {count} জন",
+  "homeWorkspacePersonal": "ব্যক্তিগত",
+  "homeWorkspaceTeam": "টিম · {role}",
   "@homeWorkspaceTeam": {
     "placeholders": {
       "role": {
-        "type": "String"
-      },
-      "count": {
         "type": "String"
       }
     }
@@ -82,15 +72,7 @@
   "homeAgendaWhatsApp": "WhatsApp",
   "homeAgendaMeeting": "মিটিং",
   "homeAgendaTask": "কাজ",
-  "homeAgendaSilent": "{days} দিন কথা নেই",
-  "@homeAgendaSilent": {
-    "placeholders": {
-      "days": {
-        "type": "String"
-      }
-    }
-  },
-  "homeAgendaReplyPending": "উত্তর বাকি",
+  "homeAgendaCollect": "আদায়",
   "homeAgendaEmptyTitle": "আজ কোনো কাজ বাকি নেই",
   "homeAgendaEmptyBody": "দিনের পরিকল্পনা করতে একটি কাজ যোগ করুন বা কল লগ করুন।",
   "homeTagOverdue": "দেরি",
@@ -102,8 +84,8 @@
   "homeTagCompany": "প্রতিষ্ঠান",
   "homeTagTask": "কাজ",
   "homeTagDone": "সম্পন্ন",
-  "homeAiRateAhead": "এ সপ্তাহে আপনার কল-থেকে-মিটিং হার {mine}, টিমের গড় {team}। চালিয়ে যান!",
-  "@homeAiRateAhead": {
+  "homeAiCallsAhead": "গত ৭ দিনে আপনি {mine}টি কল করেছেন, টিমের গড় {team}। চালিয়ে যান!",
+  "@homeAiCallsAhead": {
     "placeholders": {
       "mine": {
         "type": "String"
@@ -113,8 +95,8 @@
       }
     }
   },
-  "homeAiRateBehind": "এ সপ্তাহে আপনার কল-থেকে-মিটিং হার {mine}, টিমের গড় {team}। টিপস পেতে AI গাইডকে জিজ্ঞেস করুন।",
-  "@homeAiRateBehind": {
+  "homeAiCallsBehind": "গত ৭ দিনে আপনি {mine}টি কল করেছেন, টিমের গড় {team}। টিপস পেতে AI গাইডকে জিজ্ঞেস করুন।",
+  "@homeAiCallsBehind": {
     "placeholders": {
       "mine": {
         "type": "String"
@@ -150,7 +132,6 @@
       }
     }
   },
-  "homeQuotationViewed": "দেখেছেন",
   "homeTeamActivity": "টিমের কাজ",
   "homeNoFollowUp": "ফলো-আপ নেই",
   "homeTeamTarget": "টিম লক্ষ্য",
@@ -178,24 +159,10 @@
   "homeInvite": "আমন্ত্রণ",
   "homePendingApprovals": "অনুমোদন বাকি",
   "homeNoApprovals": "অনুমোদনের কিছু বাকি নেই",
-  "homeApprovalLeave": "ছুটির আবেদন · {name} · {dates}",
-  "@homeApprovalLeave": {
+  "homeApprovalsWaiting": "{count}টি আবেদন আপনার সিদ্ধান্তের অপেক্ষায়",
+  "@homeApprovalsWaiting": {
     "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "dates": {
-        "type": "String"
-      }
-    }
-  },
-  "homeApprovalExpense": "খরচ · {name} · {amount}",
-  "@homeApprovalExpense": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "amount": {
+      "count": {
         "type": "String"
       }
     }
@@ -326,16 +293,7 @@
     }
   },
   "homePipe": "পাইপ",
-  "homeRisk": "ঝুঁকি",
   "homeByDepartment": "বিভাগ অনুযায়ী",
-  "homeTeamOf": "{name}-এর টিম",
-  "@homeTeamOf": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "homeNeedsAttention": "মনোযোগ দরকার",
   "homeStaleLeads": "{count}টি লিড ৭ দিনের বেশি ফলো-আপ ছাড়া",
   "@homeStaleLeads": {
@@ -368,10 +326,6 @@
   "homeNotificationsTitle": "নোটিফিকেশন",
   "homeMarkAllRead": "সব পড়া",
   "homeMarkedAllRead": "সব পড়া হয়েছে",
-  "homeFilterReminders": "রিমাইন্ডার",
-  "homeFilterTeam": "টিম",
-  "homeFilterNewLeads": "নতুন লিড",
-  "homeFilterBilling": "বিলিং",
   "homeNotificationsEmpty": "নতুন কিছু নেই",
   "homeNotificationsEmptyBody": "রিমাইন্ডার, মেনশন আর নতুন লিড এখানে দেখাবে।",
   "homeSearchHint": "নাম, প্রতিষ্ঠান বা ফোন নম্বর",

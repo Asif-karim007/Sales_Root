@@ -96,7 +96,7 @@ class _CodeScreenState extends ConsumerState<CodeScreen> {
           flow.signIn();
         }
       case AsyncError(:final error):
-        if (authFieldError(error, 'Code') != null) {
+        if (authFieldError(error, 'code') != null) {
           setState(() {
             _wrong = true;
             _mistakes++;

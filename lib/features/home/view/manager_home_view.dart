@@ -6,7 +6,6 @@ import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/routing/routes.dart';
-import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/home/models/home_summary.dart';
 import 'package:salesroot/features/home/models/money_summary.dart';
 import 'package:salesroot/features/home/view/widget/home_scroll_view.dart';
@@ -22,12 +21,7 @@ class ManagerHomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final money =
-        summary.money ??
-        const MoneySummary(
-          today: CollectionPeriod(),
-          month: CollectionPeriod(),
-        );
+    final money = summary.money ?? const MoneySummary();
     return HomeScrollView(
       children: [
         _MoneyTiles(money: money),
@@ -55,12 +49,7 @@ class _MoneyTiles extends ConsumerWidget {
     final collection = ref.watch(
       moduleAccessProvider(AppModule.collection).select((a) => a.canView),
     );
-    final salesChange = money.salesLastMonth == 0
-        ? null
-        : ((money.salesMonth - money.salesLastMonth) *
-                  100 /
-                  money.salesLastMonth)
-              .round();
+    final salesChange = money.salesChangePercent;
     final collectionChange = money.month.changePercent;
     return SrStatGrid(
       tiles: [
@@ -100,7 +89,6 @@ class _ForecastCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = SrColors.of(context);
     final l10n = context.l10n;
     final fmt = context.fmt;
     return SrCard(
@@ -117,17 +105,11 @@ class _ForecastCard extends StatelessWidget {
               for (var i = 0; i < money.forecastWeeks.length; i++)
                 SrSeries(
                   label: l10n.homeWeek(fmt.number(i + 1)),
-                  value: money.forecastWeeks[i].toDouble(),
+                  value: money.forecastWeeks[i],
                 ),
               SrSeries(
                 label: l10n.homePipe,
-                value: money.forecastPipeline.toDouble(),
-                dim: true,
-              ),
-              SrSeries(
-                label: l10n.homeRisk,
-                value: money.forecastAtRisk.toDouble(),
-                color: c.danger,
+                value: money.forecastPipeline,
                 dim: true,
               ),
             ],
@@ -158,7 +140,7 @@ class _Departments extends StatelessWidget {
               for (var i = 0; i < departments.length; i++) ...[
                 if (i > 0) const SizedBox(height: 12),
                 SrBarRow(
-                  label: l10n.homeTeamOf(departments[i].name.of(fmt.isBangla)),
+                  label: departments[i].name,
                   value: departments[i].percent.toDouble(),
                   max: 100,
                   valueLabel: fmt.percent(departments[i].percent),
@@ -192,17 +174,12 @@ class _NeedsAttention extends ConsumerWidget {
     final attendance = ref.watch(
       moduleAccessProvider(AppModule.teamAttendance).select((a) => a.canView),
     );
-    final staleTeam = money.staleLeadsTeam;
     final overdue = money.overdueCustomer;
     final absent = money.teamToday.absent;
     final rows = [
       if (money.staleLeads > 0)
         SrListRow(
           title: l10n.homeStaleLeads(fmt.number(money.staleLeads)),
-          subtitle: staleTeam == null
-              ? null
-              : '${l10n.homeTeamOf(staleTeam.name.of(fmt.isBangla))} · '
-                    '${fmt.number(staleTeam.count)}',
           leading: const SrAvatar(
             icon: Icons.schedule_rounded,
             tone: SrAvatarTone.danger,
@@ -213,9 +190,10 @@ class _NeedsAttention extends ConsumerWidget {
       if (overdue != null)
         SrListRow(
           title: l10n.homeOverdueDays(overdue.name, fmt.number(overdue.days)),
-          subtitle:
-              '${fmt.moneyCompact(overdue.amount)} · '
-              '${overdue.ownerName.of(fmt.isBangla)}',
+          subtitle: [
+            fmt.moneyCompact(overdue.amount),
+            ?overdue.ownerName,
+          ].join(' · '),
           leading: const SrAvatar(
             icon: Icons.receipt_long_outlined,
             tone: SrAvatarTone.gold,

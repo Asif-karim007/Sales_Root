@@ -31,12 +31,7 @@ class _OwnerHomeViewState extends ConsumerState<OwnerHomeView> {
 
   @override
   Widget build(BuildContext context) {
-    final money =
-        widget.summary.money ??
-        const MoneySummary(
-          today: CollectionPeriod(),
-          month: CollectionPeriod(),
-        );
+    final money = widget.summary.money ?? const MoneySummary();
     final team = ref.watch(moduleAccessProvider(AppModule.team));
     final plan = ref.watch(planProvider).value;
     final billing = ref.watch(
@@ -401,7 +396,7 @@ class _SellerRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final fmt = context.fmt;
-    final name = seller.name.of(fmt.isBangla);
+    final name = seller.name;
     return InkWell(
       onTap: onTap,
       child: Padding(

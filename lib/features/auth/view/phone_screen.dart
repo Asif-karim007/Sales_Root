@@ -99,8 +99,8 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
       case AsyncData(value: _?) when previous is AsyncLoading:
         context.push(AuthLinks.code(signIn: widget.signIn));
       case AsyncError(:final error):
-        final phone = authFieldError(error, 'Phone');
-        final referral = authFieldError(error, 'ReferralCode');
+        final phone = authFieldError(error, 'phone');
+        final referral = authFieldError(error, 'referralCode');
         if (phone == null && referral == null) {
           showSrError(context, authFailureText(l10n, error));
         }
