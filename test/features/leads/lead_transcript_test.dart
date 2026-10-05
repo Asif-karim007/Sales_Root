@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:salesroot/features/leads/models/lead_activity.dart';
 import 'package:salesroot/features/leads/models/lead_transcript.dart';
 
+import '../../helpers/api_stub.dart';
+
 void main() {
   final now = DateTime(2026, 10, 4, 15, 30);
 
@@ -51,5 +53,13 @@ void main() {
     expect(heard.name, 'Meghna Group');
     expect(heard.phone, isNull);
     expect(heard.followUp, isNull);
+  });
+
+  test("takes the server parser's reading over what was heard", () {
+    final heard = LeadTranscript.parse('Lead Meghna Group', now: now);
+    final refined = heard.refinedBy(fixtureMap('leads_ai_parse'));
+    expect(refined.phone, '01711234567');
+    expect(refined.name, 'Meghna Group');
+    expect(refined.text, heard.text);
   });
 }

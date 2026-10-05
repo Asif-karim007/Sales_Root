@@ -308,7 +308,7 @@ class _DraggableCard extends ConsumerWidget {
       lead: lead,
       onTap: () => context.push(Routes.leadFor(lead.id)),
     );
-    if (!access.canEdit || !lead.canEdit) return card;
+    if (!access.canEdit) return card;
     return LongPressDraggable<Lead>(
       data: lead,
       feedback: Material(
@@ -344,7 +344,7 @@ class _MiniCard extends StatelessWidget {
     final meta =
         lead.nextLine(context) ??
         leadMeta([
-          lead.source?.name.of(fmt.isBangla),
+          leadSourceLabel(context.l10n, lead.source),
           created == null ? null : fmt.dayMonth(created),
         ]);
     return Material(

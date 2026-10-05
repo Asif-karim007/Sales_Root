@@ -1,0 +1,11 @@
+{
+ "code": "V-031",
+ "message": {
+  "bn": "“নমুনা দেওয়া” ধাপে যেতে “কী পণ্য চান” লাগবে",
+  "en": "“Sample given” needs “Products wanted” first"
+ },
+ "field": "productInterest",
+ "data": {
+  "field": "productInterest"
+ }
+}

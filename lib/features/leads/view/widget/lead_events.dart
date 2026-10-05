@@ -18,8 +18,8 @@ String leadFailureText(AppLocalizations l10n, Object error) {
   return error.message.isEmpty ? l10n.errorGeneric : error.message;
 }
 
-/// Shows the snackbars for lead actions started on [surface]: a move with
-/// a ten-second undo, task done, delete and failures. Call from `build`.
+/// Shows the snackbars for lead actions started on [surface]: a move or a
+/// delete with a ten-second undo, task done and failures. Call from `build`.
 void listenLeadEvents(
   BuildContext context,
   WidgetRef ref,
@@ -48,9 +48,21 @@ void listenLeadEvents(
         showSrInfo(context, l10n.leadsMoveUndone);
       case LeadTaskDone():
         showSrSuccess(context, l10n.leadsTaskDone);
-      case LeadDeleted():
-        showSrSuccess(context, l10n.leadsDeleted);
+      case LeadDeleted(:final lead):
+        final actions = ref.read(leadActionsProvider.notifier);
+        showSrSnack(
+          context,
+          l10n.leadsDeleted,
+          tone: SrSnackTone.success,
+          duration: const Duration(seconds: 10),
+          action: SrSnackAction(
+            label: l10n.leadsUndo,
+            onPressed: () => actions.restore(lead, surface),
+          ),
+        );
         onDeleted?.call();
+      case LeadRestored():
+        showSrInfo(context, l10n.leadsRestored);
       case LeadActionFailed(:final failure):
         showSrError(context, leadFailureText(l10n, failure));
     }

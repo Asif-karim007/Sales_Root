@@ -1,0 +1,185 @@
+{
+ "lead": {
+  "id": "01a10cda-b6be-79b2-8348-3d931f1d5c6d",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "pipelineId": "01a10101-8646-7b7e-9690-527c3f1af8dc",
+  "stageId": "01a10101-864c-753e-85da-61aec3aed636",
+  "title": "[test] 12 cartons",
+  "name": "[test] Probe lead",
+  "phone": "+8801799000111",
+  "companyId": "01a10cdb-8377-71c2-b01b-9117bf4770be",
+  "contactId": "01a10cdb-837a-7e5c-a424-b6806a55f80e",
+  "ownerMembershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+  "source": "manual",
+  "sourceDetail": null,
+  "amount": 15000.0,
+  "expectedClose": "2026-10-30T00:00:00",
+  "temperature": "warm",
+  "score": 0,
+  "nextFollowUp": "2026-10-07T05:00:00Z",
+  "lastContactAt": "2026-10-05T16:17:48.201932Z",
+  "status": "open",
+  "wonAt": null,
+  "lostAt": null,
+  "lostReason": null,
+  "lostNote": "[test] too pricey",
+  "holdUntil": null,
+  "custom": "{\"productInterest\": \"Soap\", \"stageBeforeLost\": \"01a10101-864c-753e-85da-61aec3aed636\"}",
+  "tags": [
+   "vip",
+   "new"
+  ],
+  "createdBy": "01a10101-8644-75d5-813c-211d42aa3d68",
+  "createdAt": "2026-10-05T16:17:02.653767Z",
+  "updatedAt": "2026-10-05T16:17:55.226407Z",
+  "deletedAt": null,
+  "version": 110,
+  "campaignId": null,
+  "conversationId": null,
+  "formId": null,
+  "externalRef": null,
+  "scoreReasons": "[]",
+  "scoredAt": null,
+  "stageNameEn": "Sample given",
+  "stageNameBn": "নমুনা দেওয়া",
+  "universalStep": 3,
+  "stageProbability": 45,
+  "stageIsWon": false,
+  "companyName": "[test] Probe lead",
+  "contactName": "[test] Probe lead",
+  "ownerName": "Rafi Ahmed",
+  "openTasks": 0,
+  "outstanding": 0
+ },
+ "timeline": [
+  {
+   "id": "01a10cdb-83b4-7352-b2f8-f05cf7b23088",
+   "type": "system",
+   "outcome": null,
+   "durationSec": null,
+   "body": "Reopened",
+   "meta": "{}",
+   "occurredAt": "2026-10-05T16:17:55.124778Z",
+   "byName": "Rafi Ahmed"
+  },
+  {
+   "id": "01a10cdb-838c-76cf-9d67-d43272dc81ba",
+   "type": "won",
+   "outcome": null,
+   "durationSec": null,
+   "body": "Won ৳ 15,000",
+   "meta": "{\"Amount\": 15000, \"orderId\": \"01a10cdb-8382-76a3-bed3-3147b26f63ae\", \"invoiceId\": null}",
+   "occurredAt": "2026-10-05T16:17:55.055677Z",
+   "byName": "Rafi Ahmed"
+  },
+  {
+   "id": "01a10cdb-68aa-7049-955c-6aa7b587ba90",
+   "type": "note",
+   "outcome": null,
+   "durationSec": null,
+   "body": "[test] call back",
+   "meta": "{}",
+   "occurredAt": "2026-10-05T16:17:48.201932Z",
+   "byName": "Rafi Ahmed"
+  },
+  {
+   "id": "01a10cdb-6887-70a1-ba05-86f29fe241c6",
+   "type": "system",
+   "outcome": null,
+   "durationSec": null,
+   "body": "Reopened",
+   "meta": "{}",
+   "occurredAt": "2026-10-05T16:17:48.1669Z",
+   "byName": "Rafi Ahmed"
+  },
+  {
+   "id": "01a10cdb-684b-762a-a988-82b83e346631",
+   "type": "system",
+   "outcome": null,
+   "durationSec": null,
+   "body": "Reopened",
+   "meta": "{}",
+   "occurredAt": "2026-10-05T16:17:48.106982Z",
+   "byName": "Rafi Ahmed"
+  },
+  {
+   "id": "01a10cdb-6812-79f4-9e4b-ec51dfd96a5f",
+   "type": "system",
+   "outcome": null,
+   "durationSec": null,
+   "body": "Reopened",
+   "meta": "{}",
+   "occurredAt": "2026-10-05T16:17:48.050272Z",
+   "byName": "Rafi Ahmed"
+  },
+  {
+   "id": "01a10cdb-6786-7b34-9bde-8afece9e9872",
+   "type": "lost",
+   "outcome": "price",
+   "durationSec": null,
+   "body": "[test] too pricey",
+   "meta": "{}",
+   "occurredAt": "2026-10-05T16:17:47.910331Z",
+   "byName": "Rafi Ahmed"
+  },
+  {
+   "id": "01a10cdb-4b59-7b30-b436-e723eb23f9a1",
+   "type": "stage",
+   "outcome": null,
+   "durationSec": null,
+   "body": "Sample given / নমুনা দেওয়া",
+   "meta": "{\"toStageId\": \"01a10101-864c-753e-85da-61aec3aed636\"}",
+   "occurredAt": "2026-10-05T16:17:40.697402Z",
+   "byName": "Rafi Ahmed"
+  },
+  {
+   "id": "01a10cdb-4aee-7cb8-9e34-1eeffab4e298",
+   "type": "stage",
+   "outcome": null,
+   "durationSec": null,
+   "body": "Visited / ভিজিট হয়েছে",
+   "meta": "{\"toStageId\": \"01a10101-864c-74b1-85f5-ec67557a0a62\"}",
+   "occurredAt": "2026-10-05T16:17:40.590623Z",
+   "byName": "Rafi Ahmed"
+  },
+  {
+   "id": "01a10cdb-8418-7e95-bc0f-434a51fe62b8",
+   "type": "call",
+   "outcome": "no_answer",
+   "durationSec": 0,
+   "body": "[test] rang",
+   "meta": "{}",
+   "occurredAt": "2026-10-05T15:00:00Z",
+   "byName": "Rafi Ahmed"
+  }
+ ],
+ "tasks": [],
+ "quotes": [],
+ "dues": [],
+ "history": [
+  {
+   "toStageId": "01a10101-864b-7935-9bd6-8c6f4179ed51",
+   "nameEn": "To contact",
+   "nameBn": "যোগাযোগ বাকি",
+   "changedAt": "2026-10-05T16:17:02.660443Z"
+  },
+  {
+   "toStageId": "01a10101-864c-74b1-85f5-ec67557a0a62",
+   "nameEn": "Visited",
+   "nameBn": "ভিজিট হয়েছে",
+   "changedAt": "2026-10-05T16:17:40.588299Z"
+  },
+  {
+   "toStageId": "01a10101-864c-753e-85da-61aec3aed636",
+   "nameEn": "Sample given",
+   "nameBn": "নমুনা দেওয়া",
+   "changedAt": "2026-10-05T16:17:40.696514Z"
+  },
+  {
+   "toStageId": "01a10101-864d-7b1d-a937-209e6db5ff2d",
+   "nameEn": "Ordered",
+   "nameBn": "অর্ডার হয়েছে",
+   "changedAt": "2026-10-05T16:17:55.055677Z"
+  }
+ ]
+}

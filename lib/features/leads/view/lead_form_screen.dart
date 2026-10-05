@@ -24,28 +24,30 @@ class LeadPrefill {
   const LeadPrefill({
     this.name,
     this.phone,
-    this.email,
     this.company,
-    this.designation,
+    this.title,
+    this.value,
     this.source,
   });
 
   factory LeadPrefill.fromQuery(Map<String, String> query) => LeadPrefill(
     name: query['name'],
     phone: query['phone'],
-    email: query['email'],
     company: query['company'],
-    designation: query['designation'],
+    title: query['title'],
+    value: query['value'],
     source: query['source'],
   );
 
   final String? name;
   final String? phone;
-  final String? email;
   final String? company;
-  final String? designation;
+  final String? title;
+  final String? value;
   final String? source;
 }
+
+typedef _FormData = (LeadLookups, List<LeadStage>, Lead?);
 
 /// #26: the full lead form, for a new lead ([id] null) or an edit.
 class LeadFormScreen extends ConsumerWidget {
@@ -55,7 +57,7 @@ class LeadFormScreen extends ConsumerWidget {
     this.prefill = const LeadPrefill(),
   });
 
-  final int? id;
+  final String? id;
   final LeadPrefill prefill;
 
   @override
@@ -68,21 +70,21 @@ class LeadFormScreen extends ConsumerWidget {
     final lead = id == null ? null : ref.watch(leadProvider(id));
     final ready = switch ((lookups, stages, lead)) {
       (AsyncData(value: final l), AsyncData(value: final s), null) =>
-        AsyncData<(LeadLookups, List<LeadStage>, Lead?)>((l, s, null)),
+        AsyncData<_FormData>((l, s, null)),
       (
         AsyncData(value: final l),
         AsyncData(value: final s),
         AsyncData(value: final d),
       ) =>
-        AsyncData<(LeadLookups, List<LeadStage>, Lead?)>((l, s, d)),
+        AsyncData<_FormData>((l, s, d)),
       (AsyncError(:final error, :final stackTrace), _, _) ||
       (_, AsyncError(:final error, :final stackTrace), _) ||
       (
         _,
         _,
         AsyncError(:final error, :final stackTrace),
-      ) => AsyncError<(LeadLookups, List<LeadStage>, Lead?)>(error, stackTrace),
-      _ => const AsyncLoading<(LeadLookups, List<LeadStage>, Lead?)>(),
+      ) => AsyncError<_FormData>(error, stackTrace),
+      _ => const AsyncLoading<_FormData>(),
     };
     return SrKeyboardDismiss(
       child: SrScaffold(
@@ -107,7 +109,10 @@ class LeadFormScreen extends ConsumerWidget {
           },
           data: (context, data) => _LeadForm(
             lookups: data.$1,
-            stages: data.$2,
+            stages: [
+              for (final stage in data.$2)
+                if (stage.isOpen) stage,
+            ],
             lead: data.$3,
             prefill: prefill,
           ),
@@ -135,26 +140,28 @@ class _LeadForm extends ConsumerStatefulWidget {
 }
 
 class _LeadFormState extends ConsumerState<_LeadForm> {
+  final _name = TextEditingController();
+  final _phone = TextEditingController();
   final _title = TextEditingController();
-  final _contactName = TextEditingController();
-  final _mobile = TextEditingController();
-  final _email = TextEditingController();
-  final _designation = TextEditingController();
   final _amount = TextEditingController();
   final _note = TextEditingController();
+  late final _custom = {
+    for (final field in widget.lookups.fields)
+      field.key: TextEditingController(),
+  };
 
-  int? _companyId;
+  String? _companyId;
   String? _companyName;
-  List<int> _contactIds = [];
+  bool _newCompany = false;
+  String? _contactId;
+  String? _contactName;
   DateTime? _closing;
-  int? _sourceId;
-  int? _stageId;
-  int? _ownerId;
+  String? _source;
+  String? _stageId;
+  String? _ownerId;
   LeadTemperature? _temperature;
-  List<int> _tagIds = [];
-  List<int> _interestIds = [];
-  String? _titleError;
-  String? _mobileError;
+  String? _nameError;
+  String? _phoneError;
   String? _amountError;
   LeadInput? _input;
 
@@ -173,113 +180,126 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
 
   void _seedFromLead(Lead lead) {
     final input = LeadInput.fromLead(lead);
-    final typed = input.newContact;
-    _title.text = input.leadName;
+    _name.text = input.leadName;
+    _phone.text = input.phone ?? '';
+    _title.text = input.title == input.leadName ? '' : input.title ?? '';
     _companyId = input.companyId;
-    _companyName = input.companyName;
-    _contactIds = [...input.contactIds];
-    _contactName.text = typed?.name ?? '';
-    _mobile.text = typed?.mobile ?? '';
-    _email.text = typed?.email ?? '';
-    _designation.text = typed?.designation ?? '';
+    _companyName = lead.company?.name;
+    _contactId = input.contactId;
+    _contactName = lead.contact?.name;
     final amount = input.estimatedAmount;
     _amount.text = amount == null ? '' : amount.round().toString();
     _closing = input.estimatedClosingDate;
-    _sourceId = input.sourceId;
+    _source = input.source;
     _stageId = input.stageId;
-    _ownerId = input.assignedToEmployeeId;
+    _ownerId = input.ownerId;
     _temperature = input.temperature;
-    _tagIds = [...input.tagIds];
-    _interestIds = [...input.interestIds];
-    _note.text = input.comments ?? '';
+    for (final entry in _custom.entries) {
+      entry.value.text = input.custom[entry.key] ?? '';
+    }
   }
 
   void _seedFromPrefill(LeadPrefill prefill) {
-    final known = widget.lookups.companyNamed(prefill.company);
     final company = prefill.company?.trim() ?? '';
-    _title.text = company.isNotEmpty ? company : prefill.name ?? '';
-    _companyId = known?.id;
-    _companyName = known == null && company.isNotEmpty ? company : null;
-    _contactName.text = prefill.name ?? '';
-    _mobile.text = prefill.phone ?? '';
-    _email.text = prefill.email ?? '';
-    _designation.text = prefill.designation ?? '';
-    _sourceId = widget.lookups.sourceNamed(prefill.source)?.id;
+    _name.text = prefill.name ?? company;
+    _phone.text = prefill.phone ?? '';
+    _title.text = prefill.title ?? '';
+    _amount.text = prefill.value ?? '';
+    _source =
+        LeadSource.fromAny(prefill.source)?.wire ?? prefill.source?.trim();
     _stageId = widget.stages.firstOrNull?.id;
-    _ownerId = widget.lookups.currentEmployeeId;
+    _ownerId = widget.lookups.currentMemberId;
+    if (company.isNotEmpty) _matchCompany(company);
+  }
+
+  /// Links the prefilled company when it is already on the list, and offers
+  /// it as a new one otherwise.
+  Future<void> _matchCompany(String name) async {
+    setState(() {
+      _companyName = name;
+      _newCompany = true;
+    });
+    try {
+      final hits = await ref.read(leadRepositoryProvider).companies(name, 1);
+      final match = hits
+          .where((c) => c.name.toLowerCase() == name.toLowerCase())
+          .firstOrNull;
+      if (match == null || !mounted || _companyName != name) return;
+      setState(() {
+        _companyId = match.id;
+        _newCompany = false;
+      });
+    } on Exception {
+      return;
+    }
   }
 
   @override
   void dispose() {
     for (final controller in [
+      _name,
+      _phone,
       _title,
-      _contactName,
-      _mobile,
-      _email,
-      _designation,
       _amount,
       _note,
+      ..._custom.values,
     ]) {
       controller.dispose();
     }
     super.dispose();
   }
 
-  bool get _fromCard {
-    final source = widget.lookups.sourceNamed(widget.prefill.source);
-    return widget.lead == null && source?.name.en == 'Visiting card';
-  }
+  bool get _fromCard =>
+      widget.lead == null &&
+      LeadSource.fromAny(widget.prefill.source) == LeadSource.card;
 
   void _save() {
     final l10n = context.l10n;
-    final title = _title.text.trim();
-    final mobile = _mobile.text.trim();
+    final name = _name.text.trim();
+    final phone = _phone.text.trim();
     final amountText = _amount.text.trim();
     final amount = double.tryParse(amountText);
     setState(() {
-      _titleError = title.isEmpty ? l10n.leadsErrorTitle : null;
-      _mobileError = mobile.isNotEmpty && !isLeadMobile(mobile)
+      _nameError = name.isEmpty ? l10n.leadsErrorName : null;
+      _phoneError = phone.isNotEmpty && !isLeadMobile(phone)
           ? l10n.leadsErrorMobile
           : null;
       _amountError = amountText.isNotEmpty && amount == null
           ? l10n.leadsErrorAmount
           : null;
     });
-    if (_titleError != null || _mobileError != null || _amountError != null) {
+    if (_nameError != null || _phoneError != null || _amountError != null) {
       return;
     }
-    final contactName = _contactName.text.trim();
-    final typed = LeadNewContact(
-      name: contactName.isEmpty ? title : contactName,
-      mobile: mobile,
-      email: _email.text,
-      designation: _designation.text,
-    );
+    final lead = widget.lead;
     final input = LeadInput(
-      leadName: title,
-      companyId: _companyId,
-      companyName: _companyId == null ? _companyName : null,
-      contactIds: _contactIds,
-      newContact: contactName.isEmpty && mobile.isEmpty && _email.text.isEmpty
-          ? null
-          : typed,
+      leadName: name,
+      phone: phone,
+      title: _title.text,
+      companyId: _newCompany ? null : _companyId,
+      companyName: _newCompany ? _companyName : null,
+      contactId: _contactId,
       estimatedAmount: amount,
       estimatedClosingDate: _closing,
-      sourceId: _sourceId,
+      source: _source,
       stageId: _stageId,
-      assignedToEmployeeId: _ownerId,
+      ownerId: _ownerId,
       temperature: _temperature,
-      tagIds: _tagIds,
-      interestIds: _interestIds,
-      comments: _note.text,
+      tags: lead?.tags ?? const [],
+      custom: {
+        ...?(lead == null ? null : LeadInput.fromLead(lead).custom),
+        for (final entry in _custom.entries)
+          if (entry.value.text.trim().isNotEmpty)
+            entry.key: entry.value.text.trim(),
+      },
+      note: lead == null ? _note.text : null,
     );
     _input = input;
     final save = ref.read(leadSaveProvider(_slot).notifier);
-    final lead = widget.lead;
     if (lead == null) {
       save.create(input);
     } else {
-      save.edit(lead.id, input);
+      save.edit(lead, input);
     }
   }
 
@@ -287,78 +307,77 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
       showSrSheet<T>(context: context, builder: (_) => sheet);
 
   Future<void> _pickCompany() async {
-    final l10n = context.l10n;
-    final bangla = context.fmt.isBangla;
-    final none = LeadLookupCompany(id: 0, name: l10n.leadsNoCompany);
+    final repository = ref.read(leadRepositoryProvider);
     final picked = await _pick<LeadLookupCompany>(
-      SrOptionSheet<LeadLookupCompany>(
-        title: l10n.leadsCompany,
-        options: [none, ...widget.lookups.companies],
+      SrSearchSheet<LeadLookupCompany>(
+        title: context.l10n.leadsCompany,
+        search: repository.companies,
         labelOf: (c) => c.name,
-        subtitleOf: (c) => c.area?.of(bangla),
-        isSelected: (c) => c.id == (_companyId ?? 0),
+        subtitleOf: (c) => c.area,
+        withAvatar: true,
+        isSelected: (c) => c.id == _companyId,
       ),
     );
     if (picked == null || !mounted) return;
     setState(() {
-      _companyId = picked.id == 0 ? null : picked.id;
-      _companyName = null;
-      _contactIds = [];
+      if (picked.id != _companyId) {
+        _contactId = null;
+        _contactName = null;
+      }
+      _companyId = picked.id;
+      _companyName = picked.name;
+      _newCompany = false;
     });
   }
 
-  Future<void> _pickContacts() async {
-    final picked = await _pick<List<LeadLookupContact>>(
-      SrMultiOptionSheet<LeadLookupContact>(
-        title: context.l10n.leadsContacts,
-        options: widget.lookups.contactsOf(_companyId),
+  Future<void> _pickContact() async {
+    final repository = ref.read(leadRepositoryProvider);
+    final companyId = _newCompany ? null : _companyId;
+    final picked = await _pick<LeadLookupContact>(
+      SrSearchSheet<LeadLookupContact>(
+        title: context.l10n.leadsContactPerson,
+        search: (term, page) =>
+            repository.contacts(term, page, companyId: companyId),
         labelOf: (c) => c.name,
-        subtitleOf: (c) => c.designation,
+        subtitleOf: (c) => leadMeta([c.designation, c.companyName]),
         withAvatar: true,
-        isSelected: (c) => _contactIds.contains(c.id),
+        isSelected: (c) => c.id == _contactId,
       ),
     );
     if (picked == null || !mounted) return;
-    setState(() => _contactIds = [for (final c in picked) c.id]);
+    setState(() {
+      _contactId = picked.id;
+      _contactName = picked.name;
+      if (_phone.text.trim().isEmpty) _phone.text = picked.mobile ?? '';
+    });
   }
 
-  Future<void> _pickOne(
-    String title,
-    List<LeadOption> options,
-    int? selected,
-    ValueChanged<int> onPicked,
-  ) async {
+  Future<void> _pickSource() async {
+    final l10n = context.l10n;
+    final picked = await _pick<LeadSource>(
+      SrOptionSheet<LeadSource>(
+        title: l10n.leadsSource,
+        options: LeadSource.values,
+        labelOf: (s) => s.label(l10n),
+        isSelected: (s) => s.wire == _source,
+      ),
+    );
+    if (picked != null && mounted) setState(() => _source = picked.wire);
+  }
+
+  Future<void> _pickOwner() async {
     final bangla = context.fmt.isBangla;
     final picked = await _pick<LeadOption>(
       SrOptionSheet<LeadOption>(
-        title: title,
-        options: options,
+        title: context.l10n.leadsOwner,
+        options: widget.lookups.owners,
         labelOf: (o) => o.name.of(bangla),
         subtitleOf: (o) => o.subtitle,
-        isSelected: (o) => o.id == selected,
+        withAvatar: true,
+        isSelected: (o) => o.id == _ownerId,
       ),
     );
-    if (picked != null && mounted) setState(() => onPicked(picked.id));
-  }
-
-  Future<void> _pickMany(
-    String title,
-    List<LeadOption> options,
-    List<int> selected,
-    ValueChanged<List<int>> onPicked,
-  ) async {
-    final bangla = context.fmt.isBangla;
-    final picked = await _pick<List<LeadOption>>(
-      SrMultiOptionSheet<LeadOption>(
-        title: title,
-        options: options,
-        labelOf: (o) => o.name.of(bangla),
-        isSelected: (o) => selected.contains(o.id),
-      ),
-    );
-    if (picked != null && mounted) {
-      setState(() => onPicked([for (final o in picked) o.id]));
-    }
+    if (picked != null && mounted) setState(() => _ownerId = picked.id);
   }
 
   Future<void> _pickStage() async {
@@ -383,25 +402,12 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
     if (picked != null && mounted) setState(() => _closing = picked);
   }
 
-  String? _names(List<LeadOption> options, List<int> ids) {
-    final bangla = context.fmt.isBangla;
-    final names = [
-      for (final o in options)
-        if (ids.contains(o.id)) o.name.of(bangla),
-    ];
-    if (names.isEmpty) return null;
-    if (names.length == 1) return names.first;
-    return context.l10n.leadsAndMore(
-      names.first,
-      context.fmt.number(names.length - 1),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final save = ref.watch(leadSaveProvider(_slot));
     final easy = ref.watch(experienceLevelProvider) == ExperienceLevel.easy;
+    final stage = widget.stages.byId(_stageId);
     ref.listen(
       leadSaveProvider(_slot),
       (_, next) => onLeadSaved(
@@ -429,35 +435,48 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
                 const SizedBox(height: 16),
               ],
               SrTextField(
-                controller: _title,
-                label: l10n.leadsLeadTitle,
-                hint: l10n.leadsLeadTitleHint,
-                error: _titleError ?? leadFieldError(save, 'LeadName'),
-                textCapitalization: TextCapitalization.sentences,
+                controller: _name,
+                label: l10n.leadsNameOrCompany,
+                hint: l10n.leadsNameOrCompanyHint,
+                prefixIcon: Icons.person_outline_rounded,
+                error: _nameError ?? leadFieldError(save, 'name'),
+                textCapitalization: TextCapitalization.words,
               ),
-              if (!easy) ..._companyFields(l10n),
-              ..._contactFields(l10n, easy, save),
+              const SizedBox(height: 14),
+              SrTextField(
+                controller: _phone,
+                label: l10n.leadsMobile,
+                optional: true,
+                hint: l10n.leadsMobileHint,
+                prefixIcon: Icons.call_outlined,
+                error: _phoneError ?? leadFieldError(save, 'phone'),
+                keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9+ \-]')),
+                ],
+              ),
+              if (!easy) ..._linkFields(l10n, save),
               const SizedBox(height: 14),
               _valueAndClose(l10n, save),
               if (!easy) ..._pickerFields(l10n),
               const SizedBox(height: 14),
               SrDropdownField(
                 label: l10n.leadsStage,
-                value: widget.stages
-                    .byId(_stageId)
-                    ?.name
-                    .of(context.fmt.isBangla),
+                value: stage?.name.of(context.fmt.isBangla),
+                error: leadFieldError(save, 'stageId'),
                 onTap: _pickStage,
               ),
-              const SizedBox(height: 14),
-              SrTextField(
-                controller: _note,
-                label: l10n.leadsNote,
-                optional: true,
-                hint: l10n.leadsNoteHint,
-                multiline: true,
-                textCapitalization: TextCapitalization.sentences,
-              ),
+              if (widget.lead == null) ...[
+                const SizedBox(height: 14),
+                SrTextField(
+                  controller: _note,
+                  label: l10n.leadsNote,
+                  optional: true,
+                  hint: l10n.leadsNoteHint,
+                  multiline: true,
+                  textCapitalization: TextCapitalization.sentences,
+                ),
+              ],
             ],
           ),
         ),
@@ -473,91 +492,40 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
     );
   }
 
-  List<Widget> _companyFields(AppLocalizations l10n) {
-    final company = widget.lookups.company(_companyId);
+  List<Widget> _linkFields(AppLocalizations l10n, AsyncValue<Lead?> save) {
     final companyName = _companyName;
-    final contacts = [
-      for (final id in _contactIds) ?widget.lookups.contact(id)?.name,
-    ];
     return [
+      const SizedBox(height: 14),
+      SrTextField(
+        controller: _title,
+        label: l10n.leadsLeadTitle,
+        optional: true,
+        hint: l10n.leadsLeadTitleHint,
+        error: leadFieldError(save, 'title'),
+        textCapitalization: TextCapitalization.sentences,
+      ),
       const SizedBox(height: 14),
       SrDropdownField(
         label: l10n.leadsCompany,
         optional: true,
-        value:
-            company?.name ??
-            (companyName == null ? null : l10n.leadsNewCompany(companyName)),
+        value: companyName == null
+            ? null
+            : _newCompany
+            ? l10n.leadsNewCompany(companyName)
+            : companyName,
         placeholder: l10n.leadsPickCompany,
         icon: Icons.apartment_rounded,
         onTap: _pickCompany,
       ),
       const SizedBox(height: 14),
       SrDropdownField(
-        label: l10n.leadsContacts,
+        label: l10n.leadsContactPerson,
         optional: true,
-        value: contacts.isEmpty
-            ? null
-            : contacts.length == 1
-            ? contacts.first
-            : l10n.leadsAndMore(
-                contacts.first,
-                context.fmt.number(contacts.length - 1),
-              ),
-        placeholder: company == null
-            ? l10n.leadsPickCompanyFirst
-            : l10n.leadsPickContacts,
-        icon: Icons.people_outline_rounded,
-        enabled: company != null,
-        onTap: company == null ? null : _pickContacts,
+        value: _contactName,
+        placeholder: l10n.leadsPickContact,
+        icon: Icons.person_outline_rounded,
+        onTap: _pickContact,
       ),
-    ];
-  }
-
-  List<Widget> _contactFields(
-    AppLocalizations l10n,
-    bool easy,
-    AsyncValue<Lead?> save,
-  ) {
-    if (_contactIds.isNotEmpty) return const [];
-    return [
-      const SizedBox(height: 18),
-      SrFieldLabel(l10n.leadsContactPerson, optional: true),
-      const SizedBox(height: 8),
-      if (!easy) ...[
-        SrTextField(
-          controller: _contactName,
-          hint: l10n.leadsContactName,
-          prefixIcon: Icons.person_outline_rounded,
-          textCapitalization: TextCapitalization.words,
-        ),
-        const SizedBox(height: 10),
-      ],
-      SrTextField(
-        controller: _mobile,
-        hint: l10n.leadsMobile,
-        prefixIcon: Icons.call_outlined,
-        error: _mobileError ?? leadFieldError(save, 'Mobile'),
-        keyboardType: TextInputType.phone,
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'[0-9+ \-]')),
-        ],
-      ),
-      if (!easy) ...[
-        const SizedBox(height: 10),
-        SrTextField(
-          controller: _email,
-          hint: l10n.leadsKindEmail,
-          prefixIcon: Icons.mail_outline_rounded,
-          keyboardType: TextInputType.emailAddress,
-        ),
-        const SizedBox(height: 10),
-        SrTextField(
-          controller: _designation,
-          hint: l10n.leadsDesignation,
-          prefixIcon: Icons.badge_outlined,
-          textCapitalization: TextCapitalization.words,
-        ),
-      ],
     ];
   }
 
@@ -571,7 +539,7 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
             controller: _amount,
             label: l10n.leadsDealValue,
             suffixText: '৳',
-            error: _amountError ?? leadFieldError(save, 'EstimatedAmount'),
+            error: _amountError ?? leadFieldError(save, 'amount'),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),
@@ -595,22 +563,15 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
     final lookups = widget.lookups;
     final assigns = ref.watch(currentRoleProvider) != WorkspaceRole.member;
     return [
-      const SizedBox(height: 14),
-      SrDropdownField(
-        label: l10n.leadsSource,
-        optional: true,
-        value: lookups.sources
-            .where((s) => s.id == _sourceId)
-            .firstOrNull
-            ?.name
-            .of(bangla),
-        onTap: () => _pickOne(
-          l10n.leadsSource,
-          lookups.sources,
-          _sourceId,
-          (id) => _sourceId = id,
+      if (widget.lead == null) ...[
+        const SizedBox(height: 14),
+        SrDropdownField(
+          label: l10n.leadsSource,
+          optional: true,
+          value: leadSourceLabel(l10n, _source),
+          onTap: _pickSource,
         ),
-      ),
+      ],
       if (assigns) ...[
         const SizedBox(height: 14),
         SrDropdownField(
@@ -621,12 +582,7 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
               ?.name
               .of(bangla),
           icon: Icons.person_pin_outlined,
-          onTap: () => _pickOne(
-            l10n.leadsOwner,
-            lookups.owners,
-            _ownerId,
-            (id) => _ownerId = id,
-          ),
+          onTap: _pickOwner,
         ),
       ],
       const SizedBox(height: 14),
@@ -645,32 +601,19 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
             ),
         ],
       ),
-      const SizedBox(height: 14),
-      SrDropdownField(
-        label: l10n.leadsInterests,
-        optional: true,
-        value: _names(lookups.interests, _interestIds),
-        icon: Icons.solar_power_outlined,
-        onTap: () => _pickMany(
-          l10n.leadsInterests,
-          lookups.interests,
-          _interestIds,
-          (ids) => _interestIds = ids,
-        ),
-      ),
-      const SizedBox(height: 14),
-      SrDropdownField(
-        label: l10n.leadsTags,
-        optional: true,
-        value: _names(lookups.tags, _tagIds),
-        icon: Icons.sell_outlined,
-        onTap: () => _pickMany(
-          l10n.leadsTags,
-          lookups.tags,
-          _tagIds,
-          (ids) => _tagIds = ids,
-        ),
-      ),
+      for (final field in lookups.fields)
+        if (_custom[field.key] case final controller?) ...[
+          const SizedBox(height: 14),
+          SrTextField(
+            controller: controller,
+            label: field.label.of(bangla),
+            optional: true,
+            keyboardType: field.type == LeadFieldType.number
+                ? TextInputType.number
+                : null,
+            textCapitalization: TextCapitalization.sentences,
+          ),
+        ],
     ];
   }
 }

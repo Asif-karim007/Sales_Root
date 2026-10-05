@@ -26,7 +26,7 @@ class LeadLinksScreen extends ConsumerWidget {
 
   static const _slot = 'links';
 
-  final int id;
+  final String id;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -72,28 +72,26 @@ class _Body extends ConsumerWidget {
 
   Future<void> _changeCompany(BuildContext context, WidgetRef ref) async {
     final save = ref.read(leadSaveProvider(LeadLinksScreen._slot).notifier);
-    final lookups = await ref.read(leadLookupsProvider.future);
-    if (!context.mounted) return;
+    final repository = ref.read(leadRepositoryProvider);
     final picked = await showSrSheet<LeadLookupCompany>(
       context: context,
-      builder: (context) => SrOptionSheet<LeadLookupCompany>(
+      builder: (context) => SrSearchSheet<LeadLookupCompany>(
         title: context.l10n.leadsCompany,
-        options: lookups.companies,
+        search: repository.companies,
         labelOf: (c) => c.name,
-        subtitleOf: (c) => c.area?.of(context.fmt.isBangla),
+        subtitleOf: (c) => c.area,
         withAvatar: true,
         isSelected: (c) => c.id == lead.company?.id,
       ),
     );
     if (picked == null || picked.id == lead.company?.id) return;
-    await save.edit(lead.id, LeadInput.fromLead(lead).withCompany(picked));
+    await save.edit(lead, LeadInput.fromLead(lead).withCompany(picked.id));
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final editable =
-        ref.watch(moduleAccessProvider(AppModule.lead)).canEdit && lead.canEdit;
+    final editable = ref.watch(moduleAccessProvider(AppModule.lead)).canEdit;
     final canAddContact = ref
         .watch(moduleAccessProvider(AppModule.contact))
         .canAdd;
@@ -150,7 +148,6 @@ class _CompanyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final fmt = context.fmt;
     final company = lead.company;
     if (company == null) {
       return SrCard(
@@ -163,22 +160,14 @@ class _CompanyCard extends StatelessWidget {
         ),
       );
     }
-    final id = company.id;
     return SrCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: SrListRow(
         title: company.name,
-        subtitle: leadMeta([
-          company.industry,
-          company.area?.of(fmt.isBangla),
-          company.contactCount > 0
-              ? l10n.leadsContactCount(fmt.number(company.contactCount))
-              : null,
-        ]),
         leading: SrAvatar(name: company.name),
         trailing: SrTag(l10n.leadsCompanyTag),
-        chevron: id != null,
-        onTap: id == null ? null : () => context.push(Routes.companyFor(id)),
+        chevron: true,
+        onTap: () => context.push(Routes.companyFor(company.id)),
       ),
     );
   }
@@ -189,44 +178,12 @@ class _Contacts extends ConsumerWidget {
 
   final Lead lead;
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final c = SrColors.of(context);
-    final contacts = lead.contacts;
-    if (contacts.isEmpty) {
-      return SrCard(
-        child: Text(l10n.leadsNoContactsLinked, style: AppText.meta(c.ink2)),
-      );
-    }
-    return SrCard(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      child: Column(
-        children: [
-          for (final (i, contact) in contacts.indexed)
-            _ContactRow(
-              lead: lead,
-              contact: contact,
-              divider: i < contacts.length - 1,
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ContactRow extends ConsumerWidget {
-  const _ContactRow({
-    required this.lead,
-    required this.contact,
-    required this.divider,
-  });
-
-  final Lead lead;
-  final LeadContact contact;
-  final bool divider;
-
-  Future<void> _call(BuildContext context, WidgetRef ref, String phone) async {
+  Future<void> _call(
+    BuildContext context,
+    WidgetRef ref,
+    LeadContact contact,
+    String phone,
+  ) async {
     final l10n = context.l10n;
     final pending = ref.read(pendingCallProvider.notifier)
       ..start(
@@ -245,55 +202,53 @@ class _ContactRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final c = SrColors.of(context);
-    final id = contact.id;
-    final phone = contact.mobile;
-    return SrListRow(
-      title: contact.name,
-      subtitle: leadMeta([
-        contact.designation,
-        contact.isPrimary ? l10n.leadsPrimary : null,
-      ]),
-      leading: SrAvatar(name: contact.name),
-      divider: divider,
-      trailing: phone == null
-          ? null
-          : SrIconButton(
-              icon: Icons.call_outlined,
-              compact: true,
-              color: c.accent,
-              tooltip: l10n.commonCall,
-              onTap: () => _call(context, ref, phone),
-            ),
-      onTap: id == null ? null : () => context.push(Routes.contactFor(id)),
+    final contact = lead.contact;
+    final phone = lead.phone;
+    if (contact == null) {
+      return SrCard(
+        child: Text(l10n.leadsNoContactsLinked, style: AppText.meta(c.ink2)),
+      );
+    }
+    return SrCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      child: SrListRow(
+        title: contact.name,
+        subtitle: phone == null ? null : context.fmt.phone(phone),
+        leading: SrAvatar(name: contact.name),
+        trailing: phone == null
+            ? null
+            : SrIconButton(
+                icon: Icons.call_outlined,
+                compact: true,
+                color: c.accent,
+                tooltip: l10n.commonCall,
+                onTap: () => _call(context, ref, contact, phone),
+              ),
+        onTap: () => context.push(Routes.contactFor(contact.id)),
+      ),
     );
   }
 }
 
-class _Details extends StatelessWidget {
+class _Details extends ConsumerWidget {
   const _Details({required this.lead});
 
   final Lead lead;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final bangla = fmt.isBangla;
-    final days = lead.daysInStage;
+    final fields = ref.watch(leadLookupsProvider).value?.fields ?? const [];
     final created = lead.createdOn;
     final lines = [
-      (l10n.leadsSource, lead.source?.name.of(bangla)),
+      (l10n.leadsLeadTitle, lead.title),
+      for (final field in fields)
+        (field.label.of(bangla), lead.customText(field.key)),
+      (l10n.leadsSource, leadSourceLabel(l10n, lead.source)),
       (l10n.leadsOwner, lead.assignedTo?.name.of(bangla)),
-      (
-        l10n.leadsInStage,
-        days == null ? null : l10n.leadsDays(fmt.number(days)),
-      ),
-      (
-        l10n.leadsSharedWith,
-        lead.sharedWith.isEmpty
-            ? l10n.leadsNobody
-            : lead.sharedWith.map((p) => p.name.of(bangla)).join(', '),
-      ),
+      (l10n.leadsTags, lead.tags.isEmpty ? null : lead.tags.join(', ')),
       (l10n.leadsCreated, created == null ? null : fmt.date(created)),
     ];
     return SrCard(

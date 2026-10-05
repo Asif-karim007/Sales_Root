@@ -1,180 +1,141 @@
+import 'package:salesroot/core/format/app_date_utils.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/leads/models/lead.dart';
 import 'package:salesroot/features/leads/models/lead_activity.dart';
-import 'package:salesroot/features/leads/models/lead_lookups.dart';
+import 'package:salesroot/features/leads/models/lead_stage.dart';
 
-/// A person typed on the lead rather than picked from the contact list.
-class LeadNewContact {
-  const LeadNewContact({
-    required this.name,
-    this.mobile,
-    this.email,
-    this.designation,
-  });
-
-  final String name;
-  final String? mobile;
-  final String? email;
-  final String? designation;
-
-  bool get isEmpty =>
-      name.trim().isEmpty &&
-      (mobile?.trim() ?? '').isEmpty &&
-      (email?.trim() ?? '').isEmpty;
-
-  Map<String, dynamic> toJson() => {
-    'Name': name.trim(),
-    'Mobile': _text(mobile),
-    'Email': _text(email),
-    'Designation': _text(designation),
-  }..removeWhere((_, v) => v == null);
-}
-
-/// The next task to set when saving a lead or an activity.
+/// The next follow-up to set when saving a lead or an activity. [kind] is how
+/// the user said they would follow up; the server keeps the time only.
 class LeadFollowUp {
-  const LeadFollowUp({required this.kind, required this.at, this.title});
+  const LeadFollowUp({required this.kind, required this.at});
 
   final LeadActivityKind kind;
   final DateTime at;
-  final String? title;
-
-  Map<String, dynamic> toJson() =>
-      {'Type': kind.wire, 'At': jsonUtc(at), 'Title': _text(title)}
-        ..removeWhere((_, v) => v == null);
 }
 
-/// The create and edit body. An edit sends every field, so it starts from
-/// [LeadInput.fromLead].
+/// The create and edit body. An edit starts from [LeadInput.fromLead]; the
+/// repository moves the stage and the owner with their own calls when they
+/// change.
 class LeadInput {
   const LeadInput({
     required this.leadName,
+    this.phone,
+    this.title,
     this.companyId,
     this.companyName,
-    this.contactIds = const [],
-    this.newContact,
+    this.contactId,
     this.estimatedAmount,
     this.estimatedClosingDate,
-    this.sourceId,
+    this.source,
     this.stageId,
-    this.assignedToEmployeeId,
+    this.ownerId,
     this.temperature,
-    this.tagIds = const [],
-    this.interestIds = const [],
-    this.comments,
+    this.tags = const [],
+    this.custom = const {},
+    this.note,
     this.followUp,
     this.allowDuplicate = false,
   });
 
   final String leadName;
-  final int? companyId;
+  final String? phone;
+  final String? title;
+  final String? companyId;
 
-  /// A company that is not in the list yet.
+  /// A company that is not in the list yet; it is created with the lead.
   final String? companyName;
-  final List<int> contactIds;
-  final LeadNewContact? newContact;
+  final String? contactId;
   final double? estimatedAmount;
   final DateTime? estimatedClosingDate;
-  final int? sourceId;
-  final int? stageId;
-  final int? assignedToEmployeeId;
+  final String? source;
+  final String? stageId;
+
+  /// Another member to hand the lead to; null keeps the current owner.
+  final String? ownerId;
   final LeadTemperature? temperature;
-  final List<int> tagIds;
-  final List<int> interestIds;
-  final String? comments;
+  final List<String> tags;
+  final Map<String, String> custom;
+
+  /// Saved as the first note on a new lead.
+  final String? note;
   final LeadFollowUp? followUp;
 
-  /// Saves even though the phone or company matches another lead.
+  /// Saves even though the phone is already on another lead.
   final bool allowDuplicate;
 
-  factory LeadInput.fromLead(Lead lead) {
-    final typed = lead.primaryContact;
-    return LeadInput(
-      leadName: lead.leadName,
-      companyId: lead.company?.id,
-      companyName: lead.company?.id == null ? lead.company?.name : null,
-      contactIds: [for (final contact in lead.contacts) ?contact.id],
-      newContact: typed != null && typed.id == null
-          ? LeadNewContact(
-              name: typed.name,
-              mobile: typed.mobile,
-              email: typed.email,
-              designation: typed.designation,
-            )
-          : null,
-      estimatedAmount: lead.estimatedAmount,
-      estimatedClosingDate: lead.estimatedClosingDate,
-      sourceId: lead.source?.id,
-      stageId: lead.stage?.id,
-      assignedToEmployeeId: lead.assignedTo?.id,
-      temperature: lead.temperature,
-      tagIds: [for (final tag in lead.tags) tag.id],
-      interestIds: [for (final interest in lead.interests) interest.id],
-      comments: lead.comments,
-    );
-  }
-
-  /// The same input moved to [company], dropping contacts of the old one.
-  LeadInput withCompany(LeadLookupCompany company) => LeadInput(
-    leadName: leadName,
-    companyId: company.id,
-    newContact: newContact,
-    estimatedAmount: estimatedAmount,
-    estimatedClosingDate: estimatedClosingDate,
-    sourceId: sourceId,
-    stageId: stageId,
-    assignedToEmployeeId: assignedToEmployeeId,
-    temperature: temperature,
-    tagIds: tagIds,
-    interestIds: interestIds,
-    comments: comments,
+  factory LeadInput.fromLead(Lead lead) => LeadInput(
+    leadName: lead.leadName,
+    phone: lead.phone,
+    title: lead.title,
+    companyId: lead.company?.id,
+    contactId: lead.contact?.id,
+    estimatedAmount: lead.estimatedAmount,
+    estimatedClosingDate: lead.estimatedClosingDate,
+    source: lead.source,
+    stageId: lead.stage?.id,
+    ownerId: lead.assignedTo?.id,
+    temperature: lead.temperature,
+    tags: lead.tags,
+    custom: {
+      for (final entry in lead.custom.entries)
+        if (entry.value != null) entry.key: '${entry.value}',
+    },
   );
 
-  LeadInput allowingDuplicate() => LeadInput(
+  LeadInput withCompany(String companyId) => _copy(companyId: companyId);
+
+  LeadInput allowingDuplicate() => _copy(allowDuplicate: true);
+
+  LeadInput _copy({String? companyId, bool? allowDuplicate}) => LeadInput(
     leadName: leadName,
-    companyId: companyId,
-    companyName: companyName,
-    contactIds: contactIds,
-    newContact: newContact,
+    phone: phone,
+    title: title,
+    companyId: companyId ?? this.companyId,
+    companyName: companyId == null ? companyName : null,
+    contactId: companyId == null ? contactId : null,
     estimatedAmount: estimatedAmount,
     estimatedClosingDate: estimatedClosingDate,
-    sourceId: sourceId,
+    source: source,
     stageId: stageId,
-    assignedToEmployeeId: assignedToEmployeeId,
+    ownerId: ownerId,
     temperature: temperature,
-    tagIds: tagIds,
-    interestIds: interestIds,
-    comments: comments,
+    tags: tags,
+    custom: custom,
+    note: note,
     followUp: followUp,
-    allowDuplicate: true,
+    allowDuplicate: allowDuplicate ?? this.allowDuplicate,
   );
 
-  Map<String, dynamic> toJson() {
-    final contact = newContact;
-    return {
-      'LeadName': leadName.trim(),
-      'CompanyId': companyId,
-      'CompanyName': _text(companyName),
-      'ContactIds': contactIds,
-      'NewContact': contact == null || contact.isEmpty
-          ? null
-          : contact.toJson(),
-      'EstimatedAmount': estimatedAmount,
-      'EstimatedClosingDate': jsonUtc(estimatedClosingDate),
-      'SourceId': sourceId,
-      'StageId': stageId,
-      'AssignedToEmployeeId': assignedToEmployeeId,
-      'Temperature': temperature?.wire,
-      'TagIds': tagIds,
-      'InterestIds': interestIds,
-      'Comments': _text(comments),
-      'FollowUp': followUp?.toJson(),
-      'AllowDuplicate': allowDuplicate ? true : null,
-    }..removeWhere((_, v) => v == null);
-  }
+  Map<String, dynamic> _fields() => {
+    'name': leadName.trim(),
+    'phone': _text(phone),
+    'title': _text(title),
+    'companyId': companyId,
+    'contactId': contactId,
+    'amount': estimatedAmount,
+    'temperature': temperature?.wire,
+    'nextFollowUp': jsonUtc(followUp?.at),
+    'expectedClose': _day(estimatedClosingDate),
+    'custom': custom.isEmpty ? null : custom,
+    'tags': tags,
+  };
+
+  /// `POST leads`; [companyId] is the company created for [companyName].
+  Map<String, dynamic> toCreateJson({String? companyId}) => {
+    ..._fields(),
+    'companyId': companyId ?? this.companyId,
+    'stageId': stageId,
+    'source': _text(source),
+    'allowDuplicate': allowDuplicate ? true : null,
+  }..removeWhere((_, v) => v == null);
+
+  /// `PATCH leads/{id}`.
+  Map<String, dynamic> toUpdateJson() =>
+      _fields()..removeWhere((_, v) => v == null);
 }
 
-/// The body for logging a call, meeting, visit, note or message.
+/// The body for logging a call, visit, note or message.
 class LeadActivityInput {
   const LeadActivityInput({
     required this.kind,
@@ -182,8 +143,7 @@ class LeadActivityInput {
     this.durationMinutes,
     this.description,
     this.outcome,
-    this.followUp,
-    this.photoCount = 0,
+    this.followUpAt,
   });
 
   final LeadActivityKind kind;
@@ -191,60 +151,57 @@ class LeadActivityInput {
   final int? durationMinutes;
   final String? description;
   final CallOutcome? outcome;
-  final LeadFollowUp? followUp;
-  final int photoCount;
+  final DateTime? followUpAt;
 
-  Map<String, dynamic> toJson() => {
-    'Kind': kind.wire,
-    'OccurredOn': jsonUtc(occurredOn),
-    'DurationMinutes': durationMinutes,
-    'Description': _text(description),
-    'ActivityOutcome': outcome?.wire,
-    'FollowUp': followUp?.toJson(),
-    'PhotoCount': photoCount == 0 ? null : photoCount,
-  }..removeWhere((_, v) => v == null);
+  Map<String, dynamic> toJson(String leadId) {
+    final minutes = durationMinutes;
+    return {
+      'type': kind.wire,
+      'leadId': leadId,
+      'occurredAt': jsonUtc(occurredOn),
+      'durationSec': minutes == null ? null : minutes * 60,
+      'body': _text(description),
+      'outcome': outcome?.wire,
+      'nextFollowUp': jsonUtc(followUpAt),
+    }..removeWhere((_, v) => v == null);
+  }
 }
 
+/// A stage move. [stage] decides the call: Lost takes a [lostReason], Won an
+/// [amount], and a lead that is lost or won is reopened first. [amount] and
+/// [custom] fill what the stage requires.
 class LeadStageInput {
-  const LeadStageInput({required this.stageId, this.lostReasonId, this.note});
-
-  final int stageId;
-  final int? lostReasonId;
-  final String? note;
-
-  Map<String, dynamic> toJson() =>
-      {'StageId': stageId, 'WinLossCauseId': lostReasonId, 'Note': _text(note)}
-        ..removeWhere((_, v) => v == null);
-}
-
-/// A saved stage change. [moveId] undoes it.
-class LeadStageMove {
-  const LeadStageMove({
-    required this.moveId,
-    required this.fromStageId,
-    required this.lead,
+  const LeadStageInput({
+    required this.stage,
+    this.lostReason,
+    this.note,
+    this.amount,
+    this.custom = const {},
   });
 
-  final int moveId;
-  final int fromStageId;
-  final Lead lead;
-
-  factory LeadStageMove.fromJson(Map<String, dynamic> json) => LeadStageMove(
-    moveId: jsonInt(json['MoveId']) ?? 0,
-    fromStageId: jsonInt(json['FromStageId']) ?? 0,
-    lead: Lead.fromJson(json['Lead'] as Map<String, dynamic>? ?? const {}),
-  );
+  final LeadStage stage;
+  final String? lostReason;
+  final String? note;
+  final double? amount;
+  final Map<String, String> custom;
 }
 
-enum LeadDuplicateField { phone, company }
+/// A saved stage change: the lead [before] it, for undo, and [lead] after.
+class LeadStageMove {
+  const LeadStageMove({required this.before, required this.lead});
 
-/// The 409 a create answers when the phone or company is already on a lead.
+  final Lead before;
+  final Lead lead;
+}
+
+/// The 422 a create answers when the phone is already on a lead.
 class LeadDuplicateFailure extends ApiFailure {
-  const LeadDuplicateFailure({required this.existing, required this.field})
-    : super(409, 'Possible duplicate');
+  const LeadDuplicateFailure({required this.existing, required String message})
+    : super(422, message, code: duplicateCode);
+
+  static const duplicateCode = 'V-003';
 
   final Lead existing;
-  final LeadDuplicateField field;
 }
 
 /// A Bangladeshi mobile number, local (01XXXXXXXXX) or with 880 in front.
@@ -253,6 +210,9 @@ bool isLeadMobile(String value) {
   final local = digits.startsWith('880') ? digits.substring(2) : digits;
   return RegExp(r'^01[3-9]\d{8}$').hasMatch(local);
 }
+
+String? _day(DateTime? value) =>
+    value == null ? null : AppDateUtils.toApiDateOnly(value);
 
 String? _text(String? value) {
   final text = value?.trim() ?? '';

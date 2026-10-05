@@ -1,20 +1,11 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:salesroot/core/access/access_providers.dart';
-import 'package:salesroot/core/access/app_module.dart';
-import 'package:salesroot/core/access/module_access.dart';
-import 'package:salesroot/core/dev/dev_settings.dart';
-import 'package:salesroot/core/fake/fake_providers.dart';
-import 'package:salesroot/core/fake/seed_graph.dart';
 import 'package:salesroot/core/locale/locale_provider.dart';
-import 'package:salesroot/core/storage/prefs_provider.dart';
 import 'package:salesroot/core/theme/app_theme.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
-import 'package:salesroot/features/leads/models/lead_query.dart';
+import 'package:salesroot/features/leads/models/lead_input.dart';
 import 'package:salesroot/features/leads/providers/lead_providers.dart';
 import 'package:salesroot/features/leads/view/lead_activity_screen.dart';
 import 'package:salesroot/features/leads/view/lead_detail_screen.dart';
@@ -24,42 +15,18 @@ import 'package:salesroot/features/leads/view/lead_quick_screen.dart';
 import 'package:salesroot/features/leads/view/leads_screen.dart';
 import 'package:salesroot/features/leads/view/widget/lead_card.dart';
 import 'package:salesroot/features/leads/view/widget/lead_filter_sheet.dart';
+import 'package:salesroot/features/leads/view/widget/lead_save_flow.dart';
 import 'package:salesroot/features/leads/view/widget/lead_timeline.dart';
 import 'package:salesroot/features/leads/view/widget/move_stage_sheet.dart';
 import 'package:salesroot/translations/translations.dart';
+import 'package:salesroot/widgets/widgets.dart';
 
-const _full = ModuleAccess(
-  canView: true,
-  canAdd: true,
-  canEdit: true,
-  canDelete: true,
-);
+import '../../helpers/api_stub.dart';
+import 'lead_stub.dart';
 
-Future<ProviderContainer> _container(Locale locale) async {
-  SharedPreferences.setMockInitialValues({'language': locale.languageCode});
-  FlutterSecureStorage.setMockInitialValues({});
-  final prefs = await SharedPreferences.getInstance();
-  final container = ProviderContainer(
-    retry: (_, _) => null,
-    overrides: [
-      sharedPreferencesProvider.overrideWithValue(prefs),
-      seedGraphProvider.overrideWithValue(
-        SeedGraph.build(
-          workspaceId: 200,
-          kind: WorkspaceKind.team,
-          memberCount: 21,
-          leadCount: 230,
-        ),
-      ),
-      for (final module in AppModule.values)
-        moduleAccessProvider(module).overrideWithValue(_full),
-    ],
-  );
-  container
-      .read(devSettingsProvider.notifier)
-      .update(
-        (s) => s.copyWith(latency: false, role: () => WorkspaceRole.owner),
-      );
+Future<ProviderContainer> _container(Locale locale, ApiStub stub) async {
+  final container = await leadContainer(stub, role: 'owner');
+  container.read(appLocaleProvider.notifier).set(locale);
   return container;
 }
 
@@ -91,21 +58,18 @@ Future<void> _show(
   }
 }
 
+Future<void> _settle(WidgetTester tester) async {
+  for (var i = 0; i < 6; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
 void main() {
   for (final locale in const [bangla, english]) {
     group('lead screens in ${locale.languageCode}', () {
       late ProviderContainer container;
-      late int leadId;
 
-      setUp(() async {
-        container = await _container(locale);
-        final page = await container
-            .read(leadRepositoryProvider)
-            .list(const LeadQuery(stageIds: {3}, openOnly: false));
-        leadId = page.items.first.id;
-      });
-
-      tearDown(() => container.dispose());
+      setUp(() async => container = await _container(locale, leadStub()));
 
       testWidgets('list, board and filter', (tester) async {
         await _show(tester, container, const LeadsScreen());
@@ -120,18 +84,32 @@ void main() {
       });
 
       testWidgets('detail, links and move stage', (tester) async {
-        await _show(tester, container, LeadDetailScreen(id: leadId));
+        await _show(tester, container, const LeadDetailScreen(id: rahimId));
         expect(tester.takeException(), isNull);
         expect(find.byType(LeadTimeline), findsOneWidget);
 
-        await _show(tester, container, LeadLinksScreen(id: leadId));
+        await _show(tester, container, const LeadLinksScreen(id: rahimId));
         expect(tester.takeException(), isNull);
 
-        final lead = await container.read(leadProvider(leadId).future);
+        final lead = await tester.runAsync(
+          () => container.read(leadProvider(rahimId).future),
+        );
+        if (lead == null) return;
         await _show(
           tester,
           container,
           Scaffold(body: MoveStageSheet(lead: lead)),
+        );
+        expect(tester.takeException(), isNull);
+
+        await _show(
+          tester,
+          container,
+          Scaffold(
+            body: LeadDuplicateSheet(
+              failure: LeadDuplicateFailure(existing: lead, message: ''),
+            ),
+          ),
         );
         expect(tester.takeException(), isNull);
       });
@@ -147,53 +125,68 @@ void main() {
             prefill: LeadPrefill(
               name: 'Abdur Rahim',
               phone: '01912345678',
-              company: 'Rahim Enterprise',
+              company: 'Rahim Traders',
               source: 'Visiting card',
             ),
           ),
         );
         expect(tester.takeException(), isNull);
 
-        await _show(tester, container, LeadFormScreen(id: leadId));
+        await _show(tester, container, const LeadFormScreen(id: rahimId));
         expect(tester.takeException(), isNull);
 
-        await _show(tester, container, LeadActivityScreen(id: leadId));
+        await _show(tester, container, const LeadActivityScreen(id: rahimId));
         expect(tester.takeException(), isNull);
       });
     });
   }
 
-  testWidgets('moving a stage from the detail offers undo', (tester) async {
-    final container = await _container(english);
-    addTearDown(container.dispose);
-    final repository = container.read(leadRepositoryProvider);
-    final lead = (await repository.list(
-      const LeadQuery(stageIds: {1}, openOnly: false),
-    )).items.first;
+  testWidgets('a lead that failed to load offers a retry', (tester) async {
+    final stub = leadStub()..fail('GET', 'leads/{id}', 404, message: 'Gone');
+    final container = await tester.runAsync(() => _container(english, stub));
+    if (container == null) return;
 
-    await _show(tester, container, LeadDetailScreen(id: lead.id));
+    await _show(tester, container, const LeadDetailScreen(id: rahimId));
+    expect(find.byType(SrErrorState), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('moving a stage from the detail offers undo', (tester) async {
+    final stub = leadStub();
+    stub.on('POST', 'leads/{id}/stage', (RequestOptions r) {
+      final detail = fixtureMap('leads_detail');
+      final body = r.data as Map<String, dynamic>;
+      stub.on('GET', 'leads/{id}', {
+        ...detail,
+        'lead': {
+          ...detail['lead'] as Map<String, dynamic>,
+          'stageId': body['stageId'],
+        },
+      });
+      return const <String, dynamic>{};
+    });
+    final container = await tester.runAsync(() => _container(english, stub));
+    if (container == null) return;
+
+    await _show(tester, container, const LeadDetailScreen(id: rahimId));
     await tester.tap(find.text('Move stage').last);
-    for (var i = 0; i < 6; i++) {
-      await tester.pump(const Duration(milliseconds: 100));
-    }
-    await tester.tap(find.text('Interested').last);
-    for (var i = 0; i < 6; i++) {
-      await tester.pump(const Duration(milliseconds: 100));
-    }
+    await _settle(tester);
+    await tester.tap(find.text('Visited').last);
+    await _settle(tester);
     expect(
       find.descendant(
         of: find.byType(SnackBar),
-        matching: find.text('Moved to Interested'),
+        matching: find.text('Moved to Visited'),
       ),
       findsOneWidget,
     );
-    expect((await repository.get(lead.id)).stage?.id, 3);
+    expect(stub.lastBody('POST', 'leads/{id}/stage'), {
+      'stageId': visitedStage,
+    });
 
     await tester.tap(find.text('Undo'));
-    for (var i = 0; i < 6; i++) {
-      await tester.pump(const Duration(milliseconds: 100));
-    }
-    expect((await repository.get(lead.id)).stage?.id, 1);
+    await _settle(tester);
+    expect(stub.lastBody('POST', 'leads/{id}/stage'), {'stageId': sampleStage});
     expect(tester.takeException(), isNull);
   });
 }

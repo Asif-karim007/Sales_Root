@@ -9,6 +9,47 @@ part of 'lead_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(leadApi)
+final leadApiProvider = LeadApiProvider._();
+
+final class LeadApiProvider
+    extends $FunctionalProvider<LeadApi, LeadApi, LeadApi>
+    with $Provider<LeadApi> {
+  LeadApiProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'leadApiProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$leadApiHash();
+
+  @$internal
+  @override
+  $ProviderElement<LeadApi> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  LeadApi create(Ref ref) {
+    return leadApi(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LeadApi value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LeadApi>(value),
+    );
+  }
+}
+
+String _$leadApiHash() => r'74ca49d9ae73ca4382dac2b8090090b28cbcb561';
+
 @ProviderFor(leadRepository)
 final leadRepositoryProvider = LeadRepositoryProvider._();
 
@@ -48,7 +89,7 @@ final class LeadRepositoryProvider
   }
 }
 
-String _$leadRepositoryHash() => r'89695ea88edce67c4bb3d7673e146bc4b6b1cced';
+String _$leadRepositoryHash() => r'29b6da5cf333df6b2bf0c37ef1ecd69bc7e39d20';
 
 @ProviderFor(leadStages)
 final leadStagesProvider = LeadStagesProvider._();
@@ -253,7 +294,7 @@ final class LeadListNotifierProvider
   LeadListNotifier create() => LeadListNotifier();
 }
 
-String _$leadListNotifierHash() => r'79257e82a28844e7f9e6f255858d66d72bab7146';
+String _$leadListNotifierHash() => r'165cd80c609b23eb7fecd09ba3d8ee8e24bb7c9b';
 
 /// The lead list, 20 at a time, rebuilt from page 1 when the filter changes.
 
@@ -299,7 +340,7 @@ final class LeadBoardNotifierProvider
   LeadBoardNotifier create() => LeadBoardNotifier();
 }
 
-String _$leadBoardNotifierHash() => r'73d5a1e9f7eb7a8bc3f7501488135e6a9bc70c96';
+String _$leadBoardNotifierHash() => r'793e7db80856148e19061a2eae7832bd9aeff0b0';
 
 abstract class _$LeadBoardNotifier extends $AsyncNotifier<LeadBoard> {
   FutureOr<LeadBoard> build();
@@ -330,14 +371,16 @@ final class LeadProvider
     extends $FunctionalProvider<AsyncValue<Lead>, Lead, FutureOr<Lead>>
     with $FutureModifier<Lead>, $FutureProvider<Lead> {
   /// One lead with its timeline.
-  LeadProvider._({required LeadFamily super.from, required int super.argument})
-    : super(
-        retry: null,
-        name: r'leadProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+  LeadProvider._({
+    required LeadFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'leadProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$leadHash();
@@ -356,7 +399,7 @@ final class LeadProvider
 
   @override
   FutureOr<Lead> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return lead(ref, argument);
   }
 
@@ -371,12 +414,12 @@ final class LeadProvider
   }
 }
 
-String _$leadHash() => r'8389191fbb279811bef3531afd05e91bba03bd7e';
+String _$leadHash() => r'be59c4c6c7a949b80981411e159105f84cb1f482';
 
 /// One lead with its timeline.
 
 final class LeadFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Lead>, int> {
+    with $FunctionalFamilyOverride<FutureOr<Lead>, String> {
   LeadFamily._()
     : super(
         retry: null,
@@ -388,7 +431,7 @@ final class LeadFamily extends $Family
 
   /// One lead with its timeline.
 
-  LeadProvider call(int id) => LeadProvider._(argument: id, from: this);
+  LeadProvider call(String id) => LeadProvider._(argument: id, from: this);
 
   @override
   String toString() => r'leadProvider';
@@ -448,7 +491,7 @@ final class LeadFilterPreviewProvider
   }
 }
 
-String _$leadFilterPreviewHash() => r'51890a8b08f27d8e0551c686c3bcaf132f2d14a8';
+String _$leadFilterPreviewHash() => r'83ba088b6e11e4e1ab741b0775b47bcc5c067df3';
 
 /// How many leads [filter] would show, for the filter sheet's button.
 
@@ -472,24 +515,24 @@ final class LeadFilterPreviewFamily extends $Family
   String toString() => r'leadFilterPreviewProvider';
 }
 
-/// Stage moves, undo, task done and delete. Every result lands in the list,
-/// the board and the detail at once; the screen named by the event's origin
-/// shows the snackbar. Kept alive so an undo still lands after the screen
-/// that started the move has closed.
+/// Stage moves, undo, task done, delete and restore. Every result lands in
+/// the list, the board and the detail at once; the screen named by the
+/// event's origin shows the snackbar. Kept alive so an undo still lands
+/// after the screen that started the move has closed.
 
 @ProviderFor(LeadActionsNotifier)
 final leadActionsProvider = LeadActionsNotifierProvider._();
 
-/// Stage moves, undo, task done and delete. Every result lands in the list,
-/// the board and the detail at once; the screen named by the event's origin
-/// shows the snackbar. Kept alive so an undo still lands after the screen
-/// that started the move has closed.
+/// Stage moves, undo, task done, delete and restore. Every result lands in
+/// the list, the board and the detail at once; the screen named by the
+/// event's origin shows the snackbar. Kept alive so an undo still lands
+/// after the screen that started the move has closed.
 final class LeadActionsNotifierProvider
     extends $NotifierProvider<LeadActionsNotifier, LeadEvent?> {
-  /// Stage moves, undo, task done and delete. Every result lands in the list,
-  /// the board and the detail at once; the screen named by the event's origin
-  /// shows the snackbar. Kept alive so an undo still lands after the screen
-  /// that started the move has closed.
+  /// Stage moves, undo, task done, delete and restore. Every result lands in
+  /// the list, the board and the detail at once; the screen named by the
+  /// event's origin shows the snackbar. Kept alive so an undo still lands
+  /// after the screen that started the move has closed.
   LeadActionsNotifierProvider._()
     : super(
         from: null,
@@ -518,12 +561,12 @@ final class LeadActionsNotifierProvider
 }
 
 String _$leadActionsNotifierHash() =>
-    r'1dc8bb9f9380d419248f9fec461da72e04e91c94';
+    r'8a463452075522efa5128ff22d2fd9d25021ad6d';
 
-/// Stage moves, undo, task done and delete. Every result lands in the list,
-/// the board and the detail at once; the screen named by the event's origin
-/// shows the snackbar. Kept alive so an undo still lands after the screen
-/// that started the move has closed.
+/// Stage moves, undo, task done, delete and restore. Every result lands in
+/// the list, the board and the detail at once; the screen named by the
+/// event's origin shows the snackbar. Kept alive so an undo still lands
+/// after the screen that started the move has closed.
 
 abstract class _$LeadActionsNotifier extends $Notifier<LeadEvent?> {
   LeadEvent? build();
@@ -591,7 +634,7 @@ final class LeadSaveNotifierProvider
   }
 }
 
-String _$leadSaveNotifierHash() => r'40c91b9c4a6f9314d766397e2d7a98599d3fd744';
+String _$leadSaveNotifierHash() => r'43e59fecb15a218b0478d65003760b3a19595580';
 
 /// Saving the lead forms. [slot] keeps the quick, voice and full forms
 /// apart, since one can open over another.
@@ -648,15 +691,15 @@ abstract class _$LeadSaveNotifier extends $AsyncNotifier<Lead?> {
   }
 }
 
-/// Logging a call, meeting, visit, note or message on a lead.
+/// Logging a call, visit, note or message on a lead.
 
 @ProviderFor(LeadActivitySaveNotifier)
 final leadActivitySaveProvider = LeadActivitySaveNotifierFamily._();
 
-/// Logging a call, meeting, visit, note or message on a lead.
+/// Logging a call, visit, note or message on a lead.
 final class LeadActivitySaveNotifierProvider
     extends $AsyncNotifierProvider<LeadActivitySaveNotifier, Lead?> {
-  /// Logging a call, meeting, visit, note or message on a lead.
+  /// Logging a call, visit, note or message on a lead.
   LeadActivitySaveNotifierProvider._({
     required LeadActivitySaveNotifierFamily super.from,
     required String super.argument,
@@ -695,9 +738,9 @@ final class LeadActivitySaveNotifierProvider
 }
 
 String _$leadActivitySaveNotifierHash() =>
-    r'baba02c2005e67606fbc339b52e7edac2ce88e0f';
+    r'c951e3f74c429a4bc25cc4379793e961c1e31219';
 
-/// Logging a call, meeting, visit, note or message on a lead.
+/// Logging a call, visit, note or message on a lead.
 
 final class LeadActivitySaveNotifierFamily extends $Family
     with
@@ -717,7 +760,7 @@ final class LeadActivitySaveNotifierFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Logging a call, meeting, visit, note or message on a lead.
+  /// Logging a call, visit, note or message on a lead.
 
   LeadActivitySaveNotifierProvider call(String slot) =>
       LeadActivitySaveNotifierProvider._(argument: slot, from: this);
@@ -726,7 +769,7 @@ final class LeadActivitySaveNotifierFamily extends $Family
   String toString() => r'leadActivitySaveProvider';
 }
 
-/// Logging a call, meeting, visit, note or message on a lead.
+/// Logging a call, visit, note or message on a lead.
 
 abstract class _$LeadActivitySaveNotifier extends $AsyncNotifier<Lead?> {
   late final _$args = ref.$arg as String;

@@ -1,0 +1,120 @@
+{
+ "pipelines": [
+  {
+   "id": "01a10101-8646-7b7e-9690-527c3f1af8dc",
+   "name": "Sales",
+   "packKey": "distribution",
+   "isDefault": true
+  }
+ ],
+ "stages": [
+  {
+   "id": "01a10101-864b-7935-9bd6-8c6f4179ed51",
+   "pipelineId": "01a10101-8646-7b7e-9690-527c3f1af8dc",
+   "nameEn": "To contact",
+   "nameBn": "যোগাযোগ বাকি",
+   "universalStep": 1,
+   "sortOrder": 1,
+   "showInEasy": true,
+   "isWon": false,
+   "isLost": false,
+   "probability": 10,
+   "requiredFields": []
+  },
+  {
+   "id": "01a10101-864c-74b1-85f5-ec67557a0a62",
+   "pipelineId": "01a10101-8646-7b7e-9690-527c3f1af8dc",
+   "nameEn": "Visited",
+   "nameBn": "ভিজিট হয়েছে",
+   "universalStep": 2,
+   "sortOrder": 2,
+   "showInEasy": true,
+   "isWon": false,
+   "isLost": false,
+   "probability": 30,
+   "requiredFields": []
+  },
+  {
+   "id": "01a10101-864c-753e-85da-61aec3aed636",
+   "pipelineId": "01a10101-8646-7b7e-9690-527c3f1af8dc",
+   "nameEn": "Sample given",
+   "nameBn": "নমুনা দেওয়া",
+   "universalStep": 3,
+   "sortOrder": 3,
+   "showInEasy": false,
+   "isWon": false,
+   "isLost": false,
+   "probability": 45,
+   "requiredFields": [
+    "productInterest"
+   ]
+  },
+  {
+   "id": "01a10101-864d-7b1d-a937-209e6db5ff2d",
+   "pipelineId": "01a10101-8646-7b7e-9690-527c3f1af8dc",
+   "nameEn": "Ordered",
+   "nameBn": "অর্ডার হয়েছে",
+   "universalStep": 6,
+   "sortOrder": 4,
+   "showInEasy": true,
+   "isWon": true,
+   "isLost": false,
+   "probability": 100,
+   "requiredFields": [
+    "amount"
+   ]
+  },
+  {
+   "id": "01a10101-864d-79ab-96ab-dfb577b0c63e",
+   "pipelineId": "01a10101-8646-7b7e-9690-527c3f1af8dc",
+   "nameEn": "Delivered",
+   "nameBn": "ডেলিভারি",
+   "universalStep": 7,
+   "sortOrder": 5,
+   "showInEasy": false,
+   "isWon": false,
+   "isLost": false,
+   "probability": 100,
+   "requiredFields": []
+  },
+  {
+   "id": "01a10101-864d-7689-a88e-c017ab7b05c5",
+   "pipelineId": "01a10101-8646-7b7e-9690-527c3f1af8dc",
+   "nameEn": "Paid",
+   "nameBn": "পরিশোধিত",
+   "universalStep": 8,
+   "sortOrder": 6,
+   "showInEasy": true,
+   "isWon": false,
+   "isLost": false,
+   "probability": 100,
+   "requiredFields": []
+  },
+  {
+   "id": "01a10101-864d-7c0b-bcc1-5f430bc50cbb",
+   "pipelineId": "01a10101-8646-7b7e-9690-527c3f1af8dc",
+   "nameEn": "Repeat order",
+   "nameBn": "রিপিট অর্ডার",
+   "universalStep": 10,
+   "sortOrder": 7,
+   "showInEasy": false,
+   "isWon": false,
+   "isLost": false,
+   "probability": 100,
+   "requiredFields": []
+  },
+  {
+   "id": "01a10101-864d-7c3b-a5cc-60e0522176b8",
+   "pipelineId": "01a10101-8646-7b7e-9690-527c3f1af8dc",
+   "nameEn": "Lost",
+   "nameBn": "হারিয়েছি",
+   "universalStep": 6,
+   "sortOrder": 99,
+   "showInEasy": false,
+   "isWon": false,
+   "isLost": true,
+   "probability": 0,
+   "requiredFields": []
+  }
+ ]
+}

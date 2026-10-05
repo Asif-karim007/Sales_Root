@@ -1,10 +1,13 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:salesroot/core/access/access_providers.dart';
-import 'package:salesroot/core/fake/fake_providers.dart';
 import 'package:salesroot/core/network/api_failure.dart';
+import 'package:salesroot/core/network/dio_providers.dart';
 import 'package:salesroot/core/paging/paged.dart';
-import 'package:salesroot/features/leads/data/fake_lead_repository.dart';
+import 'package:salesroot/core/workspace/workspace_providers.dart';
+import 'package:salesroot/features/leads/data/api_lead_repository.dart';
+import 'package:salesroot/features/leads/data/lead_api.dart';
 import 'package:salesroot/features/leads/data/lead_repository.dart';
 import 'package:salesroot/features/leads/models/lead.dart';
 import 'package:salesroot/features/leads/models/lead_input.dart';
@@ -15,8 +18,16 @@ import 'package:salesroot/features/leads/models/lead_stage.dart';
 part 'lead_providers.g.dart';
 
 @Riverpod(keepAlive: true)
-LeadRepository leadRepository(Ref ref) =>
-    FakeLeadRepository(ref.watch(fakeBackendProvider));
+LeadApi leadApi(Ref ref) => LeadApi(ref.watch(dioProvider));
+
+@Riverpod(keepAlive: true)
+LeadRepository leadRepository(Ref ref) {
+  ref.watch(currentWorkspaceProvider.select((w) => w?.id));
+  return ApiLeadRepository(
+    ref.watch(leadApiProvider),
+    memberId: () => ref.read(currentWorkspaceProvider)?.membershipId,
+  );
+}
 
 @Riverpod(keepAlive: true)
 Future<List<LeadStage>> leadStages(Ref ref) =>
@@ -55,15 +66,13 @@ class LeadFilterNotifier extends _$LeadFilterNotifier {
 /// The lead list, 20 at a time, rebuilt from page 1 when the filter changes.
 @riverpod
 class LeadListNotifier extends _$LeadListNotifier {
-  LeadQuery _query(int page) =>
-      ref.read(leadFilterProvider).query(now: DateTime.now(), page: page);
+  LeadQuery _query(int page) => ref.read(leadFilterProvider).query(page: page);
 
   @override
   Future<Paged<Lead>> build() async {
     ref.watch(leadFilterProvider);
     final repository = ref.watch(leadRepositoryProvider);
-    final result = await repository.list(_query(1));
-    return Paged.first(result, facetKeys: LeadFacets.facetKeys);
+    return Paged.first(await repository.list(_query(1)));
   }
 
   Future<void> loadMore() async {
@@ -82,40 +91,17 @@ class LeadListNotifier extends _$LeadListNotifier {
     }
   }
 
-  /// Shows [lead] as saved, then refreshes the chip counts.
+  /// Shows [lead] as saved.
   void patch(Lead lead) {
     final current = state.value;
     if (current == null) return;
     state = AsyncData(current.map((l) => l.id == lead.id ? lead : l));
-    _refreshFacets();
   }
 
-  void remove(int id) {
+  void remove(String id) {
     final current = state.value;
     if (current == null) return;
     state = AsyncData(current.where((l) => l.id != id));
-    _refreshFacets();
-  }
-
-  Future<void> _refreshFacets() async {
-    try {
-      final fresh = await ref.read(leadRepositoryProvider).list(_query(1));
-      if (!ref.mounted) return;
-      final current = state.value;
-      if (current == null) return;
-      state = AsyncData(
-        Paged(
-          items: current.items,
-          page: current.page,
-          totalCount: current.totalCount,
-          facets: {
-            for (final key in LeadFacets.facetKeys) key: fresh.facet(key),
-          },
-        ),
-      );
-    } on ApiFailure {
-      return;
-    }
   }
 }
 
@@ -124,24 +110,19 @@ class LeadBoard {
   const LeadBoard({required this.stages, required this.columns});
 
   final List<LeadStage> stages;
-  final Map<int, Paged<Lead>> columns;
+  final Map<String, Paged<Lead>> columns;
 
-  Paged<Lead> column(int stageId) => columns[stageId] ?? const Paged();
+  Paged<Lead> column(String stageId) => columns[stageId] ?? const Paged();
 
-  LeadBoard withColumn(int stageId, Paged<Lead> column) =>
+  LeadBoard withColumn(String stageId, Paged<Lead> column) =>
       LeadBoard(stages: stages, columns: {...columns, stageId: column});
 }
 
 @riverpod
 class LeadBoardNotifier extends _$LeadBoardNotifier {
-  LeadQuery _query(int stageId, int page) => ref
+  LeadQuery _query(String stageId, int page) => ref
       .read(leadFilterProvider)
-      .query(
-        now: DateTime.now(),
-        page: page,
-        stageIds: {stageId},
-        withChip: false,
-      );
+      .query(page: page, stageId: stageId, withChip: false);
 
   @override
   Future<LeadBoard> build() async {
@@ -163,7 +144,7 @@ class LeadBoardNotifier extends _$LeadBoardNotifier {
     );
   }
 
-  Future<void> loadMore(int stageId) async {
+  Future<void> loadMore(String stageId) async {
     final board = state.value;
     final column = board?.column(stageId);
     if (board == null || column == null) return;
@@ -189,7 +170,7 @@ class LeadBoardNotifier extends _$LeadBoardNotifier {
     final board = state.value;
     if (board == null) return;
     final stageId = lead.stage?.id;
-    final columns = <int, Paged<Lead>>{
+    final columns = <String, Paged<Lead>>{
       for (final entry in board.columns.entries)
         entry.key: entry.value.where((l) => l.id != lead.id),
     };
@@ -200,7 +181,7 @@ class LeadBoardNotifier extends _$LeadBoardNotifier {
     state = AsyncData(LeadBoard(stages: board.stages, columns: columns));
   }
 
-  void remove(int id) {
+  void remove(String id) {
     final board = state.value;
     if (board == null) return;
     state = AsyncData(
@@ -217,14 +198,15 @@ class LeadBoardNotifier extends _$LeadBoardNotifier {
 
 /// One lead with its timeline.
 @riverpod
-Future<Lead> lead(Ref ref, int id) => ref.watch(leadRepositoryProvider).get(id);
+Future<Lead> lead(Ref ref, String id) =>
+    ref.watch(leadRepositoryProvider).get(id);
 
 /// How many leads [filter] would show, for the filter sheet's button.
 @riverpod
 Future<int> leadFilterPreview(Ref ref, LeadFilter filter) async {
   final result = await ref
       .watch(leadRepositoryProvider)
-      .list(filter.query(now: DateTime.now(), pageSize: 1));
+      .list(filter.query(pageSize: 1));
   return result.totalCount;
 }
 
@@ -262,16 +244,22 @@ class LeadDeleted extends LeadEvent {
   final Lead lead;
 }
 
+class LeadRestored extends LeadEvent {
+  const LeadRestored(super.origin, this.lead);
+
+  final Lead lead;
+}
+
 class LeadActionFailed extends LeadEvent {
   const LeadActionFailed(super.origin, this.failure);
 
   final ApiFailure failure;
 }
 
-/// Stage moves, undo, task done and delete. Every result lands in the list,
-/// the board and the detail at once; the screen named by the event's origin
-/// shows the snackbar. Kept alive so an undo still lands after the screen
-/// that started the move has closed.
+/// Stage moves, undo, task done, delete and restore. Every result lands in
+/// the list, the board and the detail at once; the screen named by the
+/// event's origin shows the snackbar. Kept alive so an undo still lands
+/// after the screen that started the move has closed.
 @Riverpod(keepAlive: true)
 class LeadActionsNotifier extends _$LeadActionsNotifier {
   @override
@@ -279,27 +267,22 @@ class LeadActionsNotifier extends _$LeadActionsNotifier {
 
   Future<void> moveStage(
     Lead lead,
-    LeadStage to,
-    LeadSurface origin, {
-    int? lostReasonId,
-    String? note,
-  }) async {
-    _show(lead.movedTo(to));
+    LeadStageInput input,
+    LeadSurface origin,
+  ) async {
+    _show(lead.movedTo(input.stage));
     try {
-      final move = await ref
+      final moved = await ref
           .read(leadRepositoryProvider)
-          .moveStage(
-            lead.id,
-            LeadStageInput(
-              stageId: to.id,
-              lostReasonId: lostReasonId,
-              note: note,
-            ),
-          );
+          .moveStage(lead, input);
       if (!ref.mounted) return;
-      _show(move.lead);
+      _show(moved);
       ref.invalidate(leadProvider(lead.id));
-      state = LeadMoved(origin, move, to);
+      state = LeadMoved(
+        origin,
+        LeadStageMove(before: lead, lead: moved),
+        input.stage,
+      );
     } on ApiFailure catch (failure) {
       if (!ref.mounted) return;
       _show(lead);
@@ -307,25 +290,44 @@ class LeadActionsNotifier extends _$LeadActionsNotifier {
     }
   }
 
+  /// Puts the lead back where [move] found it.
   Future<void> undoMove(LeadStageMove move, LeadSurface origin) =>
       _run(origin, () async {
+        final before = move.before;
+        final stages = await ref.read(leadStagesProvider.future);
+        final from = before.stage;
+        final stage = before.isLost ? stages.lost : stages.byId(from?.id);
+        if (stage == null) throw const ApiFailure(404, '');
         final lead = await ref
             .read(leadRepositoryProvider)
-            .undoStageMove(move.lead.id, move.moveId);
+            .moveStage(
+              move.lead,
+              LeadStageInput(
+                stage: stage,
+                lostReason: before.lostReason,
+                note: before.lostNote,
+                amount: before.isWon ? before.estimatedAmount : null,
+              ),
+            );
         return LeadMoveUndone(origin, lead);
       });
 
-  Future<void> completeTask(Lead lead, LeadSurface origin) =>
+  Future<void> completeTask(Lead lead, LeadTask task, LeadSurface origin) =>
       _run(origin, () async {
         final done = await ref
             .read(leadRepositoryProvider)
-            .completeNextTask(lead.id);
+            .completeTask(lead.id, task.id);
         return LeadTaskDone(origin, done);
       });
 
   Future<void> delete(Lead lead, LeadSurface origin) => _run(origin, () async {
     await ref.read(leadRepositoryProvider).delete(lead.id);
     return LeadDeleted(origin, lead);
+  });
+
+  Future<void> restore(Lead lead, LeadSurface origin) => _run(origin, () async {
+    final restored = await ref.read(leadRepositoryProvider).restore(lead.id);
+    return LeadRestored(origin, restored);
   });
 
   Future<void> _run(
@@ -338,6 +340,10 @@ class LeadActionsNotifier extends _$LeadActionsNotifier {
       switch (event) {
         case LeadDeleted(:final lead):
           _drop(lead.id);
+        case LeadRestored():
+          ref
+            ..invalidate(leadListProvider)
+            ..invalidate(leadBoardProvider);
         case LeadMoveUndone(:final lead) || LeadTaskDone(:final lead):
           _show(lead);
           ref.invalidate(leadProvider(lead.id));
@@ -360,7 +366,7 @@ class LeadActionsNotifier extends _$LeadActionsNotifier {
     }
   }
 
-  void _drop(int id) {
+  void _drop(String id) {
     if (ref.exists(leadListProvider)) {
       ref.read(leadListProvider.notifier).remove(id);
     }
@@ -382,8 +388,8 @@ class LeadSaveNotifier extends _$LeadSaveNotifier {
     created: true,
   );
 
-  Future<void> edit(int id, LeadInput input) =>
-      _save(() => ref.read(leadRepositoryProvider).edit(id, input));
+  Future<void> edit(Lead lead, LeadInput input) =>
+      _save(() => ref.read(leadRepositoryProvider).edit(lead, input));
 
   Future<void> _save(
     Future<Lead> Function() save, {
@@ -400,21 +406,26 @@ class LeadSaveNotifier extends _$LeadSaveNotifier {
         ref
           ..invalidate(leadListProvider)
           ..invalidate(leadBoardProvider);
-      } else if (ref.exists(leadListProvider)) {
-        ref.read(leadListProvider.notifier).patch(lead);
+      } else {
+        if (ref.exists(leadListProvider)) {
+          ref.read(leadListProvider.notifier).patch(lead);
+        }
+        if (ref.exists(leadBoardProvider)) {
+          ref.read(leadBoardProvider.notifier).place(lead);
+        }
       }
     }
     state = result;
   }
 }
 
-/// Logging a call, meeting, visit, note or message on a lead.
+/// Logging a call, visit, note or message on a lead.
 @riverpod
 class LeadActivitySaveNotifier extends _$LeadActivitySaveNotifier {
   @override
   FutureOr<Lead?> build(String slot) => null;
 
-  Future<void> log(int leadId, LeadActivityInput input) async {
+  Future<void> log(String leadId, LeadActivityInput input) async {
     if (state.isLoading) return;
     state = const AsyncLoading();
     final result = await AsyncValue.guard(
@@ -441,7 +452,7 @@ class PendingCall {
     required this.startedAt,
   });
 
-  final int leadId;
+  final String leadId;
   final String contactName;
   final DateTime startedAt;
 }
