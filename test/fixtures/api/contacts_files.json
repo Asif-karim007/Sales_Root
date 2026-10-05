@@ -1,0 +1,20 @@
+{
+  "files": [
+    {
+      "id": "01a10cef-502f-7ce3-9353-9951ccaf546c",
+      "fileName": "probe.txt",
+      "mime": "text/plain",
+      "sizeBytes": 4,
+      "storageKey": "01a10101-8645-7750-8f77-adcfb74cb05f/2026/10/1b31204366224721b403ac5102f078b1.txt",
+      "createdAt": "2026-10-05T16:39:32.655795Z"
+    },
+    {
+      "id": "01a10cef-7305-7d4d-b668-aecdd9a8a6c9",
+      "fileName": "c-entityType.txt",
+      "mime": "text/plain",
+      "sizeBytes": 4,
+      "storageKey": "01a10101-8645-7750-8f77-adcfb74cb05f/2026/10/dac81cd00d004fcb8f8f2797b02053c5.txt",
+      "createdAt": "2026-10-05T16:39:41.573195Z"
+    }
+  ]
+}

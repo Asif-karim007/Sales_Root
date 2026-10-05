@@ -12,38 +12,30 @@ import 'package:salesroot/features/contacts/providers/companies_providers.dart';
 import 'package:salesroot/features/contacts/providers/customer_providers.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_feedback.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_header.dart';
-import 'package:salesroot/features/contacts/view/widget/contacts_sheets.dart';
 import 'package:salesroot/features/contacts/view/widget/document_upload_sheet.dart';
 import 'package:salesroot/features/contacts/view/widget/paged_scroll_view.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-const _filters = [
-  null,
-  DocumentCategory.quotation,
-  DocumentCategory.invoice,
-  DocumentCategory.receipt,
-  DocumentCategory.agreement,
-  DocumentCategory.photo,
-];
+enum _Filter { all, photos, files }
 
-String documentCategoryLabel(AppLocalizations l10n, DocumentCategory? kind) =>
-    switch (kind) {
-      null => l10n.commonAll,
-      DocumentCategory.quotation => l10n.contactsQuotes,
-      DocumentCategory.invoice => l10n.contactsInvoices,
-      DocumentCategory.receipt => l10n.contactsReceipts,
-      DocumentCategory.agreement => l10n.contactsAgreements,
-      DocumentCategory.photo => l10n.contactsPhotos,
-      DocumentCategory.other => l10n.contactsOtherDocuments,
-    };
+String _filterLabel(AppLocalizations l10n, _Filter filter) => switch (filter) {
+  _Filter.all => l10n.commonAll,
+  _Filter.photos => l10n.contactsPhotos,
+  _Filter.files => l10n.contactsOtherDocuments,
+};
 
-/// #49: a customer's quotations, invoices, receipts, agreements and photos,
-/// with upload and preview.
+bool _matches(_Filter filter, CustomerDocument document) => switch (filter) {
+  _Filter.all => true,
+  _Filter.photos => document.isPhoto,
+  _Filter.files => !document.isPhoto,
+};
+
+/// #49: the files kept on a customer, with upload and preview.
 class CustomerDocumentsScreen extends ConsumerStatefulWidget {
   const CustomerDocumentsScreen({super.key, required this.companyId});
 
-  final int companyId;
+  final String companyId;
 
   @override
   ConsumerState<CustomerDocumentsScreen> createState() =>
@@ -52,30 +44,14 @@ class CustomerDocumentsScreen extends ConsumerStatefulWidget {
 
 class _CustomerDocumentsScreenState
     extends ConsumerState<CustomerDocumentsScreen> {
-  int _filter = 0;
+  _Filter _filter = _Filter.all;
 
   Future<void> _upload() async {
     final upload = await showDocumentUploadSheet(context);
     if (upload == null) return;
     await ref
-        .read(documentMutationProvider(widget.companyId).notifier)
+        .read(documentUploadProvider(widget.companyId).notifier)
         .upload(upload);
-  }
-
-  Future<void> _delete(CustomerDocument document) async {
-    final l10n = context.l10n;
-    final confirmed = await showSrConfirm(
-      context,
-      title: l10n.contactsDeleteDocumentTitle,
-      message: l10n.contactsDeleteDocumentBody(document.title),
-      confirmLabel: l10n.commonDelete,
-      icon: Icons.delete_outline_rounded,
-      destructive: true,
-    );
-    if (!confirmed) return;
-    await ref
-        .read(documentMutationProvider(widget.companyId).notifier)
-        .delete(document.id);
   }
 
   void _open(CustomerDocument document) {
@@ -85,32 +61,10 @@ class _CustomerDocumentsScreenState
         builder: (_) => SrFileViewer(
           name: document.fileName,
           kind: srFileKindOf(document.fileName),
-          title: document.title,
-          load: () => repository.download(document.id),
+          title: document.fileName,
+          load: () => repository.download(document),
         ),
       ),
-    );
-  }
-
-  void _menu(CustomerDocument document, bool canEdit) {
-    final l10n = context.l10n;
-    showActionSheet(
-      context,
-      title: document.title,
-      actions: [
-        SheetAction(
-          icon: Icons.visibility_outlined,
-          label: l10n.contactsOpen,
-          onTap: () => _open(document),
-        ),
-        if (canEdit && document.canDelete)
-          SheetAction(
-            icon: Icons.delete_outline_rounded,
-            label: l10n.commonDelete,
-            destructive: true,
-            onTap: () => _delete(document),
-          ),
-      ],
     );
   }
 
@@ -121,15 +75,13 @@ class _CustomerDocumentsScreenState
     final company = ref.watch(companyProvider(widget.companyId)).value;
     final canEdit = ref.watch(moduleAccessProvider(AppModule.company)).canEdit;
     final uploading = ref
-        .watch(documentMutationProvider(widget.companyId))
+        .watch(documentUploadProvider(widget.companyId))
         .isLoading;
 
-    ref.listen(documentMutationProvider(widget.companyId), (_, next) {
+    ref.listen(documentUploadProvider(widget.companyId), (_, next) {
       switch (next) {
-        case AsyncData(value: DocumentChange.uploaded):
+        case AsyncData(value: true):
           showSrSuccess(context, l10n.contactsUploaded);
-        case AsyncData(value: DocumentChange.deleted):
-          showSrSuccess(context, l10n.contactsDocumentDeleted);
         case AsyncError(:final error):
           showFailure(context, error, quota: QuotaKind.storage);
         default:
@@ -158,9 +110,8 @@ class _CustomerDocumentsScreenState
         data: (context, all) => _List(
           all: all,
           filter: _filter,
-          onFilter: (index) => setState(() => _filter = index),
+          onFilter: (filter) => setState(() => _filter = filter),
           onOpen: _open,
-          onMenu: (document) => _menu(document, canEdit),
           onUpload: canEdit ? _upload : null,
         ),
       ),
@@ -174,24 +125,19 @@ class _List extends StatelessWidget {
     required this.filter,
     required this.onFilter,
     required this.onOpen,
-    required this.onMenu,
     required this.onUpload,
   });
 
   final List<CustomerDocument> all;
-  final int filter;
-  final ValueChanged<int> onFilter;
+  final _Filter filter;
+  final ValueChanged<_Filter> onFilter;
   final ValueChanged<CustomerDocument> onOpen;
-  final ValueChanged<CustomerDocument> onMenu;
   final VoidCallback? onUpload;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final kind = _filters[filter];
-    final shown = kind == null
-        ? all
-        : all.where((d) => d.category == kind).toList();
+    final shown = all.where((d) => _matches(filter, d)).toList();
 
     return CustomScrollView(
       slivers: [
@@ -206,16 +152,14 @@ class _List extends StatelessWidget {
             child: SrChipRow(
               padding: EdgeInsets.zero,
               chips: [
-                for (final option in _filters)
+                for (final option in _Filter.values)
                   SrChipItem(
-                    documentCategoryLabel(l10n, option),
-                    count: option == null
-                        ? all.length
-                        : all.where((d) => d.category == option).length,
+                    _filterLabel(l10n, option),
+                    count: all.where((d) => _matches(option, d)).length,
                   ),
               ],
-              index: filter,
-              onChanged: onFilter,
+              index: filter.index,
+              onChanged: (index) => onFilter(_Filter.values[index]),
             ),
           ),
         ),
@@ -249,7 +193,6 @@ class _List extends StatelessWidget {
                   document: shown[index],
                   divider: index < shown.length - 1,
                   onOpen: () => onOpen(shown[index]),
-                  onMenu: () => onMenu(shown[index]),
                 ),
               ),
             ),
@@ -264,86 +207,45 @@ class _DocumentRow extends StatelessWidget {
     required this.document,
     required this.divider,
     required this.onOpen,
-    required this.onMenu,
   });
 
   final CustomerDocument document;
   final bool divider;
   final VoidCallback onOpen;
-  final VoidCallback onMenu;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final amount = document.amount;
-    final size = document.sizeInKb;
-    final by = document.uploadedBy;
-    final kind = srFileKindOf(document.fileName);
-    final (icon, tone) = switch (document.category) {
-      DocumentCategory.quotation => (
-        Icons.request_quote_outlined,
-        SrAvatarTone.accent,
-      ),
-      DocumentCategory.invoice => (
-        Icons.receipt_long_outlined,
-        SrAvatarTone.neutral,
-      ),
-      DocumentCategory.receipt => (Icons.payments_outlined, SrAvatarTone.gold),
-      DocumentCategory.agreement => (
-        Icons.handshake_outlined,
-        SrAvatarTone.neutral,
-      ),
-      DocumentCategory.photo => (Icons.photo_outlined, SrAvatarTone.neutral),
-      DocumentCategory.other => (
-        Icons.description_outlined,
-        SrAvatarTone.neutral,
-      ),
-    };
-    final title = [
-      _title(l10n, document),
-      if (amount != null) fmt.moneyCompact(amount),
-    ].join(' · ');
+    final size = document.sizeInBytes;
     final meta = [
-      switch (kind) {
+      switch (srFileKindOf(document.fileName)) {
         SrFileKind.pdf => l10n.contactsPdf,
         SrFileKind.image => l10n.contactsImage,
         SrFileKind.other => l10n.contactsFile,
       },
-      if (document.source == 'Sms') l10n.contactsSentBySms,
-      if (document.source == 'Visit') l10n.contactsVisit,
       fmt.dayMonth(document.uploadedOn),
-      if (size != null && amount == null) _size(l10n, fmt, size),
-      if (by != null) l10n.contactsUploadedBy(by),
-      if (document.viewed) l10n.contactsViewed,
+      if (size != null) _size(l10n, fmt, size),
     ];
 
     return SrListRow(
-      title: title,
+      title: document.fileName,
       subtitle: meta.join(' · '),
-      leading: SrAvatar(icon: icon, tone: tone),
-      divider: divider,
-      onTap: onOpen,
-      trailing: SrIconButton(
-        icon: Icons.more_horiz_rounded,
-        compact: true,
-        tooltip: l10n.commonMore,
-        onTap: onMenu,
+      leading: SrAvatar(
+        icon: document.isPhoto
+            ? Icons.photo_outlined
+            : Icons.description_outlined,
       ),
+      divider: divider,
+      chevron: true,
+      onTap: onOpen,
     );
   }
 
-  String _title(AppLocalizations l10n, CustomerDocument document) =>
-      switch (document.category) {
-        DocumentCategory.quotation => l10n.contactsQuotationNumber(
-          document.title,
-        ),
-        DocumentCategory.invoice => l10n.contactsInvoiceNumber(document.title),
-        DocumentCategory.receipt => l10n.contactsReceiptNumber(document.title),
-        _ => document.title,
-      };
-
-  String _size(AppLocalizations l10n, AppFormat fmt, int kb) => kb >= 1024
-      ? l10n.contactsSizeMb(fmt.number(kb / 1024, decimals: 1))
-      : l10n.contactsSizeKb(fmt.number(kb));
+  String _size(AppLocalizations l10n, AppFormat fmt, int bytes) {
+    final kb = (bytes / 1024).ceil();
+    return kb >= 1024
+        ? l10n.contactsSizeMb(fmt.number(kb / 1024, decimals: 1))
+        : l10n.contactsSizeKb(fmt.number(kb));
+  }
 }

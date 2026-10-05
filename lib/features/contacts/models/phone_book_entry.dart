@@ -20,7 +20,7 @@ class ImportCandidate {
   const ImportCandidate({required this.entry, this.existingContactId});
 
   final PhoneBookEntry entry;
-  final int? existingContactId;
+  final String? existingContactId;
 
   bool get exists => existingContactId != null;
 }

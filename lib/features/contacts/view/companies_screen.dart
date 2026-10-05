@@ -9,7 +9,6 @@ import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/routing/routes.dart';
-import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/contacts/models/company.dart';
 import 'package:salesroot/features/contacts/providers/companies_providers.dart';
 import 'package:salesroot/features/contacts/view/widget/contact_rows.dart';
@@ -19,8 +18,7 @@ import 'package:salesroot/features/contacts/view/widget/paged_scroll_view.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #46: the companies the team sells to, with customer, industry and area
-/// filters.
+/// #46: the companies the team sells to, with a customers filter.
 class CompaniesScreen extends ConsumerStatefulWidget {
   const CompaniesScreen({super.key});
 
@@ -51,9 +49,7 @@ class _CompaniesScreenState extends ConsumerState<CompaniesScreen> {
     _search.clear();
     ref.read(companiesFilterProvider.notifier)
       ..search('')
-      ..customersOnly(false)
-      ..industry(null)
-      ..area(null);
+      ..customersOnly(false);
   }
 
   @override
@@ -64,7 +60,7 @@ class _CompaniesScreenState extends ConsumerState<CompaniesScreen> {
     final notifier = ref.read(companiesListProvider.notifier);
     final filter = ref.watch(companiesFilterProvider);
     final canAdd = ref.watch(moduleAccessProvider(AppModule.company)).canAdd;
-    final total = list.value?.facets['Counts']?['All'];
+    final total = ref.watch(companyCountsProvider).value?.all;
 
     return SrScaffold(
       appBar: ContactsHeader(
@@ -90,16 +86,12 @@ class _CompaniesScreenState extends ConsumerState<CompaniesScreen> {
               textInputAction: TextInputAction.search,
               onChanged: _onSearch,
             ),
-            _FilterChips(counts: list.value?.facets['Counts'] ?? const {}),
+            const _FilterChips(),
           ],
           itemBuilder: (context, company, last) =>
               CompanyRow(company: company, divider: !last),
           empty: _Empty(
-            filtered:
-                filter.search.isNotEmpty ||
-                filter.customersOnly ||
-                filter.industry != null ||
-                filter.area != null,
+            filtered: filter.search.isNotEmpty || filter.customersOnly,
             canAdd: canAdd,
             onClear: _clearFilters,
           ),
@@ -110,96 +102,33 @@ class _CompaniesScreenState extends ConsumerState<CompaniesScreen> {
 }
 
 class _FilterChips extends ConsumerWidget {
-  const _FilterChips({required this.counts});
-
-  final Map<String, int> counts;
-
-  Future<void> _pick(
-    BuildContext context, {
-    required String title,
-    required String allLabel,
-    required List<LocalizedName> options,
-    required String? selected,
-    required ValueChanged<String?> onPicked,
-  }) async {
-    final bangla = context.fmt.isBangla;
-    final choices = [const LocalizedName('', ''), ...options];
-    final picked = await showSrSheet<LocalizedName>(
-      context: context,
-      builder: (_) => SrOptionSheet<LocalizedName>(
-        title: title,
-        options: choices,
-        labelOf: (option) => option.en.isEmpty ? allLabel : option.of(bangla),
-        isSelected: (option) => option.en == (selected ?? ''),
-      ),
-    );
-    if (picked == null) return;
-    onPicked(picked.en.isEmpty ? null : picked.en);
-  }
+  const _FilterChips();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final bangla = context.fmt.isBangla;
-    final filter = ref.watch(companiesFilterProvider);
+    final customersOnly = ref.watch(
+      companiesFilterProvider.select((filter) => filter.customersOnly),
+    );
     final notifier = ref.read(companiesFilterProvider.notifier);
-    final lookups = ref.watch(companyLookupsProvider).value;
-    String labelOf(List<LocalizedName> options, String value) =>
-        options.where((o) => o.en == value).firstOrNull?.of(bangla) ?? value;
-    final industry = filter.industry;
-    final area = filter.area;
+    final counts = ref.watch(companyCountsProvider).value;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        spacing: 6,
-        children: [
-          SrChip(
-            label: l10n.commonAll,
-            count: counts['All'],
-            selected: !filter.customersOnly,
-            onTap: () => notifier.customersOnly(false),
-          ),
-          SrChip(
-            label: l10n.contactsCustomers,
-            count: counts['Customers'],
-            selected: filter.customersOnly,
-            onTap: () => notifier.customersOnly(true),
-          ),
-          if (lookups != null) ...[
-            SrChip(
-              label: industry == null
-                  ? l10n.contactsIndustry
-                  : labelOf(lookups.industries, industry),
-              icon: Icons.factory_outlined,
-              tone: industry == null ? SrTone.neutral : SrTone.accent,
-              onTap: () => _pick(
-                context,
-                title: l10n.contactsIndustry,
-                allLabel: l10n.contactsAllIndustries,
-                options: lookups.industries,
-                selected: industry,
-                onPicked: notifier.industry,
-              ),
-            ),
-            SrChip(
-              label: area == null
-                  ? l10n.contactsArea
-                  : labelOf(lookups.areas, area),
-              icon: Icons.place_outlined,
-              tone: area == null ? SrTone.neutral : SrTone.accent,
-              onTap: () => _pick(
-                context,
-                title: l10n.contactsArea,
-                allLabel: l10n.contactsAllAreas,
-                options: lookups.areas,
-                selected: area,
-                onPicked: notifier.area,
-              ),
-            ),
-          ],
-        ],
-      ),
+    return Row(
+      spacing: 6,
+      children: [
+        SrChip(
+          label: l10n.commonAll,
+          count: counts?.all,
+          selected: !customersOnly,
+          onTap: () => notifier.customersOnly(false),
+        ),
+        SrChip(
+          label: l10n.contactsCustomers,
+          count: counts?.customers,
+          selected: customersOnly,
+          onTap: () => notifier.customersOnly(true),
+        ),
+      ],
     );
   }
 }

@@ -13,53 +13,105 @@ class SalesDocRef {
     this.status,
     this.paid = 0,
     this.dueOn,
-    this.leadId,
+    this.deliveredOn,
   });
 
-  final int id;
+  final String id;
   final String number;
-  final int amount;
+  final double amount;
   final DateTime on;
+
+  /// The server's status, such as `sent`, `delivered` or `partial`.
   final String? status;
 
   /// Collected so far; invoices only.
-  final int paid;
+  final double paid;
   final DateTime? dueOn;
-  final int? leadId;
+  final DateTime? deliveredOn;
 
-  int get due => amount - paid;
+  double get due => amount - paid;
+  bool get isCancelled => status == 'cancelled';
 
-  factory SalesDocRef.fromJson(Map<String, dynamic> json) => SalesDocRef(
-    id: jsonInt(json['Id']) ?? 0,
-    number: json['Number'] as String? ?? '',
-    amount: jsonInt(json['Amount']) ?? 0,
-    on: jsonDate(json['On']) ?? DateTime(2000),
-    status: json['Status'] as String?,
-    paid: jsonInt(json['Paid']) ?? 0,
-    dueOn: jsonDate(json['DueOn']),
-    leadId: jsonInt(json['LeadId']),
+  factory SalesDocRef.fromQuote(Map<String, dynamic> json) => SalesDocRef(
+    id: jsonId(json['id']) ?? '',
+    number: json['number'] as String? ?? '',
+    amount: jsonDouble(json['total']) ?? 0,
+    on:
+        jsonDate(json['sentAt']) ??
+        jsonDate(json['createdAt']) ??
+        DateTime(2000),
+    status: json['status'] as String?,
+  );
+
+  factory SalesDocRef.fromOrder(Map<String, dynamic> json) => SalesDocRef(
+    id: jsonId(json['id']) ?? '',
+    number: json['number'] as String? ?? '',
+    amount: jsonDouble(json['total']) ?? 0,
+    on: jsonDate(json['createdAt']) ?? DateTime(2000),
+    status: json['status'] as String?,
+    deliveredOn: json['status'] == 'delivered'
+        ? jsonDate(json['deliveryDate'])
+        : null,
+  );
+
+  factory SalesDocRef.fromInvoice(Map<String, dynamic> json) => SalesDocRef(
+    id: jsonId(json['id']) ?? '',
+    number: json['number'] as String? ?? '',
+    amount: jsonDouble(json['total']) ?? 0,
+    on:
+        jsonDate(json['issueDate']) ??
+        jsonDate(json['createdAt']) ??
+        DateTime(2000),
+    status: json['status'] as String?,
+    paid: jsonDouble(json['paidAmt']) ?? 0,
+    dueOn: jsonDate(json['dueDate']),
   );
 }
 
+/// A collection from the customer.
+class CustomerPayment {
+  const CustomerPayment({
+    required this.id,
+    required this.amount,
+    required this.on,
+    this.receiptNo,
+    this.method,
+    this.status,
+  });
+
+  final String id;
+  final double amount;
+  final DateTime on;
+  final String? receiptNo;
+
+  /// The server's method key, such as `cash` or `bkash`.
+  final String? method;
+  final String? status;
+
+  bool get isCancelled => status == 'cancelled';
+
+  factory CustomerPayment.fromJson(Map<String, dynamic> json) =>
+      CustomerPayment(
+        id: jsonId(json['id']) ?? '',
+        amount: jsonDouble(json['amount']) ?? 0,
+        on: jsonDate(json['receivedAt']) ?? DateTime(2000),
+        receiptNo: json['receiptNo'] as String?,
+        method: json['method'] as String?,
+        status: json['status'] as String?,
+      );
+}
+
 enum CustomerEventKind {
-  collection('Collection'),
-  invoice('Invoice'),
-  quotation('Quotation'),
-  order('Order'),
-  delivery('Delivery'),
-  call('Call'),
-  whatsApp('WhatsApp'),
-  visit('Visit'),
-  document('Document');
-
-  const CustomerEventKind(this.wire);
-
-  final String wire;
-
-  static CustomerEventKind fromWire(String? value) => values.firstWhere(
-    (kind) => kind.wire == value,
-    orElse: () => CustomerEventKind.document,
-  );
+  collection,
+  invoice,
+  quotation,
+  order,
+  delivery,
+  call,
+  whatsApp,
+  visit,
+  note,
+  document,
 }
 
 /// The Customer 360 timeline chips.
@@ -70,7 +122,8 @@ extension CustomerEventKindGroup on CustomerEventKind {
     CustomerEventKind.collection ||
     CustomerEventKind.invoice => CustomerEventGroup.money,
     CustomerEventKind.call ||
-    CustomerEventKind.whatsApp => CustomerEventGroup.talk,
+    CustomerEventKind.whatsApp ||
+    CustomerEventKind.note => CustomerEventGroup.talk,
     CustomerEventKind.visit => CustomerEventGroup.visits,
     CustomerEventKind.quotation ||
     CustomerEventKind.order ||
@@ -91,32 +144,32 @@ class CustomerEvent {
     this.note,
     this.byName,
     this.refId,
-    this.count,
     this.durationMinutes,
   });
 
   final CustomerEventKind kind;
   final DateTime on;
   final String? number;
-  final int? amount;
+  final double? amount;
   final String? method;
   final String? note;
   final String? byName;
-  final int? refId;
-  final int? count;
+  final String? refId;
   final int? durationMinutes;
 
-  factory CustomerEvent.fromJson(Map<String, dynamic> json) => CustomerEvent(
-    kind: CustomerEventKind.fromWire(json['Kind'] as String?),
-    on: jsonDate(json['On']) ?? DateTime(2000),
-    number: json['Number'] as String?,
-    amount: jsonInt(json['Amount']),
-    method: json['Method'] as String?,
-    note: json['Note'] as String?,
-    byName: json['ByName'] as String?,
-    refId: jsonInt(json['RefId']),
-    count: jsonInt(json['Count']),
-    durationMinutes: jsonInt(json['DurationMinutes']),
+  factory CustomerEvent.fromActivity(ContactActivity activity) => CustomerEvent(
+    kind: switch (activity.type) {
+      ActivityType.call => CustomerEventKind.call,
+      ActivityType.whatsApp => CustomerEventKind.whatsApp,
+      ActivityType.visit => CustomerEventKind.visit,
+      ActivityType.sms ||
+      ActivityType.email ||
+      ActivityType.note => CustomerEventKind.note,
+    },
+    on: activity.on,
+    note: activity.note,
+    byName: activity.byName,
+    durationMinutes: activity.durationMinutes,
   );
 }
 
@@ -125,137 +178,138 @@ class CustomerSummary {
   const CustomerSummary({
     required this.companyId,
     required this.companyName,
-    required this.totalSales,
-    required this.collected,
     required this.outstanding,
     required this.overdue,
-    required this.openDealValue,
     required this.leads,
     required this.quotations,
     required this.orders,
     required this.invoices,
-    required this.visitCount,
-    required this.events,
+    required this.payments,
+    required this.activities,
+    required this.documents,
   });
 
-  final int companyId;
+  final String companyId;
   final String companyName;
-
-  /// Lifetime value: everything invoiced.
-  final int totalSales;
-  final int collected;
-  final int outstanding;
-  final int overdue;
-  final int openDealValue;
+  final double outstanding;
+  final double overdue;
   final List<LinkedLead> leads;
   final List<SalesDocRef> quotations;
   final List<SalesDocRef> orders;
   final List<SalesDocRef> invoices;
-  final int visitCount;
-  final List<CustomerEvent> events;
+  final List<CustomerPayment> payments;
+  final List<ContactActivity> activities;
+  final List<CustomerDocument> documents;
 
   List<LinkedLead> get openDeals =>
       leads.where((lead) => lead.status == LeadStatus.open).toList();
 
-  factory CustomerSummary.fromJson(Map<String, dynamic> json) =>
-      CustomerSummary(
-        companyId: jsonInt(json['ProspectId']) ?? 0,
-        companyName: json['ProspectName'] as String? ?? '',
-        totalSales: jsonInt(json['TotalSales']) ?? 0,
-        collected: jsonInt(json['Collected']) ?? 0,
-        outstanding: jsonInt(json['Outstanding']) ?? 0,
-        overdue: jsonInt(json['Overdue']) ?? 0,
-        openDealValue: jsonInt(json['OpenDealValue']) ?? 0,
-        leads: jsonList(json['Leads'], LinkedLead.fromJson),
-        quotations: jsonList(json['Quotations'], SalesDocRef.fromJson),
-        orders: jsonList(json['Orders'], SalesDocRef.fromJson),
-        invoices: jsonList(json['Invoices'], SalesDocRef.fromJson),
-        visitCount: jsonInt(json['VisitCount']) ?? 0,
-        events: jsonList(json['Events'], CustomerEvent.fromJson),
-      );
+  /// Lifetime value: everything invoiced and not cancelled.
+  double get totalSales => invoices
+      .where((invoice) => !invoice.isCancelled)
+      .fold(0, (sum, invoice) => sum + invoice.amount);
+
+  double get collected => payments
+      .where((payment) => !payment.isCancelled)
+      .fold(0, (sum, payment) => sum + payment.amount);
+
+  double get openDealValue =>
+      openDeals.fold(0, (sum, lead) => sum + lead.value);
+
+  int get visitCount =>
+      activities.where((a) => a.type == ActivityType.visit).length;
+
+  /// Money, documents and touches together, newest first.
+  List<CustomerEvent> get events => [
+    for (final payment in payments)
+      if (!payment.isCancelled)
+        CustomerEvent(
+          kind: CustomerEventKind.collection,
+          on: payment.on,
+          number: payment.receiptNo,
+          amount: payment.amount,
+          method: payment.method,
+          refId: payment.id,
+        ),
+    for (final invoice in invoices)
+      CustomerEvent(
+        kind: CustomerEventKind.invoice,
+        on: invoice.on,
+        number: invoice.number,
+        amount: invoice.amount,
+        refId: invoice.id,
+      ),
+    for (final quote in quotations)
+      CustomerEvent(
+        kind: CustomerEventKind.quotation,
+        on: quote.on,
+        number: quote.number,
+        amount: quote.amount,
+        refId: quote.id,
+      ),
+    for (final order in orders) ...[
+      CustomerEvent(
+        kind: CustomerEventKind.order,
+        on: order.on,
+        number: order.number,
+        amount: order.amount,
+        refId: order.id,
+      ),
+      if (order.deliveredOn case final delivered?)
+        CustomerEvent(
+          kind: CustomerEventKind.delivery,
+          on: delivered,
+          number: order.number,
+          refId: order.id,
+        ),
+    ],
+    for (final activity in activities) CustomerEvent.fromActivity(activity),
+    for (final document in documents)
+      CustomerEvent(
+        kind: CustomerEventKind.document,
+        on: document.uploadedOn,
+        number: document.fileName,
+      ),
+  ]..sort((a, b) => b.on.compareTo(a.on));
 }
 
-enum DocumentCategory {
-  quotation('Quotation'),
-  invoice('Invoice'),
-  receipt('Receipt'),
-  agreement('Agreement'),
-  photo('Photo'),
-  other('Other');
-
-  const DocumentCategory(this.wire);
-
-  final String wire;
-
-  static DocumentCategory fromWire(String? value) => values.firstWhere(
-    (category) => category.wire == value,
-    orElse: () => DocumentCategory.other,
-  );
-}
-
+/// A file kept on the customer: an upload, or a photo from a visit.
 class CustomerDocument {
   const CustomerDocument({
     required this.id,
-    required this.title,
+    required this.key,
     required this.fileName,
-    required this.category,
     required this.uploadedOn,
-    this.sizeInKb,
-    this.uploadedBy,
-    this.source,
-    this.amount,
-    this.viewed = false,
-    this.canDelete = false,
+    this.mime,
+    this.sizeInBytes,
   });
 
-  final int id;
-  final String title;
-  final String fileName;
-  final DocumentCategory category;
-  final DateTime uploadedOn;
-  final int? sizeInKb;
-  final String? uploadedBy;
+  final String id;
 
-  /// Where it came from: `Visit`, `Sms` or an upload.
-  final String? source;
-  final int? amount;
-  final bool viewed;
-  final bool canDelete;
+  /// The storage key `GET files/{key}` serves the bytes under.
+  final String key;
+  final String fileName;
+  final DateTime uploadedOn;
+  final String? mime;
+  final int? sizeInBytes;
+
+  bool get isPhoto => mime?.startsWith('image/') ?? false;
 
   factory CustomerDocument.fromJson(Map<String, dynamic> json) =>
       CustomerDocument(
-        id: jsonInt(json['Id']) ?? 0,
-        title: json['Title'] as String? ?? '',
-        fileName: json['FileName'] as String? ?? '',
-        category: DocumentCategory.fromWire(json['Category'] as String?),
-        uploadedOn: jsonDate(json['UploadedOn']) ?? DateTime(2000),
-        sizeInKb: jsonInt(json['SizeInKb']),
-        uploadedBy: json['UploadedBy'] as String?,
-        source: json['Source'] as String?,
-        amount: jsonInt(json['Amount']),
-        viewed: jsonBool(json['Viewed']),
-        canDelete: jsonBool(json['CanDelete']),
+        id: jsonId(json['id']) ?? '',
+        key: json['storageKey'] as String? ?? '',
+        fileName: json['fileName'] as String? ?? '',
+        uploadedOn: jsonDate(json['createdAt']) ?? DateTime(2000),
+        mime: json['mime'] as String?,
+        sizeInBytes: jsonInt(json['sizeBytes']),
       );
 }
 
-/// A file the user picked, ready to upload.
+/// A file the user picked, ready to upload under [fileName].
 class DocumentUpload {
-  const DocumentUpload({
-    required this.fileName,
-    required this.bytes,
-    required this.title,
-    required this.category,
-  });
+  const DocumentUpload({required this.fileName, required this.bytes});
 
   final String fileName;
   final Uint8List bytes;
-  final String title;
-  final DocumentCategory category;
-
-  Map<String, dynamic> toJson() => {
-    'FileName': fileName,
-    'Title': title.trim(),
-    'Category': category.wire,
-    'SizeInKb': (bytes.length / 1024).ceil(),
-  };
 }

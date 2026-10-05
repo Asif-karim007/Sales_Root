@@ -38,7 +38,7 @@ class ContactRow extends StatelessWidget {
     final l10n = context.l10n;
     final phone = contact.phone;
     final where = contact.isIndependent
-        ? [l10n.contactsIndependent, ?contact.source]
+        ? [l10n.contactsIndependent]
         : [?contact.companyName, ?contact.designation];
 
     return SrListRow(
@@ -97,16 +97,15 @@ class CompanyRow extends StatelessWidget {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final parts = [
-      ?company.industry(fmt.isBangla),
-      ?company.area(fmt.isBangla),
+      ?company.area,
       l10n.contactsContactCount(
         company.contactCount,
         fmt.number(company.contactCount),
       ),
-      if (company.leadCount > 0)
+      if (company.openLeadCount > 0)
         l10n.contactsLeadCount(
-          company.leadCount,
-          fmt.number(company.leadCount),
+          company.openLeadCount,
+          fmt.number(company.openLeadCount),
         ),
     ];
 
@@ -138,25 +137,19 @@ extension LeadStatusLabel on LeadStatus {
   };
 }
 
-/// A lead of a contact or company: stage, value, owner and status; opens
-/// the lead when the user may see leads.
+/// A lead of a contact or company: stage, value and status; opens the lead
+/// when the user may see leads.
 class LinkedLeadRow extends ConsumerWidget {
-  const LinkedLeadRow({super.key, required this.lead, this.showOwner = false});
+  const LinkedLeadRow({super.key, required this.lead});
 
   final LinkedLead lead;
-  final bool showOwner;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final canOpen = ref.watch(moduleAccessProvider(AppModule.lead)).canView;
-    final owner = lead.ownerName;
-    final parts = [
-      lead.stage.of(fmt.isBangla),
-      fmt.moneyCompact(lead.value),
-      if (showOwner && owner != null) owner,
-    ];
+    final parts = [lead.stage.of(fmt.isBangla), fmt.moneyCompact(lead.value)];
 
     return SrListRow(
       title: lead.title,

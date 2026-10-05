@@ -55,7 +55,7 @@ final class CustomerRepositoryProvider
 }
 
 String _$customerRepositoryHash() =>
-    r'2a2ac895de6825cece1af092eba8b0dd10985f2e';
+    r'e300dd2f32b5dde6a96c1c08b37b0ab3e40429a8';
 
 @ProviderFor(customerSummary)
 final customerSummaryProvider = CustomerSummaryFamily._();
@@ -70,7 +70,7 @@ final class CustomerSummaryProvider
     with $FutureModifier<CustomerSummary>, $FutureProvider<CustomerSummary> {
   CustomerSummaryProvider._({
     required CustomerSummaryFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'customerSummaryProvider',
@@ -97,7 +97,7 @@ final class CustomerSummaryProvider
 
   @override
   FutureOr<CustomerSummary> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return customerSummary(ref, argument);
   }
 
@@ -112,10 +112,10 @@ final class CustomerSummaryProvider
   }
 }
 
-String _$customerSummaryHash() => r'bbbb1e08ec1a774127a8dae335ff5849ff67f074';
+String _$customerSummaryHash() => r'3c605968e9f9866e4413ac91289f751d65f5ca10';
 
 final class CustomerSummaryFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<CustomerSummary>, int> {
+    with $FunctionalFamilyOverride<FutureOr<CustomerSummary>, String> {
   CustomerSummaryFamily._()
     : super(
         retry: null,
@@ -125,15 +125,19 @@ final class CustomerSummaryFamily extends $Family
         isAutoDispose: true,
       );
 
-  CustomerSummaryProvider call(int companyId) =>
+  CustomerSummaryProvider call(String companyId) =>
       CustomerSummaryProvider._(argument: companyId, from: this);
 
   @override
   String toString() => r'customerSummaryProvider';
 }
 
+/// Newest first.
+
 @ProviderFor(customerDocuments)
 final customerDocumentsProvider = CustomerDocumentsFamily._();
+
+/// Newest first.
 
 final class CustomerDocumentsProvider
     extends
@@ -145,9 +149,10 @@ final class CustomerDocumentsProvider
     with
         $FutureModifier<List<CustomerDocument>>,
         $FutureProvider<List<CustomerDocument>> {
+  /// Newest first.
   CustomerDocumentsProvider._({
     required CustomerDocumentsFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'customerDocumentsProvider',
@@ -174,7 +179,7 @@ final class CustomerDocumentsProvider
 
   @override
   FutureOr<List<CustomerDocument>> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return customerDocuments(ref, argument);
   }
 
@@ -189,10 +194,12 @@ final class CustomerDocumentsProvider
   }
 }
 
-String _$customerDocumentsHash() => r'4abc7df1cbc387dc8193962665c5d8ad41e71c73';
+String _$customerDocumentsHash() => r'61d031a4f6af9c024aaf4395c3e8bf70ca387429';
+
+/// Newest first.
 
 final class CustomerDocumentsFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<List<CustomerDocument>>, int> {
+    with $FunctionalFamilyOverride<FutureOr<List<CustomerDocument>>, String> {
   CustomerDocumentsFamily._()
     : super(
         retry: null,
@@ -202,53 +209,52 @@ final class CustomerDocumentsFamily extends $Family
         isAutoDispose: true,
       );
 
-  CustomerDocumentsProvider call(int companyId) =>
+  /// Newest first.
+
+  CustomerDocumentsProvider call(String companyId) =>
       CustomerDocumentsProvider._(argument: companyId, from: this);
 
   @override
   String toString() => r'customerDocumentsProvider';
 }
 
-/// Uploads and deletes a customer's documents; the screen listens for the
-/// [DocumentChange] to confirm.
+/// Uploads a file to the customer; true once it is saved.
 
-@ProviderFor(DocumentMutationNotifier)
-final documentMutationProvider = DocumentMutationNotifierFamily._();
+@ProviderFor(DocumentUploadNotifier)
+final documentUploadProvider = DocumentUploadNotifierFamily._();
 
-/// Uploads and deletes a customer's documents; the screen listens for the
-/// [DocumentChange] to confirm.
-final class DocumentMutationNotifierProvider
-    extends $AsyncNotifierProvider<DocumentMutationNotifier, DocumentChange?> {
-  /// Uploads and deletes a customer's documents; the screen listens for the
-  /// [DocumentChange] to confirm.
-  DocumentMutationNotifierProvider._({
-    required DocumentMutationNotifierFamily super.from,
-    required int super.argument,
+/// Uploads a file to the customer; true once it is saved.
+final class DocumentUploadNotifierProvider
+    extends $AsyncNotifierProvider<DocumentUploadNotifier, bool> {
+  /// Uploads a file to the customer; true once it is saved.
+  DocumentUploadNotifierProvider._({
+    required DocumentUploadNotifierFamily super.from,
+    required String super.argument,
   }) : super(
          retry: null,
-         name: r'documentMutationProvider',
+         name: r'documentUploadProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$documentMutationNotifierHash();
+  String debugGetCreateSourceHash() => _$documentUploadNotifierHash();
 
   @override
   String toString() {
-    return r'documentMutationProvider'
+    return r'documentUploadProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  DocumentMutationNotifier create() => DocumentMutationNotifier();
+  DocumentUploadNotifier create() => DocumentUploadNotifier();
 
   @override
   bool operator ==(Object other) {
-    return other is DocumentMutationNotifierProvider &&
+    return other is DocumentUploadNotifierProvider &&
         other.argument == argument;
   }
 
@@ -258,58 +264,54 @@ final class DocumentMutationNotifierProvider
   }
 }
 
-String _$documentMutationNotifierHash() =>
-    r'847dbd35625566a5f3a310fa62116e4b81f53593';
+String _$documentUploadNotifierHash() =>
+    r'e571a713965f34659fca6e5d7d3a6003307bde9f';
 
-/// Uploads and deletes a customer's documents; the screen listens for the
-/// [DocumentChange] to confirm.
+/// Uploads a file to the customer; true once it is saved.
 
-final class DocumentMutationNotifierFamily extends $Family
+final class DocumentUploadNotifierFamily extends $Family
     with
         $ClassFamilyOverride<
-          DocumentMutationNotifier,
-          AsyncValue<DocumentChange?>,
-          DocumentChange?,
-          FutureOr<DocumentChange?>,
-          int
+          DocumentUploadNotifier,
+          AsyncValue<bool>,
+          bool,
+          FutureOr<bool>,
+          String
         > {
-  DocumentMutationNotifierFamily._()
+  DocumentUploadNotifierFamily._()
     : super(
         retry: null,
-        name: r'documentMutationProvider',
+        name: r'documentUploadProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  /// Uploads and deletes a customer's documents; the screen listens for the
-  /// [DocumentChange] to confirm.
+  /// Uploads a file to the customer; true once it is saved.
 
-  DocumentMutationNotifierProvider call(int companyId) =>
-      DocumentMutationNotifierProvider._(argument: companyId, from: this);
+  DocumentUploadNotifierProvider call(String companyId) =>
+      DocumentUploadNotifierProvider._(argument: companyId, from: this);
 
   @override
-  String toString() => r'documentMutationProvider';
+  String toString() => r'documentUploadProvider';
 }
 
-/// Uploads and deletes a customer's documents; the screen listens for the
-/// [DocumentChange] to confirm.
+/// Uploads a file to the customer; true once it is saved.
 
-abstract class _$DocumentMutationNotifier
-    extends $AsyncNotifier<DocumentChange?> {
-  late final _$args = ref.$arg as int;
-  int get companyId => _$args;
+abstract class _$DocumentUploadNotifier extends $AsyncNotifier<bool> {
+  late final _$args = ref.$arg as String;
+  String get companyId => _$args;
 
-  FutureOr<DocumentChange?> build(int companyId);
+  FutureOr<bool> build(String companyId);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<DocumentChange?>, DocumentChange?>;
+    final ref = this.ref as $Ref<AsyncValue<bool>, bool>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<DocumentChange?>, DocumentChange?>,
-              AsyncValue<DocumentChange?>,
+              AnyNotifier<AsyncValue<bool>, bool>,
+              AsyncValue<bool>,
               Object?,
               Object?
             >;

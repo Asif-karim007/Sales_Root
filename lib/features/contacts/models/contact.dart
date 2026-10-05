@@ -1,17 +1,6 @@
+import 'package:salesroot/core/format/app_date_utils.dart';
+import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
-
-/// Who created or owns a record.
-class PersonRef {
-  const PersonRef({required this.id, required this.name});
-
-  final int id;
-  final String name;
-
-  factory PersonRef.fromJson(Map<String, dynamic> json) => PersonRef(
-    id: jsonInt(json['Id']) ?? 0,
-    name: json['Name'] as String? ?? '',
-  );
-}
 
 /// A concern person: someone the team talks to, at a company or on their own.
 class Contact {
@@ -21,68 +10,56 @@ class Contact {
     this.designation,
     this.companyId,
     this.companyName,
-    this.companyIsClient = false,
-    this.isPrimary = false,
     this.mobiles = const [],
     this.emails = const [],
     this.address,
     this.dateOfBirth,
     this.note,
     this.tags = const [],
-    this.source,
     this.createdOn,
-    this.createdBy,
-    this.canEdit = false,
-    this.canDelete = false,
+    this.ownerName,
   });
 
-  final int id;
+  final String id;
   final String name;
   final String? designation;
-  final int? companyId;
+  final String? companyId;
   final String? companyName;
-  final bool companyIsClient;
-  final bool isPrimary;
   final List<String> mobiles;
   final List<String> emails;
   final String? address;
   final DateTime? dateOfBirth;
   final String? note;
   final List<String> tags;
-  final String? source;
   final DateTime? createdOn;
-  final PersonRef? createdBy;
-  final bool canEdit;
-  final bool canDelete;
+  final String? ownerName;
 
   String? get phone => mobiles.isEmpty ? null : mobiles.first;
   String? get email => emails.isEmpty ? null : emails.first;
   bool get isIndependent => companyId == null;
 
   factory Contact.fromJson(Map<String, dynamic> json) => Contact(
-    id: jsonInt(json['Id']) ?? 0,
-    name: json['Name'] as String? ?? '',
-    designation: json['Designation'] as String?,
-    companyId: jsonInt(json['ProspectId']),
-    companyName: json['ProspectName'] as String?,
-    companyIsClient: jsonBool(json['ProspectIsClient']),
-    isPrimary: jsonBool(json['IsPrimary']),
-    mobiles: jsonStrings(json['Mobiles']),
-    emails: jsonStrings(json['Emails']),
-    address: json['Address'] as String?,
-    dateOfBirth: jsonDate(json['DateOfBirth']),
-    note: json['Note'] as String?,
-    tags: jsonStrings(json['Tags']),
-    source: json['Source'] as String?,
-    createdOn: jsonDate(json['CreatedOn']),
-    createdBy: jsonObject(json['CreatedBy'], PersonRef.fromJson),
-    canEdit: jsonBool(json['CanEdit']),
-    canDelete: jsonBool(json['CanDelete']),
+    id: jsonId(json['id']) ?? '',
+    name: json['name'] as String? ?? '',
+    designation: _text(json['designation']),
+    companyId: jsonId(json['companyId']),
+    companyName: _text(json['companyName']),
+    mobiles: [?_text(json['phone']), ?_text(json['phone2'])],
+    emails: [?_text(json['email'])],
+    address: _text(json['address']),
+    dateOfBirth: jsonDate(json['birthday']),
+    note: _text(json['notes']),
+    tags: jsonStrings(json['tags']),
+    createdOn: jsonDate(json['createdAt']),
+    ownerName: _text(json['ownerName']),
   );
 }
 
-/// The create/edit body for a contact. Edits are built from the fetched
-/// contact so fields the form does not show survive.
+String? _text(dynamic value) =>
+    value is String && value.trim().isNotEmpty ? value : null;
+
+/// The create/edit body for a contact. An edit sends cleared text fields as
+/// empty strings, since the server leaves a missing or null field unchanged.
 class ContactInput {
   const ContactInput({
     required this.name,
@@ -94,87 +71,51 @@ class ContactInput {
     this.dateOfBirth,
     this.note,
     this.tags = const [],
-    this.source,
   });
 
   final String name;
   final String? designation;
-  final int? companyId;
+  final String? companyId;
   final List<String> mobiles;
   final List<String> emails;
   final String? address;
   final DateTime? dateOfBirth;
   final String? note;
   final List<String> tags;
-  final String? source;
 
-  factory ContactInput.fromContact(Contact contact) => ContactInput(
-    name: contact.name,
-    designation: contact.designation,
-    companyId: contact.companyId,
-    mobiles: contact.mobiles,
-    emails: contact.emails,
-    address: contact.address,
-    dateOfBirth: contact.dateOfBirth,
-    note: contact.note,
-    tags: contact.tags,
-    source: contact.source,
-  );
+  Map<String, dynamic> toJson({bool edit = false}) {
+    String? text(String? value) {
+      final trimmed = value?.trim() ?? '';
+      return trimmed.isNotEmpty ? trimmed : (edit ? '' : null);
+    }
 
-  Map<String, dynamic> toJson() => {
-    'Name': name.trim(),
-    'Designation': _blank(designation),
-    'ProspectId': companyId,
-    'Mobiles': mobiles,
-    'Emails': emails,
-    'Address': _blank(address),
-    'DateOfBirth': jsonUtc(dateOfBirth),
-    'Note': _blank(note),
-    'Tags': tags,
-    'Source': _blank(source),
-  }..removeWhere((_, value) => value == null);
-}
-
-String? _blank(String? value) {
-  final trimmed = value?.trim() ?? '';
-  return trimmed.isEmpty ? null : trimmed;
-}
-
-/// The contact list's group chips.
-enum ContactGroup {
-  all('All'),
-  primary('Primary'),
-  independent('Independent'),
-  recent('Recent');
-
-  const ContactGroup(this.wire);
-
-  final String wire;
+    final birthday = dateOfBirth;
+    return {
+      'name': name.trim(),
+      'phone': text(mobiles.firstOrNull),
+      'phone2': text(mobiles.skip(1).firstOrNull),
+      'email': text(emails.firstOrNull),
+      'designation': text(designation),
+      'companyId': companyId,
+      'address': text(address),
+      'birthday': birthday == null
+          ? null
+          : AppDateUtils.toApiDateOnly(birthday),
+      'notes': text(note),
+      'tags': tags,
+    }..removeWhere((_, value) => value == null);
+  }
 }
 
 class ContactQuery {
-  const ContactQuery({
-    this.search = '',
-    this.group = ContactGroup.all,
-    this.letter,
-    this.page = 1,
-  });
+  const ContactQuery({this.search = '', this.page = 1, this.size = pageSize});
 
   final String search;
-  final ContactGroup group;
-
-  /// First letter of the name, `#` for anything that is not A–Z.
-  final String? letter;
   final int page;
-
-  ContactQuery atPage(int page) =>
-      ContactQuery(search: search, group: group, letter: letter, page: page);
+  final int size;
 
   Map<String, dynamic> toQuery() => {
-    'Search': search.trim().isEmpty ? null : search.trim(),
-    'Group': group.wire,
-    'Letter': letter,
-    'Page': page,
-    'PageSize': 20,
+    'q': search.trim().isEmpty ? null : search.trim(),
+    ...pageQuery(page, size: size),
   }..removeWhere((_, value) => value == null);
 }

@@ -1,9 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/features/contacts/data/device_contacts_source.dart';
 import 'package:salesroot/features/contacts/data/fake_device_contacts_source.dart';
+import 'package:salesroot/features/contacts/models/bd_phone.dart';
 import 'package:salesroot/features/contacts/models/contact.dart';
 import 'package:salesroot/features/contacts/models/phone_book_entry.dart';
 import 'package:salesroot/features/contacts/providers/contacts_providers.dart';
@@ -12,7 +12,7 @@ part 'import_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 DeviceContactsSource deviceContactsSource(Ref ref) =>
-    FakeDeviceContactsSource(ref.watch(fakeBackendProvider));
+    const FakeDeviceContactsSource();
 
 class ContactImportState {
   const ContactImportState({
@@ -135,7 +135,10 @@ class ContactImportNotifier extends _$ContactImportNotifier {
         if (current.selected.contains(candidate.entry.deviceId))
           ContactInput(
             name: candidate.entry.name,
-            mobiles: candidate.entry.phones,
+            mobiles: [
+              for (final phone in candidate.entry.phones)
+                BdPhone.mobile(phone) ?? phone,
+            ],
             emails: [?candidate.entry.email],
           ),
     ];

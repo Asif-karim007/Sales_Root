@@ -2,6 +2,6 @@
 abstract final class ContactsPaths {
   static const contactEdit = '/contacts/:id/edit';
   static const companyEdit = '/companies/:id/edit';
-  static String contactEditFor(int id) => '/contacts/$id/edit';
-  static String companyEditFor(int id) => '/companies/$id/edit';
+  static String contactEditFor(String id) => '/contacts/$id/edit';
+  static String companyEditFor(String id) => '/companies/$id/edit';
 }

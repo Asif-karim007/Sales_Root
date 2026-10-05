@@ -10,8 +10,8 @@ import 'package:salesroot/features/contacts/models/customer.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// Picks a file, a camera photo or a gallery photo, then asks for a title
-/// and category. Null when the user backs out.
+/// Picks a file, a camera photo or a gallery photo, then asks for the name
+/// to save it under. Null when the user backs out.
 Future<DocumentUpload?> showDocumentUploadSheet(BuildContext context) =>
     showSrSheet<DocumentUpload>(
       context: context,
@@ -35,7 +35,6 @@ class _UploadSheet extends StatefulWidget {
 class _UploadSheetState extends State<_UploadSheet> {
   final _title = TextEditingController();
   _Picked? _picked;
-  DocumentCategory _category = DocumentCategory.other;
   bool _busy = false;
   String? _error;
 
@@ -52,10 +51,8 @@ class _UploadSheetState extends State<_UploadSheet> {
       final picked = await source();
       if (!mounted || picked == null) return;
       final dot = picked.name.lastIndexOf('.');
-      final image = srFileKindOf(picked.name) == SrFileKind.image;
       setState(() {
         _picked = picked;
-        _category = image ? DocumentCategory.photo : DocumentCategory.other;
         _title.text = dot > 0 ? picked.name.substring(0, dot) : picked.name;
       });
     } on Exception {
@@ -88,12 +85,12 @@ class _UploadSheetState extends State<_UploadSheet> {
       setState(() => _error = context.l10n.contactsTitleRequired);
       return;
     }
+    final dot = picked.name.lastIndexOf('.');
+    final extension = dot > 0 ? picked.name.substring(dot) : '';
     Navigator.of(context).pop(
       DocumentUpload(
-        fileName: picked.name,
+        fileName: '${_title.text.trim()}$extension',
         bytes: picked.bytes,
-        title: _title.text,
-        category: _category,
       ),
     );
   }
@@ -154,19 +151,6 @@ class _UploadSheetState extends State<_UploadSheet> {
           error: _error,
           textCapitalization: TextCapitalization.sentences,
         ),
-        SrFieldLabel(l10n.contactsDocumentCategory),
-        Wrap(
-          spacing: 6,
-          runSpacing: 6,
-          children: [
-            for (final category in DocumentCategory.values)
-              SrChip(
-                label: _label(l10n, category),
-                selected: category == _category,
-                onTap: () => setState(() => _category = category),
-              ),
-          ],
-        ),
         SrButton(
           label: l10n.contactsUpload,
           icon: Icons.cloud_upload_outlined,
@@ -176,14 +160,4 @@ class _UploadSheetState extends State<_UploadSheet> {
       ],
     );
   }
-
-  String _label(AppLocalizations l10n, DocumentCategory category) =>
-      switch (category) {
-        DocumentCategory.quotation => l10n.contactsQuotation,
-        DocumentCategory.invoice => l10n.contactsInvoice,
-        DocumentCategory.receipt => l10n.contactsReceipt,
-        DocumentCategory.agreement => l10n.contactsAgreement,
-        DocumentCategory.photo => l10n.contactsPhoto,
-        DocumentCategory.other => l10n.contactsOtherDocument,
-      };
 }

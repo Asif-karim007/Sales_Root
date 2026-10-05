@@ -1,0 +1,12 @@
+{
+  "code": "V-026",
+  "message": {
+    "bn": "এই নামে প্রতিষ্ঠান আছে: Rahim Traders। সেটি ব্যবহার করবেন?",
+    "en": "A company with this name exists: Rahim Traders. Use it?"
+  },
+  "field": "name",
+  "data": {
+    "id": "01a10101-8657-7f15-8630-b08119f1ae61",
+    "kind": "company"
+  }
+}

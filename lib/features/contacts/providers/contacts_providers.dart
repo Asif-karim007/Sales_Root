@@ -1,10 +1,14 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
 import 'package:salesroot/core/network/api_failure.dart';
+import 'package:salesroot/core/network/dio_providers.dart';
 import 'package:salesroot/core/paging/paged.dart';
+import 'package:salesroot/core/workspace/workspace_providers.dart';
+import 'package:salesroot/features/contacts/data/api_contacts_repository.dart';
+import 'package:salesroot/features/contacts/data/contacts_api.dart';
 import 'package:salesroot/features/contacts/data/contacts_repository.dart';
-import 'package:salesroot/features/contacts/data/fake_contacts_repository.dart';
+import 'package:salesroot/features/contacts/models/company_detail.dart';
 import 'package:salesroot/features/contacts/models/contact.dart';
 import 'package:salesroot/features/contacts/models/linked_records.dart';
 import 'package:salesroot/features/contacts/providers/companies_providers.dart';
@@ -12,60 +16,34 @@ import 'package:salesroot/features/contacts/providers/companies_providers.dart';
 part 'contacts_providers.g.dart';
 
 @Riverpod(keepAlive: true)
-ContactsRepository contactsRepository(Ref ref) =>
-    FakeContactsRepository(ref.watch(fakeBackendProvider));
+ContactsApi contactsApi(Ref ref) => ContactsApi(ref.watch(dioProvider));
 
-class ContactsFilter {
-  const ContactsFilter({
-    this.search = '',
-    this.group = ContactGroup.all,
-    this.letter,
-  });
-
-  final String search;
-  final ContactGroup group;
-  final String? letter;
-
-  ContactQuery query(int page) =>
-      ContactQuery(search: search, group: group, letter: letter, page: page);
+@Riverpod(keepAlive: true)
+ContactsRepository contactsRepository(Ref ref) {
+  ref.watch(currentWorkspaceProvider.select((w) => w?.id));
+  return ApiContactsRepository(ref.watch(contactsApiProvider));
 }
 
 @riverpod
-class ContactsFilterNotifier extends _$ContactsFilterNotifier {
+class ContactsSearchNotifier extends _$ContactsSearchNotifier {
   @override
-  ContactsFilter build() => const ContactsFilter();
+  String build() => '';
 
   void search(String term) {
-    if (term.trim() == state.search) return;
-    state = ContactsFilter(
-      search: term.trim(),
-      group: state.group,
-      letter: state.letter,
-    );
+    if (term.trim() == state) return;
+    state = term.trim();
   }
-
-  void group(ContactGroup group) => state = ContactsFilter(
-    search: state.search,
-    group: group,
-    letter: state.letter,
-  );
-
-  void letter(String? letter) => state = ContactsFilter(
-    search: state.search,
-    group: state.group,
-    letter: letter,
-  );
 }
 
 @riverpod
 class ContactsListNotifier extends _$ContactsListNotifier {
   @override
   Future<Paged<Contact>> build() async {
-    final filter = ref.watch(contactsFilterProvider);
+    final search = ref.watch(contactsSearchProvider);
     final result = await ref
         .watch(contactsRepositoryProvider)
-        .contacts(filter.query(1));
-    return Paged.first(result, facetKeys: const ['GroupCounts']);
+        .contacts(ContactQuery(search: search));
+    return Paged.first(result);
   }
 
   Future<void> loadMore() async {
@@ -80,7 +58,12 @@ class ContactsListNotifier extends _$ContactsListNotifier {
     try {
       final next = await ref
           .read(contactsRepositoryProvider)
-          .contacts(ref.read(contactsFilterProvider).query(current.page + 1));
+          .contacts(
+            ContactQuery(
+              search: ref.read(contactsSearchProvider),
+              page: current.page + 1,
+            ),
+          );
       if (!ref.mounted) return;
       state = AsyncData(current.append(next));
     } on ApiFailure catch (failure) {
@@ -96,55 +79,51 @@ class ContactsListNotifier extends _$ContactsListNotifier {
 }
 
 @riverpod
-Future<Contact> contact(Ref ref, int id) =>
+Future<ContactDetail> contactDetail(Ref ref, String id) =>
     ref.watch(contactsRepositoryProvider).contact(id);
 
 @riverpod
-Future<List<LinkedLead>> contactLeads(Ref ref, int id) =>
-    ref.watch(contactsRepositoryProvider).contactLeads(id);
+Future<Contact> contact(Ref ref, String id) async =>
+    (await ref.watch(contactDetailProvider(id).future)).contact;
 
 @riverpod
-Future<List<ContactActivity>> contactActivity(Ref ref, int id) =>
-    ref.watch(contactsRepositoryProvider).contactActivity(id);
+Future<List<LinkedLead>> contactLeads(Ref ref, String id) async =>
+    (await ref.watch(contactDetailProvider(id).future)).leads;
+
+@riverpod
+Future<List<ContactActivity>> contactActivity(Ref ref, String id) async =>
+    (await ref.watch(contactDetailProvider(id).future)).activities;
 
 /// Everything that lists contacts or counts them.
 void invalidateContactLists(Ref ref) {
   ref
     ..invalidate(contactsListProvider)
-    ..invalidate(companyContactsProvider)
-    ..invalidate(companyProvider)
+    ..invalidate(companyDetailProvider)
     ..invalidate(companiesListProvider);
 }
 
-/// Saves the contact form; [id] 0 creates. A 409 comes back as [Duplicates]
-/// so the form can offer to open the existing contact or save anyway.
+/// Saves the contact form; an empty [id] creates. A 409 comes back as
+/// [Duplicates] so the form can offer to open the existing contact.
 @riverpod
 class ContactSaveNotifier extends _$ContactSaveNotifier {
   @override
-  FutureOr<SaveOutcome<Contact>?> build(int id) => null;
+  FutureOr<SaveOutcome<Contact>?> build(String id) => null;
 
-  Future<void> save(ContactInput input, {bool allowDuplicate = false}) async {
+  Future<void> save(ContactInput input) async {
     final repository = ref.read(contactsRepositoryProvider);
     state = const AsyncLoading();
     final next = await AsyncValue.guard<SaveOutcome<Contact>?>(() async {
       try {
-        final saved = id == 0
-            ? await repository.createContact(
-                input,
-                allowDuplicate: allowDuplicate,
-              )
-            : await repository.editContact(
-                id,
-                input,
-                allowDuplicate: allowDuplicate,
-              );
+        final saved = id.isEmpty
+            ? await repository.createContact(input)
+            : await repository.editContact(id, input);
         return Saved(saved);
       } on ApiFailure catch (failure) {
         if (!failure.isConflict) rethrow;
         return Duplicates(
           await repository.contactDuplicates(
             input.mobiles,
-            excludeId: id == 0 ? null : id,
+            excludeId: id.isEmpty ? null : id,
           ),
         );
       }
@@ -152,27 +131,23 @@ class ContactSaveNotifier extends _$ContactSaveNotifier {
     if (!ref.mounted) return;
     if (next.value case Saved(:final value)) {
       invalidateContactLists(ref);
-      ref
-        ..invalidate(contactProvider(value.id))
-        ..invalidate(contactLeadsProvider(value.id));
+      ref.invalidate(contactDetailProvider(value.id));
     }
     state = next;
   }
 }
 
-enum RecordChange { deleted, primarySet, detached }
-
-/// Deletes one contact; screens listen for [RecordChange.deleted].
+/// Deletes one contact; true once it is gone.
 @riverpod
 class ContactMutationNotifier extends _$ContactMutationNotifier {
   @override
-  FutureOr<RecordChange?> build(int id) => null;
+  FutureOr<bool> build(String id) => false;
 
   Future<void> delete() async {
     state = const AsyncLoading();
-    final next = await AsyncValue.guard<RecordChange?>(() async {
+    final next = await AsyncValue.guard(() async {
       await ref.read(contactsRepositoryProvider).deleteContact(id);
-      return RecordChange.deleted;
+      return true;
     });
     if (!ref.mounted) return;
     if (next.hasValue) invalidateContactLists(ref);

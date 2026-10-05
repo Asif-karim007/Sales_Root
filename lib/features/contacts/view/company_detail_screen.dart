@@ -10,10 +10,8 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/contacts/contacts_paths.dart';
 import 'package:salesroot/features/contacts/models/bd_phone.dart';
 import 'package:salesroot/features/contacts/models/company.dart';
-import 'package:salesroot/features/contacts/models/contact.dart';
 import 'package:salesroot/features/contacts/models/linked_records.dart';
 import 'package:salesroot/features/contacts/providers/companies_providers.dart';
-import 'package:salesroot/features/contacts/providers/contacts_providers.dart';
 import 'package:salesroot/features/contacts/view/widget/contact_launcher.dart';
 import 'package:salesroot/features/contacts/view/widget/contact_rows.dart';
 import 'package:salesroot/features/contacts/view/widget/contacts_feedback.dart';
@@ -28,7 +26,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class CompanyDetailScreen extends ConsumerWidget {
   const CompanyDetailScreen({super.key, required this.id});
 
-  final int id;
+  final String id;
 
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
@@ -51,7 +49,7 @@ class CompanyDetailScreen extends ConsumerWidget {
       context,
       title: company.name,
       actions: [
-        if (access.canEdit && company.canEdit)
+        if (access.canEdit)
           SheetAction(
             icon: Icons.edit_outlined,
             label: l10n.commonEdit,
@@ -67,7 +65,7 @@ class CompanyDetailScreen extends ConsumerWidget {
           label: l10n.contactsDocuments,
           onTap: () => context.push(Routes.customerDocumentsFor(id)),
         ),
-        if (access.canDelete && company.canDelete)
+        if (access.canDelete)
           SheetAction(
             icon: Icons.delete_outline_rounded,
             label: l10n.commonDelete,
@@ -86,13 +84,9 @@ class CompanyDetailScreen extends ConsumerWidget {
 
     ref.listen(companyMutationProvider(id), (_, next) {
       switch (next) {
-        case AsyncData(value: RecordChange.deleted):
+        case AsyncData(value: true):
           showSrSuccess(context, l10n.contactsCompanyDeleted);
           context.pop();
-        case AsyncData(value: RecordChange.primarySet):
-          showSrSuccess(context, l10n.contactsPrimarySet);
-        case AsyncData(value: RecordChange.detached):
-          showSrSuccess(context, l10n.contactsDetached);
         case AsyncError(:final error):
           showFailure(context, error);
         default:
@@ -131,23 +125,12 @@ class _Body extends ConsumerWidget {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final c = SrColors.of(context);
-    final since = company.clientSince;
-    final subtitle = [
-      ?company.industry(fmt.isBangla),
-      ?company.area(fmt.isBangla),
-      if (since != null)
-        l10n.contactsCustomerSince(fmt.digits('${since.year}')),
-    ].join(' · ');
-    final industry = company.industry(fmt.isBangla);
+    final subtitle = [?company.area, ?company.district].join(' · ');
+    final pack = ref.watch(contactsPackProvider).value;
 
     return RefreshIndicator(
       color: c.accent,
-      onRefresh: () {
-        ref
-          ..invalidate(companyContactsProvider(company.id))
-          ..invalidate(companyLeadsProvider(company.id));
-        return ref.refresh(companyProvider(company.id).future);
-      },
+      onRefresh: () => ref.refresh(companyDetailProvider(company.id).future),
       child: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
@@ -158,7 +141,6 @@ class _Body extends ConsumerWidget {
             tags: [
               if (company.isClient)
                 SrTag(l10n.contactsCustomer, tone: SrTone.ok),
-              if (industry != null) SrTag(industry),
               for (final tag in company.tags) SrTag(tag),
             ],
           ),
@@ -176,13 +158,14 @@ class _Body extends ConsumerWidget {
                 KpiStrip(
                   cells: [
                     KpiCell(
-                      l10n.contactsTotalSales,
-                      fmt.moneyCompact(company.totalSales),
-                    ),
-                    KpiCell(
                       l10n.contactsOutstanding,
                       fmt.moneyCompact(company.outstanding),
                       color: company.outstanding > 0 ? c.danger : null,
+                    ),
+                    KpiCell(
+                      l10n.contactsOverdue,
+                      fmt.moneyCompact(company.overdue),
+                      color: company.overdue > 0 ? c.danger : null,
                     ),
                     KpiCell(
                       l10n.contactsOpenLeads,
@@ -192,7 +175,7 @@ class _Body extends ConsumerWidget {
                 ),
                 _PeopleSection(company: company),
                 _LeadsSection(company: company),
-                InfoLines(lines: _lines(context, fmt, l10n)),
+                InfoLines(lines: _lines(context, fmt, l10n, pack)),
                 if (company.note case final note? when note.isNotEmpty)
                   SrNote(message: note, icon: Icons.sticky_note_2_outlined),
               ],
@@ -207,20 +190,24 @@ class _Body extends ConsumerWidget {
     BuildContext context,
     AppFormat fmt,
     AppLocalizations l10n,
+    ContactsPack? pack,
   ) {
     final address = company.address;
     final phone = company.contactNumber;
-    final website = company.websiteProspect;
+    final website = company.website;
     final email = company.email;
     final limit = company.creditLimit;
     final days = company.creditDays;
     return [
-      if (company.industry(fmt.isBangla) case final industry?)
-        InfoLine(l10n.contactsIndustry, industry),
+      if (company.type case final type?) InfoLine(l10n.contactsType, type),
+      for (final field in pack?.companyFields ?? const <CompanyField>[])
+        if (company.custom[field.key] case final value?
+            when '$value'.trim().isNotEmpty)
+          InfoLine(field.label.of(fmt.isBangla), '$value'),
       if (address != null || company.hasLocation)
         InfoLine(
           l10n.contactsAddress,
-          address ?? company.area(fmt.isBangla) ?? l10n.contactsOpenMap,
+          address ?? company.area ?? l10n.contactsOpenMap,
           onTap: () => ContactLauncher.map(
             context,
             label: company.name,
@@ -257,9 +244,8 @@ class _Body extends ConsumerWidget {
                   fmt.number(days),
                 ),
         ),
-      if (company.assignedTo case final owner?)
-        InfoLine(l10n.contactsAssignedTo, owner.name),
-      if (company.code case final code?) InfoLine(l10n.contactsCode, code),
+      if (company.ownerName case final owner?)
+        InfoLine(l10n.contactsAssignedTo, owner),
     ];
   }
 }
@@ -268,67 +254,6 @@ class _PeopleSection extends ConsumerWidget {
   const _PeopleSection({required this.company});
 
   final Company company;
-
-  void _personMenu(BuildContext context, WidgetRef ref, Contact person) {
-    final l10n = context.l10n;
-    final canEdit =
-        ref.read(moduleAccessProvider(AppModule.company)).canEdit &&
-        company.canEdit;
-    final phone = person.phone;
-    showActionSheet(
-      context,
-      title: person.name,
-      actions: [
-        if (phone != null) ...[
-          SheetAction(
-            icon: Icons.call_outlined,
-            label: l10n.commonCall,
-            onTap: () => ContactLauncher.call(context, phone),
-          ),
-          SheetAction(
-            icon: Icons.chat_outlined,
-            label: l10n.contactsWhatsApp,
-            onTap: () => ContactLauncher.whatsApp(context, phone),
-          ),
-        ],
-        if (canEdit && !person.isPrimary)
-          SheetAction(
-            icon: Icons.star_outline_rounded,
-            label: l10n.contactsSetPrimary,
-            onTap: () => ref
-                .read(companyMutationProvider(company.id).notifier)
-                .setPrimary(person.id),
-          ),
-        if (canEdit)
-          SheetAction(
-            icon: Icons.person_remove_outlined,
-            label: l10n.contactsRemoveFromCompany,
-            destructive: true,
-            onTap: () => _detach(context, ref, person),
-          ),
-      ],
-    );
-  }
-
-  Future<void> _detach(
-    BuildContext context,
-    WidgetRef ref,
-    Contact person,
-  ) async {
-    final l10n = context.l10n;
-    final confirmed = await showSrConfirm(
-      context,
-      title: l10n.contactsRemoveFromCompanyTitle(person.name),
-      message: l10n.contactsRemoveFromCompanyBody,
-      confirmLabel: l10n.contactsRemove,
-      icon: Icons.person_remove_outlined,
-      destructive: true,
-    );
-    if (!confirmed) return;
-    await ref
-        .read(companyMutationProvider(company.id).notifier)
-        .detach(person.id);
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -357,19 +282,7 @@ class _PeopleSection extends ConsumerWidget {
           AsyncValue(:final value?) => SrRowGroup(
             rows: [
               for (final person in value)
-                ContactRow(
-                  contact: person,
-                  subtitle: [
-                    ?person.designation,
-                    if (person.isPrimary) l10n.contactsPrimary,
-                  ].join(' · '),
-                  trailing: SrIconButton(
-                    icon: Icons.more_horiz_rounded,
-                    compact: true,
-                    tooltip: l10n.commonMore,
-                    onTap: () => _personMenu(context, ref, person),
-                  ),
-                ),
+                ContactRow(contact: person, subtitle: person.designation ?? ''),
             ],
           ),
           AsyncValue(:final error?) => SrErrorState(
@@ -395,7 +308,7 @@ class _LeadsSection extends ConsumerWidget {
     final fmt = context.fmt;
     final leads = ref.watch(companyLeadsProvider(company.id));
     final canAdd = ref.watch(moduleAccessProvider(AppModule.lead)).canAdd;
-    final count = leads.value?.length ?? company.leadCount;
+    final count = leads.value?.length ?? company.openLeadCount;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -414,10 +327,7 @@ class _LeadsSection extends ConsumerWidget {
             l10n.contactsNoLeads,
           ),
           AsyncValue(:final value?) => SrRowGroup(
-            rows: [
-              for (final lead in value)
-                LinkedLeadRow(lead: lead, showOwner: true),
-            ],
+            rows: [for (final lead in value) LinkedLeadRow(lead: lead)],
           ),
           AsyncValue(:final error?) => SrErrorState(
             error: error,

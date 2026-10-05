@@ -87,8 +87,11 @@ class _Entry extends StatelessWidget {
       CustomerEventKind.collection => (
         Icons.payments_outlined,
         c.success,
-        l10n.contactsEventCollection(money, event.method ?? ''),
-        l10n.contactsEventReceipt(event.note ?? ''),
+        l10n.contactsEventCollection(
+          money,
+          paymentMethodLabel(l10n, event.method),
+        ),
+        number.isEmpty ? null : l10n.contactsEventReceipt(number),
       ),
       CustomerEventKind.invoice => (
         Icons.receipt_long_outlined,
@@ -123,14 +126,20 @@ class _Entry extends StatelessWidget {
       CustomerEventKind.whatsApp => (
         Icons.chat_outlined,
         c.ink2,
-        l10n.contactsEventWhatsApp(fmt.number(event.count ?? 1)),
-        event.note,
+        l10n.contactsWhatsApp,
+        [?event.note, ?by].join(' · '),
       ),
       CustomerEventKind.visit => (
         Icons.place_outlined,
         c.ink2,
         [l10n.contactsVisit, ?event.note, ?duration].join(' · '),
         by,
+      ),
+      CustomerEventKind.note => (
+        Icons.sticky_note_2_outlined,
+        c.ink2,
+        l10n.contactsNote,
+        [?event.note, ?by].join(' · '),
       ),
       CustomerEventKind.document => (
         Icons.description_outlined,
@@ -152,3 +161,16 @@ class _Entry extends StatelessWidget {
     );
   }
 }
+
+/// The name of a payment method the server sends as a key.
+String paymentMethodLabel(AppLocalizations l10n, String? method) =>
+    switch (method) {
+      'cash' => l10n.contactsMethodCash,
+      'bkash' => l10n.contactsMethodBkash,
+      'nagad' => l10n.contactsMethodNagad,
+      'rocket' => l10n.contactsMethodRocket,
+      'bank' => l10n.contactsMethodBank,
+      'cheque' => l10n.contactsMethodCheque,
+      'card' => l10n.contactsMethodCard,
+      _ => method ?? '',
+    };
