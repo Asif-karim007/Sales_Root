@@ -16,17 +16,14 @@ import 'package:salesroot/features/home/view/widget/failure_text.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #19: notifications grouped by day, filtered by kind; a tap marks one read
-/// and opens what it is about.
+/// #19: notifications grouped by day; a tap marks one read and opens what it
+/// is about.
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
-
-  static const _filters = [null, ...NotificationCategory.values];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final filter = ref.watch(notificationFilterProvider);
     final list = ref.watch(notificationsProvider);
     final isBangla = ref.watch(appLocaleProvider) == bangla;
     return SrScaffold(
@@ -41,48 +38,21 @@ class NotificationsScreen extends ConsumerWidget {
           const _MarkAllRead(),
         ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 10),
-          SrChipRow(
-            index: _filters.indexOf(filter),
-            onChanged: (i) => ref
-                .read(notificationFilterProvider.notifier)
-                .select(_filters[i]),
-            chips: [
-              for (final category in _filters)
-                SrChipItem(_filterLabel(l10n, category)),
-            ],
+      body: SrAsyncView<Paged<AppNotification>>(
+        value: list,
+        onRetry: () => ref.invalidate(notificationsProvider),
+        isEmpty: (page) => page.isEmpty,
+        empty: (_) => _Refreshable(
+          child: SrEmptyState(
+            icon: Icons.notifications_none_rounded,
+            title: l10n.homeNotificationsEmpty,
+            message: l10n.homeNotificationsEmptyBody,
           ),
-          Expanded(
-            child: SrAsyncView<Paged<AppNotification>>(
-              value: list,
-              onRetry: () => ref.invalidate(notificationsProvider),
-              isEmpty: (page) => page.isEmpty,
-              empty: (_) => _Refreshable(
-                child: SrEmptyState(
-                  icon: Icons.notifications_none_rounded,
-                  title: l10n.homeNotificationsEmpty,
-                  message: l10n.homeNotificationsEmptyBody,
-                ),
-              ),
-              data: (context, page) => _NotificationList(page: page),
-            ),
-          ),
-        ],
+        ),
+        data: (context, page) => _NotificationList(page: page),
       ),
     );
   }
-
-  String _filterLabel(AppLocalizations l10n, NotificationCategory? category) =>
-      switch (category) {
-        null => l10n.commonAll,
-        NotificationCategory.reminders => l10n.homeFilterReminders,
-        NotificationCategory.team => l10n.homeFilterTeam,
-        NotificationCategory.newLeads => l10n.homeFilterNewLeads,
-        NotificationCategory.billing => l10n.homeFilterBilling,
-      };
 }
 
 class _MarkAllRead extends ConsumerWidget {
@@ -254,7 +224,7 @@ class _NotificationRow extends ConsumerWidget {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final route = item.route;
-    final body = item.body;
+    final body = item.body?.of(fmt.isBangla);
     final (icon, tone) = _look(item.kind);
     return SrListRow(
       title: item.title.of(fmt.isBangla),

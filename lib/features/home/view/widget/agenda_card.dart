@@ -7,7 +7,6 @@ import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/features/home/models/home_summary.dart';
-import 'package:salesroot/features/home/view/widget/stage_tone.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
@@ -59,52 +58,33 @@ class _AgendaRow extends StatelessWidget {
     return SrListRow(
       title: item.title,
       subtitle: _subtitle(context),
-      leading: SrAvatar(name: item.title),
-      trailing: _tag(context),
+      leading: SrAvatar(name: item.who ?? item.title),
+      trailing: item.isOverdue
+          ? SrTag(context.l10n.homeTagOverdue, tone: SrTone.err)
+          : null,
       chevron: true,
       onTap: () => context.push(
-        leadId == null ? Routes.taskFor(item.taskId) : Routes.leadFor(leadId),
+        leadId == null ? Routes.taskFor(item.id) : Routes.leadFor(leadId),
       ),
     );
   }
 
   String _subtitle(BuildContext context) {
     final l10n = context.l10n;
-    final fmt = context.fmt;
-    final isBangla = fmt.isBangla;
     final dueAt = item.dueAt;
-    final time = dueAt == null ? null : fmt.time(dueAt);
-    final note = item.note;
-    final parts = switch (item.kind) {
-      AgendaKind.call => [l10n.homeAgendaCall, ?time, ?note],
-      AgendaKind.visit => [
-        l10n.homeAgendaVisit,
-        ?time,
-        ?item.area?.of(isBangla),
-      ],
-      AgendaKind.followUp => [
-        l10n.homeAgendaFollowUp,
-        if (item.daysSilent > 0)
-          l10n.homeAgendaSilent(fmt.number(item.daysSilent))
-        else
-          ?time,
-      ],
-      AgendaKind.whatsApp => [
-        l10n.homeAgendaWhatsApp,
-        l10n.homeAgendaReplyPending,
-      ],
-      AgendaKind.meeting => [l10n.homeAgendaMeeting, ?time, ?note],
-      AgendaKind.task => [l10n.homeAgendaTask, ?time, ?note],
+    final kind = switch (item.kind) {
+      AgendaKind.call => l10n.homeAgendaCall,
+      AgendaKind.visit => l10n.homeAgendaVisit,
+      AgendaKind.followUp => l10n.homeAgendaFollowUp,
+      AgendaKind.whatsApp => l10n.homeAgendaWhatsApp,
+      AgendaKind.meeting => l10n.homeAgendaMeeting,
+      AgendaKind.collect => l10n.homeAgendaCollect,
+      AgendaKind.task => l10n.homeAgendaTask,
     };
-    return parts.join(' · ');
-  }
-
-  Widget? _tag(BuildContext context) {
-    final l10n = context.l10n;
-    if (item.isOverdue) return SrTag(l10n.homeTagOverdue, tone: SrTone.err);
-    if (item.isNew) return SrTag(l10n.homeTagNew, tone: SrTone.ok);
-    final stage = item.stage;
-    if (stage == null) return null;
-    return SrTag(stage.of(context.fmt.isBangla), tone: stageTone(item.stageId));
+    return [
+      kind,
+      if (dueAt != null) context.fmt.time(dueAt),
+      ?item.who,
+    ].join(' · ');
   }
 }

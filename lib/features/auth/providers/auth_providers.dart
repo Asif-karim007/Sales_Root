@@ -223,7 +223,7 @@ class ProfileSubmitNotifier extends _$ProfileSubmitNotifier {
       throw ApiFailure(
         400,
         failure.message,
-        fieldErrors: {'InviteCode': failure.message},
+        fieldErrors: {'inviteCode': failure.message},
       );
     }
   }

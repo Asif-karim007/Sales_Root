@@ -65,25 +65,26 @@ class _StandardTiles extends ConsumerWidget {
     final reports = ref.watch(
       moduleAccessProvider(AppModule.reports).select((a) => a.visible),
     );
-    return SrStatGrid(
-      tiles: [
-        SrKpiTile(
-          label: l10n.homeFollowUpsDue,
-          value: fmt.number(summary.followUpsDue),
-          onTap: tasks ? () => context.go(Routes.tasks) : null,
-        ),
-        SrKpiTile(
-          label: l10n.homeOpenDeals,
-          value: fmt.moneyCompact(summary.openDealsValue),
-          onTap: leads ? () => context.go(Routes.leads) : null,
-        ),
+    final target = summary.targetPercent;
+    final tiles = [
+      SrKpiTile(
+        label: l10n.homeFollowUpsDue,
+        value: fmt.number(summary.followUpsDue),
+        onTap: tasks ? () => context.go(Routes.tasks) : null,
+      ),
+      SrKpiTile(
+        label: l10n.homeOpenDeals,
+        value: fmt.moneyCompact(summary.openDealsValue),
+        onTap: leads ? () => context.go(Routes.leads) : null,
+      ),
+      if (target != null)
         SrKpiTile(
           label: l10n.homeTarget,
-          value: fmt.percent(summary.targetPercent),
+          value: fmt.percent(target),
           onTap: reports ? () => context.push(Routes.reportSales) : null,
         ),
-      ],
-    );
+    ];
+    return SrStatGrid(columns: tiles.length, tiles: tiles);
   }
 }
 
@@ -131,20 +132,18 @@ class _QuotationRow extends StatelessWidget {
     final sent = item.sentDaysAgo == 0
         ? l10n.homeQuotationSentToday
         : l10n.homeQuotationSentDaysAgo(fmt.number(item.sentDaysAgo));
-    final parts = [
-      fmt.moneyCompact(item.amount),
-      sent,
-      if (item.viewed) l10n.homeQuotationViewed,
-    ];
+    final leadId = item.leadId;
     return SrListRow(
       title: item.companyName,
-      subtitle: parts.join(' · '),
+      subtitle: '${fmt.moneyCompact(item.amount)} · $sent',
       leading: SrAvatar(name: item.companyName),
       trailing: item.needsFollowUp
           ? SrTag(l10n.homeTagFollowUp, tone: SrTone.warn)
           : SrTag(l10n.homeTagSent),
       chevron: true,
-      onTap: () => context.push(Routes.leadFor(item.leadId)),
+      onTap: () => context.push(
+        leadId == null ? Routes.quotationFor(item.id) : Routes.leadFor(leadId),
+      ),
     );
   }
 }

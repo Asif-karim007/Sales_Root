@@ -22,7 +22,7 @@ import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The Home tab: the shared header over the home that fits the workspace,
-/// role and experience level (see [homeVariantFor]).
+/// role and experience level (see [homeLayoutFor]).
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 

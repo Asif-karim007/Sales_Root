@@ -63,7 +63,8 @@ class ApiAuthRepository implements AuthRepository {
       'code': code,
       'name': null,
       'language': language(),
-      'deviceName': '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
+      'deviceName':
+          '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
       'platform': Platform.operatingSystem,
       'appVersion': version,
       'referralCode': referralCode,

@@ -108,7 +108,7 @@ class _CreateTeamScreenState extends ConsumerState<CreateTeamScreen> {
         showSrSuccess(context, l10n.authTeamCreated(value.name));
         context.go(Routes.home);
       case AsyncError(:final error):
-        if (authFieldError(error, 'Name') != null) {
+        if (authFieldError(error, 'name') != null) {
           setState(() => _nameError = l10n.authTeamNameRequired);
         } else {
           showSrError(context, authFailureText(l10n, error));

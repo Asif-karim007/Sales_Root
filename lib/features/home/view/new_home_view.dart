@@ -90,12 +90,12 @@ class _FirstJobs extends ConsumerWidget {
           _Job(label: l10n.homeJobOpenAccount, done: true),
           _Job(
             label: l10n.homeJobAddLead,
-            done: steps.leadAdded,
+            done: false,
             onTap: push(lead.canAdd, Routes.leadQuick),
           ),
           _Job(
             label: l10n.homeJobLogCall,
-            done: steps.callLogged,
+            done: false,
             onTap: lead.canEdit
                 ? () => context.go('${Routes.leads}?pick=call')
                 : null,
@@ -107,7 +107,7 @@ class _FirstJobs extends ConsumerWidget {
           ),
           _Job(
             label: l10n.homeJobScanCard,
-            done: steps.cardScanned,
+            done: false,
             onTap: push(scan.canAdd, Routes.scan),
           ),
         ],

@@ -6,7 +6,6 @@ import 'package:salesroot/core/locale/locale_provider.dart';
 import 'package:salesroot/core/theme/app_theme.dart';
 import 'package:salesroot/features/auth/view/code_screen.dart';
 import 'package:salesroot/features/auth/view/create_team_screen.dart';
-import 'package:salesroot/features/auth/view/email_sign_in_screen.dart';
 import 'package:salesroot/features/auth/view/features_screen.dart';
 import 'package:salesroot/features/auth/view/industry_screen.dart';
 import 'package:salesroot/features/auth/view/invite_screen.dart';
@@ -19,6 +18,7 @@ import 'package:salesroot/features/auth/view/unlock_screen.dart';
 import 'package:salesroot/features/auth/view/welcome_screen.dart';
 import 'package:salesroot/translations/translations.dart';
 
+import '../../helpers/api_stub.dart';
 import 'auth_test_setup.dart';
 
 void main() {
@@ -26,7 +26,7 @@ void main() {
     'splash': const SplashScreen(),
     'welcome': const WelcomeScreen(),
     'phone': const PhoneScreen(),
-    'refersignup': const PhoneScreen(referralCode: 'RH4K9P'),
+    'refersignup': const PhoneScreen(referralCode: 'Q95ED5'),
     'code': const CodeScreen(),
     'pin': const PinScreen(),
     'profile': const ProfileScreen(),
@@ -34,9 +34,8 @@ void main() {
     'tour': const TourScreen(),
     'features': const FeaturesScreen(),
     'createteam': const CreateTeamScreen(),
-    'invite': const InviteScreen(code: 'DS7Q2M'),
+    'invite': const InviteScreen(code: 'invite-membership'),
     'signin': const UnlockScreen(),
-    'signinemail': const EmailSignInScreen(),
   };
 
   final looks = [
@@ -51,7 +50,23 @@ void main() {
           ..physicalSize = const Size(360, 740)
           ..devicePixelRatio = 1;
         addTearDown(tester.view.reset);
-        final container = await tester.runAsync(authContainer);
+        final container = await tester.runAsync(
+          () => authContainer(
+            authStub()..on('GET', 'auth/me', {
+              ...fixtureMap('auth_me'),
+              'invites': [
+                {
+                  'membershipId': 'invite-membership',
+                  'workspaceId': 'team-workspace',
+                  'workspaceName': 'Karim Textiles',
+                  'invitedByName': 'Karim Hossain',
+                  'role': 'executive',
+                },
+              ],
+            }),
+            signedIn: true,
+          ),
+        );
         if (container == null) throw StateError('No container');
         container.read(appLocaleProvider.notifier).set(locale);
 

@@ -55,7 +55,7 @@ final class NotificationRepositoryProvider
 }
 
 String _$notificationRepositoryHash() =>
-    r'ffed73d97e5838ff993e2f8867e9b671807999b9';
+    r'575d72ee0aa823b581ee224b39a5ce856d4d3adb';
 
 /// The bell badge.
 
@@ -94,62 +94,7 @@ final class UnreadNotificationCountProvider
 }
 
 String _$unreadNotificationCountHash() =>
-    r'df36117e624042597216095c645ea7a91972a5af';
-
-@ProviderFor(NotificationFilterNotifier)
-final notificationFilterProvider = NotificationFilterNotifierProvider._();
-
-final class NotificationFilterNotifierProvider
-    extends
-        $NotifierProvider<NotificationFilterNotifier, NotificationCategory?> {
-  NotificationFilterNotifierProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'notificationFilterProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$notificationFilterNotifierHash();
-
-  @$internal
-  @override
-  NotificationFilterNotifier create() => NotificationFilterNotifier();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(NotificationCategory? value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<NotificationCategory?>(value),
-    );
-  }
-}
-
-String _$notificationFilterNotifierHash() =>
-    r'6da02a45744f481c83d9c001c46b50c09e4b358f';
-
-abstract class _$NotificationFilterNotifier
-    extends $Notifier<NotificationCategory?> {
-  NotificationCategory? build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<NotificationCategory?, NotificationCategory?>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<NotificationCategory?, NotificationCategory?>,
-              NotificationCategory?,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
+    r'773d5a7205f4c630a112a6faa79515fffb48d9f4';
 
 @ProviderFor(NotificationsNotifier)
 final notificationsProvider = NotificationsNotifierProvider._();
@@ -177,7 +122,7 @@ final class NotificationsNotifierProvider
 }
 
 String _$notificationsNotifierHash() =>
-    r'30d074843590abf31eac9c1fefa63c7d5c1a1773';
+    r'4bfcf4294a777492a0b789bec935dc7ff40feaf0';
 
 abstract class _$NotificationsNotifier
     extends $AsyncNotifier<Paged<AppNotification>> {

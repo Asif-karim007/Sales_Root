@@ -1,41 +1,43 @@
-import 'dart:convert';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
-import 'package:salesroot/core/dev/dev_settings.dart';
-import 'package:salesroot/core/storage/prefs_provider.dart';
+import '../../helpers/api_stub.dart';
 
-/// Karim Hossain's stored session, as after an earlier sign-in.
-final storedSession = {
-  'session': jsonEncode({
-    'Token': 'fake.1.test',
-    'UserId': 1,
-    'Name': 'Karim Hossain',
-    'Phone': '+8801710000000',
-  }),
-};
+/// The test account, as the server knows it.
+const testPhone = '+8801711000002';
+const testUserId = '01a10101-8644-75d5-813c-211d42aa3d68';
 
-/// A container over the fake backend with latency off and, as in the app
-/// for a 4xx, no automatic retry.
-Future<ProviderContainer> authContainer({
-  Map<String, String> secure = const {},
-}) async {
-  FlutterSecureStorage.setMockInitialValues({...secure});
-  SharedPreferences.setMockInitialValues({});
-  final prefs = await SharedPreferences.getInstance();
-  final container = ProviderContainer(
-    retry: (_, _) => null,
-    overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+/// The sign-in calls answered from recorded responses: a code is sent, and
+/// verifying signs in Rafi Ahmed, an existing account.
+ApiStub authStub() {
+  PackageInfo.setMockInitialValues(
+    appName: 'SalesRoot',
+    packageName: 'com.salesrootcrm.salesroot',
+    version: '1.0.0',
+    buildNumber: '1',
+    buildSignature: '',
   );
-  addTearDown(container.dispose);
-  container
-      .read(devSettingsProvider.notifier)
-      .update((s) => s.copyWith(latency: false));
-  return container;
+  return ApiStub()
+    ..on('POST', 'auth/otp/request', fixture('auth_otp_request'))
+    ..on('POST', 'auth/otp/verify', fixture('auth_tokens'))
+    ..on('GET', 'public/referral/{code}', fixture('auth_referral'));
 }
+
+/// The verify body of an account that has not finished sign-up: no name yet.
+Map<String, dynamic> newUserTokens() {
+  final tokens = fixtureMap('auth_tokens');
+  return {
+    ...tokens,
+    'me': {...tokens['me'] as Map<String, dynamic>, 'name': ''},
+  };
+}
+
+/// A container over [stub], signed out unless [signedIn].
+Future<ProviderContainer> authContainer(
+  ApiStub stub, {
+  bool signedIn = false,
+  Map<String, dynamic>? me,
+}) => apiContainer(stub, signedIn: signedIn, me: me);
 
 /// Lets fire-and-forget work, like the PIN check after the fourth digit, end.
 Future<void> settle() => Future<void>.delayed(const Duration(milliseconds: 20));

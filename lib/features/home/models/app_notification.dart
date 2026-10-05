@@ -1,36 +1,27 @@
 import 'package:salesroot/core/utils/json_fields.dart';
 
-/// The filter chips on the notifications screen.
-enum NotificationCategory {
-  reminders('Reminders'),
-  team('Team'),
-  newLeads('NewLeads'),
-  billing('Billing');
-
-  const NotificationCategory(this.wire);
-
-  final String wire;
-}
-
 enum NotificationKind {
-  reminder('Reminder', NotificationCategory.reminders),
-  taskDue('TaskDue', NotificationCategory.reminders),
-  newLead('NewLead', NotificationCategory.newLeads),
-  mention('Mention', NotificationCategory.team),
-  assigned('Assigned', NotificationCategory.team),
-  approval('Approval', NotificationCategory.team),
-  notice('Notice', NotificationCategory.team),
-  billing('Billing', NotificationCategory.billing);
+  reminder('reminder'),
+  taskDue('taskdue'),
+  newLead('newlead'),
+  mention('mention'),
+  assigned('assigned'),
+  approval('approval'),
+  notice('notice'),
+  billing('billing');
 
-  const NotificationKind(this.wire, this.category);
+  const NotificationKind(this.wire);
 
   final String wire;
-  final NotificationCategory category;
 
-  static NotificationKind fromWire(String? value) => values.firstWhere(
-    (kind) => kind.wire == value,
-    orElse: () => NotificationKind.notice,
-  );
+  /// Matches `task_due`, `taskDue` and `task.due` alike.
+  static NotificationKind fromWire(String? value) {
+    final key = value?.toLowerCase().replaceAll(RegExp('[^a-z]'), '');
+    return values.firstWhere(
+      (kind) => kind.wire == key,
+      orElse: () => NotificationKind.notice,
+    );
+  }
 }
 
 class AppNotification {
@@ -44,29 +35,37 @@ class AppNotification {
     this.route,
   });
 
-  final int id;
+  final String id;
   final NotificationKind kind;
   final LocalizedName title;
-  final String? body;
+  final LocalizedName? body;
   final DateTime createdAt;
   final bool isRead;
 
   /// The in-app location the notification opens.
   final String? route;
 
-  factory AppNotification.fromJson(Map<String, dynamic> json) =>
-      AppNotification(
-        id: jsonInt(json['Id']) ?? 0,
-        kind: NotificationKind.fromWire(json['Kind'] as String?),
-        title: LocalizedName(
-          json['Title'] as String? ?? '',
-          json['TitleBn'] as String? ?? '',
-        ),
-        body: json['Body'] as String?,
-        createdAt: jsonDate(json['CreatedAt']) ?? DateTime(2000),
-        isRead: jsonBool(json['IsRead']),
-        route: json['Route'] as String?,
-      );
+  /// One of `GET notifications` items. Texts come as a `{en, bn}` object or
+  /// as `titleEn`/`titleBn`; read ones carry `readAt`.
+  factory AppNotification.fromJson(Map<String, dynamic> json) {
+    final body = _text(json, 'body');
+    return AppNotification(
+      id: jsonId(json['id']) ?? '',
+      kind: NotificationKind.fromWire(
+        (json['type'] ?? json['kind']) as String?,
+      ),
+      title: _text(json, 'title'),
+      body: body.en.isEmpty && body.bn.isEmpty ? null : body,
+      createdAt: jsonDate(json['createdAt']) ?? DateTime(2000),
+      isRead: json['readAt'] != null || jsonBool(json['isRead']),
+      route: json['route'] as String?,
+    );
+  }
+
+  static LocalizedName _text(Map<String, dynamic> json, String key) =>
+      json[key] is Map
+      ? LocalizedName.of(json[key])
+      : LocalizedName.pair(json, key);
 
   AppNotification copyWith({bool? isRead}) => AppNotification(
     id: id,

@@ -73,8 +73,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           context.push(Routes.authIndustry);
         }
       case AsyncError(:final error):
-        final name = authFieldError(error, 'Name');
-        final invite = authFieldError(error, 'InviteCode');
+        final name = authFieldError(error, 'name');
+        final invite = authFieldError(error, 'inviteCode');
         if (name == null && invite == null) {
           showSrError(context, authFailureText(l10n, error));
         }

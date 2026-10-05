@@ -1,51 +1,31 @@
 import 'package:salesroot/core/utils/json_fields.dart';
 
-/// The team lead's view of today: activity, silent leads, members and the
-/// requests waiting for them.
+/// The team lead's view of today: activity, sleeping leads, who is working
+/// and how many requests wait for them.
 class TeamSummary {
   const TeamSummary({
     this.activityToday = 0,
     this.noFollowUp = 0,
-    this.targetPercent = 0,
+    this.targetPercent,
     this.members = const [],
-    this.approvals = const [],
     this.approvalsCount = 0,
   });
 
+  /// Calls and visits by the team so far today.
   final int activityToday;
 
-  /// Open leads nobody has touched for seven days or more.
+  /// Open leads nobody has followed up on for a week or more.
   final int noFollowUp;
-  final int targetPercent;
+
+  /// Null while the team has no sales target.
+  final int? targetPercent;
   final List<MemberToday> members;
-  final List<PendingApproval> approvals;
   final int approvalsCount;
-
-  factory TeamSummary.fromJson(Map<String, dynamic> json) => TeamSummary(
-    activityToday: jsonInt(json['ActivityToday']) ?? 0,
-    noFollowUp: jsonInt(json['NoFollowUp']) ?? 0,
-    targetPercent: jsonInt(json['TargetPercent']) ?? 0,
-    members: jsonList(json['Members'], MemberToday.fromJson),
-    approvals: jsonList(json['Approvals'], PendingApproval.fromJson),
-    approvalsCount: jsonInt(json['ApprovalsCount']) ?? 0,
-  );
 }
 
-enum MemberDayStatus {
-  active('Active'),
-  late('Late'),
-  absent('Absent');
+enum MemberDayStatus { active, late, absent }
 
-  const MemberDayStatus(this.wire);
-
-  final String wire;
-
-  static MemberDayStatus fromWire(String? value) => values.firstWhere(
-    (status) => status.wire == value,
-    orElse: () => MemberDayStatus.absent,
-  );
-}
-
+/// One row of `GET attendance` for today.
 class MemberToday {
   const MemberToday({
     required this.memberId,
@@ -56,64 +36,63 @@ class MemberToday {
     this.checkInAt,
   });
 
-  final int memberId;
-  final LocalizedName name;
+  final String memberId;
+  final String name;
   final int calls;
   final int visits;
   final MemberDayStatus status;
   final DateTime? checkInAt;
 
-  factory MemberToday.fromJson(Map<String, dynamic> json) => MemberToday(
-    memberId: jsonInt(json['MemberId']) ?? 0,
-    name: LocalizedName.fromJson(json),
-    calls: jsonInt(json['Calls']) ?? 0,
-    visits: jsonInt(json['Visits']) ?? 0,
-    status: MemberDayStatus.fromWire(json['Status'] as String?),
-    checkInAt: jsonDate(json['CheckInAt']),
-  );
+  /// [calls] comes from the activity report, which attendance lacks.
+  factory MemberToday.fromJson(Map<String, dynamic> json, {int calls = 0}) {
+    final checkInAt = jsonDate(json['checkInAt']);
+    return MemberToday(
+      memberId: jsonId(json['membershipId']) ?? '',
+      name: json['name'] as String? ?? '',
+      calls: calls,
+      visits: jsonInt(json['visits']) ?? 0,
+      status: json['status'] == 'late'
+          ? MemberDayStatus.late
+          : checkInAt == null
+          ? MemberDayStatus.absent
+          : MemberDayStatus.active,
+      checkInAt: checkInAt,
+    );
+  }
 }
 
-enum ApprovalKind {
-  leave('Leave'),
-  expense('Expense');
-
-  const ApprovalKind(this.wire);
-
-  final String wire;
-
-  static ApprovalKind fromWire(String? value) => values.firstWhere(
-    (kind) => kind.wire == value,
-    orElse: () => ApprovalKind.expense,
-  );
-}
-
-class PendingApproval {
-  const PendingApproval({
-    required this.id,
-    required this.kind,
-    required this.memberName,
-    this.amount,
-    this.from,
-    this.to,
+/// The numbers of `GET ai/daily-summary` for one day, scoped to the caller's
+/// team.
+class DayNumbers {
+  const DayNumbers({
+    this.calls = 0,
+    this.visits = 0,
+    this.newLeads = 0,
+    this.present = 0,
+    this.late = 0,
+    this.teamSize = 0,
+    this.pendingApprovals = 0,
   });
 
-  final int id;
-  final ApprovalKind kind;
-  final LocalizedName memberName;
-  final int? amount;
-  final DateTime? from;
-  final DateTime? to;
+  final int calls;
+  final int visits;
+  final int newLeads;
+  final int present;
+  final int late;
+  final int teamSize;
+  final int pendingApprovals;
 
-  factory PendingApproval.fromJson(Map<String, dynamic> json) =>
-      PendingApproval(
-        id: jsonInt(json['Id']) ?? 0,
-        kind: ApprovalKind.fromWire(json['Kind'] as String?),
-        memberName: LocalizedName(
-          json['MemberName'] as String? ?? '',
-          json['MemberNameBn'] as String? ?? '',
-        ),
-        amount: jsonInt(json['Amount']),
-        from: jsonDate(json['From']),
-        to: jsonDate(json['To']),
-      );
+  factory DayNumbers.fromJson(Map<String, dynamic> json) {
+    final numbers = jsonMap(json['numbers']);
+    int count(String key) => jsonInt(numbers[key]) ?? 0;
+    return DayNumbers(
+      calls: count('calls'),
+      visits: count('visits'),
+      newLeads: count('newLeads'),
+      present: count('present'),
+      late: count('late'),
+      teamSize: count('teamSize'),
+      pendingApprovals: count('pendingApprovals'),
+    );
+  }
 }

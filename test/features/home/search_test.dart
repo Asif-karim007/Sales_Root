@@ -1,25 +1,38 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:salesroot/core/dev/dev_settings.dart';
 import 'package:salesroot/core/fake/fake_providers.dart';
+import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/features/home/data/fake_search_repository.dart';
 import 'package:salesroot/features/home/data/search_repository.dart';
-
-import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/features/home/models/search_result.dart';
 import 'package:salesroot/features/home/providers/search_providers.dart';
 
-import 'home_test_setup.dart';
+import '../../helpers/api_stub.dart';
+
+/// Search stays on the seeded graph: the server has no search across kinds.
+Future<ProviderContainer> searchContainer({
+  List<Override> overrides = const [],
+}) async {
+  final container = await apiContainer(ApiStub(), overrides: overrides);
+  container
+      .read(devSettingsProvider.notifier)
+      .update((s) => s.copyWith(latency: false));
+  return container;
+}
 
 void main() {
   test('an empty box searches nothing', () async {
-    final container = await homeContainer();
+    final container = await searchContainer();
     container.listen(searchResultsProvider, (_, _) {});
 
     expect(await container.read(searchResultsProvider.future), isNull);
   });
 
-  test('typing finds leads, contacts and companies by name', () async {
-    final container = await homeContainer();
+  test('typing finds contacts and companies by name', () async {
+    final container = await searchContainer();
     container.listen(searchResultsProvider, (_, _) {});
     container.read(searchQueryProvider.notifier).setTerm('Karim');
 
@@ -27,10 +40,10 @@ void main() {
 
     expect(results, isNotNull);
     if (results == null) return;
-    final leads = results.group(SearchKind.lead);
     final contacts = results.group(SearchKind.contact);
-    expect(leads?.items.first.title, startsWith('Karim Textiles'));
-    expect(leads?.items.length, lessThanOrEqualTo(5));
+    final companies = results.group(SearchKind.company);
+    expect(companies?.items.first.title, 'Karim Textiles');
+    expect(contacts?.items.length, lessThanOrEqualTo(5));
     expect(contacts?.items.map((h) => h.title), contains('Md. Karim'));
     expect(
       results.group(SearchKind.company)?.items.first.route,
@@ -39,7 +52,7 @@ void main() {
   });
 
   test('a Bangla area name finds companies there', () async {
-    final container = await homeContainer();
+    final container = await searchContainer();
     container.listen(searchResultsProvider, (_, _) {});
     container.read(searchQueryProvider.notifier).setTerm('মিরপুর');
 
@@ -49,26 +62,26 @@ void main() {
   });
 
   test('one kind pages 20 at a time', () async {
-    final container = await homeContainer();
+    final container = await searchContainer();
     container.listen(searchResultsProvider, (_, _) {});
     container.read(searchQueryProvider.notifier)
       ..setTerm('a')
-      ..setKind(SearchKind.lead);
+      ..setKind(SearchKind.contact);
 
     final first = await container.read(searchResultsProvider.future);
-    final group = first?.group(SearchKind.lead);
+    final group = first?.group(SearchKind.contact);
     expect(first?.groups.length, 1);
     expect(group?.items.length, 20);
     expect(group?.hasMore, isTrue);
 
     await container.read(searchResultsProvider.notifier).loadMore();
     final more = container.read(searchResultsProvider).value;
-    expect(more?.group(SearchKind.lead)?.items.length, 40);
+    expect(more?.group(SearchKind.contact)?.items.length, 40);
   });
 
   test('typing quickly searches once for the last term', () async {
     final terms = <String>[];
-    final container = await homeContainer(
+    final container = await searchContainer(
       overrides: [
         searchRepositoryProvider.overrideWith(
           (ref) => _RecordingSearch(
@@ -85,14 +98,20 @@ void main() {
     query.setTerm('Delta');
 
     final results = await container.read(searchResultsProvider.future);
-    expect(results?.group(SearchKind.lead)?.items.first.title, 'Delta Power');
+    expect(
+      results?.group(SearchKind.company)?.items.first.title,
+      'Delta Power',
+    );
+    expect(results?.group(SearchKind.company)?.items.first.id, isA<String>());
     expect(terms, ['Delta']);
   });
 
   test('offline shows the offline failure', () async {
-    final container = await homeContainer();
+    final container = await searchContainer();
     container.listen(searchResultsProvider, (_, _) {});
-    goOffline(container);
+    container
+        .read(devSettingsProvider.notifier)
+        .update((s) => s.copyWith(offline: true));
     container.read(searchQueryProvider.notifier).setTerm('Karim');
 
     await expectLater(
@@ -102,7 +121,7 @@ void main() {
   });
 
   test('recent searches keep the newest six without duplicates', () async {
-    final container = await homeContainer();
+    final container = await searchContainer();
     container.listen(recentSearchesProvider, (_, _) {});
     final recent = container.read(recentSearchesProvider.notifier);
     for (final term in ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'B ']) {

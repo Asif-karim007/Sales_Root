@@ -1,222 +1,350 @@
+import 'package:salesroot/core/format/app_date_utils.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/home/models/money_summary.dart';
 import 'package:salesroot/features/home/models/team_summary.dart';
 
-/// Everything the home screens show, scoped by the server to the caller's
-/// role: their own work for members, their team for team leads, the whole
-/// workspace (with money) for owners and managers.
+/// Everything the home screens show. `GET home` gives the counts and today's
+/// plan; each role's home adds the reports it needs, scoped by the server to
+/// the caller: their own work for members, their team for team leads, the
+/// whole workspace for owners.
 class HomeSummary {
   const HomeSummary({
     required this.isNew,
-    this.onboarding = const OnboardingSteps(),
-    this.callsToday = 0,
-    this.callsYesterday = 0,
     this.followUpsDue = 0,
     this.followUpsOverdue = 0,
     this.visitsToday = 0,
     this.openLeads = 0,
+    this.sleepingLeads = 0,
     this.agenda = const [],
-    this.openDealsValue = 0,
-    this.targetPercent = 0,
+    this.week,
     this.pipeline = const [],
+    this.target,
     this.quotations = const [],
-    this.meetingRate = 0,
-    this.teamMeetingRate = 0,
     this.team,
     this.money,
   });
 
-  /// No leads yet: the new-user home with the first-steps checklist.
+  /// Nothing in the workspace yet: the new-user home.
   final bool isNew;
-  final OnboardingSteps onboarding;
-  final int callsToday;
-  final int callsYesterday;
   final int followUpsDue;
   final int followUpsOverdue;
   final int visitsToday;
   final int openLeads;
-  final List<AgendaItem> agenda;
-  final int openDealsValue;
-  final int targetPercent;
-  final List<StageCount> pipeline;
-  final List<AwaitingQuotation> quotations;
 
-  /// Calls that became a meeting this week, in percent.
-  final int meetingRate;
-  final int teamMeetingRate;
+  /// Open leads nobody has followed up on for a week or more.
+  final int sleepingLeads;
+  final List<AgendaItem> agenda;
+  final MyWeek? week;
+
+  /// The stages up to the won one, with their leads and value.
+  final List<StageCount> pipeline;
+  final SalesTarget? target;
+  final List<AwaitingQuotation> quotations;
   final TeamSummary? team;
   final MoneySummary? money;
 
-  factory HomeSummary.fromJson(Map<String, dynamic> json) => HomeSummary(
-    isNew: jsonBool(json['IsNewWorkspace']),
-    onboarding:
-        jsonObject(json['Onboarding'], OnboardingSteps.fromJson) ??
-        const OnboardingSteps(),
-    callsToday: jsonInt(json['CallsToday']) ?? 0,
-    callsYesterday: jsonInt(json['CallsYesterday']) ?? 0,
-    followUpsDue: jsonInt(json['FollowUpsDue']) ?? 0,
-    followUpsOverdue: jsonInt(json['FollowUpsOverdue']) ?? 0,
-    visitsToday: jsonInt(json['VisitsToday']) ?? 0,
-    openLeads: jsonInt(json['OpenLeads']) ?? 0,
-    agenda: jsonList(json['Agenda'], AgendaItem.fromJson),
-    openDealsValue: jsonInt(json['OpenDealsValue']) ?? 0,
-    targetPercent: jsonInt(json['TargetPercent']) ?? 0,
-    pipeline: jsonList(json['Pipeline'], StageCount.fromJson),
-    quotations: jsonList(
-      json['QuotationsAwaiting'],
-      AwaitingQuotation.fromJson,
-    ),
-    meetingRate: jsonInt(json['MeetingRate']) ?? 0,
-    teamMeetingRate: jsonInt(json['TeamMeetingRate']) ?? 0,
-    team: jsonObject(json['Team'], TeamSummary.fromJson),
-    money: jsonObject(json['Money'], MoneySummary.fromJson),
+  OnboardingSteps get onboarding =>
+      OnboardingSteps(followUpSet: followUpsDue > 0 || agenda.isNotEmpty);
+
+  double get openDealsValue => pipeline
+      .where((s) => !s.isWon)
+      .fold<double>(0, (sum, stage) => sum + stage.value);
+
+  int? get targetPercent => target?.percent;
+
+  /// `GET home`. The workspace is new while it has no open or won leads, no
+  /// new ones waiting and nothing to collect.
+  factory HomeSummary.fromJson(Map<String, dynamic> json) {
+    final kpis = jsonMap(json['kpis']);
+    final now = jsonDate(json['serverTime']);
+    final agenda = jsonList(
+      json['today'],
+      (row) => AgendaItem.fromJson(row, now: now),
+    );
+    int count(String key) => jsonInt(kpis[key]) ?? 0;
+    final isNew =
+        [
+          'openLeads',
+          'newLeadsQueue',
+          'newLeadsWeek',
+          'wonMonth',
+        ].every((key) => count(key) == 0) &&
+        (jsonDouble(kpis['toCollect']) ?? 0) == 0;
+    return HomeSummary(
+      isNew: isNew,
+      followUpsDue: count('followupsDue'),
+      followUpsOverdue: agenda.where((a) => a.isOverdue).length,
+      visitsToday: agenda
+          .where((a) => a.kind == AgendaKind.visit && !a.isOverdue)
+          .length,
+      openLeads: count('openLeads'),
+      sleepingLeads: count('sleeping'),
+      agenda: agenda,
+    );
+  }
+
+  HomeSummary copyWith({
+    MyWeek? week,
+    List<StageCount>? pipeline,
+    SalesTarget? target,
+    List<AwaitingQuotation>? quotations,
+    TeamSummary? team,
+    MoneySummary? money,
+  }) => HomeSummary(
+    isNew: isNew,
+    followUpsDue: followUpsDue,
+    followUpsOverdue: followUpsOverdue,
+    visitsToday: visitsToday,
+    openLeads: openLeads,
+    sleepingLeads: sleepingLeads,
+    agenda: agenda,
+    week: week ?? this.week,
+    pipeline: pipeline ?? this.pipeline,
+    target: target ?? this.target,
+    quotations: quotations ?? this.quotations,
+    team: team ?? this.team,
+    money: money ?? this.money,
   );
 }
 
-/// The new-user checklist; opening the account is always done.
+/// The new-user checklist. Opening the account is always done; with no leads
+/// yet, a follow-up is the only other job that can be.
 class OnboardingSteps {
-  const OnboardingSteps({
-    this.leadAdded = false,
-    this.callLogged = false,
-    this.followUpSet = false,
-    this.cardScanned = false,
-  });
+  const OnboardingSteps({this.followUpSet = false});
 
-  final bool leadAdded;
-  final bool callLogged;
   final bool followUpSet;
-  final bool cardScanned;
 
-  int get done =>
-      1 +
-      [leadAdded, callLogged, followUpSet, cardScanned].where((d) => d).length;
+  int get done => followUpSet ? 2 : 1;
 
   static const int total = 5;
-
-  factory OnboardingSteps.fromJson(Map<String, dynamic> json) =>
-      OnboardingSteps(
-        leadAdded: jsonBool(json['LeadAdded']),
-        callLogged: jsonBool(json['CallLogged']),
-        followUpSet: jsonBool(json['FollowUpSet']),
-        cardScanned: jsonBool(json['CardScanned']),
-      );
 }
 
 enum AgendaKind {
-  call('Call'),
-  visit('Visit'),
-  followUp('FollowUp'),
-  whatsApp('WhatsApp'),
-  meeting('Meeting'),
-  task('Task');
+  call('call'),
+  visit('visit'),
+  followUp('followup'),
+  whatsApp('whatsapp'),
+  meeting('meeting'),
+  collect('collect'),
+  task('task');
 
   const AgendaKind(this.wire);
 
   final String wire;
 
   static AgendaKind fromWire(String? value) => values.firstWhere(
-    (kind) => kind.wire == value,
+    (kind) => kind.wire == value?.replaceAll('_', ''),
     orElse: () => AgendaKind.task,
   );
 }
 
-/// One row of today's plan. Rows tied to a lead open the lead; the rest open
-/// their task.
+/// One row of today's plan: a task, or a lead whose follow-up is due. Rows
+/// tied to a lead open the lead; the rest open their task.
 class AgendaItem {
   const AgendaItem({
-    required this.taskId,
+    required this.id,
     required this.kind,
     required this.title,
     this.leadId,
     this.dueAt,
-    this.note,
-    this.area,
-    this.stage,
-    this.stageId,
+    this.who,
     this.isOverdue = false,
-    this.isNew = false,
-    this.daysSilent = 0,
   });
 
-  final int taskId;
+  final String id;
   final AgendaKind kind;
   final String title;
-  final int? leadId;
+  final String? leadId;
   final DateTime? dueAt;
-  final String? note;
-  final LocalizedName? area;
-  final LocalizedName? stage;
-  final int? stageId;
+
+  /// The person or company the work is with.
+  final String? who;
+
+  /// Due on a day before the server's today.
   final bool isOverdue;
-  final bool isNew;
 
-  /// Days since anyone last spoke to the lead.
-  final int daysSilent;
-
-  factory AgendaItem.fromJson(Map<String, dynamic> json) => AgendaItem(
-    taskId: jsonInt(json['TaskId']) ?? 0,
-    kind: AgendaKind.fromWire(json['Kind'] as String?),
-    title: json['Title'] as String? ?? '',
-    leadId: jsonInt(json['LeadId']),
-    dueAt: jsonDate(json['DueAt']),
-    note: json['Note'] as String?,
-    area: jsonObject(json['Area'], LocalizedName.fromJson),
-    stage: jsonObject(json['Stage'], LocalizedName.fromJson),
-    stageId: jsonInt(json['StageId']),
-    isOverdue: jsonBool(json['IsOverdue']),
-    isNew: jsonBool(json['IsNew']),
-    daysSilent: jsonInt(json['DaysSilent']) ?? 0,
-  );
+  factory AgendaItem.fromJson(Map<String, dynamic> json, {DateTime? now}) {
+    final dueAt = jsonDate(json['dueAt']);
+    return AgendaItem(
+      id: jsonId(json['id']) ?? '',
+      kind: json['kind'] == 'followup'
+          ? AgendaKind.followUp
+          : AgendaKind.fromWire(json['type'] as String?),
+      title: json['title'] as String? ?? '',
+      leadId: jsonId(json['leadId']),
+      dueAt: dueAt,
+      who: json['who'] as String?,
+      isOverdue:
+          now != null &&
+          dueAt != null &&
+          AppDateUtils.dateOnly(dueAt).isBefore(AppDateUtils.dateOnly(now)),
+    );
+  }
 }
 
+/// The user's last seven days, from `GET reports/me?preset=last_7`.
+class MyWeek {
+  const MyWeek({
+    required this.callsToday,
+    required this.callsYesterday,
+    required this.calls,
+    required this.teamCalls,
+  });
+
+  final int callsToday;
+  final int callsYesterday;
+  final int calls;
+
+  /// The team's average calls per person over the same days.
+  final double teamCalls;
+
+  /// The trend's last bucket is today.
+  factory MyWeek.fromJson(Map<String, dynamic> json) {
+    final trend = json['trend'] is List ? json['trend'] as List : const [];
+    int callsAt(int fromEnd) {
+      final index = trend.length - 1 - fromEnd;
+      if (index < 0) return 0;
+      return jsonInt(jsonMap(trend[index])['calls']) ?? 0;
+    }
+
+    return MyWeek(
+      callsToday: callsAt(0),
+      callsYesterday: callsAt(1),
+      calls: jsonInt(jsonMap(json['summary'])['calls']) ?? 0,
+      teamCalls: jsonDouble(jsonMap(json['teamAverage'])['calls']) ?? 0,
+    );
+  }
+}
+
+/// One stage of `GET reports/pipeline`.
 class StageCount {
   const StageCount({
     required this.stageId,
     required this.name,
     required this.count,
     required this.value,
+    this.weighted = 0,
+    this.isWon = false,
   });
 
-  final int stageId;
+  final String stageId;
   final LocalizedName name;
   final int count;
-  final int value;
+  final double value;
+
+  /// [value] weighted by the stage's win probability.
+  final double weighted;
+  final bool isWon;
 
   factory StageCount.fromJson(Map<String, dynamic> json) => StageCount(
-    stageId: jsonInt(json['StageId']) ?? 0,
-    name: LocalizedName.fromJson(json),
-    count: jsonInt(json['Count']) ?? 0,
-    value: jsonInt(json['Value']) ?? 0,
+    stageId: jsonId(json['stageId']) ?? '',
+    name: LocalizedName.pair(json),
+    count: jsonInt(json['leads']) ?? 0,
+    value: jsonDouble(json['amount']) ?? 0,
+    weighted: jsonDouble(json['weighted']) ?? 0,
+    isWon: jsonBool(json['isWon']),
+  );
+
+  /// The stages up to and including the first won one, leaving out lost and
+  /// after-sale stages.
+  static List<StageCount> listFromJson(dynamic value) {
+    final rows = value is List ? value : const [];
+    final stages = <StageCount>[];
+    for (final row in rows) {
+      if (row is! Map<String, dynamic> || jsonBool(row['isLost'])) continue;
+      final stage = StageCount.fromJson(row);
+      stages.add(stage);
+      if (stage.isWon) break;
+    }
+    return stages;
+  }
+}
+
+/// Sales against target over a period, from `GET reports/targets`.
+class SalesTarget {
+  const SalesTarget({
+    required this.actual,
+    required this.target,
+    this.people = const [],
+  });
+
+  final double actual;
+  final double target;
+  final List<PersonTarget> people;
+
+  /// Null while no target is set.
+  int? get percent => target <= 0 ? null : (actual * 100 / target).round();
+
+  factory SalesTarget.fromJson(Map<String, dynamic> json) {
+    final summary = jsonMap(json['summary']);
+    return SalesTarget(
+      actual: jsonDouble(summary['sales_actual']) ?? 0,
+      target: jsonDouble(summary['sales_target']) ?? 0,
+      people: jsonList(
+        jsonMap(json['breakdowns'])['byPerson'],
+        PersonTarget.fromJson,
+      ),
+    );
+  }
+}
+
+class PersonTarget {
+  const PersonTarget({
+    required this.memberId,
+    required this.actual,
+    required this.target,
+  });
+
+  final String memberId;
+  final double actual;
+  final double target;
+
+  factory PersonTarget.fromJson(Map<String, dynamic> json) => PersonTarget(
+    memberId: jsonId(json['id']) ?? '',
+    actual: jsonDouble(json['salesActual']) ?? 0,
+    target: jsonDouble(json['salesTarget']) ?? 0,
   );
 }
 
+/// A sent quotation still waiting for the customer's answer.
 class AwaitingQuotation {
   const AwaitingQuotation({
     required this.id,
-    required this.leadId,
     required this.companyName,
     required this.amount,
     required this.sentDaysAgo,
-    required this.viewed,
+    this.leadId,
   });
 
-  final int id;
-  final int leadId;
+  final String id;
+  final String? leadId;
   final String companyName;
-  final int amount;
+  final double amount;
   final int sentDaysAgo;
-  final bool viewed;
 
-  /// Seen but unanswered for two days or more: time to chase.
-  bool get needsFollowUp => viewed && sentDaysAgo >= 2;
+  /// Unanswered for two days or more: time to chase.
+  bool get needsFollowUp => sentDaysAgo >= 2;
 
-  factory AwaitingQuotation.fromJson(Map<String, dynamic> json) =>
-      AwaitingQuotation(
-        id: jsonInt(json['Id']) ?? 0,
-        leadId: jsonInt(json['LeadId']) ?? 0,
-        companyName: json['CompanyName'] as String? ?? '',
-        amount: jsonInt(json['Amount']) ?? 0,
-        sentDaysAgo: jsonInt(json['SentDaysAgo']) ?? 0,
-        viewed: jsonBool(json['Viewed']),
-      );
+  /// One of `GET quotes?status=sent`; [now] is the server's time.
+  factory AwaitingQuotation.fromJson(
+    Map<String, dynamic> json, {
+    DateTime? now,
+  }) {
+    final sentAt = jsonDate(json['sentAt']);
+    final days = now == null || sentAt == null
+        ? 0
+        : AppDateUtils.dateOnly(
+            now,
+          ).difference(AppDateUtils.dateOnly(sentAt)).inDays;
+    return AwaitingQuotation(
+      id: jsonId(json['id']) ?? '',
+      leadId: jsonId(json['leadId']),
+      companyName:
+          (json['companyName'] ?? json['leadName'] ?? json['number'])
+              as String? ??
+          '',
+      amount: jsonDouble(json['total']) ?? 0,
+      sentDaysAgo: days < 0 ? 0 : days,
+    );
+  }
 }

@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:salesroot/core/format/app_format.dart';
+import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/core/workspace/workspace_providers.dart';
+import 'package:salesroot/features/home/view/widget/failure_text.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
@@ -62,15 +63,31 @@ class _WorkspaceSwitchSheet extends ConsumerWidget {
     );
   }
 
-  void _select(BuildContext context, WidgetRef ref, Workspace workspace) {
-    if (workspace.id != ref.read(currentWorkspaceProvider)?.id) {
-      ref.read(currentWorkspaceProvider.notifier).select(workspace);
-      showSrSuccess(
-        context,
-        context.l10n.homeWorkspaceSwitched(workspace.name),
-      );
+  /// Re-issues the session for [workspace] behind a spinner; on failure the
+  /// sheet stays open to try again.
+  Future<void> _select(
+    BuildContext context,
+    WidgetRef ref,
+    Workspace workspace,
+  ) async {
+    final navigator = Navigator.of(context);
+    if (workspace.id == ref.read(currentWorkspaceProvider)?.id) {
+      navigator.pop();
+      return;
     }
-    Navigator.of(context).pop();
+    final switched = context.l10n.homeWorkspaceSwitched(workspace.name);
+    try {
+      await showSrLoader(
+        context,
+        ref.read(currentWorkspaceProvider.notifier).select(workspace),
+      );
+    } on ApiFailure catch (failure) {
+      if (context.mounted) showSrError(context, failureText(context, failure));
+      return;
+    }
+    if (!context.mounted) return;
+    showSrSuccess(context, switched);
+    navigator.pop();
   }
 }
 
@@ -89,7 +106,6 @@ class _WorkspaceRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
-    final fmt = context.fmt;
     final role = switch (workspace.role) {
       WorkspaceRole.owner => l10n.homeRoleOwner,
       WorkspaceRole.teamLead => l10n.homeRoleTeamLead,
@@ -98,8 +114,8 @@ class _WorkspaceRow extends StatelessWidget {
     return SrListRow(
       title: workspace.name,
       subtitle: workspace.isPersonal
-          ? l10n.homeWorkspacePersonal(fmt.number(workspace.leadCount))
-          : l10n.homeWorkspaceTeam(role, fmt.number(workspace.memberCount)),
+          ? l10n.homeWorkspacePersonal
+          : l10n.homeWorkspaceTeam(role),
       leading: SrAvatar(
         name: workspace.name,
         tone: selected
