@@ -74,6 +74,10 @@ ModulePermission _finance(AppModule module) => switch (module) {
 ModulePermission _member(AppModule module) => switch (module) {
   AppModule.lead ||
   AppModule.contact ||
+  AppModule.task ||
+  AppModule.calendar ||
+  AppModule.chat ||
+  AppModule.files => _work(module, delete: true),
   AppModule.company ||
   AppModule.quotation ||
   AppModule.collection ||
@@ -87,10 +91,6 @@ ModulePermission _member(AppModule module) => switch (module) {
   AppModule.invoice ||
   AppModule.inbox ||
   AppModule.referral => _work(module),
-  AppModule.task ||
-  AppModule.calendar ||
-  AppModule.chat ||
-  AppModule.files => _work(module, delete: true),
   AppModule.product ||
   AppModule.team ||
   AppModule.reports ||
