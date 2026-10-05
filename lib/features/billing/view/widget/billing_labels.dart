@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/features/billing/models/billing_catalog.dart';
-import 'package:salesroot/features/billing/models/checkout.dart';
 import 'package:salesroot/features/billing/models/subscription.dart';
 import 'package:salesroot/features/billing/models/usage.dart';
 import 'package:salesroot/translations/translations.dart';
@@ -14,11 +13,6 @@ String joinDot(Iterable<String> parts) =>
 
 extension BillingLabels on BuildContext {
   bool get isBangla => fmt.isBangla;
-
-  String cycleLabel(BillingCycle cycle) => switch (cycle) {
-    BillingCycle.monthly => l10n.billingCycleMonthly,
-    BillingCycle.yearly => l10n.billingCycleYearly,
-  };
 
   String perCycleUnit(BillingCycle cycle) => switch (cycle) {
     BillingCycle.monthly => l10n.billingPerMonth,
@@ -51,47 +45,74 @@ extension BillingLabels on BuildContext {
     PaymentKind.bank => l10n.billingMethodBank,
   };
 
-  String methodLine(PaymentMethod method) =>
-      joinDot([methodName(method.kind), fmt.digits(method.account ?? '')]);
+  /// A payment gateway by its server key; unknown ones show as sent.
+  String gatewayName(String? gateway) => switch (gateway) {
+    null => '',
+    final key => switch (PaymentKind.values.asNameMap()[key]) {
+      final PaymentKind kind => methodName(kind),
+      null => key,
+    },
+  };
 
-  String orderLineLabel(OrderLine line) {
-    final name = line.name.of(isBangla);
-    return switch (line.kind) {
-      OrderLineKind.plan => joinDot([
-        name,
-        users(line.seats),
-        cycleLabel(line.cycle),
-      ]),
-      OrderLineKind.seats => l10n.billingLineSeats(
-        name,
-        fmt.number(line.seats),
-        fmt.number(line.days),
-      ),
-      OrderLineKind.planCredit => l10n.billingLineCredit(
-        fmt.number(line.days),
-        name,
-      ),
-      OrderLineKind.addOn => l10n.billingLineAddOn(name),
-      OrderLineKind.addOnProrated => l10n.billingLineAddOnProrated(
-        name,
-        fmt.number(line.seats),
-        fmt.number(line.days),
-      ),
-      OrderLineKind.pack => name,
+  /// What a plan layer opens, by its server key.
+  String layerLabel(String layer) => switch (layer) {
+    'sales' => l10n.billingLayerSales,
+    'collection' => l10n.billingLayerCollection,
+    'customer360' => l10n.billingLayerCustomer360,
+    'fieldforce' => l10n.billingLayerFieldForce,
+    'growth' => l10n.billingLayerGrowth,
+    'teamops' => l10n.billingLayerTeamOps,
+    'support' => l10n.billingLayerSupport,
+    'intelligence' => l10n.billingLayerIntelligence,
+    _ => layer,
+  };
+
+  String layerHint(String layer) => switch (layer) {
+    'sales' => l10n.billingLayerSalesHint,
+    'collection' => l10n.billingLayerCollectionHint,
+    'customer360' => l10n.billingLayerCustomer360Hint,
+    'fieldforce' => l10n.billingLayerFieldForceHint,
+    'growth' => l10n.billingLayerGrowthHint,
+    'teamops' => l10n.billingLayerTeamOpsHint,
+    'support' => l10n.billingLayerSupportHint,
+    'intelligence' => l10n.billingLayerIntelligenceHint,
+    _ => '',
+  };
+
+  /// What an add-on's price is per: a seat a month, a month or once.
+  String addOnUnit(AddOnOffer addOn) => switch (addOn.unit) {
+    AddOnUnit.perUser => l10n.billingPerUserMonth,
+    AddOnUnit.monthly => l10n.billingPerMonth,
+    AddOnUnit.once => l10n.billingPerOnce,
+  };
+
+  /// What an add-on gives: the layer it opens or the quota it raises.
+  String addOnNote(AddOnOffer addOn) {
+    final layer = addOn.layer;
+    if (layer != null) return layerHint(layer);
+    final amount = fmt.number(addOn.amount);
+    return switch (addOn.quota) {
+      QuotaKind.smsCredits => l10n.billingGivesSms(amount),
+      QuotaKind.storage => l10n.billingGivesStorage(amount),
+      QuotaKind.cardScans => l10n.billingGivesScans(amount),
+      _ => '',
     };
   }
+
+  /// "Sales · Collection · Customer 360" for a plan.
+  String layersLine(PlanOffer plan) => joinDot(plan.layers.map(layerLabel));
 
   /// "− ৳ 1,995" for credits.
   String signedMoney(int amount) =>
       amount < 0 ? l10n.billingMinus(fmt.money(-amount)) : fmt.money(amount);
 }
 
-IconData addOnIcon(String code) => switch (code) {
-  'FieldForce' => Icons.directions_walk_rounded,
-  'Growth' => Icons.campaign_outlined,
-  'AiAssistant' => Icons.auto_awesome_outlined,
-  'Sms1000' => Icons.sms_outlined,
-  'Storage10' => Icons.cloud_outlined,
+IconData addOnIcon(AddOnOffer addOn) => switch ((addOn.layer, addOn.quota)) {
+  ('fieldforce', _) => Icons.directions_walk_rounded,
+  ('growth', _) => Icons.campaign_outlined,
+  ('intelligence', _) => Icons.auto_awesome_outlined,
+  (_, QuotaKind.smsCredits) => Icons.sms_outlined,
+  (_, QuotaKind.storage) => Icons.cloud_outlined,
   _ => Icons.document_scanner_outlined,
 };
 

@@ -1,0 +1,96 @@
+{
+ "code": "Q95ED5",
+ "link": "https://q.salesrootcrm.com/r/Q95ED5",
+ "blocked": false,
+ "campaign": {
+  "key": "standard",
+  "name_en": "Standard referral",
+  "name_bn": "সাধারণ রেফারেল",
+  "signup_credits": 10.0,
+  "conversion_pct": 10.0,
+  "conversion_cap": 500.0,
+  "referee_trial_days": 15,
+  "referee_credits": 50.0,
+  "hold_days": 7,
+  "credit_expiry_months": 12
+ },
+ "wallet": {
+  "spendable": 0,
+  "held": 0,
+  "expiring30d": 0
+ },
+ "stats": {
+  "total": 2,
+  "pending": 1,
+  "registered": 0,
+  "converted": 0,
+  "earned": 0
+ },
+ "history": {
+  "items": [
+   {
+    "id": "01a10d1d-7ad1-70a1-baca-a59efd3c3119",
+    "method": "phone",
+    "channel": "copy",
+    "status": "already_registered",
+    "createdAt": "2026-10-05T17:29:58.225289Z",
+    "registeredAt": null,
+    "convertedAt": null,
+    "signupReward": null,
+    "conversionReward": null,
+    "phoneMasked": "+88017****01",
+    "emailMasked": null,
+    "registeredName": null
+   },
+   {
+    "id": "01a10d1d-663d-707f-958f-870a41e2d634",
+    "method": "email",
+    "channel": "copy",
+    "status": "pending",
+    "createdAt": "2026-10-05T17:29:52.957049Z",
+    "registeredAt": null,
+    "convertedAt": null,
+    "signupReward": null,
+    "conversionReward": null,
+    "phoneMasked": null,
+    "emailMasked": "se***@example.com",
+    "registeredName": null
+   }
+  ],
+  "total": 2,
+  "offset": 0,
+  "limit": 5
+ },
+ "nextPrize": {
+  "credits": 199,
+  "missing": 199,
+  "referralsNeeded": 20,
+  "en": "1 month of Personal",
+  "bn": "১ মাস পার্সোনাল"
+ },
+ "share": {
+  "whatsapp": {
+   "bn": "Rafi আপনাকে SalesRoot-এ আমন্ত্রণ জানাচ্ছে — মোবাইলে লিড, কাস্টমার আর টাকা আদায় এক জায়গায়, বাংলায়। এই লিংকে সাইন আপ করলে আপনি পাবেন +15 দিন ট্রায়াল ও 50 ক্রেডিট: https://q.salesrootcrm.com/r/Q95ED5",
+   "en": "Rafi is inviting you to SalesRoot — leads, customers and collections in one app, in Bangla and English. Sign up with this link and get +15 trial days and 50 credits: https://q.salesrootcrm.com/r/Q95ED5",
+   "url": "https://wa.me/?text=Rafi%20%E0%A6%86%E0%A6%AA%E0%A6%A8%E0%A6%BE%E0%A6%95%E0%A7%87%20SalesRoot-%E0%A6%8F%20%E0%A6%86%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A4%E0%A7%8D%E0%A6%B0%E0%A6%A3%20%E0%A6%9C%E0%A6%BE%E0%A6%A8%E0%A6%BE%E0%A6%9A%E0%A7%8D%E0%A6%9B%E0%A7%87%20%E2%80%94%20%E0%A6%AE%E0%A7%8B%E0%A6%AC%E0%A6%BE%E0%A6%87%E0%A6%B2%E0%A7%87%20%E0%A6%B2%E0%A6%BF%E0%A6%A1%2C%20%E0%A6%95%E0%A6%BE%E0%A6%B8%E0%A7%8D%E0%A6%9F%E0%A6%AE%E0%A6%BE%E0%A6%B0%20%E0%A6%86%E0%A6%B0%20%E0%A6%9F%E0%A6%BE%E0%A6%95%E0%A6%BE%20%E0%A6%86%E0%A6%A6%E0%A6%BE%E0%A6%AF%E0%A6%BC%20%E0%A6%8F%E0%A6%95%20%E0%A6%9C%E0%A6%BE%E0%A6%AF%E0%A6%BC%E0%A6%97%E0%A6%BE%E0%A6%AF%E0%A6%BC%2C%20%E0%A6%AC%E0%A6%BE%E0%A6%82%E0%A6%B2%E0%A6%BE%E0%A6%AF%E0%A6%BC%E0%A5%A4%20%E0%A6%8F%E0%A6%87%20%E0%A6%B2%E0%A6%BF%E0%A6%82%E0%A6%95%E0%A7%87%20%E0%A6%B8%E0%A6%BE%E0%A6%87%E0%A6%A8%20%E0%A6%86%E0%A6%AA%20%E0%A6%95%E0%A6%B0%E0%A6%B2%E0%A7%87%20%E0%A6%86%E0%A6%AA%E0%A6%A8%E0%A6%BF%20%E0%A6%AA%E0%A6%BE%E0%A6%AC%E0%A7%87%E0%A6%A8%20%2B15%20%E0%A6%A6%E0%A6%BF%E0%A6%A8%20%E0%A6%9F%E0%A7%8D%E0%A6%B0%E0%A6%BE%E0%A6%AF%E0%A6%BC%E0%A6%BE%E0%A6%B2%20%E0%A6%93%2050%20%E0%A6%95%E0%A7%8D%E0%A6%B0%E0%A7%87%E0%A6%A1%E0%A6%BF%E0%A6%9F%3A%20https%3A%2F%2Fq.salesrootcrm.com%2Fr%2FQ95ED5"
+  },
+  "sms": {
+   "bn": "SalesRoot ট্রাই করুন, দুজনেই ক্রেডিট পাব: https://q.salesrootcrm.com/r/Q95ED5",
+   "en": "Try SalesRoot — we both get credits: https://q.salesrootcrm.com/r/Q95ED5"
+  },
+  "messenger": {
+   "url": "https://www.facebook.com/dialog/send?link=https%3A%2F%2Fq.salesrootcrm.com%2Fr%2FQ95ED5&redirect_uri=https%3A%2F%2Fq.salesrootcrm.com%2Fr%2FQ95ED5"
+  },
+  "facebook": {
+   "url": "https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fq.salesrootcrm.com%2Fr%2FQ95ED5"
+  },
+  "email": {
+   "subjectBn": "Rafi আপনাকে SalesRoot-এ আমন্ত্রণ জানাচ্ছে",
+   "subjectEn": "Rafi invited you to SalesRoot",
+   "bn": "Rafi আপনাকে SalesRoot-এ আমন্ত্রণ জানাচ্ছে — মোবাইলে লিড, কাস্টমার আর টাকা আদায় এক জায়গায়, বাংলায়। এই লিংকে সাইন আপ করলে আপনি পাবেন +15 দিন ট্রায়াল ও 50 ক্রেডিট: https://q.salesrootcrm.com/r/Q95ED5",
+   "en": "Rafi is inviting you to SalesRoot — leads, customers and collections in one app, in Bangla and English. Sign up with this link and get +15 trial days and 50 credits: https://q.salesrootcrm.com/r/Q95ED5"
+  },
+  "copy": "https://q.salesrootcrm.com/r/Q95ED5",
+  "qr": "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=https%3A%2F%2Fq.salesrootcrm.com%2Fr%2FQ95ED5"
+ }
+}

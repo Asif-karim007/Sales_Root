@@ -16,7 +16,6 @@ import 'package:salesroot/features/billing/providers/referral_providers.dart';
 import 'package:salesroot/features/billing/view/widget/billing_bits.dart';
 import 'package:salesroot/features/billing/view/widget/invite_sheet.dart';
 import 'package:salesroot/features/billing/view/widget/referral_widgets.dart';
-import 'package:salesroot/features/billing/view/widget/reward_sheet.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
@@ -43,7 +42,6 @@ class _ReferScreenState extends ConsumerState<ReferScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    listenForReward(context, ref);
     return SrScaffold(
       appBar: SrAppBar(
         title: l10n.billingReferTitle,
@@ -66,13 +64,17 @@ class _ReferScreenState extends ConsumerState<ReferScreen> {
   }
 }
 
-/// The invite message every share channel sends.
-String referralShareText(BuildContext context, ReferralOverview overview) =>
-    context.l10n.billingShareText(
-      overview.code,
-      context.fmt.money(overview.registerReward),
-      overview.link,
-    );
+/// The invite message every share channel sends: the server's, or ours when
+/// it sent none.
+String referralShareText(BuildContext context, ReferralOverview overview) {
+  final server = overview.shareText.of(context.fmt.isBangla);
+  if (server.isNotEmpty) return server;
+  return context.l10n.billingShareText(
+    overview.code,
+    context.fmt.money(overview.friendCredits),
+    overview.link,
+  );
+}
 
 class _ReferBody extends ConsumerWidget {
   const _ReferBody({required this.overview});
@@ -85,7 +87,7 @@ class _ReferBody extends ConsumerWidget {
     final canAdd = ref.watch(
       moduleAccessProvider(AppModule.referral).select((a) => a.canAdd),
     );
-    final next = overview.nextMilestone;
+    final next = overview.nextPrize;
 
     return RefreshIndicator(
       onRefresh: () => ref.refresh(referralOverviewProvider.future),
@@ -111,7 +113,7 @@ class _ReferBody extends ConsumerWidget {
           ),
           if (next != null) ...[
             const SizedBox(height: 12),
-            _NextPrizeCard(overview: overview, milestone: next),
+            _NextPrizeCard(prize: next),
           ],
           if (overview.recent.isNotEmpty) ...[
             const SizedBox(height: 12),
@@ -303,17 +305,15 @@ class _Tile extends StatelessWidget {
 }
 
 class _NextPrizeCard extends StatelessWidget {
-  const _NextPrizeCard({required this.overview, required this.milestone});
+  const _NextPrizeCard({required this.prize});
 
-  final ReferralOverview overview;
-  final Milestone milestone;
+  final NextPrize prize;
 
   @override
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final paid = overview.paid;
 
     return SrCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -322,21 +322,18 @@ class _NextPrizeCard extends StatelessWidget {
         children: [
           SrSectionHeader(
             title: l10n.billingNextPrize,
-            actionLabel: l10n.billingMoreFriends(
-              fmt.number(milestone.paid - paid),
-            ),
+            actionLabel: prize.referralsNeeded > 0
+                ? l10n.billingMoreFriends(fmt.number(prize.referralsNeeded))
+                : null,
           ),
           const SizedBox(height: 8),
-          SrProgressBar(value: paid / milestone.paid, color: c.gold),
+          SrProgressBar(value: prize.progress, color: c.gold),
           const SizedBox(height: 8),
           Text(
-            milestone.reward > 0
-                ? l10n.billingPrizeBonus(
-                    fmt.money(milestone.reward),
-                    fmt.number(milestone.paid),
-                    fmt.number(paid),
-                  )
-                : nextPrizeLine(context, milestone, paid),
+            l10n.billingPrizeCredits(
+              prize.name.of(fmt.isBangla),
+              fmt.money(prize.missing),
+            ),
             style: AppText.meta(c.ink2),
           ),
         ],

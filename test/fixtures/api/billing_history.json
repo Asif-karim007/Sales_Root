@@ -1,0 +1,11 @@
+{
+ "from": "2025-10-05",
+ "to": "2026-10-06",
+ "totals": {
+  "paid": 0,
+  "due": 0,
+  "paidCount": 0
+ },
+ "invoices": [],
+ "planHistory": []
+}

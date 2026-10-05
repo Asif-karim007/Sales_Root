@@ -1,0 +1,154 @@
+{
+ "key": "distribution",
+ "kpis": [
+  "visitsToday",
+  "ordersToday",
+  "toCollect",
+  "collectedToday"
+ ],
+ "terms": {
+  "deal": [
+   "Order",
+   "অর্ডার"
+  ],
+  "lead": [
+   "Prospect shop",
+   "নতুন দোকান"
+  ],
+  "visit": [
+   "Beat visit",
+   "বিট ভিজিট"
+  ],
+  "company": [
+   "Outlet",
+   "আউটলেট"
+  ],
+  "contact": [
+   "Shop owner",
+   "দোকান মালিক"
+  ]
+ },
+ "defaults": {
+  "creditDays": 15,
+  "followUpDays": 7,
+  "quoteValidDays": 7
+ },
+ "leadFields": [
+  {
+   "bn": "কী পণ্য চান",
+   "en": "Products wanted",
+   "key": "productInterest",
+   "type": "text"
+  }
+ ],
+ "lostReasons": [
+  {
+   "bn": "দাম / মার্জিন কম",
+   "en": "Price / margin too low for shop",
+   "key": "price"
+  },
+  {
+   "bn": "প্রতিযোগী ব্র্যান্ড রাখে",
+   "en": "Stocks a competitor brand",
+   "key": "competitor"
+  }
+ ],
+ "walkthrough": [
+  {
+   "bn": "দোকানগুলো এলাকা ও রুট দিয়ে যোগ করুন",
+   "en": "Import or add your outlets (shops) with area and route",
+   "route": "/customers"
+  }
+ ],
+ "companyFields": [
+  {
+   "bn": "আউটলেটের ধরন",
+   "en": "Outlet type",
+   "key": "outletType",
+   "type": "select",
+   "options": [
+    "retail",
+    "wholesale",
+    "modern_trade"
+   ]
+  },
+  {
+   "bn": "রুট / বিট",
+   "en": "Route / Beat",
+   "key": "route",
+   "type": "text"
+  },
+  {
+   "bn": "দোকানের আকার",
+   "en": "Shop size",
+   "key": "shopSize",
+   "type": "select",
+   "options": [
+    "S",
+    "M",
+    "L"
+   ]
+  }
+ ],
+ "visitOutcomes": [
+  {
+   "bn": "অর্ডার নিয়েছি",
+   "en": "Order taken",
+   "key": "order_taken",
+   "productive": true
+  },
+  {
+   "bn": "বকেয়া তুলেছি",
+   "en": "Dues collected",
+   "key": "payment",
+   "productive": true
+  }
+ ],
+ "about": {
+  "bn": "ডিস্ট্রিবিউটর, পাইকার ও ব্র্যান্ড — যাদের প্রতিনিধি বিটে দোকানে গিয়ে অর্ডার নেন ও বকেয়া তোলেন।",
+  "en": "Distributors, wholesalers and brands whose reps visit shops on a beat, take orders and collect dues.",
+  "forBn": "এফএমসিজি, ফার্মা, হার্ডওয়্যার, কৃষি উপকরণ, গার্মেন্টস অ্যাক্সেসরিজ",
+  "forEn": "FMCG, pharma, hardware, agro inputs, garments accessories"
+ },
+ "tips": [
+  {
+   "bn": "বিট = কোন দিনে কোন দোকানগুলো ঘুরবেন তার তালিকা। মাঠ → রুট → ভিজিটের ক্রমে দোকান যোগ করুন; অ্যাপ আজকের দোকান দেখায়, হয়ে গেলে টিক দেয়।",
+   "en": "A beat is the list of shops a rep covers on a given weekday. Field → Routes → add shops in visiting order; the app shows today's stops and marks the ones done.",
+   "keys": [
+    "beat",
+    "বিট",
+    "route",
+    "রুট"
+   ]
+  },
+  {
+   "bn": "ভিজিট শেষে ফলাফলে ‘ফেরত / ডেমেজ’ দিন ও পরিমাণ লিখুন; ফিন্যান্স আদায় থেকে বকেয়া ঠিক করে।",
+   "en": "Record a return at the end of the visit (outcome: Return / damage taken) and note the quantity; Finance adjusts the dues from Collection.",
+   "keys": [
+    "damage",
+    "return",
+    "ডেমেজ",
+    "ফেরত"
+   ]
+  },
+  {
+   "bn": "প্রতিটি দোকানের বাকির দিন থাকে (ডিফল্ট ১৫)। সীমা ছাড়ালে অর্ডারে ম্যানেজারের অনুমোদন লাগে।",
+   "en": "Each outlet has credit days (default 15). Orders beyond the limit ask the manager for approval automatically.",
+   "keys": [
+    "credit",
+    "বাকি",
+    "due days"
+   ]
+  },
+  {
+   "bn": "পণ্যের নোটে ট্রেড স্কিম লিখুন (যেমন ১২+১) — প্রতিনিধি অর্ডার লাইনে দেখবে।",
+   "en": "Put trade schemes in the product note (e.g. 12+1) — reps see it on the order line.",
+   "keys": [
+    "scheme",
+    "offer",
+    "অফার",
+    "স্কিম"
+   ]
+  }
+ ]
+}

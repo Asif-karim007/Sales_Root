@@ -1,7 +1,5 @@
 {
   "@@locale": "bn",
-  "billingCycleMonthly": "মাসিক",
-  "billingCycleYearly": "বার্ষিক",
   "billingPerMonth": "/মাস",
   "billingPerYear": "/বছর",
   "billingUsers": "{count} ব্যবহারকারী",
@@ -40,53 +38,6 @@
   "billingMethodNagad": "Nagad",
   "billingMethodCard": "ডেবিট বা ক্রেডিট কার্ড",
   "billingMethodBank": "ব্যাংক / কার্ড (ওয়েবে)",
-  "billingLineSeats": "{plan} · আরও {count} ব্যবহারকারী · {days} দিন",
-  "@billingLineSeats": {
-    "placeholders": {
-      "plan": {
-        "type": "String"
-      },
-      "count": {
-        "type": "String"
-      },
-      "days": {
-        "type": "String"
-      }
-    }
-  },
-  "billingLineCredit": "এখনকার {plan} প্ল্যানের বাকি {days} দিন",
-  "@billingLineCredit": {
-    "placeholders": {
-      "days": {
-        "type": "String"
-      },
-      "plan": {
-        "type": "String"
-      }
-    }
-  },
-  "billingLineAddOn": "{name} অ্যাড-অন",
-  "@billingLineAddOn": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "billingLineAddOnProrated": "{name} · {count} ব্যবহারকারী · {days} দিন",
-  "@billingLineAddOnProrated": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "count": {
-        "type": "String"
-      },
-      "days": {
-        "type": "String"
-      }
-    }
-  },
   "billingMinus": "− {amount}",
   "@billingMinus": {
     "placeholders": {
@@ -180,10 +131,10 @@
   "billingCompareMore": "{count} জনের জন্য মাসে {amount} বেশি।",
   "@billingCompareMore": {
     "placeholders": {
-      "amount": {
+      "count": {
         "type": "String"
       },
-      "count": {
+      "amount": {
         "type": "String"
       }
     }
@@ -246,16 +197,8 @@
       }
     }
   },
-  "billingProratedToday": "এ মাসের বাকি দিনের দাম",
+  "billingProratedToday": "প্ল্যানের বিলে যোগ হবে",
   "billingGivesAnyUsers": "যত খুশি ব্যবহারকারী + আরও",
-  "billingGivesUsers": "{count} ব্যবহারকারী + আরও",
-  "@billingGivesUsers": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "billingGivesRecords": "{count} রেকর্ড + আরও",
   "@billingGivesRecords": {
     "placeholders": {
@@ -320,14 +263,6 @@
   "@billingYearlyPrice": {
     "placeholders": {
       "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "billingTooManyUsers": "{count} জন সক্রিয় — এই প্ল্যানে এত জন চলে না",
-  "@billingTooManyUsers": {
-    "placeholders": {
-      "count": {
         "type": "String"
       }
     }
@@ -398,10 +333,10 @@
   "billingPayWith": "{method} দিয়ে {amount} দিন",
   "@billingPayWith": {
     "placeholders": {
-      "amount": {
+      "method": {
         "type": "String"
       },
-      "method": {
+      "amount": {
         "type": "String"
       }
     }
@@ -460,14 +395,6 @@
   "billingPdfThanks": "SalesRoot ব্যবহারের জন্য ধন্যবাদ। এই রসিদ অ্যাপ থেকে তৈরি।",
   "billingSuccessTitle": "সফল",
   "billingGoHome": "হোমে যান",
-  "billingPackAdded": "{item} যোগ হয়েছে",
-  "@billingPackAdded": {
-    "placeholders": {
-      "item": {
-        "type": "String"
-      }
-    }
-  },
   "billingIsOn": "{item} চালু হয়েছে",
   "@billingIsOn": {
     "placeholders": {
@@ -488,31 +415,14 @@
   },
   "billingReceiptSent": "রসিদ ইমেইলে গেছে",
   "billingStoreTitle": "অ্যাড-অন স্টোর",
-  "billingStoreNote": "যা কেনেননি তা অ্যাপে দেখাবে না। এখন কিনলে এ মাসের বাকি দিনের আনুপাতিক দাম।",
+  "billingStoreNote": "যা কেনেননি তা অ্যাপে দেখাবে না। দাম চেকআউটে নিশ্চিত হবে।",
   "billingIncluded": "অন্তর্ভুক্ত",
-  "billingNeedsPlan": "{plan} লাগবে",
-  "@billingNeedsPlan": {
-    "placeholders": {
-      "plan": {
-        "type": "String"
-      }
-    }
-  },
   "billingBuy": "কিনুন",
   "billingOwnerBuys": "মালিক কেনেন",
   "billingHistoryTitle": "বিলিং",
   "billingHistoryEmpty": "এখনো কোনো বিল নেই",
   "billingHistoryEmptyBody": "আপনি Free প্ল্যানে আছেন। প্ল্যান বা অ্যাড-অন কিনলে বিল এখানে দেখাবে।",
-  "billingRetried": "ব্যর্থ, {date} সফল",
-  "@billingRetried": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
   "billingNextRenewal": "পরের নবায়ন",
-  "billingMethod": "মাধ্যম",
   "billingDownloadAll": "সব রসিদ ডাউনলোড",
   "billingWalletBalance": "ওয়ালেট ব্যালান্স",
   "billingDetails": "বিস্তারিত",
@@ -526,14 +436,6 @@
   },
   "billingEarned": "মোট আয় {amount}",
   "@billingEarned": {
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "billingUsed": "ব্যবহৃত {amount}",
-  "@billingUsed": {
     "placeholders": {
       "amount": {
         "type": "String"
@@ -554,31 +456,7 @@
   "billingReferNotEligible": "যোগ্য নয়",
   "billingReferExpired": "মেয়াদোত্তীর্ণ",
   "billingReferReversed": "ফেরত",
-  "billingReferPlan": "{plan} প্ল্যান",
-  "@billingReferPlan": {
-    "placeholders": {
-      "plan": {
-        "type": "String"
-      }
-    }
-  },
-  "billingHoldHours": "{hours} ঘণ্টা হোল্ড",
-  "@billingHoldHours": {
-    "placeholders": {
-      "hours": {
-        "type": "String"
-      }
-    }
-  },
   "billingReferInvited": "আমন্ত্রিত",
-  "billingDaysLeft": "{count} দিন বাকি",
-  "@billingDaysLeft": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "billingReferWasUser": "আগেই রেজিস্টার্ড ছিল",
   "billingReferNoSignup": "৯০ দিনে রেজিস্টার করেনি",
   "billingReferRefunded": "রিফান্ড · ক্রেডিট ফেরত",
@@ -586,14 +464,6 @@
   "@billingPlus": {
     "placeholders": {
       "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "billingInviteSaved": "{name} আপনার রেফারেল তালিকায় যুক্ত হলো",
-  "@billingInviteSaved": {
-    "placeholders": {
-      "name": {
         "type": "String"
       }
     }
@@ -617,73 +487,8 @@
     }
   },
   "billingAlreadyUser": "আগেই SalesRoot ব্যবহার করে — পুরস্কার নেই",
-  "billingReferredByOther": "অন্য কেউ আগে রেফার করেছে (প্রথম রেফারেলই গণ্য)",
-  "billingAlreadyInvited": "আপনি আগেই আমন্ত্রণ করেছেন · {count} দিন বাকি",
-  "@billingAlreadyInvited": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
+  "billingAlreadyInvited": "আপনি আগেই আমন্ত্রণ করেছেন",
   "billingInvalidContact": "সঠিক বাংলাদেশি মোবাইল নম্বর বা ইমেইল দিন।",
-  "billingRewardTitle": "{name} SalesRoot-এ যুক্ত হয়েছেন!",
-  "@billingRewardTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "billingRewardHeld": "আপনার ওয়ালেটে {amount} যোগ হলো ({hours} ঘণ্টা পরে ব্যবহারযোগ্য)। তাদের কোম্পানি প্ল্যান কিনলে প্রথম বিলের {percent}% পাবেন।",
-  "@billingRewardHeld": {
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      },
-      "hours": {
-        "type": "String"
-      },
-      "percent": {
-        "type": "String"
-      }
-    }
-  },
-  "billingRewardBody": "আপনার ওয়ালেটে {amount} যোগ হলো। তাদের কোম্পানি প্ল্যান কিনলে প্রথম বিলের {percent}% পাবেন।",
-  "@billingRewardBody": {
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      },
-      "percent": {
-        "type": "String"
-      }
-    }
-  },
-  "billingBalance": "ব্যালান্স",
-  "billingShareMore": "আরও বন্ধুকে শেয়ার করুন",
-  "billingNextBonus": "আরও {count} জন প্ল্যান কিনলে {amount} বোনাস",
-  "@billingNextBonus": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      },
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "billingNextFreeMonth": "আরও {count} জন প্ল্যান কিনলে {months} মাস ফ্রি",
-  "@billingNextFreeMonth": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      },
-      "months": {
-        "type": "String"
-      }
-    }
-  },
   "billingReferTitle": "রেফার করুন ও আয় করুন",
   "billingMyReferrals": "আমার রেফারেল",
   "billingShareText": "SalesRoot ব্যবহার করে দেখুন — লিড, ভিজিট আর কালেকশনের জন্য আমি এটাই ব্যবহার করি। আমার কোড {code} দিয়ে সাইন আপ করলে দুজনেই পাব {amount}: {link}",
@@ -733,45 +538,12 @@
       }
     }
   },
-  "billingPrizeBonus": "{target} জন প্ল্যান কিনলে বোনাস {amount} · এখন {count}/{target}",
-  "@billingPrizeBonus": {
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      },
-      "target": {
-        "type": "String"
-      },
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "billingLeaderboard": "টিম লিডারবোর্ড",
   "billingReferEmpty": "এখানে কোনো রেফারেল নেই",
   "billingReferEmptyBody": "দোকানের মালিক বা ব্যবসায়ী বন্ধুকে আমন্ত্রণ করুন। তারা যুক্ত হলে আপনি পাবেন।",
   "billingKpiInvited": "আমন্ত্রণ",
   "billingKpiJoined": "যুক্ত হয়েছে",
   "billingKpiBought": "প্ল্যান কিনেছে",
-  "billingTeamThisMonth": "এ মাসে টিমে সেরা",
-  "billingYou": "{name} (আপনি)",
-  "@billingYou": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "billingPaidCount": "{count} কিনেছে",
-  "@billingPaidCount": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "billingWalletTitle": "ক্রেডিট ওয়ালেট",
-  "billingMilestones": "মাইলস্টোন",
   "billingTransactions": "লেনদেন",
   "billingNoTransactions": "এখনো কোনো ক্রেডিট নেই। প্রথমটি পেতে একজন বন্ধুকে আমন্ত্রণ করুন।",
   "billingCreditsRules": "ক্রেডিট শুধু প্ল্যান ও অ্যাড-অনে ছাড়; নগদে তোলা যায় না; অর্জনের ১২ মাস পর মেয়াদ শেষ।",
@@ -779,27 +551,10 @@
   "billingNothingExpiring": "শিগগির কিছু মেয়াদ শেষ হচ্ছে না",
   "billingUseNextBill": "পরের বিলে ব্যবহার করুন",
   "billingOnHoldTitle": "হোল্ডে",
-  "billingHoldNote": "{count} রেজিস্ট্রেশন · ৪৮ ঘণ্টা",
+  "billingHoldNote": "পাওয়ার {count} দিন পর ব্যবহার করা যাবে",
   "@billingHoldNote": {
     "placeholders": {
       "count": {
-        "type": "String"
-      }
-    }
-  },
-  "billingTxWelcome": "ওয়েলকাম ক্রেডিট",
-  "billingTxJoinedVia": "{name}-এর রেফারেলে যুক্ত",
-  "@billingTxJoinedVia": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "billingTxRegistered": "{name} রেজিস্টার করেছে",
-  "@billingTxRegistered": {
-    "placeholders": {
-      "name": {
         "type": "String"
       }
     }
@@ -812,79 +567,6 @@
       }
     }
   },
-  "billingTxBought": "{name} প্ল্যান কিনেছে",
-  "@billingTxBought": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "billingTxConversion": "{percent}% কনভার্সন বোনাস",
-  "@billingTxConversion": {
-    "placeholders": {
-      "percent": {
-        "type": "String"
-      }
-    }
-  },
-  "billingTxMilestone": "{count} পেইড রেফারেল বোনাস",
-  "@billingTxMilestone": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "billingMilestone": "মাইলস্টোন",
-  "billingTxInvoice": "ইনভয়েস {number}",
-  "@billingTxInvoice": {
-    "placeholders": {
-      "number": {
-        "type": "String"
-      }
-    }
-  },
-  "billingTxUsed": "ক্রেডিট ব্যবহার · {plan}",
-  "@billingTxUsed": {
-    "placeholders": {
-      "plan": {
-        "type": "String"
-      }
-    }
-  },
-  "billingTxReversed": "{name} রিফান্ড নিয়েছে",
-  "@billingTxReversed": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "billingTxReversedNote": "ক্রেডিট ফেরত",
-  "billingMilestoneReward": "{count} জন: {amount}",
-  "@billingMilestoneReward": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      },
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "billingMilestoneFree": "{count} জন: {months} মাস ফ্রি",
-  "@billingMilestoneFree": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      },
-      "months": {
-        "type": "String"
-      }
-    }
-  },
-  "billingMilestoneFirst": "১ম বিক্রি",
   "billingQrTitle": "QR কার্ড",
   "billingQrBody": "স্ক্যান করুন, অ্যাপ নামান, রেজিস্টার করুন — দুজনেই পান {amount} ও {days} দিন বাড়তি ট্রায়াল।",
   "@billingQrBody": {
@@ -898,5 +580,69 @@
     }
   },
   "billingQrTip": "দোকানের কাউন্টারে বা ভিজিটে দেখান — তারা স্ক্যান করলে ক্রেডিট আপনার।",
-  "billingPrintA5": "প্রিন্ট (A5)"
+  "billingPrintA5": "প্রিন্ট (A5)",
+  "billingCheckPayment": "পেমেন্ট করেছি — যাচাই করুন",
+  "billingCompareLimits": "আরও বেশি সীমা",
+  "billingCompareLimitsBody": "{records}টি রেকর্ড · {storage} GB স্টোরেজ · {scans}টি কার্ড স্ক্যান",
+  "@billingCompareLimitsBody": {
+    "placeholders": {
+      "records": {
+        "type": "String"
+      },
+      "storage": {
+        "type": "String"
+      },
+      "scans": {
+        "type": "String"
+      }
+    }
+  },
+  "billingGivesSms": "{count}টি এসএমএস ক্রেডিট",
+  "@billingGivesSms": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "billingLayerSales": "বিক্রয়",
+  "billingLayerSalesHint": "লিড, পাইপলাইন, টাস্ক ও কোটেশন",
+  "billingLayerCollection": "আদায়",
+  "billingLayerCollectionHint": "ইনভয়েস, বকেয়া ও রসিদ",
+  "billingLayerCustomer360": "কাস্টমার ৩৬০",
+  "billingLayerCustomer360Hint": "প্রতিটি কাস্টমারের অর্ডার, বকেয়া ও ইতিহাস এক জায়গায়",
+  "billingLayerFieldForce": "ফিল্ড ফোর্স",
+  "billingLayerFieldForceHint": "হাজিরা, ভিজিট, রুট ও লাইভ লোকেশন",
+  "billingLayerGrowth": "গ্রোথ",
+  "billingLayerGrowthHint": "লিড ইনবক্স, ক্যাম্পেইন ও লিড ফর্ম",
+  "billingLayerTeamOps": "টিম অপারেশন",
+  "billingLayerTeamOpsHint": "ছুটি, খরচ, বেতন ও অনুমোদন",
+  "billingLayerSupport": "সাপোর্ট",
+  "billingLayerSupportHint": "কাস্টমার টিকিট ও সার্ভিস",
+  "billingLayerIntelligence": "এআই সহকারী",
+  "billingLayerIntelligenceHint": "দৈনিক সারাংশ, পরের কাজ ও স্মার্ট রিপোর্ট",
+  "billingMinUsers": "কমপক্ষে {count} জন ব্যবহারকারী",
+  "@billingMinUsers": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "billingPrizeCredits": "{prize} · আরও {credits} পেতে হবে",
+  "@billingPrizeCredits": {
+    "placeholders": {
+      "prize": {
+        "type": "String"
+      },
+      "credits": {
+        "type": "String"
+      }
+    }
+  },
+  "billingStatusDue": "বাকি",
+  "billingTrial": "ট্রায়াল",
+  "billingTxEarned": "ক্রেডিট পেয়েছেন",
+  "billingTxSpent": "ক্রেডিট ব্যবহার",
+  "billingInviteSent": "আমন্ত্রণ রাখা হয়েছে"
 }

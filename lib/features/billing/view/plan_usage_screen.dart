@@ -50,9 +50,7 @@ class _PlanUsageBody extends ConsumerWidget {
     final canEdit = ref.watch(
       moduleAccessProvider(AppModule.billing).select((a) => a.canEdit),
     );
-    final recurring = overview.catalog.addOns.where(
-      (a) => !a.isPack && a.inStore,
-    );
+    final recurring = overview.catalog.addOns.where((a) => !a.isPack);
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -144,9 +142,7 @@ class _PlanCard extends StatelessWidget {
         ? joinDot([context.users(subscription.seats), l10n.billingFreeForever])
         : joinDot([
             context.users(subscription.seats),
-            context.cycleLabel(subscription.cycle),
             if (renewsAt != null) l10n.billingRenews(fmt.dayMonth(renewsAt)),
-            fmt.money(overview.renewal),
           ]);
 
     return SrCard(
@@ -170,7 +166,10 @@ class _PlanCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          SrTag(l10n.billingActive, tone: SrTone.ok),
+          if (subscription.isTrial)
+            SrTag(l10n.billingTrial, tone: SrTone.warn)
+          else
+            SrTag(l10n.billingActive, tone: SrTone.ok),
         ],
       ),
     );
@@ -281,7 +280,7 @@ class _AddOnRow extends StatelessWidget {
     final l10n = context.l10n;
     final on = overview.isOn(addOn);
     final seats = overview.subscription.seats;
-    final included = addOn.includedIn == overview.plan.code;
+    final included = addOn.includedIn(overview.plan);
     final subtitle = switch ((on, included)) {
       (_, true) => l10n.billingIncludedIn(overview.plan.name),
       (true, false) => joinDot([
@@ -294,7 +293,7 @@ class _AddOnRow extends StatelessWidget {
       title: addOn.name.of(context.isBangla),
       subtitle: subtitle,
       leading: SrAvatar(
-        icon: addOnIcon(addOn.code),
+        icon: addOnIcon(addOn),
         tone: on ? SrAvatarTone.accent : SrAvatarTone.neutral,
       ),
       trailing: on

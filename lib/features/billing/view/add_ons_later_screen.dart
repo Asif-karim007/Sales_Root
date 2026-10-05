@@ -9,7 +9,6 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/billing/models/billing_catalog.dart';
 import 'package:salesroot/features/billing/models/billing_overview.dart';
 import 'package:salesroot/features/billing/models/checkout.dart';
-import 'package:salesroot/features/billing/models/pricing.dart';
 import 'package:salesroot/features/billing/providers/billing_providers.dart';
 import 'package:salesroot/features/billing/view/widget/billing_bits.dart';
 import 'package:salesroot/features/billing/view/widget/billing_labels.dart';
@@ -55,12 +54,16 @@ class _AddOnsLaterScreenState extends ConsumerState<AddOnsLaterScreen> {
   PlanOffer _plan(BillingOverview overview) =>
       overview.catalog.planOrNull(widget.request.plan) ?? overview.plan;
 
+  /// The add-ons the workspace keeps that the new plan doesn't include.
   Set<String> _kept(BillingOverview overview) {
     final catalog = overview.catalog;
     final plan = _plan(overview);
-    return (widget.request.addOns ?? overview.subscription.addOns)
-        .where((code) => catalog.available(catalog.addOn(code), plan))
-        .toSet();
+    return {
+      for (final code in widget.request.addOns ?? overview.addOns)
+        if (catalog.addOnOrNull(code) case final addOn?
+            when !addOn.includedIn(plan))
+          code,
+    };
   }
 
   Set<String> _selected(BillingOverview overview) => _addOns ?? _kept(overview);
@@ -102,14 +105,10 @@ class _AddOnsLaterScreenState extends ConsumerState<AddOnsLaterScreen> {
     final plan = _plan(overview);
     final selected = _selected(overview);
     final recurring = catalog.addOns.where(
-      (a) =>
-          !a.isPack &&
-          a.inStore &&
-          a.includedIn != plan.code &&
-          catalog.available(a, plan),
+      (a) => !a.isPack && !a.includedIn(plan),
     );
     final packs = catalog.addOns.where(
-      (a) => a.isPack && a.inStore && a.quota == QuotaKind.smsCredits,
+      (a) => a.isPack && a.quota == QuotaKind.smsCredits,
     );
 
     return ListView(
@@ -177,9 +176,11 @@ class _ToggleRow extends StatelessWidget {
     final price = context.fmt.money(addOn.price);
     return SrListRow(
       title: addOn.name.of(context.isBangla),
-      subtitle: addOn.isPack
-          ? l10n.billingPriceOnce(price)
-          : l10n.billingPricePerUserMonth(price),
+      subtitle: switch (addOn.unit) {
+        AddOnUnit.perUser => l10n.billingPricePerUserMonth(price),
+        AddOnUnit.monthly => l10n.billingPricePerMonth(price),
+        AddOnUnit.once => l10n.billingPriceOnce(price),
+      },
       trailing: SrSwitch(value: value, onChanged: onChanged),
       onTap: () => onChanged(!value),
     );
@@ -199,21 +200,21 @@ class _Summary extends StatelessWidget {
     final catalog = overview.catalog;
     final plan = catalog.planOrNull(request.plan) ?? overview.plan;
     final seats = request.seats ?? overview.subscription.seats;
-    final cycle = request.cycle ?? overview.subscription.cycle;
+    final cycle = request.cycle ?? BillingCycle.monthly;
     final recurring = [
       for (final code in request.addOns ?? const <String>{})
-        catalog.addOn(code),
-    ].where((a) => a.includedIn != plan.code).toList();
-    final planAmount = BillingPricing.seatsPrice(
-      plan.pricePerUser,
-      seats,
-      cycle,
-    );
+        if (catalog.addOnOrNull(code) case final addOn?
+            when !addOn.includedIn(plan))
+          addOn,
+    ];
+    final planAmount = plan.seatPrice(cycle) * seats;
     final total = recurring.fold(
       planAmount,
-      (sum, a) => sum + BillingPricing.seatsPrice(a.price, seats, cycle),
+      (sum, a) => sum + a.priceFor(seats, cycle),
     );
-    final packs = [for (final code in request.packs) catalog.addOn(code)];
+    final packs = [
+      for (final code in request.packs) ?catalog.addOnOrNull(code),
+    ];
 
     return SrCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -229,9 +230,7 @@ class _Summary extends StatelessWidget {
                 addOn.name.of(context.isBangla),
                 fmt.number(seats),
               ]),
-              value: fmt.money(
-                BillingPricing.seatsPrice(addOn.price, seats, cycle),
-              ),
+              value: fmt.money(addOn.priceFor(seats, cycle)),
             ),
           BillingLine(
             label: cycle == BillingCycle.yearly

@@ -1,0 +1,49 @@
+{
+ "range": {
+  "preset": "this_month",
+  "from": "2026-10-01",
+  "to": "2026-10-31",
+  "group": "month",
+  "buckets": [
+   "2026-10"
+  ],
+  "days": 31
+ },
+ "summary": {
+  "sales_target": 0,
+  "sales_actual": 0,
+  "collection_target": 0,
+  "collection_actual": 7000.0,
+  "visits_target": 0,
+  "visits_actual": 1
+ },
+ "trend": [
+  {
+   "bucket": "2026-10",
+   "salesTarget": 0,
+   "salesActual": 0,
+   "collectionTarget": 0,
+   "collectionActual": 7000.0,
+   "visitsTarget": 0,
+   "visitsActual": 1,
+   "newLeadsTarget": 0,
+   "newLeadsActual": 3,
+   "callsTarget": 0,
+   "callsActual": 4
+  }
+ ],
+ "breakdowns": {
+  "byPerson": [
+   {
+    "key": "Rafi Ahmed",
+    "id": "01a10101-8656-7886-b8e5-4f197fbd9159",
+    "salesTarget": 0,
+    "salesActual": 0,
+    "collectionTarget": 0,
+    "collectionActual": 7000.0,
+    "visitsTarget": 0,
+    "visitsActual": 1
+   }
+  ]
+ }
+}

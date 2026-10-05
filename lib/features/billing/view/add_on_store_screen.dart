@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/app_module.dart';
-import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/billing/models/billing_catalog.dart';
@@ -49,7 +48,7 @@ class _StoreBody extends ConsumerWidget {
     final canEdit = ref.watch(
       moduleAccessProvider(AppModule.billing).select((a) => a.canEdit),
     );
-    final items = overview.catalog.addOns.where((a) => a.inStore).toList();
+    final items = overview.catalog.addOns;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 32),
@@ -95,21 +94,17 @@ class _StoreRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final bangla = context.isBangla;
-    final included = addOn.includedIn;
-    final subtitle = included != null && included != overview.plan.code
-        ? joinDot([
-            addOn.detail.of(bangla),
-            l10n.billingIncludedIn(
-              overview.catalog.planOrNull(included)?.name ?? included,
-            ),
-          ])
-        : addOn.detail.of(bangla);
+    final including = overview.catalog.includingPlan(addOn);
+    final subtitle = joinDot([
+      context.addOnNote(addOn),
+      if (including != null && !addOn.includedIn(overview.plan))
+        l10n.billingIncludedIn(including.name),
+    ]);
 
     return SrListRow(
-      title: addOn.name.of(bangla),
+      title: addOn.name.of(context.isBangla),
       subtitle: subtitle,
-      leading: SrAvatar(icon: addOnIcon(addOn.code), tone: SrAvatarTone.accent),
+      leading: SrAvatar(icon: addOnIcon(addOn), tone: SrAvatarTone.accent),
       divider: !last,
       trailing: _Trailing(addOn: addOn, action: _action(context)),
     );
@@ -117,35 +112,16 @@ class _StoreRow extends StatelessWidget {
 
   Widget? _action(BuildContext context) {
     final l10n = context.l10n;
-    final catalog = overview.catalog;
     if (overview.isOn(addOn) && !addOn.isPack) {
       return SrTag(
-        addOn.includedIn == overview.plan.code
-            ? l10n.billingIncluded
-            : l10n.billingOn,
+        addOn.includedIn(overview.plan) ? l10n.billingIncluded : l10n.billingOn,
         tone: SrTone.ok,
       );
     }
     if (!canEdit) return null;
-    if (!catalog.available(addOn, overview.plan)) {
-      final min = catalog.planOrNull(addOn.minPlan);
-      return SrButton(
-        label: l10n.billingNeedsPlan(min?.name ?? ''),
-        size: SrButtonSize.sm,
-        variant: SrButtonVariant.secondary,
-        onPressed: () => context.push(
-          Uri(
-            path: Routes.planChoose,
-            queryParameters: {'plan': ?min?.code},
-          ).toString(),
-        ),
-      );
-    }
     final request = addOn.isPack
         ? CheckoutRequest(packs: [addOn.code])
-        : CheckoutRequest(
-            addOns: {...overview.subscription.addOns, addOn.code},
-          );
+        : CheckoutRequest(addOns: {...overview.addOns, addOn.code});
     return SrButton(
       label: addOn.isPack ? l10n.billingBuy : l10n.billingAdd,
       size: SrButtonSize.sm,
@@ -171,7 +147,7 @@ class _Trailing extends StatelessWidget {
       children: [
         PriceText(
           amount: addOn.price,
-          unit: addOn.isPack ? l10n.billingPerOnce : l10n.billingPerUserMonth,
+          unit: context.addOnUnit(addOn),
           size: 14,
         ),
         if (action != null) ...[const SizedBox(height: 6), action],

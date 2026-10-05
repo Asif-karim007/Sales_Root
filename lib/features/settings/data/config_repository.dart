@@ -5,16 +5,12 @@ import 'package:salesroot/features/settings/models/pipeline.dart';
 abstract interface class ConfigRepository {
   Future<List<Pipeline>> pipelines();
 
-  Future<Pipeline> addStage(int pipelineId, StageInput input);
+  Future<void> addStage(String pipelineId, StageInput input);
 
-  Future<Pipeline> editStage(int pipelineId, int stageId, StageInput input);
+  Future<void> editStage(String stageId, StageInput input);
 
-  Future<Pipeline> deleteStage(int pipelineId, int stageId);
-
-  /// Sets the order of the open stages; won and lost always come last.
-  Future<Pipeline> reorderStages(int pipelineId, List<int> openStageIds);
+  /// Sets the board order of [stageIds].
+  Future<void> reorderStages(List<String> stageIds);
 
   Future<List<FormFieldConfig>> formFields(FormKind form);
-
-  Future<FormFieldConfig> saveFormField(int id, FormFieldInput input);
 }

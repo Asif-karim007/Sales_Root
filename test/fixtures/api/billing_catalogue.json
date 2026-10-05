@@ -1,0 +1,161 @@
+{
+ "plans": [
+  {
+   "key": "free",
+   "name": "Free",
+   "monthlyPerUser": 0.0,
+   "yearlyPerUser": 0.0,
+   "minUsers": 1,
+   "recordLimit": 500,
+   "storageLimitMb": 200,
+   "scanLimit": 20,
+   "aiLimit": 30,
+   "layers": [
+    "sales"
+   ],
+   "features": "{}",
+   "isPublic": true,
+   "sortOrder": 0,
+   "updatedAt": "2026-10-03T09:02:28.877089Z"
+  },
+  {
+   "key": "personal",
+   "name": "Personal Pro",
+   "monthlyPerUser": 199.0,
+   "yearlyPerUser": 165.0,
+   "minUsers": 1,
+   "recordLimit": 5000,
+   "storageLimitMb": 2048,
+   "scanLimit": 100,
+   "aiLimit": 200,
+   "layers": [
+    "sales",
+    "collection"
+   ],
+   "features": "{}",
+   "isPublic": true,
+   "sortOrder": 1,
+   "updatedAt": "2026-10-03T09:02:28.877089Z"
+  },
+  {
+   "key": "team",
+   "name": "Team",
+   "monthlyPerUser": 399.0,
+   "yearlyPerUser": 333.0,
+   "minUsers": 3,
+   "recordLimit": 50000,
+   "storageLimitMb": 20480,
+   "scanLimit": 500,
+   "aiLimit": 500,
+   "layers": [
+    "sales",
+    "collection",
+    "customer360"
+   ],
+   "features": "{}",
+   "isPublic": true,
+   "sortOrder": 2,
+   "updatedAt": "2026-10-03T09:02:28.877089Z"
+  },
+  {
+   "key": "business",
+   "name": "Business",
+   "monthlyPerUser": 599.0,
+   "yearlyPerUser": 499.0,
+   "minUsers": 10,
+   "recordLimit": 500000,
+   "storageLimitMb": 102400,
+   "scanLimit": 2000,
+   "aiLimit": 1500,
+   "layers": [
+    "sales",
+    "collection",
+    "customer360",
+    "fieldforce",
+    "growth",
+    "teamops",
+    "support",
+    "intelligence"
+   ],
+   "features": "{}",
+   "isPublic": true,
+   "sortOrder": 3,
+   "updatedAt": "2026-10-03T09:02:28.877089Z"
+  },
+  {
+   "key": "enterprise",
+   "name": "Enterprise",
+   "monthlyPerUser": 0.0,
+   "yearlyPerUser": 0.0,
+   "minUsers": 100,
+   "recordLimit": 100000000,
+   "storageLimitMb": 1048576,
+   "scanLimit": 100000,
+   "aiLimit": 100000,
+   "layers": [
+    "sales",
+    "collection",
+    "customer360",
+    "fieldforce",
+    "growth",
+    "teamops",
+    "support",
+    "intelligence"
+   ],
+   "features": "{}",
+   "isPublic": true,
+   "sortOrder": 4,
+   "updatedAt": "2026-10-03T09:02:28.877089Z"
+  }
+ ],
+ "addons": [
+  {
+   "key": "ai_team",
+   "nameEn": "AI assistant on Team",
+   "nameBn": "Team-এ এআই সহকারী",
+   "price": 79.0,
+   "unit": "user_month",
+   "grants": "{\"layer\": \"intelligence\"}"
+  },
+  {
+   "key": "fieldforce",
+   "nameEn": "Field Force",
+   "nameBn": "ফিল্ড ফোর্স",
+   "price": 99.0,
+   "unit": "user_month",
+   "grants": "{\"layer\": \"fieldforce\"}"
+  },
+  {
+   "key": "growth",
+   "nameEn": "Growth",
+   "nameBn": "গ্রোথ",
+   "price": 149.0,
+   "unit": "user_month",
+   "grants": "{\"layer\": \"growth\"}"
+  },
+  {
+   "key": "scans_200",
+   "nameEn": "+200 card scans",
+   "nameBn": "+২০০ কার্ড স্ক্যান",
+   "price": 499.0,
+   "unit": "month",
+   "grants": "{\"scans\": 200}"
+  },
+  {
+   "key": "sms_1000",
+   "nameEn": "SMS credits 1,000",
+   "nameBn": "এসএমএস ক্রেডিট ১,০০০",
+   "price": 350.0,
+   "unit": "once",
+   "grants": "{\"sms\": 1000}"
+  },
+  {
+   "key": "storage_10",
+   "nameEn": "+10 GB storage",
+   "nameBn": "+১০ GB স্টোরেজ",
+   "price": 199.0,
+   "unit": "month",
+   "grants": "{\"storageMb\": 10240}"
+  }
+ ]
+}

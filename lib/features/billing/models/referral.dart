@@ -1,95 +1,93 @@
 import 'package:salesroot/core/utils/json_fields.dart';
 
 enum ReferralStatus {
-  pending('Pending'),
-  registered('Registered'),
-  bought('Bought'),
-  notEligible('NotEligible'),
-  expired('Expired'),
-  reversed('Reversed');
+  pending('pending'),
+  registered('registered'),
+  bought('converted'),
+  notEligible('already_registered'),
+  expired('expired'),
+  reversed('reversed');
 
   const ReferralStatus(this.wire);
 
   final String wire;
 
-  bool get joined => this == registered || this == bought || this == reversed;
-
   static ReferralStatus fromWire(String? value) =>
       values.firstWhere((s) => s.wire == value, orElse: () => pending);
 }
 
+/// A friend invited with the user's code, from `GET referrals`.
 class Referral {
   const Referral({
     required this.id,
-    required this.name,
-    required this.phoneMasked,
+    required this.contact,
     required this.status,
-    required this.invitedAt,
+    this.name,
+    this.invitedAt,
     this.registeredAt,
     this.boughtAt,
-    this.planName,
     this.reward = 0,
-    this.holdHours = 0,
-    this.daysLeft = 0,
   });
 
-  final int id;
-  final LocalizedName name;
-  final String phoneMasked;
+  final String id;
+
+  /// The friend's masked phone or email, e.g. `se***@example.com`.
+  final String contact;
   final ReferralStatus status;
-  final DateTime invitedAt;
+
+  /// The name the friend signed up with.
+  final String? name;
+  final DateTime? invitedAt;
   final DateTime? registeredAt;
   final DateTime? boughtAt;
-  final String? planName;
 
   /// Credit earned from this friend so far.
   final int reward;
 
-  /// Hours until the registration credit can be used.
-  final int holdHours;
-
-  /// Days left for a pending invite to register.
-  final int daysLeft;
-
   factory Referral.fromJson(Map<String, dynamic> json) => Referral(
-    id: jsonInt(json['Id']) ?? 0,
-    name: LocalizedName.fromJson(json),
-    phoneMasked: json['PhoneMasked'] as String? ?? '',
-    status: ReferralStatus.fromWire(json['Status'] as String?),
-    invitedAt: jsonDate(json['InvitedAt']) ?? DateTime(2000),
-    registeredAt: jsonDate(json['RegisteredAt']),
-    boughtAt: jsonDate(json['BoughtAt']),
-    planName: json['PlanName'] as String?,
-    reward: jsonInt(json['Reward']) ?? 0,
-    holdHours: jsonInt(json['HoldHours']) ?? 0,
-    daysLeft: jsonInt(json['DaysLeft']) ?? 0,
+    id: jsonId(json['id']) ?? '',
+    contact:
+        json['phoneMasked'] as String? ?? json['emailMasked'] as String? ?? '',
+    status: ReferralStatus.fromWire(json['status'] as String?),
+    name: json['registeredName'] as String?,
+    invitedAt: jsonDate(json['createdAt']),
+    registeredAt: jsonDate(json['registeredAt']),
+    boughtAt: jsonDate(json['convertedAt']),
+    reward:
+        ((jsonDouble(json['signupReward']) ?? 0) +
+                (jsonDouble(json['conversionReward']) ?? 0))
+            .round(),
   );
 }
 
-class ReferralQuery {
-  const ReferralQuery({this.status, this.page = 1});
+/// The next reward the credits can buy: [credits] in all, [missing] still
+/// to earn, about [referralsNeeded] paying friends away.
+class NextPrize {
+  const NextPrize({
+    required this.name,
+    required this.credits,
+    required this.missing,
+    required this.referralsNeeded,
+  });
 
-  final ReferralStatus? status;
-  final int page;
-}
+  final LocalizedName name;
+  final int credits;
+  final int missing;
+  final int referralsNeeded;
 
-/// A reward step: [paid] friends who bought a plan earn [reward] taka or
-/// [freeMonths] free months.
-class Milestone {
-  const Milestone({required this.paid, this.reward = 0, this.freeMonths = 0});
+  double get progress =>
+      credits <= 0 ? 0 : ((credits - missing) / credits).clamp(0, 1);
 
-  final int paid;
-  final int reward;
-  final int freeMonths;
-
-  factory Milestone.fromJson(Map<String, dynamic> json) => Milestone(
-    paid: jsonInt(json['Paid']) ?? 0,
-    reward: jsonInt(json['Reward']) ?? 0,
-    freeMonths: jsonInt(json['FreeMonths']) ?? 0,
+  factory NextPrize.fromJson(Map<String, dynamic> json) => NextPrize(
+    name: LocalizedName.of(json),
+    credits: jsonDouble(json['credits'])?.round() ?? 0,
+    missing: jsonDouble(json['missing'])?.round() ?? 0,
+    referralsNeeded: jsonInt(json['referralsNeeded']) ?? 0,
   );
 }
 
-/// The referral code, the program rules and the wallet, in one call.
+/// The referral code, the campaign's rules, the wallet and the latest
+/// invites: `GET referrals`.
 class ReferralOverview {
   const ReferralOverview({
     required this.code,
@@ -98,18 +96,18 @@ class ReferralOverview {
     required this.conversionPercent,
     required this.conversionCap,
     required this.trialDays,
-    required this.milestones,
+    required this.friendCredits,
+    required this.holdDays,
     required this.balance,
     required this.onHold,
-    required this.holdCount,
     required this.earned,
-    required this.used,
     required this.invited,
     required this.joined,
     required this.paid,
     this.expiringAmount = 0,
-    this.expiringAt,
+    this.nextPrize,
     this.recent = const [],
+    this.shareText = const LocalizedName('', ''),
   });
 
   final String code;
@@ -117,170 +115,99 @@ class ReferralOverview {
   final int registerReward;
   final int conversionPercent;
   final int conversionCap;
+
+  /// The extra trial days a friend gets.
   final int trialDays;
-  final List<Milestone> milestones;
+
+  /// The credits a friend gets on sign-up.
+  final int friendCredits;
+
+  /// Days a new credit is held before it can be used.
+  final int holdDays;
 
   /// Credit usable now.
   final int balance;
   final int onHold;
-  final int holdCount;
   final int earned;
-  final int used;
   final int invited;
   final int joined;
   final int paid;
+
+  /// Credit that expires within 30 days.
   final int expiringAmount;
-  final DateTime? expiringAt;
+  final NextPrize? nextPrize;
   final List<Referral> recent;
 
-  /// The next cash milestone, or null when all are reached.
-  Milestone? get nextMilestone {
-    for (final milestone in milestones) {
-      if (milestone.paid > paid && milestone.reward > 0) return milestone;
-    }
-    for (final milestone in milestones) {
-      if (milestone.paid > paid) return milestone;
-    }
-    return null;
+  /// The server's invite message with the link, in both languages.
+  final LocalizedName shareText;
+
+  factory ReferralOverview.fromJson(Map<String, dynamic> json) {
+    final campaign = jsonMap(json['campaign']);
+    final wallet = jsonMap(json['wallet']);
+    final stats = jsonMap(json['stats']);
+    int amount(Map<String, dynamic> from, String key) =>
+        jsonDouble(from[key])?.round() ?? 0;
+    return ReferralOverview(
+      code: json['code'] as String? ?? '',
+      link: json['link'] as String? ?? '',
+      registerReward: amount(campaign, 'signup_credits'),
+      conversionPercent: amount(campaign, 'conversion_pct'),
+      conversionCap: amount(campaign, 'conversion_cap'),
+      trialDays: jsonInt(campaign['referee_trial_days']) ?? 0,
+      friendCredits: amount(campaign, 'referee_credits'),
+      holdDays: jsonInt(campaign['hold_days']) ?? 0,
+      balance: amount(wallet, 'spendable'),
+      onHold: amount(wallet, 'held'),
+      expiringAmount: amount(wallet, 'expiring30d'),
+      earned: amount(stats, 'earned'),
+      invited: jsonInt(stats['total']) ?? 0,
+      joined: jsonInt(stats['registered']) ?? 0,
+      paid: jsonInt(stats['converted']) ?? 0,
+      nextPrize: jsonObject(json['nextPrize'], NextPrize.fromJson),
+      recent: jsonList(jsonMap(json['history'])['items'], Referral.fromJson),
+      shareText: LocalizedName.of(jsonMap(json['share'])['whatsapp']),
+    );
   }
-
-  factory ReferralOverview.fromJson(Map<String, dynamic> json) =>
-      ReferralOverview(
-        code: json['Code'] as String? ?? '',
-        link: json['Link'] as String? ?? '',
-        registerReward: jsonInt(json['RegisterReward']) ?? 0,
-        conversionPercent: jsonInt(json['ConversionPercent']) ?? 0,
-        conversionCap: jsonInt(json['ConversionCap']) ?? 0,
-        trialDays: jsonInt(json['TrialDays']) ?? 0,
-        milestones: jsonList(json['Milestones'], Milestone.fromJson),
-        balance: jsonInt(json['Balance']) ?? 0,
-        onHold: jsonInt(json['OnHold']) ?? 0,
-        holdCount: jsonInt(json['HoldCount']) ?? 0,
-        earned: jsonInt(json['Earned']) ?? 0,
-        used: jsonInt(json['Used']) ?? 0,
-        invited: jsonInt(json['Invited']) ?? 0,
-        joined: jsonInt(json['Joined']) ?? 0,
-        paid: jsonInt(json['Paid']) ?? 0,
-        expiringAmount: jsonInt(json['ExpiringAmount']) ?? 0,
-        expiringAt: jsonDate(json['ExpiringAt']),
-        recent: jsonList(json['Recent'], Referral.fromJson),
-      );
 }
 
-enum WalletEntryKind {
-  welcome('Welcome'),
-  registration('Registration'),
-  conversion('Conversion'),
-  milestone('Milestone'),
-  redeemed('Redeemed'),
-  reversed('Reversed');
-
-  const WalletEntryKind(this.wire);
-
-  final String wire;
-
-  static WalletEntryKind fromWire(String? value) =>
-      values.firstWhere((k) => k.wire == value, orElse: () => welcome);
-}
-
+/// One credit or debit in the referral wallet, from `GET wallet/transactions`.
 class WalletEntry {
   const WalletEntry({
     required this.id,
-    required this.kind,
     required this.amount,
-    required this.at,
-    required this.name,
+    this.reason,
+    this.at,
     this.availableAt,
     this.held = false,
-    this.invoiceNumber,
-    this.planName,
-    this.milestone = 0,
   });
 
-  final int id;
-  final WalletEntryKind kind;
-  final int amount;
-  final DateTime at;
+  final String id;
 
-  /// The friend, or who referred the user for a welcome credit.
-  final LocalizedName name;
+  /// Negative when credits were spent.
+  final int amount;
+
+  /// The server's reason, e.g. `signup` or `redeem`.
+  final String? reason;
+  final DateTime? at;
   final DateTime? availableAt;
   final bool held;
-  final String? invoiceNumber;
-  final String? planName;
-  final int milestone;
 
   factory WalletEntry.fromJson(Map<String, dynamic> json) => WalletEntry(
-    id: jsonInt(json['Id']) ?? 0,
-    kind: WalletEntryKind.fromWire(json['Kind'] as String?),
-    amount: jsonInt(json['Amount']) ?? 0,
-    at: jsonDate(json['At']) ?? DateTime(2000),
-    name: LocalizedName.fromJson(json),
-    availableAt: jsonDate(json['AvailableAt']),
-    held: jsonBool(json['Held']),
-    invoiceNumber: json['InvoiceNumber'] as String?,
-    planName: json['PlanName'] as String?,
-    milestone: jsonInt(json['Milestone']) ?? 0,
+    id: jsonId(json['id']) ?? '',
+    amount: jsonDouble(json['amount'] ?? json['credits'])?.round() ?? 0,
+    reason: (json['reason'] ?? json['kind'] ?? json['type']) as String?,
+    at: jsonDate(json['createdAt']),
+    availableAt: jsonDate(json['availableAt']),
+    held: json['status'] == 'held',
   );
 }
 
-class LeaderboardEntry {
-  const LeaderboardEntry({
-    required this.memberId,
-    required this.name,
-    required this.paid,
-    required this.isMe,
-  });
-
-  final int memberId;
-  final LocalizedName name;
-  final int paid;
-  final bool isMe;
-
-  factory LeaderboardEntry.fromJson(Map<String, dynamic> json) =>
-      LeaderboardEntry(
-        memberId: jsonInt(json['MemberId']) ?? 0,
-        name: LocalizedName.fromJson(json),
-        paid: jsonInt(json['Paid']) ?? 0,
-        isMe: jsonBool(json['IsMe']),
-      );
-}
-
-/// A credit worth celebrating once (#190).
-class RewardMoment {
-  const RewardMoment({
-    required this.id,
-    required this.name,
-    required this.amount,
-    required this.holdHours,
-    required this.overview,
-  });
-
-  final int id;
-  final LocalizedName name;
-  final int amount;
-  final int holdHours;
-
-  /// The wallet after the reward.
-  final ReferralOverview overview;
-
-  factory RewardMoment.fromJson(Map<String, dynamic> json) => RewardMoment(
-    id: jsonInt(json['Id']) ?? 0,
-    name: LocalizedName.fromJson(json),
-    amount: jsonInt(json['Amount']) ?? 0,
-    holdHours: jsonInt(json['HoldHours']) ?? 0,
-    overview: ReferralOverview.fromJson(
-      json['Overview'] as Map<String, dynamic>? ?? const {},
-    ),
-  );
-}
-
+/// Whether a phone or email can still be referred: `GET referrals/check`.
 enum InviteEligibility {
-  eligible('Eligible'),
-  alreadyUser('AlreadyUser'),
-  referredByOther('ReferredByOther'),
-  alreadyInvited('AlreadyInvited'),
-  invalid('Invalid');
+  eligible('eligible'),
+  alreadyUser('already_registered'),
+  alreadyInvited('pending'),
+  invalid('invalid');
 
   const InviteEligibility(this.wire);
 
@@ -290,23 +217,19 @@ enum InviteEligibility {
       values.firstWhere((e) => e.wire == value, orElse: () => invalid);
 }
 
-class InviteCheck {
-  const InviteCheck({
-    required this.eligibility,
-    this.daysLeft = 0,
-    this.reward = 0,
-  });
+/// What `POST referrals` answers: the referral when one was recorded, and
+/// the server's words for the outcome.
+class InviteResult {
+  const InviteResult({required this.message, this.id});
 
-  final InviteEligibility eligibility;
+  final LocalizedName message;
 
-  /// For an earlier invite still waiting.
-  final int daysLeft;
-  final int reward;
+  /// Null when nothing was recorded, e.g. the contact already uses SalesRoot.
+  final String? id;
 
-  factory InviteCheck.fromJson(Map<String, dynamic> json) => InviteCheck(
-    eligibility: InviteEligibility.fromWire(json['Eligibility'] as String?),
-    daysLeft: jsonInt(json['DaysLeft']) ?? 0,
-    reward: jsonInt(json['Reward']) ?? 0,
+  factory InviteResult.fromJson(Map<String, dynamic> json) => InviteResult(
+    message: LocalizedName.of(json['message']),
+    id: jsonId(json['id']),
   );
 }
 
@@ -319,15 +242,15 @@ class InviteContact {
     this.company,
   });
 
-  final int id;
+  final String id;
   final String name;
   final String phone;
   final String? company;
 
   factory InviteContact.fromJson(Map<String, dynamic> json) => InviteContact(
-    id: jsonInt(json['Id']) ?? 0,
-    name: json['Name'] as String? ?? '',
-    phone: json['Phone'] as String? ?? '',
-    company: json['CompanyName'] as String?,
+    id: jsonId(json['id']) ?? '',
+    name: json['name'] as String? ?? '',
+    phone: json['phone'] as String? ?? '',
+    company: json['companyName'] as String?,
   );
 }

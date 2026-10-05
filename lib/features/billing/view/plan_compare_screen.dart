@@ -100,10 +100,9 @@ class _CompareBody extends StatelessWidget {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final from = overview.plan;
-    final bangla = context.isBangla;
-    final features = [
-      for (final plan in overview.catalog.plans)
-        if (plan.rank > from.rank && plan.rank <= to.rank) ...plan.features,
+    final added = [
+      for (final layer in to.layers)
+        if (!from.layers.contains(layer)) layer,
     ];
     final seats = overview.subscription.seats;
     final difference = to.pricePerUser - from.pricePerUser;
@@ -121,8 +120,16 @@ class _CompareBody extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: CheckList(
             items: [
-              for (final f in features)
-                (f.name.of(bangla), f.detail.of(bangla)),
+              for (final layer in added)
+                (context.layerLabel(layer), context.layerHint(layer)),
+              (
+                l10n.billingCompareLimits,
+                l10n.billingCompareLimitsBody(
+                  fmt.number(to.records),
+                  fmt.number(to.storageGb),
+                  fmt.number(to.cardScans),
+                ),
+              ),
             ],
           ),
         ),

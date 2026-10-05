@@ -9,47 +9,6 @@ part of 'sync_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(syncRepository)
-final syncRepositoryProvider = SyncRepositoryProvider._();
-
-final class SyncRepositoryProvider
-    extends $FunctionalProvider<SyncRepository, SyncRepository, SyncRepository>
-    with $Provider<SyncRepository> {
-  SyncRepositoryProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'syncRepositoryProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$syncRepositoryHash();
-
-  @$internal
-  @override
-  $ProviderElement<SyncRepository> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  SyncRepository create(Ref ref) {
-    return syncRepository(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(SyncRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<SyncRepository>(value),
-    );
-  }
-}
-
-String _$syncRepositoryHash() => r'1540ef26a38570014b8e237fd922e6df6e63e6dc';
-
 @ProviderFor(SyncNotifier)
 final syncProvider = SyncNotifierProvider._();
 
@@ -74,7 +33,7 @@ final class SyncNotifierProvider
   SyncNotifier create() => SyncNotifier();
 }
 
-String _$syncNotifierHash() => r'2f25b338bdc3a8c4b07a1c58aec5231eeac4b605';
+String _$syncNotifierHash() => r'61eb1881c0e97d6910ff4cbd8c1044322e53cf56';
 
 abstract class _$SyncNotifier extends $AsyncNotifier<SyncSnapshot> {
   FutureOr<SyncSnapshot> build();
@@ -107,7 +66,7 @@ final class SyncConflictProvider
     with $FutureModifier<SyncConflict>, $FutureProvider<SyncConflict> {
   SyncConflictProvider._({
     required SyncConflictFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'syncConflictProvider',
@@ -134,7 +93,7 @@ final class SyncConflictProvider
 
   @override
   FutureOr<SyncConflict> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return syncConflict(ref, argument);
   }
 
@@ -149,10 +108,10 @@ final class SyncConflictProvider
   }
 }
 
-String _$syncConflictHash() => r'4b391342fbabf3eb18a0076ee706d574c7d85adc';
+String _$syncConflictHash() => r'b11a2b05e266a8e421dbd63a9e9befa758bc5403';
 
 final class SyncConflictFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<SyncConflict>, int> {
+    with $FunctionalFamilyOverride<FutureOr<SyncConflict>, String> {
   SyncConflictFamily._()
     : super(
         retry: null,
@@ -162,7 +121,7 @@ final class SyncConflictFamily extends $Family
         isAutoDispose: true,
       );
 
-  SyncConflictProvider call(int id) =>
+  SyncConflictProvider call(String id) =>
       SyncConflictProvider._(argument: id, from: this);
 
   @override
@@ -181,7 +140,7 @@ final class ConflictChoicesNotifierProvider
   /// The side picked for each field of conflict [id], keyed by field.
   ConflictChoicesNotifierProvider._({
     required ConflictChoicesNotifierFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'conflictChoicesProvider',
@@ -225,7 +184,7 @@ final class ConflictChoicesNotifierProvider
 }
 
 String _$conflictChoicesNotifierHash() =>
-    r'140ac2b9a9c66cba891fe26d0c8da2e83e6fe255';
+    r'a5ca724e3032fffe9d199020e7a98fe947259f38';
 
 /// The side picked for each field of conflict [id], keyed by field.
 
@@ -236,7 +195,7 @@ final class ConflictChoicesNotifierFamily extends $Family
           Map<String, ConflictSide>,
           Map<String, ConflictSide>,
           Map<String, ConflictSide>,
-          int
+          String
         > {
   ConflictChoicesNotifierFamily._()
     : super(
@@ -249,7 +208,7 @@ final class ConflictChoicesNotifierFamily extends $Family
 
   /// The side picked for each field of conflict [id], keyed by field.
 
-  ConflictChoicesNotifierProvider call(int id) =>
+  ConflictChoicesNotifierProvider call(String id) =>
       ConflictChoicesNotifierProvider._(argument: id, from: this);
 
   @override
@@ -260,10 +219,10 @@ final class ConflictChoicesNotifierFamily extends $Family
 
 abstract class _$ConflictChoicesNotifier
     extends $Notifier<Map<String, ConflictSide>> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  Map<String, ConflictSide> build(int id);
+  Map<String, ConflictSide> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

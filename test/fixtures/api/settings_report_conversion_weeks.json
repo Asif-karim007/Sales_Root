@@ -1,0 +1,163 @@
+{
+ "range": {
+  "preset": "custom",
+  "from": "2026-08-11",
+  "to": "2026-10-05",
+  "group": "week",
+  "buckets": [
+   "2026-W33",
+   "2026-W34",
+   "2026-W35",
+   "2026-W36",
+   "2026-W37",
+   "2026-W38",
+   "2026-W39",
+   "2026-W40",
+   "2026-W41"
+  ],
+  "days": 56
+ },
+ "summary": {
+  "newLeads": 3,
+  "won": 0,
+  "lost": 0,
+  "open": 3,
+  "wonAmount": 0,
+  "conversionPct": 0.0,
+  "avgDaysToWin": null,
+  "avgHoursToFirstContact": -24.0
+ },
+ "trend": [
+  {
+   "bucket": "2026-W33",
+   "newLeads": 0,
+   "newAmount": 0,
+   "contacted": 0,
+   "won": 0,
+   "wonAmount": 0,
+   "lost": 0,
+   "conversionPct": null
+  },
+  {
+   "bucket": "2026-W34",
+   "newLeads": 0,
+   "newAmount": 0,
+   "contacted": 0,
+   "won": 0,
+   "wonAmount": 0,
+   "lost": 0,
+   "conversionPct": null
+  },
+  {
+   "bucket": "2026-W35",
+   "newLeads": 0,
+   "newAmount": 0,
+   "contacted": 0,
+   "won": 0,
+   "wonAmount": 0,
+   "lost": 0,
+   "conversionPct": null
+  },
+  {
+   "bucket": "2026-W36",
+   "newLeads": 0,
+   "newAmount": 0,
+   "contacted": 0,
+   "won": 0,
+   "wonAmount": 0,
+   "lost": 0,
+   "conversionPct": null
+  },
+  {
+   "bucket": "2026-W37",
+   "newLeads": 0,
+   "newAmount": 0,
+   "contacted": 0,
+   "won": 0,
+   "wonAmount": 0,
+   "lost": 0,
+   "conversionPct": null
+  },
+  {
+   "bucket": "2026-W38",
+   "newLeads": 0,
+   "newAmount": 0,
+   "contacted": 0,
+   "won": 0,
+   "wonAmount": 0,
+   "lost": 0,
+   "conversionPct": null
+  },
+  {
+   "bucket": "2026-W39",
+   "newLeads": 0,
+   "newAmount": 0,
+   "contacted": 0,
+   "won": 0,
+   "wonAmount": 0,
+   "lost": 0,
+   "conversionPct": null
+  },
+  {
+   "bucket": "2026-W40",
+   "newLeads": 3,
+   "newAmount": 206410.0,
+   "contacted": 1,
+   "won": 0,
+   "wonAmount": 0,
+   "lost": 0,
+   "conversionPct": 0.0
+  },
+  {
+   "bucket": "2026-W41",
+   "newLeads": 0,
+   "newAmount": 0,
+   "contacted": 0,
+   "won": 0,
+   "wonAmount": 0,
+   "lost": 0,
+   "conversionPct": null
+  }
+ ],
+ "funnel": [
+  {
+   "id": "01a10101-864b-7935-9bd6-8c6f4179ed51",
+   "nameBn": "যোগাযোগ বাকি",
+   "nameEn": "To contact",
+   "sortOrder": 1,
+   "isWon": false,
+   "isLost": false,
+   "reached": 3
+  }
+ ],
+ "breakdowns": {
+  "bySource": [
+   {
+    "key": "manual",
+    "newLeads": 2,
+    "won": 0,
+    "wonAmount": 0,
+    "conversionPct": 0.0
+   },
+   {
+    "key": "card",
+    "newLeads": 1,
+    "won": 0,
+    "wonAmount": 0,
+    "conversionPct": 0.0
+   }
+  ],
+  "byPerson": [
+   {
+    "key": "Rafi Ahmed",
+    "id": "01a10101-8656-7886-b8e5-4f197fbd9159",
+    "newLeads": 3,
+    "won": 0,
+    "lost": 0,
+    "wonAmount": 0,
+    "conversionPct": 0.0
+   }
+  ],
+  "lostReasons": []
+ }
+}

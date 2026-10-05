@@ -8,19 +8,17 @@ import 'package:salesroot/features/billing/models/referral.dart';
 import 'package:salesroot/features/billing/providers/referral_providers.dart';
 import 'package:salesroot/features/billing/view/widget/billing_bits.dart';
 import 'package:salesroot/features/billing/view/widget/billing_labels.dart';
-import 'package:salesroot/features/billing/view/widget/milestone_track.dart';
 import 'package:salesroot/features/billing/view/widget/referral_widgets.dart';
-import 'package:salesroot/features/billing/view/widget/reward_sheet.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #186 Credit wallet: balance, what expires, milestones and transactions.
+/// #186 Credit wallet: balance, what expires, what is held and the
+/// transactions.
 class ReferralWalletScreen extends ConsumerWidget {
   const ReferralWalletScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    listenForReward(context, ref);
     return SrScaffold(
       appBar: SrAppBar(
         title: context.l10n.billingWalletTitle,
@@ -64,28 +62,13 @@ class _WalletBody extends ConsumerWidget {
             _Kpis(overview: overview),
             const SizedBox(height: 10),
             SrCard(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SrSectionHeader(title: l10n.billingMilestones),
-                  const SizedBox(height: 12),
-                  MilestoneTrack(
-                    milestones: overview.milestones,
-                    paid: overview.paid,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
-            SrCard(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   SrSectionHeader(title: l10n.billingTransactions),
                   const SizedBox(height: 4),
-                  _Transactions(percent: overview.conversionPercent),
+                  const _Transactions(),
                 ],
               ),
             ),
@@ -105,9 +88,7 @@ class _WalletBody extends ConsumerWidget {
 }
 
 class _Transactions extends ConsumerWidget {
-  const _Transactions({required this.percent});
-
-  final int percent;
+  const _Transactions();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -123,11 +104,7 @@ class _Transactions extends ConsumerWidget {
       AsyncValue(value: final paged?) => Column(
         children: [
           for (final entry in paged.items)
-            _EntryLine(
-              entry: entry,
-              percent: percent,
-              last: entry == paged.items.last,
-            ),
+            _EntryLine(entry: entry, last: entry == paged.items.last),
         ],
       ),
       AsyncError(:final error) => Padding(
@@ -157,7 +134,6 @@ class _Kpis extends StatelessWidget {
     final c = SrColors.of(context);
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final expiringAt = overview.expiringAt;
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -167,12 +143,9 @@ class _Kpis extends StatelessWidget {
               label: l10n.billingExpiring,
               value: fmt.money(overview.expiringAmount),
               valueColor: overview.expiringAmount > 0 ? c.warning : c.ink,
-              note: expiringAt == null
-                  ? l10n.billingNothingExpiring
-                  : joinDot([
-                      fmt.dayMonth(expiringAt),
-                      l10n.billingUseNextBill,
-                    ]),
+              note: overview.expiringAmount > 0
+                  ? l10n.billingUseNextBill
+                  : l10n.billingNothingExpiring,
             ),
           ),
           const SizedBox(width: 8),
@@ -181,7 +154,7 @@ class _Kpis extends StatelessWidget {
               label: l10n.billingOnHoldTitle,
               value: fmt.money(overview.onHold),
               valueColor: c.ink,
-              note: l10n.billingHoldNote(fmt.number(overview.holdCount)),
+              note: l10n.billingHoldNote(fmt.number(overview.holdDays)),
             ),
           ),
         ],
@@ -223,14 +196,9 @@ class _Kpi extends StatelessWidget {
 }
 
 class _EntryLine extends StatelessWidget {
-  const _EntryLine({
-    required this.entry,
-    required this.percent,
-    required this.last,
-  });
+  const _EntryLine({required this.entry, required this.last});
 
   final WalletEntry entry;
-  final int percent;
   final bool last;
 
   @override
@@ -238,49 +206,25 @@ class _EntryLine extends StatelessWidget {
     final c = SrColors.of(context);
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final name = entry.name.of(context.isBangla);
-    final date = fmt.dayMonth(entry.at);
+    final at = entry.at;
     final available = entry.availableAt;
-    final (title, meta) = switch (entry.kind) {
-      WalletEntryKind.welcome => (
-        l10n.billingTxWelcome,
-        joinDot([l10n.billingTxJoinedVia(name), date]),
-      ),
-      WalletEntryKind.registration => (
-        l10n.billingTxRegistered(name),
-        entry.held && available != null
-            ? l10n.billingTxHeld(fmt.dayMonth(available))
-            : date,
-      ),
-      WalletEntryKind.conversion => (
-        l10n.billingTxBought(name),
-        joinDot([l10n.billingTxConversion(fmt.number(percent)), date]),
-      ),
-      WalletEntryKind.milestone => (
-        l10n.billingTxMilestone(fmt.number(entry.milestone)),
-        joinDot([l10n.billingMilestone, date]),
-      ),
-      WalletEntryKind.redeemed => (
-        l10n.billingTxInvoice(entry.invoiceNumber ?? ''),
-        joinDot([l10n.billingTxUsed(entry.planName ?? ''), date]),
-      ),
-      WalletEntryKind.reversed => (
-        l10n.billingTxReversed(name),
-        joinDot([l10n.billingTxReversedNote, date]),
-      ),
-    };
-    final color = entry.amount < 0
-        ? c.ink
-        : entry.held
-        ? c.warning
-        : c.success;
+    final spent = entry.amount < 0;
     return BillingLine(
-      label: title,
-      meta: meta,
-      value: entry.amount < 0
+      label: spent ? l10n.billingTxSpent : l10n.billingTxEarned,
+      meta: joinDot([
+        ?entry.reason,
+        if (at != null) fmt.dayMonth(at),
+        if (entry.held && available != null)
+          l10n.billingTxHeld(fmt.dayMonth(available)),
+      ]),
+      value: spent
           ? context.signedMoney(entry.amount)
           : l10n.billingPlus(fmt.money(entry.amount)),
-      valueColor: color,
+      valueColor: spent
+          ? c.ink
+          : entry.held
+          ? c.warning
+          : c.success,
       last: last,
     );
   }

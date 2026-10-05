@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:salesroot/core/access/experience_level.dart';
-import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/features/settings/models/pipeline.dart';
 import 'package:salesroot/features/settings/providers/settings_providers.dart';
-import 'package:salesroot/features/settings/view/widget/level_labels.dart';
 import 'package:salesroot/features/settings/view/widget/settings_widgets.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
@@ -38,9 +35,7 @@ class _StageSheetState extends ConsumerState<_StageSheet> {
   late final _win = TextEditingController(
     text: '${widget.stage?.winPercent ?? 50}',
   );
-  late ExperienceLevel _level =
-      widget.stage?.minLevel ?? ExperienceLevel.standard;
-  late bool _needsQuotation = widget.stage?.requiresQuotation ?? false;
+  late bool _showInEasy = widget.stage?.showInEasy ?? false;
   Map<String, String> _errors = const {};
   bool _busy = false;
 
@@ -54,13 +49,31 @@ class _StageSheetState extends ConsumerState<_StageSheet> {
     super.dispose();
   }
 
-  Future<void> _run(Future<void> Function(PipelinesNotifier n) action) async {
+  /// A new stage stands for the same universal step as the last open one.
+  int get _universalStep =>
+      widget.stage?.universalStep ??
+      widget.pipeline.openStages.lastOrNull?.universalStep ??
+      1;
+
+  Future<void> _save() async {
+    final input = StageInput(
+      nameEn: _name.text,
+      nameBn: _nameBn.text,
+      winPercent: int.tryParse(_win.text.trim()) ?? 0,
+      showInEasy: _showInEasy,
+      universalStep: _universalStep,
+      requiredFields: widget.stage?.requiredFields ?? const [],
+    );
+    final stage = widget.stage;
+    final notifier = ref.read(pipelinesProvider.notifier);
     setState(() {
       _busy = true;
       _errors = const {};
     });
     try {
-      await action(ref.read(pipelinesProvider.notifier));
+      await (stage == null
+          ? notifier.addStage(widget.pipeline.id, input)
+          : notifier.editStage(stage.id, input));
       if (!mounted) return;
       Navigator.of(context).pop();
     } on ApiFailure catch (failure) {
@@ -73,43 +86,13 @@ class _StageSheetState extends ConsumerState<_StageSheet> {
     }
   }
 
-  Future<void> _save() {
-    final input = StageInput(
-      name: _name.text,
-      nameBn: _nameBn.text,
-      winPercent: int.tryParse(_win.text.trim()) ?? -1,
-      minLevel: _level,
-      requiresQuotation: _needsQuotation,
-    );
-    final stage = widget.stage;
-    final pipelineId = widget.pipeline.id;
-    return _run(
-      (n) => stage == null
-          ? n.addStage(pipelineId, input)
-          : n.editStage(pipelineId, stage.id, input),
-    );
-  }
-
-  Future<void> _delete(PipelineStage stage) async {
-    final l10n = context.l10n;
-    final ok = await showSrConfirm(
-      context,
-      title: l10n.settingsStageDeleteTitle(stage.name.of(context.fmt.isBangla)),
-      message: l10n.settingsStageDeleteBody,
-      confirmLabel: l10n.commonDelete,
-      icon: Icons.delete_outline_rounded,
-      destructive: true,
-    );
-    if (!ok || !mounted) return;
-    await _run((n) => n.deleteStage(widget.pipeline.id, stage.id));
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final stage = widget.stage;
     return SrSheet(
-      title: stage == null ? l10n.settingsStageAdd : l10n.settingsStageEdit,
+      title: widget.stage == null
+          ? l10n.settingsStageAdd
+          : l10n.settingsStageEdit,
       subtitle: l10n.settingsStageNamesHint,
       child: SingleChildScrollView(
         child: Column(
@@ -119,14 +102,14 @@ class _StageSheetState extends ConsumerState<_StageSheet> {
             SrTextField(
               controller: _name,
               label: l10n.settingsStageNameEn,
-              error: _errors['Name'],
+              error: _errors['nameEn'],
               textCapitalization: TextCapitalization.sentences,
             ),
             const SizedBox(height: 12),
             SrTextField(
               controller: _nameBn,
               label: l10n.settingsStageNameBn,
-              error: _errors['NameBn'],
+              error: _errors['nameBn'],
             ),
             if (_open) ...[
               const SizedBox(height: 12),
@@ -139,30 +122,18 @@ class _StageSheetState extends ConsumerState<_StageSheet> {
                   FilteringTextInputFormatter.digitsOnly,
                   LengthLimitingTextInputFormatter(3),
                 ],
-                error: _errors['WinPercent'],
+                error: _errors['probability'],
               ),
-              const SizedBox(height: 14),
-              SrFieldLabel(l10n.settingsStageShownFrom),
               const SizedBox(height: 6),
-              SrSegmented(
-                segments: [
-                  for (final level in ExperienceLevel.values)
-                    SrSegment(level.label(l10n)),
-                ],
-                index: _level.index,
-                onChanged: (i) =>
-                    setState(() => _level = ExperienceLevel.values[i]),
+              ToggleRow(
+                title: l10n.settingsStageEasyToggle,
+                value: _showInEasy,
+                onChanged: (on) => setState(() => _showInEasy = on),
               ),
-              if (_errors['MinLevel'] case final error?) ...[
+              if (_errors['showInEasy'] case final error?) ...[
                 const SizedBox(height: 6),
                 SrNote(message: error, tone: SrNoteTone.err),
               ],
-              const SizedBox(height: 6),
-              ToggleRow(
-                title: l10n.settingsStageNeedsQuotationToggle,
-                value: _needsQuotation,
-                onChanged: (on) => setState(() => _needsQuotation = on),
-              ),
             ],
             const SizedBox(height: 16),
             SrButton(
@@ -171,15 +142,6 @@ class _StageSheetState extends ConsumerState<_StageSheet> {
               loading: _busy,
               onPressed: _busy ? null : _save,
             ),
-            if (stage != null && stage.isOpen) ...[
-              const SizedBox(height: 8),
-              SrButton(
-                label: l10n.settingsStageDelete,
-                expand: true,
-                variant: SrButtonVariant.ghost,
-                onPressed: _busy ? null : () => _delete(stage),
-              ),
-            ],
           ],
         ),
       ),

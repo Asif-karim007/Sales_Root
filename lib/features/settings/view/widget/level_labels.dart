@@ -10,13 +10,6 @@ extension ExperienceLevelLabels on ExperienceLevel {
     ExperienceLevel.advanced => l10n.settingsLevelAdvanced,
   };
 
-  /// E, S or A.
-  String letter(AppLocalizations l10n) => switch (this) {
-    ExperienceLevel.easy => l10n.settingsLevelLetterEasy,
-    ExperienceLevel.standard => l10n.settingsLevelLetterStandard,
-    ExperienceLevel.advanced => l10n.settingsLevelLetterAdvanced,
-  };
-
   String description(AppLocalizations l10n) => switch (this) {
     ExperienceLevel.easy => l10n.settingsLevelEasyHint,
     ExperienceLevel.standard => l10n.settingsLevelStandardHint,

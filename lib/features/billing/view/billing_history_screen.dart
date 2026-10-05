@@ -6,11 +6,8 @@ import 'package:printing/printing.dart';
 import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/format/app_format.dart';
-import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/workspace/workspace_providers.dart';
-import 'package:salesroot/features/billing/models/billing_overview.dart';
 import 'package:salesroot/features/billing/models/invoice.dart';
 import 'package:salesroot/features/billing/providers/billing_providers.dart';
 import 'package:salesroot/features/billing/view/widget/billing_bits.dart';
@@ -34,7 +31,7 @@ class BillingHistoryScreen extends ConsumerWidget {
       body: SrAsyncView(
         value: ref.watch(invoicesProvider),
         onRetry: () => ref.invalidate(invoicesProvider),
-        isEmpty: (paged) => paged.isEmpty,
+        isEmpty: (invoices) => invoices.isEmpty,
         empty: (context) => Center(
           child: SrEmptyState(
             icon: Icons.receipt_long_outlined,
@@ -44,60 +41,50 @@ class BillingHistoryScreen extends ConsumerWidget {
             onAction: () => context.push(Routes.planChoose),
           ),
         ),
-        data: (context, paged) => _HistoryBody(paged: paged),
+        data: (context, invoices) => _HistoryBody(invoices: invoices),
       ),
     );
   }
 }
 
 class _HistoryBody extends ConsumerWidget {
-  const _HistoryBody({required this.paged});
+  const _HistoryBody({required this.invoices});
 
-  final Paged<Invoice> paged;
+  final List<Invoice> invoices;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(invoicesProvider.notifier);
     final workspace = ref.watch(
       currentWorkspaceProvider.select((w) => w?.name ?? ''),
     );
-    final items = paged.items;
 
     return RefreshIndicator(
       onRefresh: () => ref.refresh(invoicesProvider.future),
-      child: LoadMoreListener(
-        onLoadMore: notifier.loadMore,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 32),
-          children: [
-            SrCard(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Column(
-                children: [
-                  for (final invoice in items)
-                    _InvoiceRow(
-                      invoice: invoice,
-                      last: invoice == items.last,
-                      onTap: () => context.openPdf(
-                        name: '${invoice.number}.pdf',
-                        title: invoice.number,
-                        load: () => context.invoicesPdf([invoice], workspace),
-                      ),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 32),
+        children: [
+          SrCard(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Column(
+              children: [
+                for (final invoice in invoices)
+                  _InvoiceRow(
+                    invoice: invoice,
+                    last: invoice == invoices.last,
+                    onTap: () => context.openPdf(
+                      name: '${invoice.number}.pdf',
+                      title: invoice.number,
+                      load: () => context.invoicesPdf([invoice], workspace),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
-            LoadMoreFooter(
-              loading: paged.isLoadingMore,
-              error: paged.loadMoreError,
-              onRetry: notifier.loadMore,
-            ),
-            const SizedBox(height: 12),
-            const _RenewalCard(),
-            const SizedBox(height: 12),
-            _DownloadAll(workspace: workspace),
-          ],
-        ),
+          ),
+          const SizedBox(height: 12),
+          const _RenewalCard(),
+          const SizedBox(height: 12),
+          _DownloadAll(invoices: invoices, workspace: workspace),
+        ],
       ),
     );
   }
@@ -116,19 +103,16 @@ class _InvoiceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final fmt = context.fmt;
-    final method = invoice.method;
-    final retried = invoice.retriedAt;
+    final issuedAt = invoice.issuedAt;
     final paid = invoice.status == InvoiceStatus.paid;
 
     return SrListRow(
-      title: context.invoiceTitle(invoice),
+      title: invoice.item.isEmpty ? invoice.number : invoice.item,
       subtitle: joinDot([
-        fmt.dayMonth(invoice.issuedAt),
-        if (method != null) context.methodName(method.kind),
+        if (issuedAt != null) fmt.dayMonth(issuedAt),
+        context.gatewayName(invoice.gateway),
         invoice.number,
-        if (retried != null) l10n.billingRetried(fmt.dayMonth(retried)),
       ]),
       leading: SrAvatar(
         icon: paid ? Icons.check_rounded : Icons.undo_rounded,
@@ -157,52 +141,25 @@ class _RenewalCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final overview = ref.watch(billingOverviewProvider).value;
-    if (overview == null || overview.plan.isFree) {
-      return const SizedBox.shrink();
-    }
-    return _RenewalLines(overview: overview);
-  }
-}
-
-class _RenewalLines extends StatelessWidget {
-  const _RenewalLines({required this.overview});
-
-  final BillingOverview overview;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final fmt = context.fmt;
-    final renewsAt = overview.subscription.renewsAt;
-    final method = overview.subscription.paymentMethod;
+    final renewsAt = ref.watch(
+      subscriptionProvider.select((s) => s.value?.renewsAt),
+    );
+    if (renewsAt == null) return const SizedBox.shrink();
     return SrCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Column(
-        children: [
-          BillingLine(
-            label: l10n.billingNextRenewal,
-            value: joinDot([
-              if (renewsAt != null) fmt.dayMonth(renewsAt),
-              fmt.money(overview.renewal),
-            ]),
-            last: method == null,
-          ),
-          if (method != null)
-            BillingLine(
-              label: l10n.billingMethod,
-              value: context.methodLine(method),
-              last: true,
-            ),
-        ],
+      child: BillingLine(
+        label: context.l10n.billingNextRenewal,
+        value: context.fmt.dayMonth(renewsAt),
+        last: true,
       ),
     );
   }
 }
 
 class _DownloadAll extends ConsumerStatefulWidget {
-  const _DownloadAll({required this.workspace});
+  const _DownloadAll({required this.invoices, required this.workspace});
 
+  final List<Invoice> invoices;
   final String workspace;
 
   @override
@@ -217,13 +174,12 @@ class _DownloadAllState extends ConsumerState<_DownloadAll> {
   Future<void> _download() async {
     setState(() => _busy = true);
     try {
-      final invoices = await ref.read(billingRepositoryProvider).receipts();
-      if (!mounted) return;
-      final bytes = await context.invoicesPdf(invoices, widget.workspace);
+      final bytes = await context.invoicesPdf(
+        widget.invoices,
+        widget.workspace,
+      );
       if (!mounted) return;
       await Printing.sharePdf(bytes: bytes, filename: _fileName);
-    } on ApiFailure catch (failure) {
-      if (mounted) showSrError(context, failure.message);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

@@ -10,7 +10,6 @@ import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/billing/models/billing_catalog.dart';
 import 'package:salesroot/features/billing/models/checkout.dart';
-import 'package:salesroot/features/billing/models/pricing.dart';
 import 'package:salesroot/features/billing/models/subscription.dart';
 import 'package:salesroot/features/billing/providers/billing_providers.dart';
 import 'package:salesroot/features/billing/view/widget/billing_bits.dart';
@@ -21,7 +20,8 @@ import 'package:salesroot/widgets/widgets.dart';
 /// Where bank transfers and cards are paid.
 const String billingWebUrl = 'https://app.salesrootcrm.com/billing';
 
-/// #100 Order review and payment, with referral credits (#189).
+/// #100 Order review and payment, with referral credits (#189). The server
+/// prices the order; the gateway's page opens to pay.
 class CheckoutScreen extends ConsumerWidget {
   const CheckoutScreen({super.key, required this.request});
 
@@ -33,18 +33,25 @@ class CheckoutScreen extends ConsumerWidget {
     final data = ref.watch(checkoutDataProvider);
     final flow = ref.watch(checkoutFlowProvider);
     ref.listen(checkoutFlowProvider, (previous, next) {
-      final purchase = next.purchase;
-      if (next.phase != CheckoutPhase.done || purchase == null) return;
+      if (previous?.phase == next.phase) return;
+      final url = next.result?.paymentUrl;
+      if (next.phase == CheckoutPhase.awaitingPayment && url != null) {
+        launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      }
+      if (next.phase != CheckoutPhase.done) return;
       context.pushReplacement(
         Uri(
           path: Routes.planActivated,
-          queryParameters: {'invoice': '${purchase.invoice.id}'},
+          queryParameters: {'invoice': ?next.result?.invoiceId},
         ).toString(),
       );
     });
-
-    final loaded = data.value;
-    final priced = loaded == null ? null : _price(loaded, flow);
+    final quote = data.hasValue
+        ? ref.watch(
+            checkoutQuoteProvider(request, flow.method, flow.useCredits),
+          )
+        : null;
+    final priced = quote?.value;
 
     return PopScope(
       canPop: flow.phase != CheckoutPhase.processing,
@@ -53,52 +60,38 @@ class CheckoutScreen extends ConsumerWidget {
           title: l10n.billingOrderTitle,
           actions: const [BillingLanguageAction()],
         ),
-        footer: loaded == null || priced == null || request.isEmpty
+        footer: priced == null || request.isEmpty
             ? null
-            : _PayButton(
-                request: request,
-                quote: priced,
-                method: _method(loaded, flow),
-                flow: flow,
-              ),
+            : _PayButton(request: request, quote: priced, flow: flow),
         body: request.isEmpty
             ? const _NothingToPay()
             : SrAsyncView(
                 value: data,
                 onRetry: () => ref.invalidate(checkoutDataProvider),
                 loading: (_) => const SrSkeletonList(count: 2, cards: true),
-                data: (context, loaded) {
-                  final quote = priced;
-                  if (quote == null) return const _NothingToPay();
-                  return _CheckoutBody(
-                    data: loaded,
-                    quote: quote,
-                    flow: flow,
-                    method: _method(loaded, flow),
-                    request: request,
-                  );
-                },
+                data: (context, loaded) => SrAsyncView(
+                  value: quote ?? const AsyncLoading<Quote>(),
+                  onRetry: () => ref.invalidate(
+                    checkoutQuoteProvider(
+                      request,
+                      flow.method,
+                      flow.useCredits,
+                    ),
+                  ),
+                  loading: (_) => const SrSkeletonList(count: 2, cards: true),
+                  data: (context, quote) => quote.lines.isEmpty
+                      ? const _NothingToPay()
+                      : _CheckoutBody(
+                          data: loaded,
+                          quote: quote,
+                          flow: flow,
+                          request: request,
+                        ),
+                ),
               ),
       ),
     );
   }
-
-  Quote? _price(CheckoutData data, CheckoutFlow flow) {
-    try {
-      return BillingPricing.quote(
-        catalog: data.catalog,
-        current: data.subscription,
-        request: request,
-        walletBalance: data.walletBalance,
-        useCredits: flow.useCredits,
-      );
-    } on ApiFailure {
-      return null;
-    }
-  }
-
-  PaymentKind _method(CheckoutData data, CheckoutFlow flow) =>
-      flow.method ?? data.subscription.paymentMethod?.kind ?? PaymentKind.bkash;
 }
 
 class _NothingToPay extends StatelessWidget {
@@ -122,25 +115,29 @@ class _PayButton extends ConsumerWidget {
   const _PayButton({
     required this.request,
     required this.quote,
-    required this.method,
     required this.flow,
   });
 
   final CheckoutRequest request;
   final Quote quote;
-  final PaymentKind method;
   final CheckoutFlow flow;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final amount = context.fmt.money(quote.total);
+    final notifier = ref.read(checkoutFlowProvider.notifier);
+    final method = flow.method;
     final web = !method.inApp && !quote.isFree;
+    final awaiting = flow.phase == CheckoutPhase.awaitingPayment;
     final label = switch (quote) {
+      _ when awaiting => l10n.billingCheckPayment,
       Quote(lines: []) => l10n.billingNothingToPay,
       Quote(isFree: true) => l10n.billingActivateNow,
       _ when web => l10n.billingContinueWeb,
-      _ => l10n.billingPayWith(amount, context.methodName(method)),
+      _ => l10n.billingPayWith(
+        context.fmt.money(quote.total),
+        context.methodName(method),
+      ),
     };
     return SrButton(
       label: label,
@@ -148,14 +145,14 @@ class _PayButton extends ConsumerWidget {
       loading: flow.phase == CheckoutPhase.processing,
       onPressed: quote.lines.isEmpty
           ? null
+          : awaiting
+          ? notifier.confirm
           : web
           ? () => launchUrl(
               Uri.parse(billingWebUrl),
               mode: LaunchMode.externalApplication,
             )
-          : () => ref
-                .read(checkoutFlowProvider.notifier)
-                .pay(request, method: method, expectedTotal: quote.total),
+          : () => notifier.pay(request),
     );
   }
 }
@@ -165,28 +162,28 @@ class _CheckoutBody extends ConsumerWidget {
     required this.data,
     required this.quote,
     required this.flow,
-    required this.method,
     required this.request,
   });
 
   final CheckoutData data;
   final Quote quote;
   final CheckoutFlow flow;
-  final PaymentKind method;
   final CheckoutRequest request;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final notifier = ref.read(checkoutFlowProvider.notifier);
-    final hasPlan = quote.lines.any((l) => l.kind == OrderLineKind.plan);
-    final cycle = request.cycle ?? data.subscription.cycle;
+    final method = flow.method;
+    final busy =
+        flow.phase == CheckoutPhase.processing ||
+        flow.phase == CheckoutPhase.awaitingPayment;
     final failure = flow.failure;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 32),
       children: [
-        if (flow.phase == CheckoutPhase.processing) ...[
+        if (busy) ...[
           SrNote(
             icon: Icons.hourglass_top_rounded,
             title: l10n.billingWaiting(context.methodName(method)),
@@ -202,11 +199,9 @@ class _CheckoutBody extends ConsumerWidget {
                     ref.invalidate(checkoutDataProvider);
                     notifier.backToReview();
                   }
-                : () => notifier.pay(
-                    request,
-                    method: method,
-                    expectedTotal: quote.total,
-                  ),
+                : flow.result != null
+                ? notifier.confirm
+                : () => notifier.pay(request),
           ),
           const SizedBox(height: 12),
         ],
@@ -217,9 +212,7 @@ class _CheckoutBody extends ConsumerWidget {
             balance: data.walletBalance,
             method: method,
             value: flow.useCredits,
-            onChanged: flow.phase == CheckoutPhase.processing
-                ? null
-                : notifier.setUseCredits,
+            onChanged: busy ? null : notifier.setUseCredits,
           ),
         ],
         if (!quote.isFree) ...[
@@ -232,18 +225,15 @@ class _CheckoutBody extends ConsumerWidget {
           const SizedBox(height: 8),
           _Methods(
             selected: method,
-            saved: data.subscription.paymentMethod,
-            onSelect: flow.phase == CheckoutPhase.processing
-                ? null
-                : notifier.selectMethod,
+            onSelect: busy ? null : notifier.selectMethod,
           ),
         ],
         const SizedBox(height: 12),
         if (quote.credits > 0)
           SrNote(message: l10n.billingCreditsFailNote)
-        else if (hasPlan)
+        else
           SrNote(
-            message: cycle == BillingCycle.yearly
+            message: request.cycle == BillingCycle.yearly
                 ? l10n.billingRenewYearlyNote
                 : l10n.billingRenewMonthlyNote,
           ),
@@ -298,7 +288,7 @@ class _OrderCard extends StatelessWidget {
         children: [
           for (final line in quote.lines)
             BillingLine(
-              label: context.orderLineLabel(line),
+              label: line.item,
               value: context.signedMoney(line.amount),
             ),
           if (quote.credits > 0)
@@ -371,14 +361,9 @@ class _CreditsToggle extends StatelessWidget {
 }
 
 class _Methods extends StatelessWidget {
-  const _Methods({
-    required this.selected,
-    required this.saved,
-    required this.onSelect,
-  });
+  const _Methods({required this.selected, required this.onSelect});
 
   final PaymentKind selected;
-  final PaymentMethod? saved;
   final ValueChanged<PaymentKind>? onSelect;
 
   @override
@@ -386,19 +371,12 @@ class _Methods extends StatelessWidget {
     final c = SrColors.of(context);
     final l10n = context.l10n;
     final onSelect = this.onSelect;
-    final saved = this.saved;
 
-    String? subtitle(PaymentKind kind) {
-      if (kind == PaymentKind.bank) return billingWebUrl.split('//').last;
-      if (kind == PaymentKind.card) return l10n.billingCardNote;
-      if (saved != null && saved.kind == kind) {
-        return joinDot([
-          context.fmt.digits(saved.account ?? ''),
-          l10n.billingConfirmPin,
-        ]);
-      }
-      return l10n.billingConfirmPin;
-    }
+    String subtitle(PaymentKind kind) => switch (kind) {
+      PaymentKind.bank => billingWebUrl.split('//').last,
+      PaymentKind.card => l10n.billingCardNote,
+      _ => l10n.billingConfirmPin,
+    };
 
     return SrCard(
       padding: const EdgeInsets.symmetric(vertical: 2),

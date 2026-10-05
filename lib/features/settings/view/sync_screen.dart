@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/features/settings/models/sync_models.dart';
 import 'package:salesroot/features/settings/providers/settings_providers.dart';
 import 'package:salesroot/features/settings/providers/sync_providers.dart';
 import 'package:salesroot/features/settings/view/widget/settings_widgets.dart';
@@ -106,7 +105,7 @@ class _SyncScreenState extends ConsumerState<SyncScreen> {
               const SizedBox(height: 18),
               const _OfflineGroup(),
               const SizedBox(height: 18),
-              _StorageGroup(snapshot: data),
+              const _VersionGroup(),
             ],
           ),
         ),
@@ -183,62 +182,20 @@ class _OfflineGroup extends ConsumerWidget {
       context.l10n.settingsSyncHistoryDays(context.fmt.number(days));
 }
 
-class _StorageGroup extends ConsumerWidget {
-  const _StorageGroup({required this.snapshot});
-
-  final SyncSnapshot snapshot;
+class _VersionGroup extends ConsumerWidget {
+  const _VersionGroup();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
     final version = ref.watch(appVersionProvider).value;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SrRowGroup(
-          title: l10n.settingsSyncStorage,
-          rows: [
-            FactLine(
-              label: l10n.settingsSyncData,
-              value: megabytes(context, snapshot.dataBytes),
-            ),
-            FactLine(
-              label: l10n.settingsSyncCache,
-              value: megabytes(context, snapshot.cacheBytes),
-            ),
-            if (version != null)
-              FactLine(
-                label: l10n.settingsSyncVersion,
-                value: context.fmt.digits(version),
-              ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        SrButton(
-          label: l10n.settingsSyncClearCache,
-          icon: Icons.cleaning_services_outlined,
-          variant: SrButtonVariant.secondary,
-          expand: true,
-          onPressed: snapshot.cacheBytes == 0
-              ? null
-              : () => _clear(context, ref),
+    if (version == null) return const SizedBox.shrink();
+    return SrRowGroup(
+      rows: [
+        FactLine(
+          label: context.l10n.settingsSyncVersion,
+          value: context.fmt.digits(version),
         ),
       ],
     );
-  }
-
-  Future<void> _clear(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final ok = await showSrConfirm(
-      context,
-      title: l10n.settingsSyncClearTitle,
-      message: l10n.settingsSyncClearBody,
-      confirmLabel: l10n.settingsSyncClearCache,
-      icon: Icons.cleaning_services_outlined,
-    );
-    if (!ok || !context.mounted) return;
-    await ref.read(syncProvider.notifier).clearCache();
-    if (!context.mounted) return;
-    showSrSuccess(context, l10n.settingsSyncCleared);
   }
 }

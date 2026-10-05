@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/app_module.dart';
-import 'package:salesroot/core/access/experience_level.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
@@ -81,10 +80,9 @@ class _PipelinesScreenState extends ConsumerState<PipelinesScreen> {
   }
 
   String _name(BuildContext context, Pipeline pipeline) {
-    final name = pipeline.name.of(context.fmt.isBangla);
     return pipeline.isDefault
-        ? context.l10n.settingsPipelineDefault(name)
-        : name;
+        ? context.l10n.settingsPipelineDefault(pipeline.name)
+        : pipeline.name;
   }
 }
 
@@ -190,7 +188,11 @@ class _StageRow extends StatelessWidget {
     };
     return SrListRow(
       title: stage.name.of(fmt.isBangla),
-      subtitle: _subtitle(l10n),
+      subtitle: stage.isOpen
+          ? stage.showInEasy
+                ? l10n.settingsStageEasy
+                : l10n.settingsStageStandard
+          : null,
       leading: Container(
         width: 10,
         height: 36,
@@ -221,15 +223,4 @@ class _StageRow extends StatelessWidget {
           : null,
     );
   }
-
-  String _subtitle(AppLocalizations l10n) => [
-    if (stage.isOpen)
-      switch (stage.minLevel) {
-        ExperienceLevel.easy => l10n.settingsStageEasy,
-        ExperienceLevel.standard => l10n.settingsStageStandard,
-        ExperienceLevel.advanced => l10n.settingsStageAdvanced,
-      },
-    if (stage.requiresQuotation) l10n.settingsStageNeedsQuotation,
-    if (stage.requiresReason) l10n.settingsStageNeedsReason,
-  ].join(' · ');
 }

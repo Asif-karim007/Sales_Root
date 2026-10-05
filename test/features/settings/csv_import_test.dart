@@ -1,14 +1,14 @@
 import 'dart:convert';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/features/settings/data/csv_parser.dart';
 import 'package:salesroot/features/settings/models/csv_import.dart';
 import 'package:salesroot/features/settings/providers/import_providers.dart';
 
-import 'settings_test_utils.dart';
+import '../../helpers/api_stub.dart';
+import 'settings_test_setup.dart';
 
 void main() {
   group('parseCsv', () {
@@ -73,60 +73,97 @@ void main() {
     expect(normalizePhone('01711234567'), '1711234567');
   });
 
-  test('headers map to lead fields by name', () {
-    expect(ImportField.forHeader(' Phone '), ImportField.mobile);
+  test('headers map to customer fields by name', () {
+    expect(ImportField.forHeader(' Phone '), ImportField.phone);
+    expect(ImportField.forHeader('Mobile'), ImportField.phone);
+    expect(ImportField.forHeader('Shop'), ImportField.name);
+    expect(ImportField.forHeader('এলাকা'), ImportField.area);
     expect(ImportField.forHeader('Notes'), ImportField.note);
     expect(ImportField.forHeader('Fax'), ImportField.skip);
   });
 
-  test('loading a file maps columns, flags duplicates and imports', () async {
-    final container = await signedInContainer(role: WorkspaceRole.owner);
-    addTearDown(container.dispose);
-    keepAlive(container, csvImportProvider);
-    final saved = container.read(fakeBackendProvider).graph.contacts.first;
-    final csv = [
-      'Name,Phone,Company,Stage,Value,Source,Notes',
-      'Karim Textiles,${saved.phone},Karim Textiles Ltd,Interested,240000,Fair,"Roof, 2 floors"',
-      'Delta Power,01811000111,Delta Power,Contacted,120000,Referral,',
-      'Delta Power again,+8801811000111,Delta Power,Contacted,90000,Referral,',
-      ',01911000222,No name Ltd,,,,',
-    ].join('\n');
-    final notifier = container.read(csvImportProvider.notifier);
+  group('importing', () {
+    const csv =
+        'Name,Phone,Area,Notes\n'
+        'Rahim Traders,01811000010,Mirpur 10,"Roof, 2 floors"\n'
+        'Karim Store,01811000011,Mirpur 11,\n'
+        'Karim Store again,+8801811000011,Mirpur 11,\n';
 
-    await notifier.load('leads_sept.csv', utf8.encode(csv));
-    final loaded = container.read(csvImportProvider);
+    test('a file is checked by a dry run, then imported', () async {
+      final stub = settingsStub()..on('POST', 'companies/import', const {});
+      final container = await settingsContainer(stub, role: 'owner');
+      listenTo(container, csvImportProvider);
+      final notifier = container.read(csvImportProvider.notifier);
 
-    expect(loaded.mapping, [
-      ImportField.name,
-      ImportField.mobile,
-      ImportField.company,
-      ImportField.stage,
-      ImportField.value,
-      ImportField.source,
-      ImportField.note,
-    ]);
-    expect(loaded.duplicates.value, {0, 2});
-    expect(loaded.canStart, isTrue);
+      await notifier.load('outlets.csv', utf8.encode(csv));
+      final loaded = container.read(csvImportProvider);
 
-    await notifier.start();
-    final job = container.read(csvImportProvider).job;
+      expect(loaded.mapping, [
+        ImportField.name,
+        ImportField.phone,
+        ImportField.area,
+        ImportField.note,
+      ]);
+      expect(loaded.repeatedRows, {2});
+      expect(loaded.check.value?.total, 3);
+      final check = stub.lastBody('POST', 'companies/import');
+      expect(check['commit'], isFalse);
+      expect((check['rows'] as List).first, {
+        'name': 'Rahim Traders',
+        'phone': '01811000010',
+        'area': 'Mirpur 10',
+        'notes': 'Roof, 2 floors',
+      });
+      expect((check['rows'] as List)[1], {
+        'name': 'Karim Store',
+        'phone': '01811000011',
+        'area': 'Mirpur 11',
+      });
 
-    expect(job?.done, isTrue);
-    expect(job?.imported, 3);
-    expect(job?.duplicates, 2);
-    expect(job?.failed, 1);
-  });
+      await notifier.start();
 
-  test('unmapping the mobile column blocks the import', () async {
-    final container = await signedInContainer(role: WorkspaceRole.owner);
-    addTearDown(container.dispose);
-    keepAlive(container, csvImportProvider);
-    final notifier = container.read(csvImportProvider.notifier);
+      expect(stub.lastBody('POST', 'companies/import')['commit'], isTrue);
+      expect(container.read(csvImportProvider).result?.total, 3);
+    });
 
-    await notifier.load('a.csv', utf8.encode('Name,Phone\nRahim,01711000000'));
-    await notifier.map(1, ImportField.skip);
+    test('without the import right the check and the import fail', () async {
+      final stub = settingsStub()
+        ..on(
+          'POST',
+          'companies/import',
+          fixture('settings_forbidden'),
+          status: 403,
+        );
+      final container = await settingsContainer(stub);
+      listenTo(container, csvImportProvider);
+      final notifier = container.read(csvImportProvider.notifier);
 
-    expect(container.read(csvImportProvider).missing, [ImportField.mobile]);
-    expect(container.read(csvImportProvider).canStart, isFalse);
+      await notifier.load('outlets.csv', utf8.encode(csv));
+      expect(
+        container.read(csvImportProvider).check,
+        isA<AsyncError<ImportResult?>>(),
+      );
+
+      await notifier.start();
+      final state = container.read(csvImportProvider);
+      expect(state.failure?.isForbidden, isTrue);
+      expect(state.result, isNull);
+      expect(state.canStart, isTrue);
+    });
+
+    test('unmapping the name column blocks the import', () async {
+      final stub = settingsStub()..on('POST', 'companies/import', const {});
+      final container = await settingsContainer(stub, role: 'owner');
+      listenTo(container, csvImportProvider);
+      final notifier = container.read(csvImportProvider.notifier);
+
+      await notifier.load('a.csv', utf8.encode('Name,Phone\nRahim,0171100'));
+      await notifier.map(0, ImportField.skip);
+
+      final state = container.read(csvImportProvider);
+      expect(state.missing, [ImportField.name]);
+      expect(state.canStart, isFalse);
+      expect(state.check.value, isNull);
+    });
   });
 }

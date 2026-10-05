@@ -7,23 +7,24 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
+import 'package:salesroot/features/billing/data/billing_repositories.dart';
 import 'package:salesroot/features/billing/models/referral.dart';
 import 'package:salesroot/features/billing/providers/referral_providers.dart';
 import 'package:salesroot/features/billing/view/widget/billing_labels.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// Opens #184 and reports the saved invite.
+/// Opens #184 and reports the server's answer to the invite.
 Future<void> showInviteSheet(BuildContext context) async {
-  final l10n = context.l10n;
-  final referral = await showSrSheet<Referral>(
+  final result = await showSrSheet<InviteResult>(
     context: context,
     builder: (_) => const InviteSheet(),
   );
-  if (referral == null || !context.mounted) return;
+  if (result == null || !context.mounted) return;
+  final message = result.message.of(context.isBangla);
   showSrSuccess(
     context,
-    l10n.billingInviteSaved(referral.name.of(context.isBangla)),
+    message.isEmpty ? context.l10n.billingInviteSent : message,
   );
 }
 
@@ -94,7 +95,7 @@ class _InviteSheetState extends ConsumerState<InviteSheet> {
         ? null
         : ref.watch(inviteCheckProvider(_query));
     final eligible =
-        check?.value?.eligibility == InviteEligibility.eligible &&
+        check?.value == InviteEligibility.eligible &&
         !(check?.isLoading ?? true);
 
     return SrSheet(
@@ -167,39 +168,37 @@ class _InviteSheetState extends ConsumerState<InviteSheet> {
   }
 }
 
-class _Eligibility extends StatelessWidget {
+class _Eligibility extends ConsumerWidget {
   const _Eligibility({required this.value});
 
-  final AsyncValue<InviteCheck> value;
+  final AsyncValue<InviteEligibility> value;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final reward = ref.watch(
+      referralOverviewProvider.select((o) => o.value?.registerReward ?? 0),
+    );
     return switch (value) {
-      AsyncData(:final value) => _note(context, value),
+      AsyncData(:final value) => _note(context, value, reward),
       AsyncError(:final error) => SrErrorState(error: error, compact: true),
       _ => const SrSkeletonBox(height: 48, radius: 10),
     };
   }
 
-  Widget _note(BuildContext context, InviteCheck check) {
+  Widget _note(BuildContext context, InviteEligibility check, int reward) {
     final l10n = context.l10n;
-    final fmt = context.fmt;
-    return switch (check.eligibility) {
+    return switch (check) {
       InviteEligibility.eligible => SrNote(
         title: l10n.billingEligible,
-        message: l10n.billingEligibleBody(fmt.money(check.reward)),
+        message: l10n.billingEligibleBody(context.fmt.money(reward)),
       ),
       InviteEligibility.alreadyUser => SrNote(
         tone: SrNoteTone.neutral,
         message: l10n.billingAlreadyUser,
       ),
-      InviteEligibility.referredByOther => SrNote(
-        tone: SrNoteTone.neutral,
-        message: l10n.billingReferredByOther,
-      ),
       InviteEligibility.alreadyInvited => SrNote(
         tone: SrNoteTone.gold,
-        message: l10n.billingAlreadyInvited(fmt.number(check.daysLeft)),
+        message: l10n.billingAlreadyInvited,
       ),
       InviteEligibility.invalid => SrNote(
         tone: SrNoteTone.err,

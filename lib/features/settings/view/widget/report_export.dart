@@ -13,18 +13,6 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/settings/models/report_models.dart';
 import 'package:salesroot/translations/translations.dart';
 
-String productCategoryLabel(AppLocalizations l10n, String category) =>
-    switch (category) {
-      'Solar' => l10n.settingsCategorySolar,
-      'Inverters' => l10n.settingsCategoryInverters,
-      'Batteries' => l10n.settingsCategoryBatteries,
-      'Accessories' => l10n.settingsCategoryAccessories,
-      'Lighting' => l10n.settingsCategoryLighting,
-      'Pumps' => l10n.settingsCategoryPumps,
-      'Services' => l10n.settingsCategoryServices,
-      _ => category,
-    };
-
 /// RFC 4180 text: cells holding a comma, quote or line break are quoted.
 String toCsv(List<List<Object?>> rows) => rows
     .map((row) => row.map((cell) => _cell('${cell ?? ''}')).join(','))
@@ -41,7 +29,6 @@ List<List<Object?>> salesReportRows(
   AppLocalizations l10n,
   ReportQuery query,
   SalesReport report,
-  bool bangla,
 ) => [
   [l10n.settingsReportSalesTitle, _day(query.from), _day(query.to)],
   [],
@@ -57,14 +44,11 @@ List<List<Object?>> salesReportRows(
     l10n.settingsReportLeads,
     l10n.settingsReportWon,
     l10n.settingsReportWonValue,
-    l10n.settingsReportOpenValue,
   ],
-  for (final m in report.members)
-    [m.name.of(bangla), m.leads, m.won, m.wonValue, m.openValue],
+  for (final m in report.members) [m.name, m.leads, m.won, m.wonValue],
   [],
   [l10n.settingsReportCategory, l10n.settingsReportValue],
-  for (final c in report.categories)
-    [productCategoryLabel(l10n, c.category), c.value],
+  for (final p in report.products) [p.product, p.value],
 ];
 
 List<List<Object?>> overviewRows(
@@ -169,7 +153,7 @@ Future<Uint8List> salesReportPdf(ReportQuery query, SalesReport report) async {
           [
             for (final m in report.members)
               [
-                m.name.en,
+                m.name,
                 fmt.number(m.leads),
                 fmt.number(m.won),
                 fmt.money(m.wonValue),
@@ -180,8 +164,7 @@ Future<Uint8List> salesReportPdf(ReportQuery query, SalesReport report) async {
         table(
           [l10n.settingsReportCategory, l10n.settingsReportValue],
           [
-            for (final c in report.categories)
-              [productCategoryLabel(l10n, c.category), fmt.money(c.value)],
+            for (final p in report.products) [p.product, fmt.money(p.value)],
           ],
         ),
         pw.SizedBox(height: 16),

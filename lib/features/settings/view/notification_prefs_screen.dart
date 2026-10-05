@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/format/app_format.dart';
-import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/features/settings/models/notification_prefs.dart';
 import 'package:salesroot/features/settings/providers/settings_providers.dart';
 import 'package:salesroot/features/settings/view/widget/settings_widgets.dart';
@@ -22,34 +21,20 @@ class NotificationPrefsScreen extends ConsumerWidget {
         title: context.l10n.settingsNotifications,
         actions: const [LanguageAction()],
       ),
-      body: SrAsyncView(
-        value: prefs,
-        onRetry: () => ref.invalidate(notificationPrefsProvider),
-        data: (context, prefs) => ListView(
-          padding: screenPadding,
-          children: [
-            _TopicsGroup(prefs: prefs),
-            const SizedBox(height: 18),
-            _TimingGroup(prefs: prefs),
-          ],
-        ),
+      body: ListView(
+        padding: screenPadding,
+        children: [
+          _TopicsGroup(prefs: prefs),
+          const SizedBox(height: 18),
+          _TimingGroup(prefs: prefs),
+        ],
       ),
     );
   }
 }
 
-Future<void> _save(
-  BuildContext context,
-  WidgetRef ref,
-  NotificationPrefs next,
-) async {
-  try {
-    await ref.read(notificationPrefsProvider.notifier).save(next);
-  } on ApiFailure catch (failure) {
-    if (!context.mounted) return;
-    showSrError(context, failure.message);
-  }
-}
+void _save(WidgetRef ref, NotificationPrefs next) =>
+    ref.read(notificationPrefsProvider.notifier).save(next);
 
 class _TopicsGroup extends ConsumerWidget {
   const _TopicsGroup({required this.prefs});
@@ -70,7 +55,7 @@ class _TopicsGroup extends ConsumerWidget {
             title: _title(l10n, topic),
             subtitle: _hint(l10n, topic),
             value: prefs.isOn(topic),
-            onChanged: (on) => _save(context, ref, prefs.toggle(topic, on)),
+            onChanged: (on) => _save(ref, prefs.toggle(topic, on)),
           ),
       ],
     );
@@ -142,8 +127,7 @@ class _TimingGroup extends ConsumerWidget {
           ),
           leading: const RowIcon(Icons.bedtime_outlined),
           value: prefs.quietEnabled,
-          onChanged: (on) =>
-              _save(context, ref, prefs.copyWith(quietEnabled: on)),
+          onChanged: (on) => _save(ref, prefs.copyWith(quietEnabled: on)),
         ),
         if (prefs.quietEnabled) ...[
           SrListRow(
@@ -192,7 +176,7 @@ class _TimingGroup extends ConsumerWidget {
         isSelected: (m) => m == current,
       ),
     );
-    if (picked == null || picked == current || !context.mounted) return;
-    await _save(context, ref, apply(picked));
+    if (picked == null || picked == current) return;
+    _save(ref, apply(picked));
   }
 }

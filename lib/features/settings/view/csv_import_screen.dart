@@ -14,8 +14,8 @@ import 'package:salesroot/features/settings/view/widget/settings_widgets.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #91: pick a CSV, map its columns to lead fields, check duplicates and
-/// import.
+/// #91: pick a CSV, map its columns to customer fields, check duplicates
+/// and import.
 class CsvImportScreen extends ConsumerWidget {
   const CsvImportScreen({super.key});
 
@@ -26,13 +26,13 @@ class CsvImportScreen extends ConsumerWidget {
     final l10n = context.l10n;
     final state = ref.watch(csvImportProvider);
     final table = state.table;
-    final job = state.job;
+    final result = state.result;
     return SrScaffold(
       appBar: SrAppBar(
         title: l10n.settingsImportTitle,
         actions: const [LanguageAction()],
       ),
-      footer: table != null && job == null
+      footer: table != null && result == null
           ? SrButton(
               label: l10n.settingsImportStart(
                 context.fmt.number(table.rows.length),
@@ -45,8 +45,8 @@ class CsvImportScreen extends ConsumerWidget {
                   : null,
             )
           : null,
-      body: switch ((table, job)) {
-        (_, final ImportJob job) => _Progress(job: job),
+      body: switch ((table, result)) {
+        (_, final ImportResult result) => _Done(result: result),
         (final CsvTable table, null) => ImportMapping(
           table: table,
           state: state,
@@ -114,10 +114,10 @@ class _PickPrompt extends StatelessWidget {
   }
 }
 
-class _Progress extends ConsumerWidget {
-  const _Progress({required this.job});
+class _Done extends ConsumerWidget {
+  const _Done({required this.result});
 
-  final ImportJob job;
+  final ImportResult result;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -129,39 +129,19 @@ class _Progress extends ConsumerWidget {
       children: [
         SrCard(
           padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Row(
-                children: [
-                  RowIcon(
-                    job.done ? Icons.check_rounded : Icons.upload_rounded,
-                    tone: SrAvatarTone.accent,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      job.done
-                          ? l10n.settingsImportDone
-                          : l10n.settingsImportRunning,
-                      style: AppText.sectionTitle(c.ink),
-                    ),
-                  ),
-                  Text(
-                    fmt.percent(job.progress * 100),
-                    style: AppText.rowTitle(c.ink2),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              SrProgressBar(value: job.progress),
-              const SizedBox(height: 8),
-              Text(
-                l10n.settingsImportProcessed(
-                  fmt.number(job.processed),
-                  fmt.number(job.total),
+              const RowIcon(Icons.check_rounded, tone: SrAvatarTone.accent),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  l10n.settingsImportDone,
+                  style: AppText.sectionTitle(c.ink),
                 ),
-                style: AppText.meta(c.ink2),
+              ),
+              Text(
+                l10n.settingsImportRows(fmt.number(result.total)),
+                style: AppText.rowTitle(c.ink2),
               ),
             ],
           ),
@@ -171,50 +151,48 @@ class _Progress extends ConsumerWidget {
           tiles: [
             SrKpiTile(
               label: l10n.settingsImportImported,
-              value: fmt.number(job.imported),
+              value: fmt.number(result.imported),
             ),
             SrKpiTile(
               label: l10n.settingsImportDuplicates,
-              value: fmt.number(job.duplicates),
+              value: fmt.number(result.duplicates),
             ),
             SrKpiTile(
               label: l10n.settingsImportFailed,
-              value: fmt.number(job.failed),
+              value: fmt.number(result.failed),
             ),
           ],
         ),
-        if (job.done) ...[
-          const SizedBox(height: 12),
-          if (job.duplicates > 0)
-            SrNote(
-              tone: SrNoteTone.gold,
-              icon: Icons.content_copy_rounded,
-              message: l10n.settingsImportDuplicatesFlagged(
-                fmt.number(job.duplicates),
-              ),
+        const SizedBox(height: 12),
+        if (result.duplicates > 0)
+          SrNote(
+            tone: SrNoteTone.gold,
+            icon: Icons.content_copy_rounded,
+            message: l10n.settingsImportDuplicatesFlagged(
+              fmt.number(result.duplicates),
             ),
-          if (job.failed > 0) ...[
-            const SizedBox(height: 8),
-            SrNote(
-              tone: SrNoteTone.err,
-              icon: Icons.error_outline_rounded,
-              message: l10n.settingsImportFailedHint(fmt.number(job.failed)),
-            ),
-          ],
-          const SizedBox(height: 16),
-          SrButton(
-            label: l10n.settingsImportOpenLeads,
-            expand: true,
-            onPressed: () => context.go(Routes.leads),
           ),
+        if (result.failed > 0) ...[
           const SizedBox(height: 8),
-          SrButton(
-            label: l10n.settingsImportAnother,
-            variant: SrButtonVariant.secondary,
-            expand: true,
-            onPressed: () => ref.read(csvImportProvider.notifier).reset(),
+          SrNote(
+            tone: SrNoteTone.err,
+            icon: Icons.error_outline_rounded,
+            message: l10n.settingsImportFailedHint(fmt.number(result.failed)),
           ),
         ],
+        const SizedBox(height: 16),
+        SrButton(
+          label: l10n.settingsImportOpenCustomers,
+          expand: true,
+          onPressed: () => context.go(Routes.companies),
+        ),
+        const SizedBox(height: 8),
+        SrButton(
+          label: l10n.settingsImportAnother,
+          variant: SrButtonVariant.secondary,
+          expand: true,
+          onPressed: () => ref.read(csvImportProvider.notifier).reset(),
+        ),
       ],
     );
   }

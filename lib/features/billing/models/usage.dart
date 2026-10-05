@@ -22,12 +22,9 @@ class UsageMeter {
   bool get nearLimit => ratio >= 0.85;
 }
 
-/// Usage from the access plan, limits from the subscribed plan plus packs.
-List<UsageMeter> usageMeters(
-  Plan usage,
-  PlanOffer offer,
-  Subscription subscription,
-) => [
+/// Usage and limits from `GET billing`, as the access plan reads them; seats
+/// are the ones bought.
+List<UsageMeter> usageMeters(Plan usage, Subscription subscription) => [
   UsageMeter(
     kind: QuotaKind.users,
     used: usage.usersUsed,
@@ -36,22 +33,19 @@ List<UsageMeter> usageMeters(
   UsageMeter(
     kind: QuotaKind.records,
     used: usage.recordsUsed,
-    limit: offer.records,
+    limit: usage.records,
   ),
   UsageMeter(
     kind: QuotaKind.storage,
     used: usage.storageUsedGb,
-    limit: offer.storageGb + subscription.extraStorageGb,
+    limit: usage.storageGb,
   ),
   UsageMeter(
     kind: QuotaKind.cardScans,
     used: usage.cardScansUsed,
-    limit: offer.cardScans + subscription.extraCardScans,
+    limit: usage.cardScans,
   ),
-  UsageMeter(
-    kind: QuotaKind.smsCredits,
-    used: usage.smsCredits + subscription.extraSmsCredits,
-  ),
+  UsageMeter(kind: QuotaKind.smsCredits, used: usage.smsCredits),
 ];
 
 /// The two ways out of a hit quota (#98): a one-time pack (or more seats,
@@ -106,22 +100,19 @@ class LimitOffer {
       QuotaKind.records => current.records,
       QuotaKind.storage => current.storageGb + subscription.extraStorageGb,
       QuotaKind.cardScans => current.cardScans + subscription.extraCardScans,
-      QuotaKind.smsCredits => subscription.extraSmsCredits,
+      QuotaKind.smsCredits => subscription.smsCredits,
     };
     final pack = catalog.addOns
-        .where((a) => a.isPack && a.promptFor == kind)
+        .where((a) => a.isPack && a.quota == kind)
         .firstOrNull;
-    final seatsFit =
-        kind == QuotaKind.users &&
-        !current.isFree &&
-        current.fits(subscription.seats + seatStep);
+    final seatsFit = kind == QuotaKind.users && !current.isFree;
     return LimitOffer(
       kind: kind,
       limit: limit,
       current: current,
       pack: pack,
       extraSeats: seatsFit ? seatStep : 0,
-      upgrade: _upgradeFor(kind, catalog, current, subscription),
+      upgrade: _upgradeFor(kind, catalog, current),
     );
   }
 
@@ -129,15 +120,14 @@ class LimitOffer {
     QuotaKind kind,
     BillingCatalog catalog,
     PlanOffer current,
-    Subscription subscription,
   ) {
     if (kind == QuotaKind.smsCredits) return null;
+    if (kind == QuotaKind.users) return catalog.nextAfter(current);
     for (final plan in catalog.plans) {
-      if (plan.rank <= current.rank) continue;
-      final raises = kind == QuotaKind.users
-          ? plan.fits(subscription.seats + 1)
-          : plan.limitOf(kind) > current.limitOf(kind);
-      if (raises) return plan;
+      if (plan.rank > current.rank &&
+          plan.limitOf(kind) > current.limitOf(kind)) {
+        return plan;
+      }
     }
     return null;
   }

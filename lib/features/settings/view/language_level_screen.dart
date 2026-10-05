@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/experience_level.dart';
 import 'package:salesroot/core/locale/locale_provider.dart';
+import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/core/workspace/workspace_providers.dart';
+import 'package:salesroot/features/settings/data/settings_repositories.dart';
 import 'package:salesroot/features/settings/providers/settings_providers.dart';
 import 'package:salesroot/features/settings/view/widget/level_labels.dart';
 import 'package:salesroot/features/settings/view/widget/settings_widgets.dart';
@@ -36,13 +38,13 @@ class LanguageLevelScreen extends ConsumerWidget {
                 title: l10n.settingsLanguageBanglaNative,
                 subtitle: l10n.settingsLanguageBanglaHint,
                 selected: locale == bangla,
-                onTap: () => ref.read(appLocaleProvider.notifier).set(bangla),
+                onTap: () => _setLanguage(context, ref, bangla),
               ),
               _ChoiceRow(
                 title: l10n.settingsLanguageEnglishNative,
                 subtitle: l10n.settingsLanguageEnglishHint,
                 selected: locale == english,
-                onTap: () => ref.read(appLocaleProvider.notifier).set(english),
+                onTap: () => _setLanguage(context, ref, english),
               ),
             ],
           ),
@@ -62,6 +64,25 @@ class LanguageLevelScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+/// Switches the app at once; the server keeps the choice for the messages
+/// and SMS it writes.
+Future<void> _setLanguage(
+  BuildContext context,
+  WidgetRef ref,
+  Locale locale,
+) async {
+  if (ref.read(appLocaleProvider) == locale) return;
+  ref.read(appLocaleProvider.notifier).set(locale);
+  try {
+    await ref
+        .read(settingsRepositoryProvider)
+        .saveLanguage(locale.languageCode);
+  } on ApiFailure catch (failure) {
+    if (!context.mounted) return;
+    showSrError(context, failure.message);
   }
 }
 

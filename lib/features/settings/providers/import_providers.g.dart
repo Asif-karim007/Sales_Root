@@ -9,52 +9,6 @@ part of 'import_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(importRepository)
-final importRepositoryProvider = ImportRepositoryProvider._();
-
-final class ImportRepositoryProvider
-    extends
-        $FunctionalProvider<
-          ImportRepository,
-          ImportRepository,
-          ImportRepository
-        >
-    with $Provider<ImportRepository> {
-  ImportRepositoryProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'importRepositoryProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$importRepositoryHash();
-
-  @$internal
-  @override
-  $ProviderElement<ImportRepository> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  ImportRepository create(Ref ref) {
-    return importRepository(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ImportRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ImportRepository>(value),
-    );
-  }
-}
-
-String _$importRepositoryHash() => r'36458ecdd5ae335447e589197b5a36961d508ce3';
-
 @ProviderFor(CsvImportNotifier)
 final csvImportProvider = CsvImportNotifierProvider._();
 
@@ -87,7 +41,7 @@ final class CsvImportNotifierProvider
   }
 }
 
-String _$csvImportNotifierHash() => r'5a844ae23c93db04bbc8b77fac8a8bd607326137';
+String _$csvImportNotifierHash() => r'4da5ee548b6232a2b1e408a2a4b0761d0217e2d2';
 
 abstract class _$CsvImportNotifier extends $Notifier<CsvImportState> {
   CsvImportState build();
