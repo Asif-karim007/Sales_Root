@@ -1,0 +1,19 @@
+{
+  "period": "2026-10",
+  "people": [
+    {
+      "membershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+      "name": "Rafi Ahmed",
+      "teamId": null,
+      "teamName": null,
+      "sales": 0,
+      "wonCount": 0,
+      "collection": 7000.0,
+      "newLeads": 3,
+      "visits": 1,
+      "calls": 4,
+      "targets": null
+    }
+  ],
+  "teamTargets": []
+}

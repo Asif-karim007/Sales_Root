@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:salesroot/core/fake/fake_providers.dart';
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/features/team/data/fake_chat_repository.dart';
 import 'package:salesroot/features/team/models/chat.dart';
 import 'package:salesroot/features/team/models/chat_room.dart';
@@ -32,11 +31,11 @@ void main() {
     final page = await container
         .read(chatRepositoryProvider)
         .threads(const ChatQuery(scope: ChatScope.direct));
-    return page.items.firstWhere((t) => t.participants.any((p) => p.id == 4));
+    return page.items.firstWhere((t) => t.participants.any((p) => p.id == '4'));
   }
 
   test('the list holds only my threads, with unread counts', () async {
-    container = await teamContainer(role: WorkspaceRole.member);
+    container = await teamContainer(role: 'executive');
     container.listen(chatListProvider, (_, _) {});
 
     final threads = await container.read(chatListProvider.future);
@@ -49,7 +48,7 @@ void main() {
   test('a sent message arrives, then the teammate reads, types and replies '
       'on the stream', () async {
     container = await teamContainer(
-      role: WorkspaceRole.member,
+      role: 'executive',
       overrides: [_quickReplies],
     );
     final thread = await directWithRumpa();
@@ -72,13 +71,13 @@ void main() {
 
     await Future<void>.delayed(const Duration(milliseconds: 150));
 
-    expect(rooms.any((r) => r.typing.any((p) => p.id == 4)), isTrue);
+    expect(rooms.any((r) => r.typing.any((p) => p.id == '4')), isTrue);
     final latest = rooms.last;
     expect(latest.typing, isEmpty);
     expect(latest.messages, hasLength(before + 2));
     final reply = latest.messages.first;
     expect(reply.isMine, isFalse);
-    expect(reply.senderId, 4);
+    expect(reply.senderId, '4');
     expect(
       latest.messages.firstWhere((m) => m.id == sent.id).status,
       MessageStatus.read,
@@ -88,7 +87,7 @@ void main() {
   test(
     'a failed send stays in the room as failed and can be retried',
     () async {
-      container = await teamContainer(role: WorkspaceRole.member);
+      container = await teamContainer(role: 'executive');
       final thread = await directWithRumpa();
       container.listen(chatRoomProvider(thread.id), (_, _) {});
       await container.read(chatRoomProvider(thread.id).future);
@@ -115,7 +114,7 @@ void main() {
   );
 
   test('a photo on a full plan fails with the storage quota', () async {
-    container = await teamContainer(role: WorkspaceRole.member);
+    container = await teamContainer(role: 'executive');
     setDev(container, (s) => s.copyWith(quotaReached: true));
     final thread = await directWithRumpa();
 
@@ -139,7 +138,7 @@ void main() {
   });
 
   test('the lead discussion is created once and reused', () async {
-    container = await teamContainer(role: WorkspaceRole.member);
+    container = await teamContainer(role: 'executive');
     container.listen(chatOpenerProvider, (_, _) {});
     final repository = container.read(chatRepositoryProvider);
     Future<int> leadThreads() async => (await repository.threads(
@@ -147,20 +146,20 @@ void main() {
     )).totalCount;
     final before = await leadThreads();
 
-    await container.read(chatOpenerProvider.notifier).lead(40);
+    await container.read(chatOpenerProvider.notifier).lead('40');
     final first = container.read(chatOpenerProvider).requireValue;
-    await container.read(chatOpenerProvider.notifier).lead(40);
+    await container.read(chatOpenerProvider.notifier).lead('40');
     final second = container.read(chatOpenerProvider).requireValue;
 
     expect(first?.id, isNotNull);
     expect(second?.id, first?.id);
     expect(first?.kind, ChatKind.lead);
-    expect(first?.lead?.id, 40);
+    expect(first?.lead?.id, '40');
     expect(await leadThreads(), before + 1);
   });
 
   test('only the owner can read every chat', () async {
-    container = await teamContainer(role: WorkspaceRole.member);
+    container = await teamContainer(role: 'executive');
 
     await expectLater(
       container.read(chatRepositoryProvider).oversight(const ChatQuery()),
@@ -176,21 +175,21 @@ void main() {
   });
 
   test('a group needs a name and at least one person', () async {
-    container = await teamContainer(role: WorkspaceRole.member);
+    container = await teamContainer(role: 'executive');
     container.listen(chatOpenerProvider, (_, _) {});
 
-    await container.read(chatOpenerProvider.notifier).group('', [4]);
+    await container.read(chatOpenerProvider.notifier).group('', ['4']);
     expect(
       (container.read(chatOpenerProvider).error as ApiFailure?)?.isValidation,
       isTrue,
     );
 
     await container.read(chatOpenerProvider.notifier).group('Chattogram trip', [
-      4,
-      5,
+      '4',
+      '5',
     ]);
     final group = container.read(chatOpenerProvider).requireValue;
     expect(group?.title, 'Chattogram trip');
-    expect(group?.participants.map((p) => p.id), containsAll([1, 4, 5]));
+    expect(group?.participants.map((p) => p.id), containsAll(['1', '4', '5']));
   });
 }

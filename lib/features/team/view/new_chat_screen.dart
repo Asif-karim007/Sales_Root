@@ -7,7 +7,6 @@ import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/team/models/member.dart';
 import 'package:salesroot/features/team/providers/chat_providers.dart';
-import 'package:salesroot/features/team/providers/team_providers.dart';
 import 'package:salesroot/features/team/view/widget/member_row.dart';
 import 'package:salesroot/features/team/view/widget/team_language_toggle.dart';
 import 'package:salesroot/features/team/view/widget/failure_text.dart';
@@ -25,7 +24,7 @@ class NewChatScreen extends ConsumerStatefulWidget {
 class _NewChatScreenState extends ConsumerState<NewChatScreen> {
   final _name = TextEditingController();
   final _search = TextEditingController();
-  final Set<int> _picked = {};
+  final Set<String> _picked = {};
   bool _group = true;
   bool _missingName = false;
   bool _missingPeople = false;
@@ -61,7 +60,7 @@ class _NewChatScreenState extends ConsumerState<NewChatScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final opener = ref.watch(chatOpenerProvider);
-    final directory = ref.watch(teamDirectoryProvider);
+    final people = ref.watch(chatPeopleProvider);
     ref.listen(chatOpenerProvider, (_, next) {
       switch (next) {
         case AsyncData(value: final thread?):
@@ -131,8 +130,8 @@ class _NewChatScreenState extends ConsumerState<NewChatScreen> {
             ],
             const SizedBox(height: 12),
             SrAsyncView(
-              value: directory,
-              onRetry: () => ref.invalidate(teamDirectoryProvider),
+              value: people,
+              onRetry: () => ref.invalidate(chatPeopleProvider),
               loading: (_) => const SrSkeletonList(
                 shrinkWrap: true,
                 padding: EdgeInsets.zero,
@@ -187,7 +186,7 @@ class _NewChatScreenState extends ConsumerState<NewChatScreen> {
     );
   }
 
-  void _toggle(int id) => setState(() {
+  void _toggle(String id) => setState(() {
     if (!_picked.remove(id)) _picked.add(id);
     _missingPeople = false;
   });

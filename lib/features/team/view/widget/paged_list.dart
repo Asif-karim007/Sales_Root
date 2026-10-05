@@ -5,21 +5,22 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// A pull-to-refresh list of [header] widgets followed by the [paged] items
-/// in one card, asking for the next page near the end.
+/// in one card, asking for the next page near the end when [onLoadMore] is
+/// given.
 class PagedCardList<T> extends StatelessWidget {
   const PagedCardList({
     super.key,
     required this.paged,
     required this.itemBuilder,
-    required this.onLoadMore,
     required this.onRefresh,
+    this.onLoadMore,
     this.header = const [],
     this.empty,
   });
 
   final Paged<T> paged;
   final Widget Function(BuildContext context, T item) itemBuilder;
-  final VoidCallback onLoadMore;
+  final VoidCallback? onLoadMore;
   final Future<void> Function() onRefresh;
   final List<Widget> header;
 
@@ -31,10 +32,12 @@ class PagedCardList<T> extends StatelessWidget {
     final c = SrColors.of(context);
     final error = paged.loadMoreError;
     final empty = this.empty;
+    final onLoadMore = this.onLoadMore;
 
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
-        if (notification.metrics.extentAfter < 400 &&
+        if (onLoadMore != null &&
+            notification.metrics.extentAfter < 400 &&
             paged.hasMore &&
             error == null) {
           onLoadMore();

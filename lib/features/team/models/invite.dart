@@ -1,144 +1,106 @@
 import 'package:salesroot/core/access/experience_level.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
+import 'package:salesroot/features/team/models/member.dart';
 
-enum InviteChannel { phone, email }
-
-/// An invitation that has not been accepted yet.
+/// A membership that has been invited but not accepted yet.
 class Invite {
   const Invite({
     required this.id,
-    required this.code,
-    required this.link,
     this.name,
     this.phone,
-    this.email,
-    this.role = WorkspaceRole.member,
+    this.role = MemberRole.executive,
     this.managerId,
     this.managerName,
     this.level,
-    this.fieldForce = false,
-    this.teamOnlyCapture = false,
-    this.sentAt,
-    this.sentDaysAgo = 0,
-    this.expiresInDays = 7,
+    this.expiresAt,
   });
 
-  final int id;
-  final String code;
-
-  /// The accept-invite link the server built for [code].
-  final String link;
+  /// The invited membership's id.
+  final String id;
   final String? name;
   final String? phone;
-  final String? email;
-  final WorkspaceRole role;
-  final int? managerId;
+  final MemberRole role;
+  final String? managerId;
   final LocalizedName? managerName;
 
   /// Null when the invitee picks their own level.
   final ExperienceLevel? level;
-  final bool fieldForce;
-  final bool teamOnlyCapture;
-  final DateTime? sentAt;
+  final DateTime? expiresAt;
 
-  /// Server-computed, so the device clock never decides it.
-  final int sentDaysAgo;
-  final int expiresInDays;
-
-  InviteChannel get channel =>
-      phone == null ? InviteChannel.email : InviteChannel.phone;
-
-  /// The name, else the number or address the invite went to.
+  /// The name, else the number the invite went to.
   String get label {
     final name = this.name;
     if (name != null && name.isNotEmpty) return name;
-    return phone ?? email ?? '';
+    return phone ?? '';
   }
 
+  /// A `workspaces/members` row with status `invited`.
   factory Invite.fromJson(Map<String, dynamic> json) => Invite(
-    id: jsonInt(json['Id']) ?? 0,
-    code: json['Code'] as String? ?? '',
-    link: json['Link'] as String? ?? '',
-    name: json['Name'] as String?,
-    phone: json['Phone'] as String?,
-    email: json['Email'] as String?,
-    role: WorkspaceRole.fromWire(json['Role'] as String?),
-    managerId: jsonInt(json['ManagerId']),
-    managerName: json['ManagerName'] == null
-        ? null
-        : LocalizedName(
-            json['ManagerName'] as String? ?? '',
-            json['ManagerNameBn'] as String? ?? '',
-          ),
-    level: ExperienceLevel.fromWire(json['Level'] as String?),
-    fieldForce: jsonBool(json['FieldForce']),
-    teamOnlyCapture: jsonBool(json['TeamOnlyCapture']),
-    sentAt: jsonDate(json['SentAt']),
-    sentDaysAgo: jsonInt(json['SentDaysAgo']) ?? 0,
-    expiresInDays: jsonInt(json['ExpiresInDays']) ?? 7,
+    id: jsonId(json['id']) ?? jsonId(json['membershipId']) ?? '',
+    name: json['name'] as String?,
+    phone: json['phone'] as String?,
+    role: MemberRole.fromWire(json['role'] as String?),
+    managerId: jsonId(json['reportsTo']),
+    level: ExperienceLevel.fromWire(json['level'] as String?),
+    expiresAt: jsonDate(json['inviteExpiresAt']),
+  );
+
+  Invite withManager(LocalizedName? managerName) => Invite(
+    id: id,
+    name: name,
+    phone: phone,
+    role: role,
+    managerId: managerId,
+    managerName: managerName,
+    level: level,
+    expiresAt: expiresAt,
   );
 }
 
+/// `InviteRequest`.
 class InviteInput {
   const InviteInput({
-    required this.channel,
-    this.phone,
-    this.email,
-    this.name,
-    this.role = WorkspaceRole.member,
+    required this.phone,
+    this.role = MemberRole.executive,
     this.managerId,
     this.level,
-    this.fieldForce = false,
-    this.teamOnlyCapture = false,
   });
 
-  final InviteChannel channel;
-  final String? phone;
-  final String? email;
-  final String? name;
-  final WorkspaceRole role;
-  final int? managerId;
+  final String phone;
+  final MemberRole role;
+  final String? managerId;
   final ExperienceLevel? level;
-  final bool fieldForce;
-  final bool teamOnlyCapture;
 
-  Map<String, dynamic> toJson() {
-    String? clean(String? value) {
-      final text = value?.trim() ?? '';
-      return text.isEmpty ? null : text;
-    }
-
-    return {
-      'Phone': channel == InviteChannel.phone
-          ? clean(phone)?.replaceAll(RegExp(r'[\s-]'), '')
-          : null,
-      'Email': channel == InviteChannel.email ? clean(email) : null,
-      'Name': clean(name),
-      'Role': role.wire,
-      'ManagerId': managerId,
-      'Level': level?.wire,
-      'FieldForce': fieldForce,
-      'TeamOnlyCapture': teamOnlyCapture,
-    }..removeWhere((_, value) => value == null);
-  }
+  Map<String, dynamic> toJson() => {
+    'phone': phone.trim().replaceAll(RegExp(r'[\s-]'), ''),
+    'role': role.wire,
+    'reportsTo': managerId,
+    'level': level?.wire,
+  }..removeWhere((_, value) => value == null);
 }
 
 /// Extra users the owner can add when every seat is taken.
 class SeatPack {
-  const SeatPack({
-    required this.seats,
-    required this.pricePerMonth,
-    required this.proratedToday,
-  });
+  const SeatPack({required this.seats, required this.pricePerMonth});
 
   final int seats;
-  final int pricePerMonth;
-  final int proratedToday;
+  final double pricePerMonth;
 
-  factory SeatPack.fromJson(Map<String, dynamic> json) => SeatPack(
-    seats: jsonInt(json['Seats']) ?? 1,
-    pricePerMonth: jsonInt(json['PricePerMonth']) ?? 0,
-    proratedToday: jsonInt(json['ProratedToday']) ?? 0,
-  );
+  /// The pack sizes the no-seat sheet offers.
+  static const sizes = [1, 5, 10];
+
+  /// The packs for [planKey], priced from `GET billing/catalogue`.
+  static List<SeatPack> fromCatalogue(
+    Map<String, dynamic> json,
+    String planKey,
+  ) {
+    final plans = jsonList(json['plans'], (plan) => plan);
+    final plan = plans.where((p) => p['key'] == planKey).firstOrNull;
+    final perUser = jsonDouble(plan?['monthlyPerUser']);
+    if (perUser == null || perUser <= 0) return const [];
+    return [
+      for (final seats in sizes)
+        SeatPack(seats: seats, pricePerMonth: perUser * seats),
+    ];
+  }
 }

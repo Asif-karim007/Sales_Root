@@ -1,5 +1,5 @@
 import 'package:salesroot/core/utils/json_fields.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
+import 'package:salesroot/features/team/models/member.dart';
 
 enum ChatKind {
   group('Group'),
@@ -20,21 +20,21 @@ class ChatPerson {
   const ChatPerson({
     required this.id,
     required this.name,
-    this.role = WorkspaceRole.member,
+    this.role = MemberRole.executive,
     this.isMe = false,
   });
 
-  final int id;
+  final String id;
   final LocalizedName name;
-  final WorkspaceRole role;
+  final MemberRole role;
 
   /// This person is the signed-in user.
   final bool isMe;
 
   factory ChatPerson.fromJson(Map<String, dynamic> json) => ChatPerson(
-    id: jsonInt(json['Id']) ?? 0,
+    id: jsonId(json['Id']) ?? '',
     name: LocalizedName.fromJson(json),
-    role: WorkspaceRole.fromWire(json['Role'] as String?),
+    role: MemberRole.fromWire(json['Role'] as String?),
     isMe: jsonBool(json['IsMe']),
   );
 }
@@ -51,18 +51,18 @@ class ChatLead {
     this.contactPhone,
   });
 
-  final int id;
+  final String id;
   final String title;
-  final int? companyId;
+  final String? companyId;
   final LocalizedName? stage;
   final int value;
   final LocalizedName? ownerName;
   final String? contactPhone;
 
   factory ChatLead.fromJson(Map<String, dynamic> json) => ChatLead(
-    id: jsonInt(json['Id']) ?? 0,
+    id: jsonId(json['Id']) ?? '',
     title: json['Title'] as String? ?? '',
-    companyId: jsonInt(json['CompanyId']),
+    companyId: jsonId(json['CompanyId']),
     stage: json['Stage'] == null
         ? null
         : LocalizedName(
@@ -92,7 +92,7 @@ class ChatPreview {
   });
 
   final String text;
-  final int senderId;
+  final String senderId;
   final LocalizedName senderName;
   final DateTime? sentAt;
   final bool isMine;
@@ -100,7 +100,7 @@ class ChatPreview {
 
   factory ChatPreview.fromJson(Map<String, dynamic> json) => ChatPreview(
     text: json['Text'] as String? ?? '',
-    senderId: jsonInt(json['SenderId']) ?? 0,
+    senderId: jsonId(json['SenderId']) ?? '',
     senderName: LocalizedName(
       json['SenderName'] as String? ?? '',
       json['SenderNameBn'] as String? ?? '',
@@ -132,7 +132,7 @@ class ChatThread {
     this.canAddMembers = false,
   });
 
-  final int id;
+  final String id;
   final ChatKind kind;
 
   /// What the creator named a group; empty for direct and lead threads.
@@ -141,7 +141,7 @@ class ChatThread {
   /// The workspace-wide group everyone is in.
   final bool isEveryone;
   final List<ChatPerson> participants;
-  final int? adminId;
+  final String? adminId;
   final ChatLead? lead;
   final ChatPreview? lastMessage;
   final int unreadCount;
@@ -157,12 +157,12 @@ class ChatThread {
   final bool canAddMembers;
 
   factory ChatThread.fromJson(Map<String, dynamic> json) => ChatThread(
-    id: jsonInt(json['Id']) ?? 0,
+    id: jsonId(json['Id']) ?? '',
     kind: ChatKind.fromWire(json['Kind'] as String?),
     title: json['Title'] as String? ?? '',
     isEveryone: jsonBool(json['IsEveryone']),
     participants: jsonList(json['Participants'], ChatPerson.fromJson),
-    adminId: jsonInt(json['AdminId']),
+    adminId: jsonId(json['AdminId']),
     lead: jsonObject(json['Lead'], ChatLead.fromJson),
     lastMessage: jsonObject(json['LastMessage'], ChatPreview.fromJson),
     unreadCount: jsonInt(json['UnreadCount']) ?? 0,
@@ -251,8 +251,8 @@ class Attachment {
   final String? subtitle;
 
   /// The linked record: a team file, contact, quotation or lead.
-  final int? refId;
-  final int? leadId;
+  final String? refId;
+  final String? leadId;
   final double? lat;
   final double? lng;
   final int? sizeBytes;
@@ -268,8 +268,8 @@ class Attachment {
         AttachmentKind.fromWire(json['Kind'] as String?) ?? AttachmentKind.file,
     title: json['Title'] as String? ?? '',
     subtitle: json['Subtitle'] as String?,
-    refId: jsonInt(json['RefId']),
-    leadId: jsonInt(json['LeadId']),
+    refId: jsonId(json['RefId']),
+    leadId: jsonId(json['LeadId']),
     lat: jsonDouble(json['Lat']),
     lng: jsonDouble(json['Lng']),
     sizeBytes: jsonInt(json['SizeBytes']),
@@ -322,8 +322,8 @@ class ChatMessage {
   });
 
   final int id;
-  final int threadId;
-  final int senderId;
+  final String threadId;
+  final String senderId;
   final LocalizedName senderName;
   final String text;
   final DateTime? sentAt;
@@ -333,8 +333,8 @@ class ChatMessage {
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
     id: jsonInt(json['Id']) ?? 0,
-    threadId: jsonInt(json['ThreadId']) ?? 0,
-    senderId: jsonInt(json['SenderId']) ?? 0,
+    threadId: jsonId(json['ThreadId']) ?? '',
+    senderId: jsonId(json['SenderId']) ?? '',
     senderName: LocalizedName(
       json['SenderName'] as String? ?? '',
       json['SenderNameBn'] as String? ?? '',
@@ -374,7 +374,7 @@ class MessageInput {
 sealed class ChatEvent {
   const ChatEvent(this.threadId);
 
-  final int threadId;
+  final String threadId;
 }
 
 class MessageAdded extends ChatEvent {
@@ -408,17 +408,17 @@ class ChatRef {
     this.amount,
   });
 
-  final int id;
+  final String id;
   final String title;
   final String? subtitle;
-  final int? leadId;
+  final String? leadId;
   final int? amount;
 
   factory ChatRef.fromJson(Map<String, dynamic> json) => ChatRef(
-    id: jsonInt(json['Id']) ?? 0,
+    id: jsonId(json['Id']) ?? '',
     title: json['Title'] as String? ?? '',
     subtitle: json['Subtitle'] as String?,
-    leadId: jsonInt(json['LeadId']),
+    leadId: jsonId(json['LeadId']),
     amount: jsonInt(json['Amount']),
   );
 }

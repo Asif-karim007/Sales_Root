@@ -39,7 +39,7 @@ final List<RouteBase> teamRoutes = [
     path: Routes.teamInviteSent,
     redirect: requireAccess(AppModule.team, ModuleRight.add),
     builder: (context, state) =>
-        InviteSentScreen(inviteId: _intQuery(state, 'id') ?? 0),
+        InviteSentScreen(inviteId: _query(state, 'id') ?? ''),
   ),
   GoRoute(
     path: Routes.member,
@@ -60,7 +60,7 @@ final List<RouteBase> teamRoutes = [
     path: Routes.chats,
     redirect: requireAccess(AppModule.chat),
     builder: (context, state) =>
-        ChatListScreen(leadId: _intQuery(state, 'leadId')),
+        ChatListScreen(leadId: _query(state, 'leadId')),
   ),
   GoRoute(
     path: Routes.chatNew,
@@ -91,9 +91,9 @@ final List<RouteBase> teamRoutes = [
     path: Routes.fileUpload,
     redirect: requireAccess(AppModule.files, ModuleRight.add),
     builder: (context, state) => UploadScreen(
-      folderId: _intQuery(state, 'folderId'),
-      replaceFileId: _intQuery(state, 'fileId'),
-      leadId: _intQuery(state, 'leadId'),
+      folderId: _query(state, 'folderId'),
+      replaceFileId: _query(state, 'fileId'),
+      leadId: _query(state, 'leadId'),
     ),
   ),
   GoRoute(
@@ -103,5 +103,7 @@ final List<RouteBase> teamRoutes = [
   ),
 ];
 
-int? _intQuery(GoRouterState state, String key) =>
-    int.tryParse(state.uri.queryParameters[key] ?? '');
+String? _query(GoRouterState state, String key) {
+  final value = state.uri.queryParameters[key];
+  return value == null || value.isEmpty ? null : value;
+}

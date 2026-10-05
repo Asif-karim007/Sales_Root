@@ -17,11 +17,14 @@ import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/team/data/chat_fixtures.dart';
 import 'package:salesroot/features/team/data/chat_repository.dart';
 import 'package:salesroot/features/team/data/fake_file_bytes.dart';
-import 'package:salesroot/features/team/data/team_fixtures.dart';
+import 'package:salesroot/features/team/data/fake_page.dart';
 import 'package:salesroot/features/team/models/chat.dart';
+import 'package:salesroot/features/team/models/member.dart';
 
-/// Chat on the fake server. After you send, a teammate reads it, types and
-/// replies a few seconds later, so the live screen has something to show.
+/// Chat on the fake server, as there is no chat endpoint yet. After you send,
+/// a teammate reads it, types and replies a few seconds later, so the live
+/// screen has something to show. Rows keep int ids; the models get them as
+/// strings.
 class FakeChatRepository implements ChatRepository {
   FakeChatRepository(
     this._backend, {
@@ -38,6 +41,8 @@ class FakeChatRepository implements ChatRepository {
   final _events = StreamController<ChatEvent>.broadcast();
   final _changes = StreamController<void>.broadcast();
   final _pending = <int, List<Timer>>{};
+
+  static int _key(String id) => int.tryParse(id) ?? -1;
 
   FakeTable get _threads => _backend.table('chat/threads', chatThreadFixtures);
   FakeTable get _messages =>
@@ -57,7 +62,7 @@ class FakeChatRepository implements ChatRepository {
   }
 
   @override
-  Stream<ChatEvent> events(int threadId) =>
+  Stream<ChatEvent> events(String threadId) =>
       _events.stream.where((event) => event.threadId == threadId);
 
   @override
@@ -81,15 +86,16 @@ class FakeChatRepository implements ChatRepository {
   );
 
   @override
-  Future<ChatThread> thread(int id) => _backend.run('Chat thread', () {
-    final row = _readable(id);
+  Future<ChatThread> thread(String id) => _backend.run('Chat thread', () {
+    final row = _readable(_key(id));
     return ChatThread.fromJson(_present(row));
   }, module: AppModule.chat);
 
   @override
-  Future<ChatThread> leadThread(int leadId) => _backend.run(
+  Future<ChatThread> leadThread(String id) => _backend.run(
     'Chat lead thread',
     () {
+      final leadId = _key(id);
       final lead = _graph.leads.firstWhereOrNull((l) => l.id == leadId);
       if (lead == null) throw const ApiFailure(404, 'Lead not found');
       final existing = _threads.rows.firstWhereOrNull(
@@ -123,9 +129,26 @@ class FakeChatRepository implements ChatRepository {
   );
 
   @override
-  Future<ChatThread> direct(int memberId) => _backend.run(
+  Future<List<Member>> people() => _backend.run(
+    'Chat people',
+    () => [
+      for (final member in _graph.members)
+        Member.fromJson({
+          'id': member.id,
+          'name': member.name,
+          'phone': member.phone,
+          'role': member.role.wire,
+          'designation': member.designation,
+        }).copyWith(isMe: member.id == _me),
+    ],
+    module: AppModule.chat,
+  );
+
+  @override
+  Future<ChatThread> direct(String id) => _backend.run(
     'Chat direct',
     () {
+      final memberId = _key(id);
       if (memberId == _me) {
         throw const ApiFailure(400, "You can't start a chat with yourself");
       }
@@ -146,12 +169,13 @@ class FakeChatRepository implements ChatRepository {
   );
 
   @override
-  Future<ChatThread> createGroup(String name, List<int> memberIds) =>
+  Future<ChatThread> createGroup(String name, List<String> memberIds) =>
       _backend.run(
         'Chat group create',
         () {
           fakeRequire({'Name': name}, ['Name']);
           final people = memberIds
+              .map(_key)
               .where((id) => id != _me && _graph.members.any((m) => m.id == id))
               .toSet();
           if (people.isEmpty) {
@@ -174,11 +198,11 @@ class FakeChatRepository implements ChatRepository {
 
   @override
   Future<ChatThread> updateSettings(
-    int threadId, {
+    String threadId, {
     bool? notifications,
     bool? autoDownload,
   }) => _backend.run('Chat settings', () {
-    final row = _joined(threadId);
+    final row = _joined(_key(threadId));
     _threads.update(row['Id'] as int, {
       'Notifications': ?notifications,
       'AutoDownload': ?autoDownload,
@@ -187,17 +211,20 @@ class FakeChatRepository implements ChatRepository {
   }, module: AppModule.chat);
 
   @override
-  Future<ChatThread> addMembers(int threadId, List<int> memberIds) =>
+  Future<ChatThread> addMembers(String id, List<String> memberIds) =>
       _backend.run(
         'Chat add members',
         () {
+          final threadId = _key(id);
           final row = _joined(threadId);
           if (_present(row)['CanAddMembers'] != true) {
             throw const ApiFailure(403, 'Only the group admin can add people');
           }
           final people = {
             ..._people(row),
-            ...memberIds.where((id) => _graph.members.any((m) => m.id == id)),
+            ...memberIds
+                .map(_key)
+                .where((id) => _graph.members.any((m) => m.id == id)),
           };
           _threads.update(threadId, {'ParticipantIds': people.toList()});
           _changed();
@@ -208,7 +235,8 @@ class FakeChatRepository implements ChatRepository {
       );
 
   @override
-  Future<void> leave(int threadId) => _backend.run('Chat leave', () {
+  Future<void> leave(String id) => _backend.run('Chat leave', () {
+    final threadId = _key(id);
     final row = _joined(threadId);
     if (_present(row)['CanLeave'] != true) {
       throw const ApiFailure(400, "You can't leave this chat");
@@ -220,8 +248,9 @@ class FakeChatRepository implements ChatRepository {
   }, module: AppModule.chat);
 
   @override
-  Future<PageResult<ChatMessage>> messages(int threadId, {int? beforeId}) =>
+  Future<PageResult<ChatMessage>> messages(String id, {int? beforeId}) =>
       _backend.run('Chat messages', () {
+        final threadId = _key(id);
         _readable(threadId);
         final older = _messages.rows
             .where(
@@ -230,14 +259,15 @@ class FakeChatRepository implements ChatRepository {
                   (beforeId == null || (m['Id'] as int) < beforeId),
             )
             .sorted((a, b) => (b['Id'] as int).compareTo(a['Id'] as int));
-        final page = fakePage([for (final m in older) _message(m)], page: 1);
+        final page = serverPage([for (final m in older) _message(m)], page: 1);
         return PageResult.fromJson(page, ChatMessage.fromJson);
       }, module: AppModule.chat);
 
   @override
-  Future<ChatMessage> send(int threadId, MessageInput input) => _backend.run(
+  Future<ChatMessage> send(String id, MessageInput input) => _backend.run(
     'Chat send',
     () {
+      final threadId = _key(id);
       final thread = _joined(threadId);
       final body = input.toJson();
       if ((body['Text'] as String).isEmpty && body['Attachment'] == null) {
@@ -255,11 +285,11 @@ class FakeChatRepository implements ChatRepository {
         'SentAt': jsonUtc(DateTime.now()),
         'Status': MessageStatus.sent.wire,
       }, first: false);
-      final id = row['Id'] as int;
-      _threads.update(threadId, {'LastReadId': id});
+      final messageId = row['Id'] as int;
+      _threads.update(threadId, {'LastReadId': messageId});
       final message = ChatMessage.fromJson(_message(row));
-      _emit(MessageAdded(threadId, message));
-      _simulateReply(thread, id);
+      _emit(MessageAdded(id, message));
+      _simulateReply(thread, messageId);
       return message;
     },
     module: AppModule.chat,
@@ -270,7 +300,8 @@ class FakeChatRepository implements ChatRepository {
   );
 
   @override
-  Future<void> markRead(int threadId) => _backend.run('Chat read', () {
+  Future<void> markRead(String id) => _backend.run('Chat read', () {
+    final threadId = _key(id);
     final row = _threads.byId(threadId);
     if (!_people(row).contains(_me)) return;
     final last = _messages.rows
@@ -333,7 +364,10 @@ class FakeChatRepository implements ChatRepository {
     final matches = rows
         .where((row) => fakeMatches(row, term, ['Title', 'Subtitle']))
         .toList();
-    return PageResult.fromJson(fakePage(matches, page: page), ChatRef.fromJson);
+    return PageResult.fromJson(
+      serverPage(matches, page: page),
+      ChatRef.fromJson,
+    );
   }, module: AppModule.chat);
 
   List<int> _people(Map<String, dynamic> thread) =>
@@ -394,7 +428,7 @@ class FakeChatRepository implements ChatRepository {
     int count(ChatKind kind) =>
         matching.where((t) => t['Kind'] == kind.wire).length;
     return PageResult.fromJson(
-      fakePage(
+      serverPage(
         scoped,
         page: query.page,
         extra: {
@@ -531,29 +565,29 @@ class FakeChatRepository implements ChatRepository {
       timer.cancel();
     }
     final random = Random(messageId);
-    final responder = ChatPerson.fromJson(
-      _person(others[random.nextInt(others.length)]),
-    );
+    final responderId = others[random.nextInt(others.length)];
+    final responder = ChatPerson.fromJson(_person(responderId));
+    final key = '$threadId';
     _pending[threadId] = [
       Timer(deliveredAfter, () {
         _markMine(threadId, messageId, MessageStatus.delivered);
       }),
       Timer(typingAfter, () {
         _markMine(threadId, messageId, MessageStatus.read);
-        _emit(TypingChanged(threadId, responder, typing: true));
+        _emit(TypingChanged(key, responder, typing: true));
       }),
       Timer(replyAfter, () {
         _pending.remove(threadId);
-        _emit(TypingChanged(threadId, responder, typing: false));
+        _emit(TypingChanged(key, responder, typing: false));
         final reply = _messages.insert({
           'Id': _messages.nextId(),
           'ThreadId': threadId,
-          'SenderId': responder.id,
+          'SenderId': responderId,
           'Text': chatReplies[random.nextInt(chatReplies.length)],
           'SentAt': jsonUtc(DateTime.now()),
           'Status': MessageStatus.sent.wire,
         }, first: false);
-        _emit(MessageAdded(threadId, ChatMessage.fromJson(_message(reply))));
+        _emit(MessageAdded(key, ChatMessage.fromJson(_message(reply))));
       }),
     ];
   }
@@ -567,6 +601,6 @@ class FakeChatRepository implements ChatRepository {
         _messages.update(row['Id'] as int, {'Status': status.wire});
       }
     }
-    _emit(MessagesStatusChanged(threadId, upToId, status));
+    _emit(MessagesStatusChanged('$threadId', upToId, status));
   }
 }

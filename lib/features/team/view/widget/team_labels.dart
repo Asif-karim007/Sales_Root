@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:salesroot/core/access/experience_level.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/features/team/models/member.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
@@ -34,16 +33,18 @@ extension TeamLabels on BuildContext {
       ? fmt.number(value)
       : fmt.number(value, decimals: 1);
 
-  String roleLabel(WorkspaceRole role) => switch (role) {
-    WorkspaceRole.owner => l10n.teamRoleOwner,
-    WorkspaceRole.teamLead => l10n.teamRoleTeamLead,
-    WorkspaceRole.member => l10n.teamRoleMember,
+  String roleLabel(MemberRole role) => switch (role) {
+    MemberRole.owner => l10n.teamRoleOwner,
+    MemberRole.teamLead => l10n.teamRoleTeamLead,
+    MemberRole.executive => l10n.teamRoleMember,
+    MemberRole.finance => l10n.teamRoleFinance,
   };
 
-  String roleDescription(WorkspaceRole role) => switch (role) {
-    WorkspaceRole.owner => l10n.teamRoleOwnerAbout,
-    WorkspaceRole.teamLead => l10n.teamRoleTeamLeadAbout,
-    WorkspaceRole.member => l10n.teamRoleMemberAbout,
+  String roleDescription(MemberRole role) => switch (role) {
+    MemberRole.owner => l10n.teamRoleOwnerAbout,
+    MemberRole.teamLead => l10n.teamRoleTeamLeadAbout,
+    MemberRole.executive => l10n.teamRoleMemberAbout,
+    MemberRole.finance => l10n.teamRoleFinanceAbout,
   };
 
   String levelLabel(ExperienceLevel level) => switch (level) {
@@ -52,7 +53,7 @@ extension TeamLabels on BuildContext {
     ExperienceLevel.advanced => l10n.teamLevelAdvanced,
   };
 
-  /// "Team lead · 6 reports", "Member · Easy · offline 2 days".
+  /// "Team lead · 6 reports", "Member · Easy".
   String memberSubtitle(Member member) {
     final parts = [
       roleLabel(member.role),
@@ -60,11 +61,6 @@ extension TeamLabels on BuildContext {
         l10n.teamReports(member.reportCount, fmt.number(member.reportCount))
       else if (!member.isOwner)
         levelLabel(member.level),
-      if (member.status == MemberStatus.offline && member.offlineDays > 0)
-        l10n.teamOfflineDays(
-          member.offlineDays,
-          fmt.number(member.offlineDays),
-        ),
     ];
     return parts.join(' · ');
   }
@@ -80,7 +76,6 @@ extension TeamLabels on BuildContext {
           : null,
     MemberStatus.notStarted => always ? SrTag(l10n.teamStatusNotStarted) : null,
     MemberStatus.onLeave => SrTag(l10n.teamStatusOnLeave, tone: SrTone.info),
-    MemberStatus.offline => SrTag(l10n.teamStatusOffline, tone: SrTone.warn),
     MemberStatus.deactivated => SrTag(
       l10n.teamStatusDeactivated,
       tone: SrTone.err,

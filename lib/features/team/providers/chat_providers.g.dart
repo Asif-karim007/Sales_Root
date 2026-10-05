@@ -50,6 +50,50 @@ final class ChatRepositoryProvider
 
 String _$chatRepositoryHash() => r'6db79b53bce06d61acf2252f9053730d7721a4d0';
 
+/// The people chats can be started with.
+
+@ProviderFor(chatPeople)
+final chatPeopleProvider = ChatPeopleProvider._();
+
+/// The people chats can be started with.
+
+final class ChatPeopleProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Member>>,
+          List<Member>,
+          FutureOr<List<Member>>
+        >
+    with $FutureModifier<List<Member>>, $FutureProvider<List<Member>> {
+  /// The people chats can be started with.
+  ChatPeopleProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'chatPeopleProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$chatPeopleHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<Member>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<Member>> create(Ref ref) {
+    return chatPeople(ref);
+  }
+}
+
+String _$chatPeopleHash() => r'768fc648d741b470ecb2ddc07d111c1df7ba0d86';
+
 @ProviderFor(ChatSearchNotifier)
 final chatSearchProvider = ChatSearchNotifierProvider._();
 
@@ -273,7 +317,7 @@ final class ChatThreadProvider
     with $FutureModifier<ChatThread>, $FutureProvider<ChatThread> {
   ChatThreadProvider._({
     required ChatThreadFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'chatThreadProvider',
@@ -299,7 +343,7 @@ final class ChatThreadProvider
 
   @override
   FutureOr<ChatThread> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return chatThread(ref, argument);
   }
 
@@ -314,10 +358,10 @@ final class ChatThreadProvider
   }
 }
 
-String _$chatThreadHash() => r'df926a94d3741f65804c2ea4a1d6f514947090e5';
+String _$chatThreadHash() => r'0d1c540bfad8bf981b7afcda95703d02151110ac';
 
 final class ChatThreadFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<ChatThread>, int> {
+    with $FunctionalFamilyOverride<FutureOr<ChatThread>, String> {
   ChatThreadFamily._()
     : super(
         retry: null,
@@ -327,7 +371,7 @@ final class ChatThreadFamily extends $Family
         isAutoDispose: true,
       );
 
-  ChatThreadProvider call(int id) =>
+  ChatThreadProvider call(String id) =>
       ChatThreadProvider._(argument: id, from: this);
 
   @override
@@ -348,7 +392,7 @@ final class ChatRoomNotifierProvider
   /// typing change and receipt the server pushes.
   ChatRoomNotifierProvider._({
     required ChatRoomNotifierFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'chatRoomProvider',
@@ -382,7 +426,7 @@ final class ChatRoomNotifierProvider
   }
 }
 
-String _$chatRoomNotifierHash() => r'6f8a243fbafcc487bd04eaa67862e4a6f802d087';
+String _$chatRoomNotifierHash() => r'f033ad135f93a5733b49d6b7e12db3be6307023c';
 
 /// One open thread, live: the first page of messages, then every message,
 /// typing change and receipt the server pushes.
@@ -394,7 +438,7 @@ final class ChatRoomNotifierFamily extends $Family
           AsyncValue<ChatRoom>,
           ChatRoom,
           Stream<ChatRoom>,
-          int
+          String
         > {
   ChatRoomNotifierFamily._()
     : super(
@@ -408,7 +452,7 @@ final class ChatRoomNotifierFamily extends $Family
   /// One open thread, live: the first page of messages, then every message,
   /// typing change and receipt the server pushes.
 
-  ChatRoomNotifierProvider call(int threadId) =>
+  ChatRoomNotifierProvider call(String threadId) =>
       ChatRoomNotifierProvider._(argument: threadId, from: this);
 
   @override
@@ -419,10 +463,10 @@ final class ChatRoomNotifierFamily extends $Family
 /// typing change and receipt the server pushes.
 
 abstract class _$ChatRoomNotifier extends $StreamNotifier<ChatRoom> {
-  late final _$args = ref.$arg as int;
-  int get threadId => _$args;
+  late final _$args = ref.$arg as String;
+  String get threadId => _$args;
 
-  Stream<ChatRoom> build(int threadId);
+  Stream<ChatRoom> build(String threadId);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
@@ -470,7 +514,7 @@ final class ChatOpenerProvider
   ChatOpener create() => ChatOpener();
 }
 
-String _$chatOpenerHash() => r'0e91efa0f2db6ca3a1d8fa786b8787321432789d';
+String _$chatOpenerHash() => r'34d964f1855252f7733f4c6af41b3ec2b56b9790';
 
 /// Opens a lead discussion or a direct chat, or creates a group; the screen
 /// listens for the thread to go to.
@@ -504,7 +548,7 @@ final class ChatThreadEditorProvider
   /// Settings, members and leaving for one thread.
   ChatThreadEditorProvider._({
     required ChatThreadEditorFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'chatThreadEditorProvider',
@@ -538,7 +582,7 @@ final class ChatThreadEditorProvider
   }
 }
 
-String _$chatThreadEditorHash() => r'360bba830a4d725d01c8ddec7f8a3328c53f1cb0';
+String _$chatThreadEditorHash() => r'3102d92a49f1588a74ba0e41d022ec14e7e884a9';
 
 /// Settings, members and leaving for one thread.
 
@@ -549,7 +593,7 @@ final class ChatThreadEditorFamily extends $Family
           AsyncValue<ChatEditOutcome?>,
           ChatEditOutcome?,
           FutureOr<ChatEditOutcome?>,
-          int
+          String
         > {
   ChatThreadEditorFamily._()
     : super(
@@ -562,7 +606,7 @@ final class ChatThreadEditorFamily extends $Family
 
   /// Settings, members and leaving for one thread.
 
-  ChatThreadEditorProvider call(int threadId) =>
+  ChatThreadEditorProvider call(String threadId) =>
       ChatThreadEditorProvider._(argument: threadId, from: this);
 
   @override
@@ -572,10 +616,10 @@ final class ChatThreadEditorFamily extends $Family
 /// Settings, members and leaving for one thread.
 
 abstract class _$ChatThreadEditor extends $AsyncNotifier<ChatEditOutcome?> {
-  late final _$args = ref.$arg as int;
-  int get threadId => _$args;
+  late final _$args = ref.$arg as String;
+  String get threadId => _$args;
 
-  FutureOr<ChatEditOutcome?> build(int threadId);
+  FutureOr<ChatEditOutcome?> build(String threadId);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

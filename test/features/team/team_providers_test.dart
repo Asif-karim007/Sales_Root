@@ -1,209 +1,318 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:salesroot/core/access/experience_level.dart';
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/core/routing/routes.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/features/team/models/invite.dart';
 import 'package:salesroot/features/team/models/member.dart';
 import 'package:salesroot/features/team/providers/team_providers.dart';
 
+import '../../helpers/api_stub.dart';
 import 'team_test_helpers.dart';
 
 void main() {
+  late ApiStub stub;
   late ProviderContainer container;
 
-  tearDown(() => container.dispose());
+  Future<void> start({String role = 'owner', bool withInvite = false}) async {
+    stub = teamStub(withInvite: withInvite);
+    container = await teamContainer(stub: stub, role: role);
+  }
 
   group('members', () {
-    test('pages 20 at a time with filter counts', () async {
-      container = await teamContainer();
+    test('parses the roster with managers, reports and today', () async {
+      await start();
       container.listen(memberListProvider, (_, _) {});
 
-      final first = await container.read(memberListProvider.future);
-      expect(first.items, hasLength(20));
-      expect(first.totalCount, 21);
-      expect(first.facets[MemberListNotifier.countsKey]?['All'], 21);
-      expect(first.items.first.role, WorkspaceRole.owner);
+      final list = await container.read(memberListProvider.future);
+      final members = list.items;
+      expect(members, hasLength(5));
+      expect(members.first.id, nadia);
+      expect(members.first.isOwner, isTrue);
+      expect(members[1].role, MemberRole.teamLead);
 
-      await container.read(memberListProvider.notifier).loadMore();
-      final all = container.read(memberListProvider).requireValue;
-      expect(all.items, hasLength(21));
-      expect(all.hasMore, isFalse);
+      final me = members.firstWhere((m) => m.id == rafi);
+      expect(me.isMe, isTrue);
+      expect(me.name.en, 'Rafi Ahmed');
+      expect(me.phone, '+8801711000002');
+      expect(me.level, ExperienceLevel.easy);
+      expect(me.managerId, rumpa);
+      expect(me.managerName?.en, 'Rumpa Sarker');
+      expect(me.status, MemberStatus.active);
+      expect(me.joiningDate, isNotNull);
+
+      final lead = members.firstWhere((m) => m.id == rumpa);
+      expect(lead.reportCount, 2);
+      expect(lead.status, MemberStatus.notStarted);
+      expect(
+        members.firstWhere((m) => m.name.en == 'Karim Hossain').role,
+        MemberRole.finance,
+      );
+      expect(list.hasMore, isFalse);
     });
 
-    test('the team leads filter rebuilds the list', () async {
-      container = await teamContainer();
+    test('filters by chip, with counts for every chip', () async {
+      await start(withInvite: true);
       container.listen(memberListProvider, (_, _) {});
+
+      final all = await container.read(memberListProvider.future);
+      expect(all.items.map((m) => m.id), isNot(contains(tanvir)));
+      expect(all.facets[MemberListNotifier.countsKey], {
+        'all': 5,
+        'activeToday': 1,
+        'pending': 1,
+        'teamLeads': 1,
+      });
+
       container.read(memberFilterProvider.notifier).set(MemberFilter.teamLeads);
-
       final leads = await container.read(memberListProvider.future);
-      expect(leads.items.map((m) => m.role).toSet(), {WorkspaceRole.teamLead});
+      expect(leads.items.map((m) => m.id), [rumpa]);
+
+      container
+          .read(memberFilterProvider.notifier)
+          .set(MemberFilter.activeToday);
+      final active = await container.read(memberListProvider.future);
+      expect(active.items.map((m) => m.id), [rafi]);
     });
 
-    test('offline shows as an offline failure', () async {
-      container = await teamContainer();
-      setDev(container, (s) => s.copyWith(offline: true));
+    test('lists without today when attendance is forbidden', () async {
+      await start(role: 'executive');
+      stub.on('GET', 'attendance', fixture('team_forbidden'), status: 403);
+
+      final members = await container.read(teamDirectoryProvider.future);
+      expect(members, hasLength(5));
+      expect(members.every((m) => m.status == MemberStatus.notStarted), isTrue);
+    });
+
+    test('a suspended member shows as deactivated, last', () async {
+      await start();
+      stub.on('GET', 'workspaces/members', [
+        for (final row in membersWith())
+          row['id'] == bushra ? {...row, 'status': 'suspended'} : row,
+      ]);
+
+      final members = await container.read(teamDirectoryProvider.future);
+      expect(members.last.id, bushra);
+      expect(members.last.isActive, isFalse);
+      expect(members.last.status, MemberStatus.deactivated);
+    });
+
+    test('offline is an offline failure', () async {
+      await start();
+      stub.offline = true;
 
       await expectLater(
-        container.read(teamRepositoryProvider).members(const MemberQuery()),
+        container.read(teamDirectoryProvider.future),
         throwsA(isA<ApiFailure>().having((f) => f.isOffline, 'offline', true)),
       );
     });
   });
 
-  group('invite', () {
+  group('member detail', () {
+    test('adds this month and open work for people in the targets', () async {
+      await start();
+
+      final member = await container.read(memberProvider(rafi).future);
+      final stats = member.stats;
+      expect(stats?.leadsThisMonth, 3);
+      expect(stats?.collected, 7000);
+      expect(stats?.openLeads, 3);
+      expect(stats?.overdueTasks, 3);
+      final leads = stub.last('GET', 'leads')?.queryParameters;
+      expect(leads?['ownerId'], rafi);
+      expect(leads?['status'], 'open');
+      final tasks = stub.last('GET', 'tasks')?.queryParameters;
+      expect(tasks?['assignee'], rafi);
+      expect(tasks?['view'], 'overdue');
+    });
+
+    test('has no numbers for people outside the targets', () async {
+      await start();
+
+      final member = await container.read(memberProvider(bushra).future);
+      expect(member.stats, isNull);
+      expect(stub.last('GET', 'leads'), isNull);
+    });
+
+    test('an unknown id is not found', () async {
+      await start();
+
+      await expectLater(
+        container.read(memberProvider('nobody').future),
+        throwsA(isA<ApiFailure>().having((f) => f.isNotFound, '404', true)),
+      );
+    });
+  });
+
+  group('changes', () {
+    test('a role change patches only the role', () async {
+      await start();
+      stub.on('PATCH', 'workspaces/members/{id}', <String, dynamic>{});
+      final editor = memberEditorProvider(bushra);
+      container.listen(editor, (_, _) {});
+
+      await container
+          .read(editor.notifier)
+          .apply(const MemberUpdate(role: MemberRole.teamLead));
+
+      expect(container.read(editor).value?.id, bushra);
+      expect(
+        stub.last('PATCH', 'workspaces/members/{id}')?.path,
+        endsWith(bushra),
+      );
+      expect(stub.lastBody('PATCH', 'workspaces/members/{id}'), {
+        'role': 'teamlead',
+      });
+    });
+
+    test('deactivating sends the suspended status', () async {
+      await start();
+      stub.on('PATCH', 'workspaces/members/{id}', <String, dynamic>{});
+      final editor = memberEditorProvider(bushra);
+      container.listen(editor, (_, _) {});
+
+      await container
+          .read(editor.notifier)
+          .apply(const MemberUpdate(status: MembershipStatus.suspended));
+
+      expect(stub.lastBody('PATCH', 'workspaces/members/{id}'), {
+        'status': 'suspended',
+      });
+    });
+
+    test('a member without the right gets the 403', () async {
+      await start(role: 'executive');
+      stub.fail(
+        'PATCH',
+        'workspaces/members/{id}',
+        403,
+        code: 'E-403',
+        message: "You don't have permission for this. Ask your manager",
+      );
+      final editor = memberEditorProvider(bushra);
+      container.listen(editor, (_, _) {});
+
+      await container
+          .read(editor.notifier)
+          .apply(const MemberUpdate(level: ExperienceLevel.standard));
+
+      final failure = container.read(editor).error;
+      expect((failure as ApiFailure?)?.isForbidden, isTrue);
+    });
+
+    test('removing hands the work to the successor', () async {
+      await start();
+      stub.on('PATCH', 'workspaces/members/{id}', <String, dynamic>{});
+      final removal = memberRemovalProvider(bushra);
+      container.listen(removal, (_, _) {});
+
+      await container.read(removal.notifier).remove(successorId: rumpa);
+
+      expect(container.read(removal).value, isTrue);
+      expect(stub.lastBody('PATCH', 'workspaces/members/{id}'), {
+        'status': 'removed',
+        'successorId': rumpa,
+      });
+    });
+  });
+
+  group('invitations', () {
     const input = InviteInput(
-      channel: InviteChannel.phone,
-      phone: '01912 999 888',
-      name: 'Tanvir Hasan',
-      managerId: 3,
+      phone: '+880 1912-999888',
+      managerId: rumpa,
+      level: ExperienceLevel.easy,
     );
 
-    test('sends, lists it as pending and builds the accept link', () async {
-      container = await teamContainer();
-      container.listen(inviteSenderProvider, (_, _) {});
-
-      await container.read(inviteSenderProvider.notifier).send(input);
-
-      final invite = container.read(inviteSenderProvider).requireValue;
-      expect(invite, isNotNull);
-      expect(invite?.phone, '+8801912999888');
-      expect(
-        invite?.link,
-        endsWith(Routes.acceptInviteFor(invite?.code ?? '')),
+    test('sends the InviteRequest and opens the new invitation', () async {
+      await start(withInvite: true);
+      stub.on(
+        'POST',
+        'workspaces/members/invite',
+        (RequestOptions r) => {
+          'id': tanvir,
+          'status': 'invited',
+          ...r.data as Map<String, dynamic>,
+        },
       );
-      expect(invite?.managerName?.en, 'Rafiqul Islam');
-      final pending = await container.read(pendingInvitesProvider.future);
-      expect(pending.map((i) => i.id), contains(invite?.id));
-    });
-
-    test('a full plan answers 402 for users', () async {
-      container = await teamContainer();
       container.listen(inviteSenderProvider, (_, _) {});
-      setDev(container, (s) => s.copyWith(quotaReached: true));
 
       await container.read(inviteSenderProvider.notifier).send(input);
 
-      final failure = container.read(inviteSenderProvider).error;
-      expect(failure, isA<ApiFailure>());
-      expect((failure as ApiFailure).isQuota, isTrue);
-      expect(failure.quota, QuotaKind.users);
+      expect(stub.lastBody('POST', 'workspaces/members/invite'), {
+        'phone': '+8801912999888',
+        'role': 'executive',
+        'reportsTo': rumpa,
+        'level': 'easy',
+      });
+      final sent = container.read(inviteSenderProvider).requireValue;
+      expect(sent?.id, tanvir);
+      final invite = await container.read(inviteProvider(tanvir).future);
+      expect(invite.phone, '+8801912999888');
+      expect(invite.managerName?.en, 'Rumpa Sarker');
+      expect(invite.expiresAt?.toUtc(), DateTime.utc(2026, 10, 12, 9));
     });
 
-    test('rejects a bad number and a duplicate', () async {
-      container = await teamContainer();
+    test('a bad number, a duplicate and a full plan fail as such', () async {
+      await start();
       final repository = container.read(teamRepositoryProvider);
 
+      stub.fail(
+        'POST',
+        'workspaces/members/invite',
+        422,
+        code: 'V-002',
+        message: 'Enter a valid mobile number',
+        field: 'phone',
+      );
       await expectLater(
-        repository.sendInvite(
-          const InviteInput(channel: InviteChannel.phone, phone: '12345'),
-        ),
+        repository.sendInvite(const InviteInput(phone: '12345')),
         throwsA(
           isA<ApiFailure>().having(
-            (f) => f.fieldError('Phone'),
-            'Phone',
-            isNotNull,
+            (f) => f.fieldError('phone'),
+            'phone',
+            'Enter a valid mobile number',
           ),
         ),
       );
+
+      stub.fail('POST', 'workspaces/members/invite', 409, message: 'Exists');
       await expectLater(
-        repository.sendInvite(
-          const InviteInput(
-            channel: InviteChannel.phone,
-            phone: '+8801912345678',
-          ),
-        ),
-        throwsA(
-          isA<ApiFailure>().having((f) => f.isConflict, 'conflict', true),
-        ),
+        repository.sendInvite(input),
+        throwsA(isA<ApiFailure>().having((f) => f.isConflict, '409', true)),
+      );
+
+      stub.fail('POST', 'workspaces/members/invite', 402, message: 'Seats');
+      await expectLater(
+        repository.sendInvite(input),
+        throwsA(isA<ApiFailure>().having((f) => f.isQuota, '402', true)),
       );
     });
 
-    test('a member may not invite', () async {
-      container = await teamContainer(role: WorkspaceRole.member);
+    test('pending lists the invited, and revoking removes one', () async {
+      await start(withInvite: true);
+      stub.on('PATCH', 'workspaces/members/{id}', <String, dynamic>{});
+      final revoker = inviteRevokerProvider(tanvir);
+      container.listen(revoker, (_, _) {});
 
-      await expectLater(
-        container.read(teamRepositoryProvider).sendInvite(input),
-        throwsA(isA<ApiFailure>().having((f) => f.isForbidden, '403', true)),
-      );
-    });
-
-    test('revoking removes it from the pending list', () async {
-      container = await teamContainer();
-      container.listen(inviteActionsProvider(1), (_, _) {});
-
-      await container.read(inviteActionsProvider(1).notifier).revoke();
-
-      expect(
-        container.read(inviteActionsProvider(1)).value,
-        InviteOutcome.revoked,
-      );
       final pending = await container.read(pendingInvitesProvider.future);
-      expect(pending.map((i) => i.id), isNot(contains(1)));
+      expect(pending.map((i) => i.id), [tanvir]);
+      expect(pending.single.label, '+8801912999888');
+
+      await container.read(revoker.notifier).revoke();
+
+      expect(container.read(revoker).value, isTrue);
+      expect(stub.lastBody('PATCH', 'workspaces/members/{id}'), {
+        'status': 'removed',
+      });
     });
   });
 
-  group('remove member', () {
-    test('reassigns their reports and removes them', () async {
-      container = await teamContainer();
-      container.listen(memberRemovalProvider(3), (_, _) {});
-      final before = await container.read(teamDirectoryProvider.future);
-      final reports = before.where((m) => m.managerId == 3).map((m) => m.id);
-      expect(reports, isNotEmpty);
+  test('seat packs are priced from the plan catalogue', () async {
+    await start();
 
-      await container
-          .read(memberRemovalProvider(3).notifier)
-          .remove(const RemovalInput(reassignToId: 8, reason: 'Left'));
-
-      expect(container.read(memberRemovalProvider(3)).value, isTrue);
-      final after = await container.read(teamDirectoryProvider.future);
-      expect(after.map((m) => m.id), isNot(contains(3)));
-      for (final id in reports) {
-        expect(after.firstWhere((m) => m.id == id).managerId, 2);
-      }
-    });
-
-    test('needs someone to take over', () async {
-      container = await teamContainer();
-      container.listen(memberRemovalProvider(5), (_, _) {});
-
-      await container
-          .read(memberRemovalProvider(5).notifier)
-          .remove(const RemovalInput(reassignToId: null));
-
-      final failure = container.read(memberRemovalProvider(5)).error;
-      expect(failure, isA<ApiFailure>());
-      expect((failure as ApiFailure).isValidation, isTrue);
-      final directory = await container.read(teamDirectoryProvider.future);
-      expect(directory.map((m) => m.id), contains(5));
-    });
-
-    test('the owner cannot be removed', () async {
-      container = await teamContainer();
-
-      await expectLater(
-        container
-            .read(teamRepositoryProvider)
-            .removeMember(2, const RemovalInput(reassignToId: 3)),
-        throwsA(isA<ApiFailure>().having((f) => f.isValidation, '400', true)),
-      );
-    });
-  });
-
-  test('member detail carries stats and a role change persists', () async {
-    container = await teamContainer();
-    container.listen(memberEditorProvider(5), (_, _) {});
-
-    final member = await container.read(memberProvider(5).future);
-    expect(member.stats, isNotNull);
-    expect(member.canEdit, isTrue);
-
-    await container
-        .read(memberEditorProvider(5).notifier)
-        .apply(const MemberUpdate(role: WorkspaceRole.teamLead));
-
-    final updated = await container.read(memberProvider(5).future);
-    expect(updated.role, WorkspaceRole.teamLead);
+    final packs = await container.read(seatPacksProvider.future);
+    expect(packs.map((p) => p.seats), [1, 5, 10]);
+    expect(packs.map((p) => p.pricePerMonth), [599, 2995, 5990]);
   });
 }

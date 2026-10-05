@@ -23,7 +23,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class ChatListScreen extends ConsumerStatefulWidget {
   const ChatListScreen({super.key, this.leadId});
 
-  final int? leadId;
+  final String? leadId;
 
   @override
   ConsumerState<ChatListScreen> createState() => _ChatListScreenState();

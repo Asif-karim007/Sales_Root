@@ -1,231 +1,239 @@
-import 'package:collection/collection.dart';
-
 import 'package:salesroot/core/access/experience_level.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
 
-enum MemberStatus {
-  active('Active'),
-  notStarted('NotStarted'),
-  onLeave('OnLeave'),
-  offline('Offline'),
-  deactivated('Deactivated');
+/// The server's workspace roles, as the team screens show and assign them.
+enum MemberRole {
+  owner('owner'),
+  teamLead('teamlead'),
+  executive('executive'),
+  finance('finance');
 
-  const MemberStatus(this.wire);
+  const MemberRole(this.wire);
 
   final String wire;
 
-  static MemberStatus fromWire(String? value) => values.firstWhere(
-    (status) => status.wire == value,
-    orElse: () => MemberStatus.notStarted,
-  );
+  static MemberRole fromWire(String? value) => switch (value) {
+    'owner' || 'admin' => MemberRole.owner,
+    'teamlead' || 'manager' => MemberRole.teamLead,
+    'finance' => MemberRole.finance,
+    _ => MemberRole.executive,
+  };
+
+  /// The roles an owner or team lead can give someone.
+  static const assignable = [
+    MemberRole.executive,
+    MemberRole.teamLead,
+    MemberRole.finance,
+  ];
 }
 
-/// A person in the workspace, in the shape of SaleBee's directory employee
-/// plus the team fields (role, level, manager, today's status).
+/// A membership's standing in the workspace, as the server keeps it.
+abstract final class MembershipStatus {
+  static const active = 'active';
+  static const invited = 'invited';
+  static const suspended = 'suspended';
+  static const removed = 'removed';
+}
+
+/// Where the member is today, from attendance.
+enum MemberStatus { active, notStarted, onLeave, deactivated }
+
+/// One row of `GET workspaces/members`, plus what the list gives about the
+/// rest of the team (manager name, report count) and today's attendance.
 class Member {
   const Member({
     required this.id,
     required this.name,
+    this.userId,
     this.phone,
-    this.email,
     this.designation,
-    this.role = WorkspaceRole.member,
+    this.role = MemberRole.executive,
     this.level = ExperienceLevel.easy,
+    this.membership = MembershipStatus.active,
     this.managerId,
     this.managerName,
     this.area,
     this.status = MemberStatus.notStarted,
-    this.offlineDays = 0,
     this.reportCount = 0,
-    this.isActive = true,
     this.joiningDate,
-    this.dutyStart,
-    this.dutyEnd,
-    this.trackingConsent = false,
+    this.inviteExpiresAt,
     this.imageUrl,
-    this.canEdit = false,
-    this.canDelete = false,
     this.isMe = false,
     this.stats,
   });
 
-  final int id;
+  /// The membership id.
+  final String id;
+  final String? userId;
   final LocalizedName name;
   final String? phone;
-  final String? email;
   final String? designation;
-  final WorkspaceRole role;
+  final MemberRole role;
   final ExperienceLevel level;
-  final int? managerId;
+
+  /// One of [MembershipStatus].
+  final String membership;
+  final String? managerId;
   final LocalizedName? managerName;
-  final LocalizedName? area;
+
+  /// The member's team, else their territory.
+  final String? area;
   final MemberStatus status;
-  final int offlineDays;
   final int reportCount;
-  final bool isActive;
   final DateTime? joiningDate;
-  final String? dutyStart;
-  final String? dutyEnd;
-  final bool trackingConsent;
+  final DateTime? inviteExpiresAt;
   final String? imageUrl;
-  final bool canEdit;
-  final bool canDelete;
 
   /// This member is the signed-in user.
   final bool isMe;
 
-  /// Only the detail call fills this.
+  /// Only the detail call fills this, and only for people the caller's
+  /// reports cover.
   final MemberStats? stats;
 
-  bool get isOwner => role == WorkspaceRole.owner;
-  bool get isTeamLead => role == WorkspaceRole.teamLead;
+  bool get isOwner => role == MemberRole.owner;
+  bool get isTeamLead => role == MemberRole.teamLead;
+  bool get isActive => membership == MembershipStatus.active;
+  bool get isInvited => membership == MembershipStatus.invited;
+  bool get isRemoved => membership == MembershipStatus.removed;
+  bool get canEdit => !isOwner;
+  bool get canDelete => !isOwner && !isMe;
 
-  factory Member.fromJson(Map<String, dynamic> json) => Member(
-    id: jsonInt(json['Id']) ?? 0,
-    name: LocalizedName.fromJson(json),
-    phone: jsonStrings(json['PhoneNumbers']).firstOrNull,
-    email: jsonStrings(json['Emails']).firstOrNull,
-    designation: json['Designation'] as String?,
-    role: WorkspaceRole.fromWire(json['Role'] as String?),
-    level:
-        ExperienceLevel.fromWire(json['Level'] as String?) ??
-        ExperienceLevel.easy,
-    managerId: jsonInt(json['ManagerId']),
-    managerName: json['ManagerName'] == null
-        ? null
-        : LocalizedName(
-            json['ManagerName'] as String? ?? '',
-            json['ManagerNameBn'] as String? ?? '',
-          ),
-    area: json['Area'] == null
-        ? null
-        : LocalizedName(
-            json['Area'] as String? ?? '',
-            json['AreaBn'] as String? ?? '',
-          ),
-    status: MemberStatus.fromWire(json['StatusToday'] as String?),
-    offlineDays: jsonInt(json['OfflineDays']) ?? 0,
-    reportCount: jsonInt(json['ReportCount']) ?? 0,
-    isActive: json['IsActive'] != false,
-    joiningDate: jsonDate(json['JoiningDate']),
-    dutyStart: json['DutyStart'] as String?,
-    dutyEnd: json['DutyEnd'] as String?,
-    trackingConsent: jsonBool(json['TrackingConsent']),
-    imageUrl: json['ImageUrl'] as String?,
-    canEdit: jsonBool(json['CanEdit']),
-    canDelete: jsonBool(json['CanDelete']),
-    isMe: jsonBool(json['IsMe']),
-    stats: jsonObject(json['Stats'], MemberStats.fromJson),
+  factory Member.fromJson(Map<String, dynamic> json) {
+    final membership = json['status'] as String? ?? MembershipStatus.active;
+    final territory = jsonStrings(json['territory']);
+    return Member(
+      id: jsonId(json['id']) ?? '',
+      userId: jsonId(json['userId']),
+      name: LocalizedName.pair(json),
+      phone: json['phone'] as String?,
+      designation: json['designation'] as String?,
+      role: MemberRole.fromWire(json['role'] as String?),
+      level:
+          ExperienceLevel.fromWire(json['level'] as String?) ??
+          ExperienceLevel.easy,
+      membership: membership,
+      managerId: jsonId(json['reportsTo']),
+      area:
+          json['teamName'] as String? ??
+          (territory.isEmpty ? null : territory.join(', ')),
+      status: membership == MembershipStatus.active
+          ? MemberStatus.notStarted
+          : MemberStatus.deactivated,
+      joiningDate: jsonDate(json['joinedAt']),
+      inviteExpiresAt: jsonDate(json['inviteExpiresAt']),
+      imageUrl: json['photoUrl'] as String?,
+    );
+  }
+
+  Member copyWith({
+    LocalizedName? managerName,
+    MemberStatus? status,
+    int? reportCount,
+    bool? isMe,
+    MemberStats? stats,
+  }) => Member(
+    id: id,
+    userId: userId,
+    name: name,
+    phone: phone,
+    designation: designation,
+    role: role,
+    level: level,
+    membership: membership,
+    managerId: managerId,
+    managerName: managerName ?? this.managerName,
+    area: area,
+    status: status ?? this.status,
+    reportCount: reportCount ?? this.reportCount,
+    joiningDate: joiningDate,
+    inviteExpiresAt: inviteExpiresAt,
+    imageUrl: imageUrl,
+    isMe: isMe ?? this.isMe,
+    stats: stats ?? this.stats,
   );
 }
 
+/// This month's numbers for one member, from `GET targets` plus the open
+/// lead and overdue task totals.
 class MemberStats {
   const MemberStats({
     this.leadsThisMonth = 0,
     this.wonValue = 0,
-    this.attendanceDays = 0,
-    this.workingDays = 0,
+    this.collected = 0,
     this.openLeads = 0,
-    this.openLeadValue = 0,
-    this.openTasks = 0,
     this.overdueTasks = 0,
-    this.todayVisits = 0,
   });
 
   final int leadsThisMonth;
-  final int wonValue;
-  final int attendanceDays;
-  final int workingDays;
+  final double wonValue;
+  final double collected;
   final int openLeads;
-  final int openLeadValue;
-  final int openTasks;
   final int overdueTasks;
-  final int todayVisits;
 
-  factory MemberStats.fromJson(Map<String, dynamic> json) => MemberStats(
-    leadsThisMonth: jsonInt(json['LeadsThisMonth']) ?? 0,
-    wonValue: jsonInt(json['WonValue']) ?? 0,
-    attendanceDays: jsonInt(json['AttendanceDays']) ?? 0,
-    workingDays: jsonInt(json['WorkingDays']) ?? 0,
-    openLeads: jsonInt(json['OpenLeads']) ?? 0,
-    openLeadValue: jsonInt(json['OpenLeadValue']) ?? 0,
-    openTasks: jsonInt(json['OpenTasks']) ?? 0,
-    overdueTasks: jsonInt(json['OverdueTasks']) ?? 0,
-    todayVisits: jsonInt(json['TodayVisits']) ?? 0,
+  /// One of `GET targets` → `people`.
+  factory MemberStats.fromJson(
+    Map<String, dynamic> json, {
+    int openLeads = 0,
+    int overdueTasks = 0,
+  }) => MemberStats(
+    leadsThisMonth: jsonInt(json['newLeads']) ?? 0,
+    wonValue: jsonDouble(json['sales']) ?? 0,
+    collected: jsonDouble(json['collection']) ?? 0,
+    openLeads: openLeads,
+    overdueTasks: overdueTasks,
   );
 }
 
 enum MemberFilter {
-  all('All'),
-  activeToday('ActiveToday'),
-  pending('Pending'),
-  teamLeads('TeamLeads');
+  all('all'),
+  activeToday('activeToday'),
+  pending('pending'),
+  teamLeads('teamLeads');
 
   const MemberFilter(this.wire);
 
   final String wire;
-}
 
-class MemberQuery {
-  const MemberQuery({this.filter = MemberFilter.all, this.page = 1});
-
-  final MemberFilter filter;
-  final int page;
-
-  Map<String, dynamic> toQuery() => {
-    'Filter': filter.wire,
-    'Page': page,
-    'PageSize': 20,
+  bool includes(Member member) => switch (this) {
+    MemberFilter.all => true,
+    MemberFilter.activeToday => member.status == MemberStatus.active,
+    MemberFilter.pending => false,
+    MemberFilter.teamLeads => member.isTeamLead,
   };
 }
 
-/// A change to one member; only the given fields are sent.
-class MemberUpdate {
-  const MemberUpdate({this.role, this.level, this.managerId, this.isActive});
+class MemberQuery {
+  const MemberQuery({this.filter = MemberFilter.all});
 
-  final WorkspaceRole? role;
-  final ExperienceLevel? level;
-  final int? managerId;
-  final bool? isActive;
-
-  Map<String, dynamic> toJson() => {
-    'Role': role?.wire,
-    'Level': level?.wire,
-    'ManagerId': managerId,
-    'IsActive': isActive,
-  }..removeWhere((_, value) => value == null);
+  final MemberFilter filter;
 }
 
-class RemovalInput {
-  const RemovalInput({
-    required this.reassignToId,
-    this.reassignLeads = true,
-    this.reassignTasks = true,
-    this.reassignVisits = true,
-    this.keepChatHistory = true,
-    this.keepContactsCopy = false,
-    this.reason,
+/// A change to one member (`UpdateMember`); only the given fields are sent.
+class MemberUpdate {
+  const MemberUpdate({
+    this.role,
+    this.level,
+    this.managerId,
+    this.status,
+    this.successorId,
   });
 
-  final int? reassignToId;
-  final bool reassignLeads;
-  final bool reassignTasks;
-  final bool reassignVisits;
-  final bool keepChatHistory;
-  final bool keepContactsCopy;
-  final String? reason;
+  final MemberRole? role;
+  final ExperienceLevel? level;
+  final String? managerId;
 
-  Map<String, dynamic> toJson() {
-    final reason = this.reason?.trim() ?? '';
-    return {
-      'ReassignToId': reassignToId,
-      'ReassignLeads': reassignLeads,
-      'ReassignTasks': reassignTasks,
-      'ReassignVisits': reassignVisits,
-      'KeepChatHistory': keepChatHistory,
-      'KeepContactsCopy': keepContactsCopy,
-      'Reason': reason.isEmpty ? null : reason,
-    }..removeWhere((_, value) => value == null);
-  }
+  /// One of [MembershipStatus].
+  final String? status;
+
+  /// Who takes over a removed member's work.
+  final String? successorId;
+
+  Map<String, dynamic> toJson() => {
+    'role': role?.wire,
+    'level': level?.wire,
+    'reportsTo': managerId,
+    'status': status,
+    'successorId': successorId,
+  }..removeWhere((_, value) => value == null);
 }

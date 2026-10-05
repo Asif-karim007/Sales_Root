@@ -10,7 +10,7 @@ class FileFolder {
     this.isPhotos = false,
   });
 
-  final int id;
+  final String id;
   final LocalizedName name;
   final int fileCount;
   final int sizeBytes;
@@ -18,7 +18,7 @@ class FileFolder {
   final bool isPhotos;
 
   factory FileFolder.fromJson(Map<String, dynamic> json) => FileFolder(
-    id: jsonInt(json['Id']) ?? 0,
+    id: jsonId(json['Id']) ?? '',
     name: LocalizedName.fromJson(json),
     fileCount: jsonInt(json['FileCount']) ?? 0,
     sizeBytes: jsonInt(json['SizeBytes']) ?? 0,
@@ -64,11 +64,11 @@ class FileVersion {
 class FileLeadRef {
   const FileLeadRef({required this.id, required this.title});
 
-  final int id;
+  final String id;
   final String title;
 
   factory FileLeadRef.fromJson(Map<String, dynamic> json) => FileLeadRef(
-    id: jsonInt(json['Id']) ?? 0,
+    id: jsonId(json['Id']) ?? '',
     title: json['Title'] as String? ?? '',
   );
 }
@@ -91,9 +91,9 @@ class TeamFile {
     this.canDelete = false,
   });
 
-  final int id;
+  final String id;
   final String name;
-  final int? folderId;
+  final String? folderId;
   final LocalizedName? folderName;
   final int sizeBytes;
   final LocalizedName? uploadedBy;
@@ -115,9 +115,9 @@ class TeamFile {
   }
 
   factory TeamFile.fromJson(Map<String, dynamic> json) => TeamFile(
-    id: jsonInt(json['Id']) ?? 0,
+    id: jsonId(json['Id']) ?? '',
     name: json['Name'] as String? ?? '',
-    folderId: jsonInt(json['FolderId']),
+    folderId: jsonId(json['FolderId']),
     folderName: json['FolderName'] == null
         ? null
         : LocalizedName(
@@ -145,7 +145,7 @@ class TeamFile {
 class FileQuery {
   const FileQuery({this.folderId, this.search = '', this.page = 1});
 
-  final int? folderId;
+  final String? folderId;
   final String search;
   final int page;
 
@@ -185,12 +185,12 @@ class UploadInput {
 
   final LocalFile file;
   final String name;
-  final int? folderId;
+  final String? folderId;
   final bool visibleToAll;
-  final int? leadId;
+  final String? leadId;
 
   /// Uploads a new version of this file instead of a new file.
-  final int? replaceFileId;
+  final String? replaceFileId;
 
   Map<String, dynamic> toJson() => {
     'Name': name.trim(),

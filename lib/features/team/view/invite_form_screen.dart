@@ -3,17 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:salesroot/core/access/access_providers.dart';
-import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/access/experience_level.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/features/team/models/invite.dart';
 import 'package:salesroot/features/team/models/member.dart';
 import 'package:salesroot/features/team/providers/team_providers.dart';
-import 'package:salesroot/features/team/view/widget/info_card.dart';
+import 'package:salesroot/features/team/view/widget/lookup_field.dart';
 import 'package:salesroot/features/team/view/widget/team_labels.dart';
 import 'package:salesroot/features/team/view/widget/team_language_toggle.dart';
 import 'package:salesroot/features/team/view/widget/team_sheets.dart';
@@ -31,21 +29,14 @@ class InviteFormScreen extends ConsumerStatefulWidget {
 
 class _InviteFormScreenState extends ConsumerState<InviteFormScreen> {
   final _phone = TextEditingController();
-  final _email = TextEditingController();
-  final _name = TextEditingController();
-  InviteChannel _channel = InviteChannel.phone;
-  WorkspaceRole _role = WorkspaceRole.member;
-  int? _managerId;
+  MemberRole _role = MemberRole.executive;
+  String? _managerId;
   ExperienceLevel _level = ExperienceLevel.easy;
-  bool _fieldForce = true;
-  bool _teamOnly = false;
-  bool _missingAddress = false;
+  bool _missingPhone = false;
 
   @override
   void dispose() {
     _phone.dispose();
-    _email.dispose();
-    _name.dispose();
     super.dispose();
   }
 
@@ -57,28 +48,20 @@ class _InviteFormScreenState extends ConsumerState<InviteFormScreen> {
     );
   }
 
-  void _submit({required bool levelLocked, required int? managerId}) {
-    final address = _channel == InviteChannel.phone ? _phone : _email;
-    if (address.text.trim().isEmpty) {
-      setState(() => _missingAddress = true);
+  void _submit({required bool levelLocked, required String? managerId}) {
+    if (_phone.text.trim().isEmpty) {
+      setState(() => _missingPhone = true);
       return;
     }
-    setState(() => _missingAddress = false);
-    final hasFieldForce =
-        ref.read(planProvider).value?.has(AddOn.fieldForce) ?? false;
+    setState(() => _missingPhone = false);
     ref
         .read(inviteSenderProvider.notifier)
         .send(
           InviteInput(
-            channel: _channel,
             phone: _phone.text,
-            email: _email.text,
-            name: _name.text,
             role: _role,
             managerId: managerId,
             level: levelLocked ? null : _level,
-            fieldForce: hasFieldForce && _fieldForce,
-            teamOnlyCapture: _teamOnly,
           ),
         );
   }
@@ -89,7 +72,6 @@ class _InviteFormScreenState extends ConsumerState<InviteFormScreen> {
     final sender = ref.watch(inviteSenderProvider);
     final plan = ref.watch(planProvider).value;
     final locked = ref.watch(experienceLevelLockedProvider);
-    final easy = ref.watch(experienceLevelProvider) == ExperienceLevel.easy;
     final directory = ref.watch(teamDirectoryProvider);
     final managers = managersOf(directory.value ?? const []);
     final managerId = _managerId ?? _suggested(managers)?.id;
@@ -99,14 +81,12 @@ class _InviteFormScreenState extends ConsumerState<InviteFormScreen> {
           context.pushReplacement('${Routes.teamInviteSent}?id=${invite.id}');
         case AsyncError(error: final ApiFailure failure) when failure.isQuota:
           showNoSeatSheet(context);
-        case AsyncError(:final error) when _fieldError(error) == null:
+        case AsyncError(:final error)
+            when _phoneError(error) == null && _managerError(error) == null:
           showSrError(context, failureText(context, error));
         default:
       }
     });
-    final fieldError = _missingAddress
-        ? l10n.commonRequired
-        : _fieldError(sender.error);
     return SrKeyboardDismiss(
       child: SrScaffold(
         appBar: SrAppBar(
@@ -129,7 +109,7 @@ class _InviteFormScreenState extends ConsumerState<InviteFormScreen> {
             24,
           ),
           children: [
-            if (plan != null)
+            if (plan != null) ...[
               SrNote(
                 message: l10n.teamSeatsFree(
                   context.fmt.number(plan.usersUsed),
@@ -137,27 +117,18 @@ class _InviteFormScreenState extends ConsumerState<InviteFormScreen> {
                   context.fmt.number(plan.users - plan.usersUsed),
                 ),
               ),
-            const SizedBox(height: 14),
-            SrSegmented(
-              segments: [
-                SrSegment(l10n.teamInviteByPhone),
-                SrSegment(l10n.teamInviteByEmail),
-              ],
-              index: _channel.index,
-              onChanged: (i) => setState(() {
-                _channel = InviteChannel.values[i];
-                _missingAddress = false;
-              }),
-            ),
-            const SizedBox(height: 14),
-            _addressField(fieldError),
-            const SizedBox(height: 14),
+              const SizedBox(height: 14),
+            ],
             SrTextField(
-              controller: _name,
-              label: l10n.teamInviteName,
-              optional: true,
-              hint: l10n.teamInviteNameHint,
-              textCapitalization: TextCapitalization.words,
+              controller: _phone,
+              label: l10n.teamInviteByPhone,
+              hint: l10n.teamInvitePhoneHint,
+              prefixIcon: Icons.phone_outlined,
+              keyboardType: TextInputType.phone,
+              autofillHints: const [AutofillHints.telephoneNumber],
+              error: _missingPhone
+                  ? l10n.commonRequired
+                  : _phoneError(sender.error),
             ),
             const SizedBox(height: 14),
             SrDropdownField(
@@ -178,39 +149,10 @@ class _InviteFormScreenState extends ConsumerState<InviteFormScreen> {
             ),
             const SizedBox(height: 14),
             _levelField(context, locked),
-            if (!easy) ...[
-              const SizedBox(height: 14),
-              _toggles(plan?.has(AddOn.fieldForce) ?? false),
-            ],
           ],
         ),
       ),
     );
-  }
-
-  Widget _addressField(String? error) {
-    final l10n = context.l10n;
-    return _channel == InviteChannel.phone
-        ? SrTextField(
-            key: const ValueKey('phone'),
-            controller: _phone,
-            label: l10n.teamInviteByPhone,
-            hint: l10n.teamInvitePhoneHint,
-            prefixIcon: Icons.phone_outlined,
-            keyboardType: TextInputType.phone,
-            autofillHints: const [AutofillHints.telephoneNumber],
-            error: error,
-          )
-        : SrTextField(
-            key: const ValueKey('email'),
-            controller: _email,
-            label: l10n.teamInviteByEmail,
-            hint: l10n.teamInviteEmailHint,
-            prefixIcon: Icons.mail_outline_rounded,
-            keyboardType: TextInputType.emailAddress,
-            autofillHints: const [AutofillHints.email],
-            error: error,
-          );
   }
 
   Widget _levelField(BuildContext context, bool locked) {
@@ -235,39 +177,16 @@ class _InviteFormScreenState extends ConsumerState<InviteFormScreen> {
     );
   }
 
-  Widget _toggles(bool hasFieldForce) {
-    final l10n = context.l10n;
-    return SwitchCard(
-      rows: [
-        if (hasFieldForce)
-          SwitchRow(
-            title: l10n.teamFieldForce,
-            subtitle: l10n.teamFieldForceAbout,
-            value: _fieldForce,
-            onChanged: (v) => setState(() => _fieldForce = v),
-          ),
-        SwitchRow(
-          title: l10n.teamTeamOnlyCapture,
-          subtitle: l10n.teamTeamOnlyCaptureAbout,
-          value: _teamOnly,
-          onChanged: (v) => setState(() => _teamOnly = v),
-        ),
-      ],
-    );
-  }
-
-  String? _fieldError(Object? error) {
+  String? _phoneError(Object? error) {
     if (error is! ApiFailure) return null;
-    final key = _channel == InviteChannel.phone ? 'Phone' : 'Email';
-    if (error.fieldError(key) == null) return null;
     if (error.isConflict) return context.l10n.teamInviteDuplicate;
-    return _channel == InviteChannel.phone
-        ? context.l10n.teamInvitePhoneInvalid
-        : context.l10n.teamInviteEmailInvalid;
+    final message = error.fieldError('phone');
+    if (message == null) return null;
+    return message.isEmpty ? context.l10n.teamInvitePhoneInvalid : message;
   }
 
   String? _managerError(Object? error) =>
-      error is ApiFailure && error.fieldError('ManagerId') != null
+      error is ApiFailure && error.fieldError('reportsTo') != null
       ? context.l10n.teamManagerInvalid
       : null;
 }
@@ -302,36 +221,29 @@ class _ManagerPicker extends StatelessWidget {
   });
 
   final List<Member> managers;
-  final int? selected;
-  final ValueChanged<int> onChanged;
+  final String? selected;
+  final ValueChanged<String> onChanged;
   final bool failed;
   final String? error;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return SrLookupPicker(
+    return LookupField<Member>(
       title: l10n.teamReportsTo,
       label: l10n.teamReportsTo,
       placeholder: failed ? l10n.errorGeneric : l10n.teamReportsToHint,
       error: error,
       withAvatar: true,
       selected: selected,
-      onChanged: onChanged,
-      options: [
-        for (final m in managers)
-          SrLookupOption(
-            id: m.id,
-            name: l10n.teamNameWithRole(
-              context.name(m.name),
-              context.roleLabel(m.role),
-            ),
-            subtitle: switch (m.area) {
-              final area? => context.name(area),
-              null => null,
-            },
-          ),
-      ],
+      onChanged: (m) => onChanged(m.id),
+      options: managers,
+      idOf: (m) => m.id,
+      labelOf: (m) => l10n.teamNameWithRole(
+        context.name(m.name),
+        context.roleLabel(m.role),
+      ),
+      subtitleOf: (m) => m.area,
     );
   }
 }
@@ -339,5 +251,5 @@ class _ManagerPicker extends StatelessWidget {
 /// The owner and active team leads, the user first when they are one.
 List<Member> managersOf(List<Member> members) => [
   for (final m in members)
-    if (m.isActive && m.role != WorkspaceRole.member) m,
+    if (m.isActive && (m.isOwner || m.isTeamLead)) m,
 ]..sort((a, b) => (b.isMe ? 1 : 0) - (a.isMe ? 1 : 0));

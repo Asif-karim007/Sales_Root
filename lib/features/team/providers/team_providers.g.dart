@@ -9,6 +9,47 @@ part of 'team_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(teamApi)
+final teamApiProvider = TeamApiProvider._();
+
+final class TeamApiProvider
+    extends $FunctionalProvider<TeamApi, TeamApi, TeamApi>
+    with $Provider<TeamApi> {
+  TeamApiProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'teamApiProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$teamApiHash();
+
+  @$internal
+  @override
+  $ProviderElement<TeamApi> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  TeamApi create(Ref ref) {
+    return teamApi(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TeamApi value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TeamApi>(value),
+    );
+  }
+}
+
+String _$teamApiHash() => r'2f6866680440bd44f7f393bcd54304807b175324';
+
 @ProviderFor(teamRepository)
 final teamRepositoryProvider = TeamRepositoryProvider._();
 
@@ -48,7 +89,7 @@ final class TeamRepositoryProvider
   }
 }
 
-String _$teamRepositoryHash() => r'fa0f3a3d3c455c51c126b2ca81c62f662ed749ea';
+String _$teamRepositoryHash() => r'859afc393a6d4d304f24bdb2034fe4715923eb33';
 
 @ProviderFor(MemberFilterNotifier)
 final memberFilterProvider = MemberFilterNotifierProvider._();
@@ -128,7 +169,7 @@ final class MemberListNotifierProvider
 }
 
 String _$memberListNotifierHash() =>
-    r'1f651cd05936d540a8c9d1b11577d38c3bdc2de9';
+    r'0f054ac3d6c0eaa1b51c4d61202c35ab73d13562';
 
 abstract class _$MemberListNotifier extends $AsyncNotifier<Paged<Member>> {
   FutureOr<Paged<Member>> build();
@@ -195,7 +236,7 @@ final class InviteProvider
     with $FutureModifier<Invite>, $FutureProvider<Invite> {
   InviteProvider._({
     required InviteFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'inviteProvider',
@@ -221,7 +262,7 @@ final class InviteProvider
 
   @override
   FutureOr<Invite> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return invite(ref, argument);
   }
 
@@ -236,10 +277,10 @@ final class InviteProvider
   }
 }
 
-String _$inviteHash() => r'69714a94f58b9e5ee93ab77376c1ce8e28a0b3f6';
+String _$inviteHash() => r'c435f758572890cc551ce7de02c31d377b530dd2';
 
 final class InviteFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Invite>, int> {
+    with $FunctionalFamilyOverride<FutureOr<Invite>, String> {
   InviteFamily._()
     : super(
         retry: null,
@@ -249,7 +290,7 @@ final class InviteFamily extends $Family
         isAutoDispose: true,
       );
 
-  InviteProvider call(int id) => InviteProvider._(argument: id, from: this);
+  InviteProvider call(String id) => InviteProvider._(argument: id, from: this);
 
   @override
   String toString() => r'inviteProvider';
@@ -302,7 +343,7 @@ final class MemberProvider
     with $FutureModifier<Member>, $FutureProvider<Member> {
   MemberProvider._({
     required MemberFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'memberProvider',
@@ -328,7 +369,7 @@ final class MemberProvider
 
   @override
   FutureOr<Member> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return member(ref, argument);
   }
 
@@ -343,10 +384,10 @@ final class MemberProvider
   }
 }
 
-String _$memberHash() => r'f9cb5a0aef98d9e4eff32939b20ea146eb51b499';
+String _$memberHash() => r'8af86a2fbc073d0da775f4ffcbde327e0427fba1';
 
 final class MemberFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Member>, int> {
+    with $FunctionalFamilyOverride<FutureOr<Member>, String> {
   MemberFamily._()
     : super(
         retry: null,
@@ -356,7 +397,7 @@ final class MemberFamily extends $Family
         isAutoDispose: true,
       );
 
-  MemberProvider call(int id) => MemberProvider._(argument: id, from: this);
+  MemberProvider call(String id) => MemberProvider._(argument: id, from: this);
 
   @override
   String toString() => r'memberProvider';
@@ -399,7 +440,7 @@ final class SeatPacksProvider
   }
 }
 
-String _$seatPacksHash() => r'3b9a0df87edabd30b932943b1c0316f3a43d23b7';
+String _$seatPacksHash() => r'fd5ec749d5ac633afe435d761d1d53efee2b1899';
 
 /// Sends an invitation; the form listens for the sent invite or the failure.
 
@@ -451,43 +492,43 @@ abstract class _$InviteSender extends $AsyncNotifier<Invite?> {
   }
 }
 
-/// Resend and revoke on one pending invitation.
+/// Revokes one pending invitation; true once done.
 
-@ProviderFor(InviteActions)
-final inviteActionsProvider = InviteActionsFamily._();
+@ProviderFor(InviteRevoker)
+final inviteRevokerProvider = InviteRevokerFamily._();
 
-/// Resend and revoke on one pending invitation.
-final class InviteActionsProvider
-    extends $AsyncNotifierProvider<InviteActions, InviteOutcome?> {
-  /// Resend and revoke on one pending invitation.
-  InviteActionsProvider._({
-    required InviteActionsFamily super.from,
-    required int super.argument,
+/// Revokes one pending invitation; true once done.
+final class InviteRevokerProvider
+    extends $AsyncNotifierProvider<InviteRevoker, bool> {
+  /// Revokes one pending invitation; true once done.
+  InviteRevokerProvider._({
+    required InviteRevokerFamily super.from,
+    required String super.argument,
   }) : super(
          retry: null,
-         name: r'inviteActionsProvider',
+         name: r'inviteRevokerProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$inviteActionsHash();
+  String debugGetCreateSourceHash() => _$inviteRevokerHash();
 
   @override
   String toString() {
-    return r'inviteActionsProvider'
+    return r'inviteRevokerProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  InviteActions create() => InviteActions();
+  InviteRevoker create() => InviteRevoker();
 
   @override
   bool operator ==(Object other) {
-    return other is InviteActionsProvider && other.argument == argument;
+    return other is InviteRevokerProvider && other.argument == argument;
   }
 
   @override
@@ -496,53 +537,53 @@ final class InviteActionsProvider
   }
 }
 
-String _$inviteActionsHash() => r'09b88718fd651fabe4df57c4afd5e6ddae24b4e5';
+String _$inviteRevokerHash() => r'13044303230cd9bdf6f9e59b9687bd379bd96e31';
 
-/// Resend and revoke on one pending invitation.
+/// Revokes one pending invitation; true once done.
 
-final class InviteActionsFamily extends $Family
+final class InviteRevokerFamily extends $Family
     with
         $ClassFamilyOverride<
-          InviteActions,
-          AsyncValue<InviteOutcome?>,
-          InviteOutcome?,
-          FutureOr<InviteOutcome?>,
-          int
+          InviteRevoker,
+          AsyncValue<bool>,
+          bool,
+          FutureOr<bool>,
+          String
         > {
-  InviteActionsFamily._()
+  InviteRevokerFamily._()
     : super(
         retry: null,
-        name: r'inviteActionsProvider',
+        name: r'inviteRevokerProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  /// Resend and revoke on one pending invitation.
+  /// Revokes one pending invitation; true once done.
 
-  InviteActionsProvider call(int id) =>
-      InviteActionsProvider._(argument: id, from: this);
+  InviteRevokerProvider call(String id) =>
+      InviteRevokerProvider._(argument: id, from: this);
 
   @override
-  String toString() => r'inviteActionsProvider';
+  String toString() => r'inviteRevokerProvider';
 }
 
-/// Resend and revoke on one pending invitation.
+/// Revokes one pending invitation; true once done.
 
-abstract class _$InviteActions extends $AsyncNotifier<InviteOutcome?> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+abstract class _$InviteRevoker extends $AsyncNotifier<bool> {
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  FutureOr<InviteOutcome?> build(int id);
+  FutureOr<bool> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<InviteOutcome?>, InviteOutcome?>;
+    final ref = this.ref as $Ref<AsyncValue<bool>, bool>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<InviteOutcome?>, InviteOutcome?>,
-              AsyncValue<InviteOutcome?>,
+              AnyNotifier<AsyncValue<bool>, bool>,
+              AsyncValue<bool>,
               Object?,
               Object?
             >;
@@ -561,7 +602,7 @@ final class MemberEditorProvider
   /// Role, level, manager and active changes on one member.
   MemberEditorProvider._({
     required MemberEditorFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'memberEditorProvider',
@@ -595,7 +636,7 @@ final class MemberEditorProvider
   }
 }
 
-String _$memberEditorHash() => r'38ad03f5b660372e40b4d8a3e6a6ed472625d517';
+String _$memberEditorHash() => r'0640899ebdd423d563d05130d4c69bd52dc0437d';
 
 /// Role, level, manager and active changes on one member.
 
@@ -606,7 +647,7 @@ final class MemberEditorFamily extends $Family
           AsyncValue<Member?>,
           Member?,
           FutureOr<Member?>,
-          int
+          String
         > {
   MemberEditorFamily._()
     : super(
@@ -619,7 +660,7 @@ final class MemberEditorFamily extends $Family
 
   /// Role, level, manager and active changes on one member.
 
-  MemberEditorProvider call(int id) =>
+  MemberEditorProvider call(String id) =>
       MemberEditorProvider._(argument: id, from: this);
 
   @override
@@ -629,10 +670,10 @@ final class MemberEditorFamily extends $Family
 /// Role, level, manager and active changes on one member.
 
 abstract class _$MemberEditor extends $AsyncNotifier<Member?> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  FutureOr<Member?> build(int id);
+  FutureOr<Member?> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
@@ -660,7 +701,7 @@ final class MemberRemovalProvider
   /// Hands a member's work over and removes them; true once done.
   MemberRemovalProvider._({
     required MemberRemovalFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'memberRemovalProvider',
@@ -694,7 +735,7 @@ final class MemberRemovalProvider
   }
 }
 
-String _$memberRemovalHash() => r'52e2f6dc56c9f06f95d53c655f5112c5bad878f9';
+String _$memberRemovalHash() => r'4e6104fbd8ceb71f4195120ffd5118ba0d5d3c4f';
 
 /// Hands a member's work over and removes them; true once done.
 
@@ -705,7 +746,7 @@ final class MemberRemovalFamily extends $Family
           AsyncValue<bool>,
           bool,
           FutureOr<bool>,
-          int
+          String
         > {
   MemberRemovalFamily._()
     : super(
@@ -718,7 +759,7 @@ final class MemberRemovalFamily extends $Family
 
   /// Hands a member's work over and removes them; true once done.
 
-  MemberRemovalProvider call(int id) =>
+  MemberRemovalProvider call(String id) =>
       MemberRemovalProvider._(argument: id, from: this);
 
   @override
@@ -728,10 +769,10 @@ final class MemberRemovalFamily extends $Family
 /// Hands a member's work over and removes them; true once done.
 
 abstract class _$MemberRemoval extends $AsyncNotifier<bool> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  FutureOr<bool> build(int id);
+  FutureOr<bool> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

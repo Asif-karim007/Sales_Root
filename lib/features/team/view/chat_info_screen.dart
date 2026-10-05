@@ -11,7 +11,6 @@ import 'package:salesroot/core/workspace/workspace_providers.dart';
 import 'package:salesroot/features/team/models/chat.dart';
 import 'package:salesroot/features/team/models/member.dart';
 import 'package:salesroot/features/team/providers/chat_providers.dart';
-import 'package:salesroot/features/team/providers/team_providers.dart';
 import 'package:salesroot/features/team/view/widget/chat_labels.dart';
 import 'package:salesroot/features/team/view/widget/info_card.dart';
 import 'package:salesroot/features/team/view/widget/team_labels.dart';
@@ -24,7 +23,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class ChatInfoScreen extends ConsumerWidget {
   const ChatInfoScreen({super.key, required this.threadId});
 
-  final int threadId;
+  final String threadId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -156,7 +155,6 @@ class _Info extends ConsumerWidget {
                 trailing: person.id == thread.adminId
                     ? SrTag(l10n.teamChatAdmin, tone: SrTone.accent)
                     : null,
-                onTap: () => context.push(Routes.memberFor(person.id)),
               ),
           ],
         ),
@@ -175,7 +173,7 @@ class _Info extends ConsumerWidget {
   }
 
   Future<void> _add(BuildContext context, WidgetRef ref) async {
-    final directory = await ref.read(teamDirectoryProvider.future);
+    final people = await ref.read(chatPeopleProvider.future);
     if (!context.mounted) return;
     final inside = {for (final p in thread.participants) p.id};
     final picked = await showSrSheet<List<Member>>(
@@ -185,8 +183,8 @@ class _Info extends ConsumerWidget {
         searchHint: context.l10n.teamSearchMembers,
         withAvatar: true,
         options: [
-          for (final m in directory)
-            if (m.isActive && !inside.contains(m.id)) m,
+          for (final m in people)
+            if (!inside.contains(m.id)) m,
         ],
         labelOf: (m) => context.name(m.name),
         subtitleOf: context.memberSubtitle,

@@ -70,7 +70,7 @@ class _WorkspaceCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final c = SrColors.of(context);
     final workspace = ref.watch(currentWorkspaceProvider);
-    final role = ref.watch(currentRoleProvider);
+    final role = MemberRole.fromWire(workspace?.roleKey);
     final plan = ref.watch(planProvider).value;
     final name = workspace?.name ?? '';
     return Padding(
@@ -227,7 +227,6 @@ class _MemberList extends ConsumerWidget {
       data: (paged) => PagedCardList<Member>(
         paged: paged,
         header: header,
-        onLoadMore: notifier.loadMore,
         onRefresh: notifier.refresh,
         empty: SrEmptyState(
           icon: Icons.groups_outlined,

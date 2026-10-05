@@ -58,7 +58,7 @@ final fileFolderProvider = FileFolderNotifierProvider._();
 
 /// The folder chip; null is "All".
 final class FileFolderNotifierProvider
-    extends $NotifierProvider<FileFolderNotifier, int?> {
+    extends $NotifierProvider<FileFolderNotifier, String?> {
   /// The folder chip; null is "All".
   FileFolderNotifierProvider._()
     : super(
@@ -79,30 +79,30 @@ final class FileFolderNotifierProvider
   FileFolderNotifier create() => FileFolderNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(int? value) {
+  Override overrideWithValue(String? value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<int?>(value),
+      providerOverride: $SyncValueProvider<String?>(value),
     );
   }
 }
 
 String _$fileFolderNotifierHash() =>
-    r'c6cc2c864bf6edbd6acdad4e9dbdca36a47a269e';
+    r'53a6d76f0142017756586c356db444b1552f5c28';
 
 /// The folder chip; null is "All".
 
-abstract class _$FileFolderNotifier extends $Notifier<int?> {
-  int? build();
+abstract class _$FileFolderNotifier extends $Notifier<String?> {
+  String? build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<int?, int?>;
+    final ref = this.ref as $Ref<String?, String?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<int?, int?>,
-              int?,
+              AnyNotifier<String?, String?>,
+              String?,
               Object?,
               Object?
             >;
@@ -202,7 +202,7 @@ final class TeamFileProvider
     with $FutureModifier<TeamFile>, $FutureProvider<TeamFile> {
   TeamFileProvider._({
     required TeamFileFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'teamFileProvider',
@@ -228,7 +228,7 @@ final class TeamFileProvider
 
   @override
   FutureOr<TeamFile> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return teamFile(ref, argument);
   }
 
@@ -243,10 +243,10 @@ final class TeamFileProvider
   }
 }
 
-String _$teamFileHash() => r'92ba512ab731818e03ddc10116c53c1b57cb8250';
+String _$teamFileHash() => r'c22af24454077841900f8c1b6f51c7791ff06ede';
 
 final class TeamFileFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<TeamFile>, int> {
+    with $FunctionalFamilyOverride<FutureOr<TeamFile>, String> {
   TeamFileFamily._()
     : super(
         retry: null,
@@ -256,7 +256,8 @@ final class TeamFileFamily extends $Family
         isAutoDispose: true,
       );
 
-  TeamFileProvider call(int id) => TeamFileProvider._(argument: id, from: this);
+  TeamFileProvider call(String id) =>
+      TeamFileProvider._(argument: id, from: this);
 
   @override
   String toString() => r'teamFileProvider';
@@ -269,7 +270,7 @@ final class FileEditorProvider
     extends $AsyncNotifierProvider<FileEditor, FileEditOutcome?> {
   FileEditorProvider._({
     required FileEditorFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'fileEditorProvider',
@@ -303,7 +304,7 @@ final class FileEditorProvider
   }
 }
 
-String _$fileEditorHash() => r'08406b4f82f5b3bfed1327627af9b094c546a6d2';
+String _$fileEditorHash() => r'1bee0f831462ee6453c474f2e14f9efb1402a13f';
 
 final class FileEditorFamily extends $Family
     with
@@ -312,7 +313,7 @@ final class FileEditorFamily extends $Family
           AsyncValue<FileEditOutcome?>,
           FileEditOutcome?,
           FutureOr<FileEditOutcome?>,
-          int
+          String
         > {
   FileEditorFamily._()
     : super(
@@ -323,7 +324,7 @@ final class FileEditorFamily extends $Family
         isAutoDispose: true,
       );
 
-  FileEditorProvider call(int id) =>
+  FileEditorProvider call(String id) =>
       FileEditorProvider._(argument: id, from: this);
 
   @override
@@ -331,10 +332,10 @@ final class FileEditorFamily extends $Family
 }
 
 abstract class _$FileEditor extends $AsyncNotifier<FileEditOutcome?> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  FutureOr<FileEditOutcome?> build(int id);
+  FutureOr<FileEditOutcome?> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
@@ -363,7 +364,8 @@ final class UploadNotifierProvider
   /// The upload form: the picked file, where it goes, and the running upload.
   UploadNotifierProvider._({
     required UploadNotifierFamily super.from,
-    required ({int? folderId, int? replaceFileId, int? leadId}) super.argument,
+    required ({String? folderId, String? replaceFileId, String? leadId})
+    super.argument,
   }) : super(
          retry: null,
          name: r'uploadProvider',
@@ -405,7 +407,7 @@ final class UploadNotifierProvider
   }
 }
 
-String _$uploadNotifierHash() => r'e59c98ef12ddc7ba5696377d9fcf408dc67d471c';
+String _$uploadNotifierHash() => r'373e4e028dc459d4a0be5814cf094eebab55f84a';
 
 /// The upload form: the picked file, where it goes, and the running upload.
 
@@ -416,7 +418,7 @@ final class UploadNotifierFamily extends $Family
           UploadState,
           UploadState,
           UploadState,
-          ({int? folderId, int? replaceFileId, int? leadId})
+          ({String? folderId, String? replaceFileId, String? leadId})
         > {
   UploadNotifierFamily._()
     : super(
@@ -430,9 +432,9 @@ final class UploadNotifierFamily extends $Family
   /// The upload form: the picked file, where it goes, and the running upload.
 
   UploadNotifierProvider call({
-    int? folderId,
-    int? replaceFileId,
-    int? leadId,
+    String? folderId,
+    String? replaceFileId,
+    String? leadId,
   }) => UploadNotifierProvider._(
     argument: (
       folderId: folderId,
@@ -450,12 +452,12 @@ final class UploadNotifierFamily extends $Family
 
 abstract class _$UploadNotifier extends $Notifier<UploadState> {
   late final _$args =
-      ref.$arg as ({int? folderId, int? replaceFileId, int? leadId});
-  int? get folderId => _$args.folderId;
-  int? get replaceFileId => _$args.replaceFileId;
-  int? get leadId => _$args.leadId;
+      ref.$arg as ({String? folderId, String? replaceFileId, String? leadId});
+  String? get folderId => _$args.folderId;
+  String? get replaceFileId => _$args.replaceFileId;
+  String? get leadId => _$args.leadId;
 
-  UploadState build({int? folderId, int? replaceFileId, int? leadId});
+  UploadState build({String? folderId, String? replaceFileId, String? leadId});
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

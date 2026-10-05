@@ -11,14 +11,19 @@ import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/features/team/data/fake_file_bytes.dart';
+import 'package:salesroot/features/team/data/fake_page.dart';
 import 'package:salesroot/features/team/data/files_fixtures.dart';
 import 'package:salesroot/features/team/data/files_repository.dart';
 import 'package:salesroot/features/team/models/team_file.dart';
 
+/// Team files on the fake server: folders and the file list have no
+/// endpoint yet. Rows keep int ids; the models get them as strings.
 class FakeFilesRepository implements FilesRepository {
   FakeFilesRepository(this._backend);
 
   final FakeBackend _backend;
+
+  static int _key(String? id) => int.tryParse(id ?? '') ?? -1;
 
   FakeTable get _folders => _backend.table('files/folders', folderFixtures);
   FakeTable get _files => _backend.table('files/items', fileFixtures);
@@ -39,11 +44,12 @@ class FakeFilesRepository implements FilesRepository {
       final rows = _files.rows
           .where(
             (f) =>
-                (query.folderId == null || f['FolderId'] == query.folderId) &&
+                (query.folderId == null ||
+                    f['FolderId'] == _key(query.folderId)) &&
                 fakeMatches(f, query.search, ['Name']),
           )
           .sorted((a, b) => '${b['UpdatedAt']}'.compareTo('${a['UpdatedAt']}'));
-      final page = fakePage([
+      final page = serverPage([
         for (final row in rows) _present(row),
       ], page: query.page);
       return PageResult.fromJson(page, TeamFile.fromJson);
@@ -52,18 +58,19 @@ class FakeFilesRepository implements FilesRepository {
   );
 
   @override
-  Future<TeamFile> file(int id) => _backend.run(
+  Future<TeamFile> file(String id) => _backend.run(
     'File',
-    () => TeamFile.fromJson(_present(_files.byId(id), detail: true)),
+    () => TeamFile.fromJson(_present(_files.byId(_key(id)), detail: true)),
     module: AppModule.files,
   );
 
   @override
-  Future<Uint8List> download(int id) => _backend.run('File download', () async {
-    final row = _files.byId(id);
-    return await localFileBytes(row['LocalPath'] as String?) ??
-        await fakeFileBytes(row['Name'] as String, _backend.graph);
-  }, module: AppModule.files);
+  Future<Uint8List> download(String id) =>
+      _backend.run('File download', () async {
+        final row = _files.byId(_key(id));
+        return await localFileBytes(row['LocalPath'] as String?) ??
+            await fakeFileBytes(row['Name'] as String, _backend.graph);
+      }, module: AppModule.files);
 
   @override
   Future<TeamFile> upload(
@@ -75,10 +82,10 @@ class FakeFilesRepository implements FilesRepository {
     () async {
       final body = input.toJson();
       final replaceId = input.replaceFileId;
-      final existing = replaceId == null ? null : _files.byId(replaceId);
+      final existing = replaceId == null ? null : _files.byId(_key(replaceId));
       if (existing == null) {
         fakeRequire(body, ['Name', 'FolderId']);
-        _folders.byId(jsonInt(body['FolderId']) ?? 0);
+        _folders.byId(_key(input.folderId));
       } else if (!_canEdit(existing)) {
         throw const ApiFailure(403, 'You can only update your own files');
       }
@@ -101,7 +108,7 @@ class FakeFilesRepository implements FilesRepository {
           ? _files.insert({
               'Id': _files.nextId(),
               'Name': _withExtension(body['Name'] as String, input.file.name),
-              'FolderId': body['FolderId'],
+              'FolderId': _key(input.folderId),
               'SizeBytes': input.file.sizeBytes,
               'UploadedById': _backend.meId,
               'UploadedAt': now,
@@ -111,7 +118,7 @@ class FakeFilesRepository implements FilesRepository {
                 {'Version': 1, 'At': now, 'ById': _backend.meId},
               ],
               'VisibleTo': body['VisibleTo'],
-              'LinkedLeadIds': [?jsonInt(body['LeadId'])],
+              'LinkedLeadIds': [?int.tryParse(input.leadId ?? '')],
               'LocalPath': input.file.path,
             })
           : _newVersion(existing, input, now);
@@ -123,15 +130,15 @@ class FakeFilesRepository implements FilesRepository {
   );
 
   @override
-  Future<TeamFile> setVisibility(int id, FileVisibility visibility) =>
+  Future<TeamFile> setVisibility(String id, FileVisibility visibility) =>
       _backend.run(
         'File visibility',
         () {
-          final row = _files.byId(id);
+          final row = _files.byId(_key(id));
           if (!_canEdit(row)) {
             throw const ApiFailure(403, 'You can only change your own files');
           }
-          _files.update(id, {'VisibleTo': visibility.wire});
+          _files.update(_key(id), {'VisibleTo': visibility.wire});
           return TeamFile.fromJson(_present(row, detail: true));
         },
         module: AppModule.files,
@@ -139,13 +146,13 @@ class FakeFilesRepository implements FilesRepository {
       );
 
   @override
-  Future<void> delete(int id) => _backend.run(
+  Future<void> delete(String id) => _backend.run(
     'File delete',
     () {
-      if (!_canEdit(_files.byId(id))) {
+      if (!_canEdit(_files.byId(_key(id)))) {
         throw const ApiFailure(403, 'You can only delete your own files');
       }
-      _files.delete(id);
+      _files.delete(_key(id));
     },
     module: AppModule.files,
     right: ModuleRight.delete,
