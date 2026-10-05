@@ -401,7 +401,7 @@ final class CheckoutFlowNotifierProvider
 }
 
 String _$checkoutFlowNotifierHash() =>
-    r'99643e3d12fc3ab247244c50a0262afbc15094d4';
+    r'64cf599b4fb95c8090a3309b9fa4ea9edc15ea52';
 
 /// The payment run: review → processing → paying at the gateway → done, or
 /// failed with a retry.

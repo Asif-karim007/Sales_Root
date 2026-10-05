@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:salesroot/core/access/access_providers.dart';
-import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/access/experience_level.dart';
 import 'package:salesroot/core/dev/dev_settings.dart';
 import 'package:salesroot/core/locale/locale_provider.dart';
@@ -125,14 +124,6 @@ class _AccountGroup extends ConsumerWidget {
         ref.watch(workspacesProvider).value ?? const <Workspace>[];
     final current = ref.watch(currentWorkspaceProvider);
     final level = ref.watch(experienceLevelProvider);
-    final roles = <WorkspaceRole?>[null, ...WorkspaceRole.values];
-    final addOnChoices = <Set<AddOn>?>[
-      null,
-      const {},
-      const {AddOn.fieldForce},
-      const {AddOn.growth},
-      const {AddOn.fieldForce, AddOn.growth},
-    ];
     return SrRowGroup(
       title: l10n.devSectionAccount,
       rows: [
@@ -146,36 +137,6 @@ class _AccountGroup extends ConsumerWidget {
                 .select(workspaces[i]),
           ),
         _Choice(
-          title: l10n.devRole,
-          labels: [
-            l10n.devRoleAuto,
-            l10n.devRoleOwner,
-            l10n.devRoleTeamLead,
-            l10n.devRoleMember,
-          ],
-          index: roles.indexOf(dev.role),
-          onChanged: (i) =>
-              notifier.update((s) => s.copyWith(role: () => roles[i])),
-        ),
-        _Choice(
-          title: l10n.devAddOns,
-          labels: [
-            l10n.devAddOnsAuto,
-            l10n.devAddOnsNone,
-            l10n.devAddOnFieldForce,
-            l10n.devAddOnGrowth,
-            l10n.devAddOnsBoth,
-          ],
-          index: addOnChoices.indexWhere(
-            (choice) =>
-                choice?.length == dev.addOns?.length &&
-                (choice?.containsAll(dev.addOns ?? const {}) ??
-                    dev.addOns == null),
-          ),
-          onChanged: (i) =>
-              notifier.update((s) => s.copyWith(addOns: () => addOnChoices[i])),
-        ),
-        _Choice(
           title: l10n.devLevel,
           labels: [
             l10n.devLevelEasy,
@@ -186,13 +147,6 @@ class _AccountGroup extends ConsumerWidget {
           onChanged: (i) => ref
               .read(experienceLevelProvider.notifier)
               .set(ExperienceLevel.values[i]),
-        ),
-        SrListRow(
-          title: l10n.devLockLevel,
-          trailing: SrSwitch(
-            value: dev.lockLevel,
-            onChanged: (v) => notifier.update((s) => s.copyWith(lockLevel: v)),
-          ),
         ),
         SrListRow(
           title: l10n.devQuotaReached,
