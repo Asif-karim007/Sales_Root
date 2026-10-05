@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:salesroot/core/access/access_providers.dart';
-import 'package:salesroot/core/access/experience_level.dart';
 import 'package:salesroot/core/format/app_format.dart';
-import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
+import 'package:salesroot/features/hr/data/hr_repositories.dart';
 import 'package:salesroot/features/hr/models/ticket.dart';
 import 'package:salesroot/features/hr/providers/ticket_providers.dart';
 import 'package:salesroot/features/hr/view/widget/hr_feedback.dart';
@@ -80,7 +78,6 @@ class _TicketFormState extends ConsumerState<_TicketForm> {
 
   Future<void> _pickCustomer() async {
     final l10n = context.l10n;
-    final fmt = context.fmt;
     final repository = ref.read(ticketRepositoryProvider);
     final current = widget.state.draft.customer;
     final picked = await showSrSheet<TicketCustomer>(
@@ -92,40 +89,12 @@ class _TicketFormState extends ConsumerState<_TicketForm> {
         search: (term, page) async =>
             (await repository.searchCustomers(term, page)).items,
         labelOf: (c) => c.name,
-        subtitleOf: (c) => c.area?.of(fmt.isBangla),
+        subtitleOf: (c) => c.area,
         isSelected: (c) => c.id == current?.id,
       ),
     );
     if (picked == null) return;
     _form.edit((d) => d.copyWith(customer: picked));
-  }
-
-  Future<void> _pickProduct() async {
-    final l10n = context.l10n;
-    final List<TicketProduct> products;
-    try {
-      products = await showSrLoader(
-        context,
-        ref.read(ticketProductsProvider.future),
-      );
-    } on ApiFailure catch (failure) {
-      if (mounted) showHrFailure(context, failure);
-      return;
-    }
-    if (!mounted) return;
-    final current = widget.state.draft.productId;
-    final picked = await showSrSheet<TicketProduct>(
-      context: context,
-      builder: (_) => SrOptionSheet<TicketProduct>(
-        title: l10n.hrTicketItemPick,
-        options: products,
-        labelOf: (p) => p.name,
-        subtitleOf: (p) => p.code,
-        isSelected: (p) => p.id == current,
-      ),
-    );
-    if (picked == null) return;
-    _form.edit((d) => d.copyWith(productId: () => picked.id));
   }
 
   Future<void> _addPhoto() async {
@@ -137,18 +106,11 @@ class _TicketFormState extends ConsumerState<_TicketForm> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final fmt = context.fmt;
     final draft = widget.state.draft;
     final errors = widget.state.showErrors
         ? draft.errors
         : const <TicketField>{};
-    final easy = ref.watch(experienceLevelProvider) == ExperienceLevel.easy;
     final customer = draft.customer;
-    final product = ref
-        .watch(ticketProductsProvider)
-        .value
-        ?.where((p) => p.id == draft.productId)
-        .firstOrNull;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -162,7 +124,7 @@ class _TicketFormState extends ConsumerState<_TicketForm> {
           label: l10n.hrTicketCustomer,
           value: customer == null
               ? null
-              : [customer.name, ?customer.area?.of(fmt.isBangla)].join(' · '),
+              : [customer.name, ?customer.area].join(' · '),
           placeholder: l10n.hrTicketCustomerPick,
           icon: Icons.storefront_outlined,
           error: errors.contains(TicketField.customer)
@@ -195,17 +157,6 @@ class _TicketFormState extends ConsumerState<_TicketForm> {
           priority: draft.priority,
           onChanged: (p) => _form.edit((d) => d.copyWith(priority: p)),
         ),
-        if (!easy) ...[
-          const SizedBox(height: 14),
-          SrDropdownField(
-            label: l10n.hrTicketItem,
-            optional: true,
-            value: product?.name,
-            placeholder: l10n.hrTicketItemPick,
-            icon: Icons.solar_power_outlined,
-            onTap: _pickProduct,
-          ),
-        ],
         const SizedBox(height: 14),
         SrTextField(
           controller: _description,

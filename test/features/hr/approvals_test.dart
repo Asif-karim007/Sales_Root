@@ -1,159 +1,129 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:salesroot/core/access/access_providers.dart';
+import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
-import 'package:salesroot/features/hr/data/leave_fixtures.dart';
 import 'package:salesroot/features/hr/models/approval.dart';
-import 'package:salesroot/features/hr/models/expense.dart';
-import 'package:salesroot/features/hr/models/leave.dart';
 import 'package:salesroot/features/hr/providers/approvals_providers.dart';
-import 'package:salesroot/features/hr/providers/expense_providers.dart';
-import 'package:salesroot/features/hr/providers/leave_providers.dart';
 
-import 'hr_test_utils.dart';
+import '../../helpers/api_stub.dart';
+import 'hr_test_setup.dart';
 
 void main() {
-  Future<ApprovalItem> firstPending(
-    ProviderContainer container,
-    ApprovalFilter filter, [
-    bool Function(ApprovalItem item)? where,
-  ]) async {
-    container.read(approvalFilterProvider.notifier).set(filter);
-    final list = await container.read(approvalListProvider.future);
-    return list.items.firstWhere(where ?? (_) => true);
-  }
-
-  test('a member has no approvals', () async {
-    final container = await hrContainer();
-    keep(container, approvalListProvider);
-
-    await expectLater(
-      container.read(approvalListProvider.future),
-      throwsA(isA<ApiFailure>().having((f) => f.isForbidden, '403', true)),
-    );
-  });
-
-  test('pending counts add up by kind', () async {
-    final container = await hrContainer(role: WorkspaceRole.teamLead);
-    keep(container, approvalListProvider);
-
-    final list = await container.read(approvalListProvider.future);
-    final counts = list.facets[approvalCountsFacet] ?? const {};
-
-    expect(list.items, isNotEmpty);
+  test('an executive cannot approve', () async {
+    final container = await hrContainer(hrStub());
     expect(
-      counts['Pending'],
-      (counts['Leave'] ?? 0) +
-          (counts['Expense'] ?? 0) +
-          (counts['Collection'] ?? 0),
+      container.read(moduleAccessProvider(AppModule.approvals)).canApprove,
+      isFalse,
     );
-    expect(list.items.every((i) => i.state == ApprovalState.pending), isTrue);
   });
 
-  test('approving leave updates the requester’s list and balance', () async {
-    final container = await hrContainer(role: WorkspaceRole.teamLead);
-    keep(container, approvalListProvider);
-    keep(container, approvalActionsProvider);
-    final item = await firstPending(
-      container,
-      ApprovalFilter.leave,
-      (i) => i.leave?.leaveTypeId == casualLeaveId,
-    );
-    final leave = item.leave;
-    final repository = container.read(leaveRepositoryProvider);
-    final requester = item.employeeId;
-    final before = (await repository.balances(
-      employeeId: requester,
-    )).where((b) => b.leaveTypeId == leave?.leaveTypeId).firstOrNull;
+  test('the inbox reads the real JSON with counts by kind', () async {
+    final stub = hrStub();
+    final container = await hrContainer(stub, role: 'owner');
+    listenTo(container, approvalListProvider);
 
-    await container
-        .read(approvalActionsProvider.notifier)
-        .decide(ApprovalDecision(kind: item.kind, id: item.id, approve: true));
+    final paged = await container.read(approvalListProvider.future);
 
-    final theirs = await repository.list(LeaveQuery(employeeId: requester));
-    final updated = theirs.items.firstWhere((r) => r.id == item.id);
-    expect(updated.isApproved, isTrue);
-    expect(updated.approverName?.en, 'Karim Hossain');
-    final after = (await repository.balances(
-      employeeId: requester,
-    )).where((b) => b.leaveTypeId == leave?.leaveTypeId).firstOrNull;
-    expect(after?.taken, (before?.taken ?? 0) + (leave?.noOfDays ?? 0));
-    expect(after?.pending, (before?.pending ?? 0) - (leave?.noOfDays ?? 0));
-    final pending = await container.read(approvalListProvider.future);
-    expect(pending.items.any((i) => i.key == item.key), isFalse);
+    expect(stub.last('GET', 'approvals')?.queryParameters, {
+      'box': 'inbox',
+      'status': 'pending',
+    });
+    expect(paged.items, hasLength(3));
+    final expense = paged.items.first;
+    expect(expense.kind, ApprovalKind.expense);
+    expect(expense.employeeName, 'Rafi Ahmed');
+    expect(expense.summary, 'Travel / transport ৳100 · 01 Jun');
+    expect(expense.reason, '[test] old');
+    expect(expense.amount, 100);
+    expect(expense.isPending, isTrue);
+    expect(paged.facets[approvalCountsFacet], {
+      'pending': 3,
+      'leave': 1,
+      'expense': 2,
+      'collection': 0,
+    });
   });
 
-  test('a rejection needs a reason and reaches the claim', () async {
-    final container = await hrContainer(role: WorkspaceRole.owner);
-    keep(container, approvalListProvider);
-    keep(container, approvalActionsProvider);
-    final item = await firstPending(container, ApprovalFilter.expense);
+  test('a kind chip narrows the list; done asks for decided ones', () async {
+    final stub = hrStub();
+    final container = await hrContainer(stub, role: 'owner');
+    listenTo(container, approvalListProvider);
+
+    container.read(approvalFilterProvider.notifier).set(ApprovalFilter.leave);
+    final leave = await container.read(approvalListProvider.future);
+    expect(leave.items.single.kind, ApprovalKind.leave);
+    expect(leave.items.single.summary, startsWith('Casual leave'));
+
+    container.read(approvalFilterProvider.notifier).set(ApprovalFilter.done);
+    final done = await container.read(approvalListProvider.future);
+    expect(done.items, isEmpty);
+    final statuses = {
+      for (final r in stub.requests)
+        if (r.path == 'approvals') r.queryParameters['status'],
+    };
+    expect(statuses, containsAll(['pending', 'approved', 'rejected']));
+  });
+
+  test('approve and reject post the decision with the note', () async {
+    final stub = hrStub();
+    final container = await hrContainer(stub, role: 'owner');
+    listenTo(container, approvalActionsProvider);
     final actions = container.read(approvalActionsProvider.notifier);
 
+    await actions.decide(const ApprovalDecision(id: 'a1', approve: true));
+    expect(
+      stub.last('POST', 'approvals/{id}/{action}')?.path,
+      'approvals/a1/approve',
+    );
+    expect(stub.lastBody('POST', 'approvals/{id}/{action}'), isEmpty);
+
     await actions.decide(
-      ApprovalDecision(kind: item.kind, id: item.id, approve: false),
+      const ApprovalDecision(id: 'a2', approve: false, reason: ' No bill '),
     );
     expect(
-      container.read(approvalActionsProvider).error,
-      isA<ApiFailure>().having((f) => f.statusCode, 'status', 400),
+      stub.last('POST', 'approvals/{id}/{action}')?.path,
+      'approvals/a2/reject',
     );
-
-    await actions.decide(
-      ApprovalDecision(
-        kind: item.kind,
-        id: item.id,
-        approve: false,
-        reason: 'Bill missing',
-      ),
-    );
-    final decided = container.read(approvalActionsProvider).value?.item;
-    expect(decided?.state, ApprovalState.rejected);
-    expect(decided?.expense?.stage, ExpenseStage.rejected);
-    expect(decided?.expense?.note, 'Bill missing');
+    expect(stub.lastBody('POST', 'approvals/{id}/{action}'), {
+      'note': 'No bill',
+    });
+    expect(container.read(approvalActionsProvider).value?.approved, isFalse);
   });
 
-  test('a team lead’s approval above the limit waits for the owner', () async {
-    final container = await hrContainer(role: WorkspaceRole.teamLead);
-    final repository = container.read(approvalsRepositoryProvider);
-    final pending = await repository.list(
-      const ApprovalQuery(filter: ApprovalFilter.expense),
-    );
-    final big = pending.items.firstWhere((i) => (i.expense?.cost ?? 0) > 2000);
+  test('approve all decides every pending request', () async {
+    final stub = hrStub();
+    final container = await hrContainer(stub, role: 'owner');
+    listenTo(container, approvalActionsProvider);
+    final items = (await container.read(approvalListProvider.future)).items;
 
-    final after = await repository.decide(
-      ApprovalDecision(kind: big.kind, id: big.id, approve: true),
-    );
+    await container.read(approvalActionsProvider.notifier).approveAll(items);
 
-    expect(after.state, ApprovalState.pending);
-    expect(after.expense?.approvalStep, 2);
-    setRole(container, WorkspaceRole.owner);
-    final owner = container.read(approvalsRepositoryProvider);
-    final settled = await owner.decide(
-      ApprovalDecision(kind: big.kind, id: big.id, approve: true),
+    expect(container.read(approvalActionsProvider).value?.count, 3);
+    final decided = stub.requests.where(
+      (r) => r.method == 'POST' && r.path.startsWith('approvals/'),
     );
-    expect(settled.expense?.stage, ExpenseStage.approved);
+    expect(decided, hasLength(3));
   });
 
-  test('approve all clears the pending queue', () async {
-    final container = await hrContainer(role: WorkspaceRole.owner);
-    keep(container, approvalListProvider);
-    keep(container, approvalActionsProvider);
-    keep(container, expenseListProvider);
-    final list = await container.read(approvalListProvider.future);
+  test('a decision without the right is a 403', () async {
+    final stub = hrStub()
+      ..on(
+        'POST',
+        'approvals/{id}/{action}',
+        fixture('hr_approval_forbidden'),
+        status: 403,
+      );
+    final container = await hrContainer(stub);
+    listenTo(container, approvalActionsProvider);
 
     await container
         .read(approvalActionsProvider.notifier)
-        .approveAll(list.items);
+        .decide(const ApprovalDecision(id: 'a1', approve: true));
 
     expect(
-      container.read(approvalActionsProvider).value?.count,
-      list.items.length,
-    );
-    final after = await container.read(approvalListProvider.future);
-    expect(
-      after.facets[approvalCountsFacet]?['Pending'],
-      list.totalCount - list.items.length,
+      container.read(approvalActionsProvider).error,
+      isA<ApiFailure>().having((f) => f.isForbidden, 'forbidden', isTrue),
     );
   });
 }

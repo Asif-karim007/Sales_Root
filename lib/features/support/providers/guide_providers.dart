@@ -1,71 +1,96 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/features/support/data/fake_guide_repository.dart';
-import 'package:salesroot/features/support/data/gemini_guide_repository.dart';
-import 'package:salesroot/features/support/data/guide_gemini_api.dart';
-import 'package:salesroot/features/support/data/guide_repository.dart';
+import 'package:salesroot/features/support/data/support_repositories.dart';
 import 'package:salesroot/features/support/models/guide.dart';
-import 'package:salesroot/features/support/providers/help_providers.dart';
 
 part 'guide_providers.g.dart';
 
-/// Gemini when the build has `GEMINI_API_KEY`, the keyword matcher otherwise.
-@Riverpod(keepAlive: true)
-GuideRepository guideRepository(Ref ref) => GeminiGuideRepository.isAvailable
-    ? GeminiGuideRepository(GuideGeminiApi(), ref.watch(helpRepositoryProvider))
-    : FakeGuideRepository(ref.watch(fakeBackendProvider));
+@riverpod
+Future<GuideStatus> guideStatus(Ref ref) =>
+    ref.watch(guideRepositoryProvider).status();
 
 class GuideChat {
   const GuideChat({
     required this.messages,
+    this.conversationId,
     this.thinking = false,
     this.failure,
     this.unanswered,
+    this.rated = false,
   });
 
   final List<GuideMessage> messages;
+
+  /// The server's thread, set by the first answer.
+  final String? conversationId;
   final bool thinking;
   final ApiFailure? failure;
 
   /// The question whose answer failed, for retry.
   final String? unanswered;
 
+  /// The user already said whether the guide helped.
+  final bool rated;
+
   bool get isFresh =>
       messages.every((m) => m.kind == GuideMessageKind.greeting);
+
+  /// This chat with a new step: [messages] and [thinking] replace the old
+  /// ones and any earlier failure is cleared.
+  GuideChat next({
+    List<GuideMessage>? messages,
+    String? conversationId,
+    bool thinking = false,
+    ApiFailure? failure,
+    String? unanswered,
+  }) => GuideChat(
+    messages: messages ?? this.messages,
+    conversationId: conversationId ?? this.conversationId,
+    thinking: thinking,
+    failure: failure,
+    unanswered: unanswered,
+    rated: rated,
+  );
+
+  GuideChat withRated(bool value) => GuideChat(
+    messages: messages,
+    conversationId: conversationId,
+    thinking: thinking,
+    failure: failure,
+    unanswered: unanswered,
+    rated: value,
+  );
 }
 
 @riverpod
 class GuideChatNotifier extends _$GuideChatNotifier {
-  static const _historyTurns = 6;
-
   @override
   GuideChat build() => const GuideChat(
     messages: [GuideMessage(id: 0, kind: GuideMessageKind.greeting)],
   );
 
-  Future<void> ask(String text, {required bool appInBangla}) async {
+  Future<void> ask(String text) async {
     final question = text.trim();
     if (question.isEmpty || state.thinking) return;
-    state = GuideChat(
+    state = state.next(
       messages: [
         ...state.messages,
         GuideMessage(id: _nextId, kind: GuideMessageKind.mine, text: question),
       ],
     );
-    await _answer(question, appInBangla);
+    await _answer(question);
   }
 
-  Future<void> retry({required bool appInBangla}) async {
+  Future<void> retry() async {
     final question = state.unanswered;
     if (question == null || state.thinking) return;
-    await _answer(question, appInBangla);
+    await _answer(question);
   }
 
   /// Marks a confirm answer as handled; a decline gets a short reply.
   void settle(int messageId, {required bool accepted}) {
-    state = GuideChat(
+    state = state.next(
       messages: [
         for (final m in state.messages) m.id == messageId ? m.settle() : m,
         if (!accepted)
@@ -74,35 +99,37 @@ class GuideChatNotifier extends _$GuideChatNotifier {
     );
   }
 
+  /// Tells the server whether the thread helped; asked once per chat. A
+  /// failed rating can be given again.
+  Future<void> rate({required bool helpful}) async {
+    final conversation = state.conversationId;
+    if (conversation == null || state.rated) return;
+    state = state.withRated(true);
+    try {
+      await ref
+          .read(guideRepositoryProvider)
+          .rate(conversation, helpful ? _helpful : _unhelpful);
+    } on ApiFailure {
+      if (!ref.mounted) return;
+      state = state.withRated(false);
+    }
+  }
+
+  static const _helpful = 5;
+  static const _unhelpful = 1;
+
   int get _nextId =>
       state.messages.fold<int>(0, (max, m) => m.id > max ? m.id : max) + 1;
 
-  Future<void> _answer(String question, bool appInBangla) async {
-    final history = [
-      for (final m in state.messages)
-        if (m.kind == GuideMessageKind.mine)
-          GuideTurn(text: m.text, mine: true)
-        else if (m.answer case final answer?)
-          GuideTurn(text: answer.text, mine: false),
-    ];
-    final previous = history.isEmpty
-        ? history
-        : history.sublist(0, history.length - 1);
-    state = GuideChat(messages: state.messages, thinking: true);
+  Future<void> _answer(String question) async {
+    state = state.next(thinking: true);
     try {
       final answer = await ref
           .read(guideRepositoryProvider)
-          .ask(
-            GuideQuestion(
-              text: question,
-              appInBangla: appInBangla,
-              history: previous.length > _historyTurns
-                  ? previous.sublist(previous.length - _historyTurns)
-                  : previous,
-            ),
-          );
+          .ask(question, conversationId: state.conversationId);
       if (!ref.mounted) return;
-      state = GuideChat(
+      state = state.next(
+        conversationId: answer.conversationId,
         messages: [
           ...state.messages,
           GuideMessage(
@@ -114,11 +141,7 @@ class GuideChatNotifier extends _$GuideChatNotifier {
       );
     } on ApiFailure catch (failure) {
       if (!ref.mounted) return;
-      state = GuideChat(
-        messages: state.messages,
-        failure: failure,
-        unanswered: question,
-      );
+      state = state.next(failure: failure, unanswered: question);
     }
   }
 }

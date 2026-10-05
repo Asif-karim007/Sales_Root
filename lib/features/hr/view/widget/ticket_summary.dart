@@ -21,7 +21,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class TicketSummaryScreen extends ConsumerWidget {
   const TicketSummaryScreen({super.key, required this.ticketId});
 
-  final int ticketId;
+  final String ticketId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,8 +30,6 @@ class TicketSummaryScreen extends ConsumerWidget {
     final actions = ticketActionsProvider(ticketId);
     final working = ref.watch(actions).isLoading;
     final canEdit = ref.watch(moduleAccessProvider(AppModule.support)).canEdit;
-    final canVisit = ref.watch(moduleAccessProvider(AppModule.visit)).canAdd;
-    final leadId = ticket.value?.leadId;
 
     ref.listen(actions, (_, next) {
       switch (next) {
@@ -63,32 +61,12 @@ class TicketSummaryScreen extends ConsumerWidget {
           onStatus: (status) => ref.read(actions.notifier).setStatus(status),
         ),
       ),
-      footer: ticket.hasValue
-          ? Row(
-              children: [
-                if (canVisit && leadId != null) ...[
-                  Expanded(
-                    child: SrButton(
-                      label: l10n.hrTicketCreateVisit,
-                      icon: Icons.directions_car_outlined,
-                      variant: SrButtonVariant.secondary,
-                      expand: true,
-                      onPressed: () =>
-                          context.push('${Routes.visits}?new=1&leadId=$leadId'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                ],
-                if (canEdit)
-                  Expanded(
-                    child: SrButton(
-                      label: l10n.hrTicketReply,
-                      expand: true,
-                      loading: working,
-                      onPressed: () => _reply(context, ref),
-                    ),
-                  ),
-              ],
+      footer: ticket.hasValue && canEdit
+          ? SrButton(
+              label: l10n.hrTicketReply,
+              expand: true,
+              loading: working,
+              onPressed: () => _reply(context, ref),
             )
           : null,
     );
@@ -160,17 +138,13 @@ class _SummaryBody extends StatelessWidget {
   List<Widget> _lines(BuildContext context) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final product = ticket.productName;
     final assignee = ticket.assigneeName;
     final opened = ticket.openedAt;
     return [
-      if (product != null) HrLine(label: l10n.hrTicketItem, value: product),
       if (assignee != null)
         HrLine(
           label: l10n.hrTicketAssignee,
-          value: l10n.hrTicketTechnician(
-            assignee.of(fmt.isBangla).split(' ').first,
-          ),
+          value: l10n.hrTicketTechnician(assignee.split(' ').first),
         ),
       if (opened != null)
         HrLine(
@@ -179,11 +153,6 @@ class _SummaryBody extends StatelessWidget {
             fmt.dayTime(opened),
             l10n.ticketSource(ticket.source),
           ),
-        ),
-      if (ticket.photos.isNotEmpty)
-        HrLine(
-          label: l10n.hrTicketPhotos,
-          value: fmt.number(ticket.photos.length),
         ),
     ];
   }
@@ -215,10 +184,13 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
+    final customerId = ticket.customerId;
 
     return SrCard(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      onTap: () => context.push(Routes.customerFor(ticket.customerId)),
+      onTap: customerId == null
+          ? null
+          : () => context.push(Routes.customerFor(customerId)),
       child: Row(
         children: [
           const SrAvatar(
@@ -237,7 +209,7 @@ class _Header extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   [
-                    ticket.customerName,
+                    ?ticket.customerName,
                     l10n.ticketIssue(ticket.issue),
                     l10n.ticketPriority(ticket.priority),
                     _sla(context),
@@ -257,11 +229,12 @@ class _Header extends StatelessWidget {
   String _sla(BuildContext context) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final sla = l10n.hrHours(fmt.number(ticket.priority.slaHours));
-    final left = ticket.slaMinutesLeft;
-    if (left == null) return l10n.hrTicketSla(sla);
-    if (left < 0) return l10n.hrTicketSlaBreached(sla);
-    return l10n.hrTicketSlaLeft(sla, fmt.hoursMinutes(left));
+    final sla = l10n.hrHours(
+      fmt.number(ticket.slaHours ?? ticket.priority.slaHours),
+    );
+    return ticket.slaBreached
+        ? l10n.hrTicketSlaBreached(sla)
+        : l10n.hrTicketSla(sla);
   }
 }
 

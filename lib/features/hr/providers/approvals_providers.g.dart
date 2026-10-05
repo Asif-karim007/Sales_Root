@@ -9,54 +9,6 @@ part of 'approvals_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(approvalsRepository)
-final approvalsRepositoryProvider = ApprovalsRepositoryProvider._();
-
-final class ApprovalsRepositoryProvider
-    extends
-        $FunctionalProvider<
-          ApprovalsRepository,
-          ApprovalsRepository,
-          ApprovalsRepository
-        >
-    with $Provider<ApprovalsRepository> {
-  ApprovalsRepositoryProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'approvalsRepositoryProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$approvalsRepositoryHash();
-
-  @$internal
-  @override
-  $ProviderElement<ApprovalsRepository> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  ApprovalsRepository create(Ref ref) {
-    return approvalsRepository(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ApprovalsRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ApprovalsRepository>(value),
-    );
-  }
-}
-
-String _$approvalsRepositoryHash() =>
-    r'1aebd4e298387728b456e1021d166b8d2dd3ea64';
-
 @ProviderFor(ApprovalFilterNotifier)
 final approvalFilterProvider = ApprovalFilterNotifierProvider._();
 
@@ -110,12 +62,20 @@ abstract class _$ApprovalFilterNotifier extends $Notifier<ApprovalFilter> {
   }
 }
 
-@ProviderFor(ApprovalListNotifier)
-final approvalListProvider = ApprovalListNotifierProvider._();
+@ProviderFor(approvalList)
+final approvalListProvider = ApprovalListProvider._();
 
-final class ApprovalListNotifierProvider
-    extends $AsyncNotifierProvider<ApprovalListNotifier, Paged<ApprovalItem>> {
-  ApprovalListNotifierProvider._()
+final class ApprovalListProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<Paged<ApprovalItem>>,
+          Paged<ApprovalItem>,
+          FutureOr<Paged<ApprovalItem>>
+        >
+    with
+        $FutureModifier<Paged<ApprovalItem>>,
+        $FutureProvider<Paged<ApprovalItem>> {
+  ApprovalListProvider._()
     : super(
         from: null,
         argument: null,
@@ -127,35 +87,21 @@ final class ApprovalListNotifierProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$approvalListNotifierHash();
+  String debugGetCreateSourceHash() => _$approvalListHash();
 
   @$internal
   @override
-  ApprovalListNotifier create() => ApprovalListNotifier();
-}
+  $FutureProviderElement<Paged<ApprovalItem>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
-String _$approvalListNotifierHash() =>
-    r'f62ad82b5ec760784d57716167c8859fd084ccb0';
-
-abstract class _$ApprovalListNotifier
-    extends $AsyncNotifier<Paged<ApprovalItem>> {
-  FutureOr<Paged<ApprovalItem>> build();
-  @$mustCallSuper
   @override
-  WhenComplete runBuild() {
-    final ref =
-        this.ref as $Ref<AsyncValue<Paged<ApprovalItem>>, Paged<ApprovalItem>>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<AsyncValue<Paged<ApprovalItem>>, Paged<ApprovalItem>>,
-              AsyncValue<Paged<ApprovalItem>>,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
+  FutureOr<Paged<ApprovalItem>> create(Ref ref) {
+    return approvalList(ref);
   }
 }
+
+String _$approvalListHash() => r'e74ed2d11b0ddde5fe0b7ca21f18c3503bc54dba';
 
 @ProviderFor(ApprovalActionsNotifier)
 final approvalActionsProvider = ApprovalActionsNotifierProvider._();
@@ -194,7 +140,7 @@ final class ApprovalActionsNotifierProvider
 }
 
 String _$approvalActionsNotifierHash() =>
-    r'715b83e10e68a7e97155170a8f95258423fc5ae5';
+    r'38c56450a13066f45d7957c3f789c364340abd34';
 
 abstract class _$ApprovalActionsNotifier
     extends $Notifier<AsyncValue<ApprovalOutcome?>> {

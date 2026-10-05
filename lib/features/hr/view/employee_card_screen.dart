@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
+import 'package:salesroot/core/access/access_providers.dart';
+import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
@@ -22,22 +23,23 @@ import 'package:salesroot/widgets/widgets.dart';
 class EmployeeCardScreen extends ConsumerWidget {
   const EmployeeCardScreen({super.key, this.employeeId});
 
-  final int? employeeId;
+  final String? employeeId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final fmt = context.fmt;
     final card = ref.watch(employeeCardProvider(employeeId));
     final loaded = card.value;
+    final canEdit = ref.watch(moduleAccessProvider(AppModule.payroll)).canEdit;
+    final title = loaded?.name ?? '';
 
     return SrScaffold(
       appBar: SrAppBar(
-        title: loaded?.name.of(fmt.isBangla) ?? l10n.hrCardTitle,
-        subtitle: loaded == null ? null : l10n.hrCardTitle,
+        title: title.isEmpty ? l10n.hrCardTitle : title,
+        subtitle: title.isEmpty ? null : l10n.hrCardTitle,
         actions: [
           const HrLanguageToggle(),
-          if (loaded != null && loaded.canEdit)
+          if (loaded != null && loaded.salary != null && canEdit)
             SrIconButton(
               icon: Icons.edit_outlined,
               tooltip: l10n.hrCardEdit,
@@ -63,7 +65,7 @@ class _CardBody extends StatelessWidget {
   const _CardBody({required this.card, required this.employeeId});
 
   final EmployeeCard card;
-  final int? employeeId;
+  final String? employeeId;
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +74,16 @@ class _CardBody extends StatelessWidget {
     final designation = card.designation;
     final joined = card.joinedOn;
     final reportsTo = card.reportsTo;
+    final salary = card.salary;
     final id = employeeId;
+    final job = [
+      if (designation != null)
+        HrLine(label: l10n.hrCardDesignation, value: designation),
+      if (joined != null)
+        HrLine(label: l10n.hrCardJoined, value: fmt.date(joined)),
+      if (reportsTo != null)
+        HrLine(label: l10n.hrCardReportsTo, value: reportsTo),
+    ];
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -82,22 +93,10 @@ class _CardBody extends StatelessWidget {
         24,
       ),
       children: [
-        HrLineCard(
-          lines: [
-            HrLine(label: l10n.hrCardId, value: card.employeeCode),
-            if (designation != null)
-              HrLine(label: l10n.hrCardDesignation, value: designation),
-            if (joined != null)
-              HrLine(label: l10n.hrCardJoined, value: fmt.date(joined)),
-            HrLine(label: l10n.hrCardDuty, value: _duty(context)),
-            if (reportsTo != null)
-              HrLine(
-                label: l10n.hrCardReportsTo,
-                value: reportsTo.of(fmt.isBangla),
-              ),
-          ],
-        ),
-        const SizedBox(height: 18),
+        if (job.isNotEmpty) ...[
+          HrLineCard(lines: job),
+          const SizedBox(height: 18),
+        ],
         SrSectionHeader(
           title: l10n.hrCardSalary,
           actionLabel: l10n.hrCardPayslips,
@@ -111,45 +110,10 @@ class _CardBody extends StatelessWidget {
           style: AppText.meta(SrColors.of(context).ink3, size: 12),
         ),
         const SizedBox(height: 8),
-        HrLineCard(
-          lines: [
-            HrLine(label: l10n.hrCardBasic, value: fmt.money(card.basic)),
-            HrLine(
-              label: l10n.hrCardHouseRent,
-              value: fmt.money(card.houseRent),
-            ),
-            HrLine(
-              label: l10n.hrCardConveyance,
-              value: fmt.money(card.conveyance),
-            ),
-            HrLine(
-              label: l10n.hrCardCommission,
-              value: l10n.hrCardCommissionValue(fmt.rate(card.commissionRate)),
-            ),
-            HrLine(label: l10n.hrCardPf, value: fmt.money(card.providentFund)),
-          ],
-        ),
-        const SizedBox(height: 12),
-        HrLineCard(
-          lines: [
-            HrLine(
-              label: l10n.hrCardPayout,
-              value: [
-                card.payoutMethod,
-                card.payoutAccount,
-              ].whereType<String>().join(' '),
-            ),
-            HrLine(
-              label: l10n.hrCardAdvance,
-              value: card.advanceOutstanding <= 0
-                  ? l10n.hrCardNone
-                  : l10n.hrCardAdvanceValue(
-                      fmt.money(card.advanceOutstanding),
-                      fmt.number(card.advanceInstallments),
-                    ),
-            ),
-          ],
-        ),
+        if (salary == null)
+          SrNote(message: l10n.hrCardNoSalary)
+        else
+          _SalaryLines(salary: salary),
         const SizedBox(height: 14),
         SrNote(
           tone: SrNoteTone.gold,
@@ -159,20 +123,62 @@ class _CardBody extends StatelessWidget {
       ],
     );
   }
+}
 
-  /// "9:00–18:00 · Sat–Thu"
-  String _duty(BuildContext context) {
+class _SalaryLines extends StatelessWidget {
+  const _SalaryLines({required this.salary});
+
+  final SalaryStructure salary;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final fmt = context.fmt;
-    final weekday = DateFormat.E(fmt.locale.languageCode);
-    final firstDay = card.weeklyOff % 7 + 1;
-    final lastDay = (card.weeklyOff + 5) % 7 + 1;
-    DateTime on(int weekday) => DateTime(2026, 6, weekday);
-    return '${fmt.clock(card.dutyStart)}–${fmt.clock(card.dutyEnd)}'
-        ' · ${weekday.format(on(firstDay))}–${weekday.format(on(lastDay))}';
+    final commission = salary.commissionRate;
+    final payout = [
+      salary.paymentMethod,
+      salary.paymentAccount,
+    ].whereType<String>().join(' ');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        HrLineCard(
+          lines: [
+            HrLine(label: l10n.hrCardBasic, value: fmt.money(salary.basic)),
+            HrLine(
+              label: l10n.hrCardHouseRent,
+              value: fmt.money(salary.houseRent),
+            ),
+            if (salary.medical > 0)
+              HrLine(
+                label: l10n.hrCardMedical,
+                value: fmt.money(salary.medical),
+              ),
+            HrLine(
+              label: l10n.hrCardConveyance,
+              value: fmt.money(salary.conveyance),
+            ),
+            if (commission != null)
+              HrLine(
+                label: l10n.hrCardCommission,
+                value: l10n.hrCardCommissionValue(fmt.rate(commission)),
+              ),
+            HrLine(label: l10n.hrCardPf, value: fmt.rate(salary.pfPct)),
+          ],
+        ),
+        if (payout.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          HrLineCard(
+            lines: [HrLine(label: l10n.hrCardPayout, value: payout)],
+          ),
+        ],
+      ],
+    );
   }
 }
 
-/// Edits the salary structure; owner only.
+/// Edits the salary amounts; payroll roles only.
 class _SalarySheet extends ConsumerStatefulWidget {
   const _SalarySheet({required this.card});
 
@@ -183,24 +189,23 @@ class _SalarySheet extends ConsumerStatefulWidget {
 }
 
 class _SalarySheetState extends ConsumerState<_SalarySheet> {
-  late final _basic = _controller(widget.card.basic);
-  late final _houseRent = _controller(widget.card.houseRent);
-  late final _conveyance = _controller(widget.card.conveyance);
-  late final _commission = TextEditingController(
-    text: _plain(widget.card.commissionRate),
-  );
-  late final _pf = _controller(widget.card.providentFund);
+  late final SalaryStructure? _salary = widget.card.salary;
+  late final _basic = _controller(_salary?.basic);
+  late final _houseRent = _controller(_salary?.houseRent);
+  late final _medical = _controller(_salary?.medical);
+  late final _conveyance = _controller(_salary?.conveyance);
+  late final _pf = TextEditingController(text: _plain(_salary?.pfPct ?? 0));
   bool _showErrors = false;
 
-  static TextEditingController _controller(double value) =>
-      TextEditingController(text: value.round().toString());
+  static TextEditingController _controller(double? value) =>
+      TextEditingController(text: (value ?? 0).round().toString());
 
   static String _plain(double value) =>
       value % 1 == 0 ? value.round().toString() : value.toString();
 
   @override
   void dispose() {
-    for (final c in [_basic, _houseRent, _conveyance, _commission, _pf]) {
+    for (final c in [_basic, _houseRent, _medical, _conveyance, _pf]) {
       c.dispose();
     }
     super.dispose();
@@ -215,13 +220,13 @@ class _SalarySheetState extends ConsumerState<_SalarySheet> {
     ref
         .read(salaryEditProvider.notifier)
         .save(
-          widget.card.employeeId,
+          widget.card,
           SalaryInput(
             basic: basic,
             houseRent: double.tryParse(_houseRent.text) ?? 0,
+            medical: double.tryParse(_medical.text) ?? 0,
             conveyance: double.tryParse(_conveyance.text) ?? 0,
-            commissionRate: double.tryParse(_commission.text) ?? 0,
-            providentFund: double.tryParse(_pf.text) ?? 0,
+            pfPct: double.tryParse(_pf.text) ?? 0,
           ),
         );
   }
@@ -233,7 +238,7 @@ class _SalarySheetState extends ConsumerState<_SalarySheet> {
 
     ref.listen(salaryEditProvider, (_, next) {
       switch (next) {
-        case AsyncData(value: final EmployeeCard _):
+        case AsyncData(value: true):
           showSrSuccess(context, l10n.hrCardSaved);
           Navigator.of(context).pop();
         case AsyncError(:final error):
@@ -245,7 +250,7 @@ class _SalarySheetState extends ConsumerState<_SalarySheet> {
     final money = [FilteringTextInputFormatter.digitsOnly];
     return SrSheet(
       title: l10n.hrCardEdit,
-      subtitle: widget.card.name.of(context.fmt.isBangla),
+      subtitle: widget.card.name,
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -266,6 +271,13 @@ class _SalarySheetState extends ConsumerState<_SalarySheet> {
             ),
             const SizedBox(height: 12),
             SrTextField(
+              controller: _medical,
+              label: l10n.hrCardMedical,
+              keyboardType: TextInputType.number,
+              inputFormatters: money,
+            ),
+            const SizedBox(height: 12),
+            SrTextField(
               controller: _conveyance,
               label: l10n.hrCardConveyance,
               keyboardType: TextInputType.number,
@@ -273,21 +285,14 @@ class _SalarySheetState extends ConsumerState<_SalarySheet> {
             ),
             const SizedBox(height: 12),
             SrTextField(
-              controller: _commission,
-              label: l10n.hrCardCommissionRate,
+              controller: _pf,
+              label: l10n.hrCardPfRate,
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
               ],
-            ),
-            const SizedBox(height: 12),
-            SrTextField(
-              controller: _pf,
-              label: l10n.hrCardPf,
-              keyboardType: TextInputType.number,
-              inputFormatters: money,
             ),
             const SizedBox(height: 16),
             SrButton(

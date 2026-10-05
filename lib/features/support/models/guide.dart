@@ -1,3 +1,4 @@
+import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/support/models/app_destination.dart';
 
 /// A button under a guide answer that opens [destination] with [params].
@@ -8,6 +9,23 @@ class GuideAction {
   final Map<String, String> params;
 
   String get location => destination.location(params);
+
+  /// The server's paths that name a section rather than a screen.
+  static const _sections = {
+    '/field': AppDestination.visits,
+    '/hr': AppDestination.leave,
+  };
+
+  /// A `{type, route}` action; null for a route the app has no screen for.
+  static GuideAction? fromJson(Map<String, dynamic> json) {
+    final uri = Uri.tryParse(json['route'] as String? ?? '');
+    if (uri == null) return null;
+    final destination =
+        _sections[uri.path] ??
+        AppDestination.values.where((d) => d.path == uri.path).firstOrNull;
+    if (destination == null) return null;
+    return GuideAction(destination, params: uri.queryParameters);
+  }
 }
 
 enum GuideAnswerKind {
@@ -15,9 +33,6 @@ enum GuideAnswerKind {
 
   /// Proposes a write; the user has to confirm before anything is created.
   confirm,
-
-  /// Nothing matched; points to help and support.
-  fallback,
 }
 
 class GuideAnswer {
@@ -25,38 +40,43 @@ class GuideAnswer {
     required this.text,
     this.kind = GuideAnswerKind.answer,
     this.actions = const [],
-    this.articleId,
-    this.hasVideo = false,
+    this.conversationId,
   });
 
   final String text;
   final GuideAnswerKind kind;
   final List<GuideAction> actions;
 
-  /// The help article the answer came from.
-  final int? articleId;
-  final bool hasVideo;
+  /// Sent with the next question so the guide keeps the thread.
+  final String? conversationId;
+
+  factory GuideAnswer.fromJson(Map<String, dynamic> json) {
+    final rows = jsonList(json['actions'], (row) => row);
+    return GuideAnswer(
+      text: json['answer'] as String? ?? '',
+      kind: rows.any((row) => row['type'] == 'confirm')
+          ? GuideAnswerKind.confirm
+          : GuideAnswerKind.answer,
+      actions: [for (final row in rows) ?GuideAction.fromJson(row)],
+      conversationId: jsonId(json['conversationId']),
+    );
+  }
 }
 
-class GuideTurn {
-  const GuideTurn({required this.text, required this.mine});
+/// Whether the AI model answers, or the built-in rules do, and how much of
+/// the monthly allowance is used.
+class GuideStatus {
+  const GuideStatus({this.enabled = false, this.used = 0, this.limit = 0});
 
-  final String text;
-  final bool mine;
-}
+  final bool enabled;
+  final int used;
+  final int limit;
 
-class GuideQuestion {
-  const GuideQuestion({
-    required this.text,
-    required this.appInBangla,
-    this.history = const [],
-  });
-
-  final String text;
-
-  /// The app language, used when the question's own script doesn't decide.
-  final bool appInBangla;
-  final List<GuideTurn> history;
+  factory GuideStatus.fromJson(Map<String, dynamic> json) => GuideStatus(
+    enabled: jsonBool(json['enabled']),
+    used: jsonInt(json['used']) ?? 0,
+    limit: jsonInt(json['limit']) ?? 0,
+  );
 }
 
 enum GuideMessageKind { greeting, mine, answer, declined }

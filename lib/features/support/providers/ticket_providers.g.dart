@@ -8,64 +8,25 @@ part of 'ticket_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// The user's support requests.
 
-@ProviderFor(supportRepository)
-final supportRepositoryProvider = SupportRepositoryProvider._();
+@ProviderFor(myTickets)
+final myTicketsProvider = MyTicketsProvider._();
 
-final class SupportRepositoryProvider
+/// The user's support requests.
+
+final class MyTicketsProvider
     extends
         $FunctionalProvider<
-          SupportRepository,
-          SupportRepository,
-          SupportRepository
+          AsyncValue<List<SupportTicket>>,
+          List<SupportTicket>,
+          FutureOr<List<SupportTicket>>
         >
-    with $Provider<SupportRepository> {
-  SupportRepositoryProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'supportRepositoryProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$supportRepositoryHash();
-
-  @$internal
-  @override
-  $ProviderElement<SupportRepository> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  SupportRepository create(Ref ref) {
-    return supportRepository(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(SupportRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<SupportRepository>(value),
-    );
-  }
-}
-
-String _$supportRepositoryHash() => r'5a56c1f6994996d7441253487d4aa10d6064e529';
-
-/// The user's support requests, refreshed when support answers one.
-
-@ProviderFor(MyTicketsNotifier)
-final myTicketsProvider = MyTicketsNotifierProvider._();
-
-/// The user's support requests, refreshed when support answers one.
-final class MyTicketsNotifierProvider
-    extends $AsyncNotifierProvider<MyTicketsNotifier, Paged<SupportTicket>> {
-  /// The user's support requests, refreshed when support answers one.
-  MyTicketsNotifierProvider._()
+    with
+        $FutureModifier<List<SupportTicket>>,
+        $FutureProvider<List<SupportTicket>> {
+  /// The user's support requests.
+  MyTicketsProvider._()
     : super(
         from: null,
         argument: null,
@@ -77,40 +38,21 @@ final class MyTicketsNotifierProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$myTicketsNotifierHash();
+  String debugGetCreateSourceHash() => _$myTicketsHash();
 
   @$internal
   @override
-  MyTicketsNotifier create() => MyTicketsNotifier();
-}
+  $FutureProviderElement<List<SupportTicket>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
-String _$myTicketsNotifierHash() => r'546a621c5e237cf82a09e136f5297218a0d1a487';
-
-/// The user's support requests, refreshed when support answers one.
-
-abstract class _$MyTicketsNotifier
-    extends $AsyncNotifier<Paged<SupportTicket>> {
-  FutureOr<Paged<SupportTicket>> build();
-  @$mustCallSuper
   @override
-  WhenComplete runBuild() {
-    final ref =
-        this.ref
-            as $Ref<AsyncValue<Paged<SupportTicket>>, Paged<SupportTicket>>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<
-                AsyncValue<Paged<SupportTicket>>,
-                Paged<SupportTicket>
-              >,
-              AsyncValue<Paged<SupportTicket>>,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
+  FutureOr<List<SupportTicket>> create(Ref ref) {
+    return myTickets(ref);
   }
 }
+
+String _$myTicketsHash() => r'4d7537d751141ef436a3655724d2ae083590c32d';
 
 @ProviderFor(SupportTicketNotifier)
 final supportTicketProvider = SupportTicketNotifierFamily._();
@@ -119,7 +61,7 @@ final class SupportTicketNotifierProvider
     extends $AsyncNotifierProvider<SupportTicketNotifier, TicketThread> {
   SupportTicketNotifierProvider._({
     required SupportTicketNotifierFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'supportTicketProvider',
@@ -154,7 +96,7 @@ final class SupportTicketNotifierProvider
 }
 
 String _$supportTicketNotifierHash() =>
-    r'e8940c4266a4e77a8697fb006db06261fe378b7b';
+    r'29dc41ea0ebc2fbcc0b6048b9d808d0066295b94';
 
 final class SupportTicketNotifierFamily extends $Family
     with
@@ -163,7 +105,7 @@ final class SupportTicketNotifierFamily extends $Family
           AsyncValue<TicketThread>,
           TicketThread,
           FutureOr<TicketThread>,
-          int
+          String
         > {
   SupportTicketNotifierFamily._()
     : super(
@@ -174,7 +116,7 @@ final class SupportTicketNotifierFamily extends $Family
         isAutoDispose: true,
       );
 
-  SupportTicketNotifierProvider call(int id) =>
+  SupportTicketNotifierProvider call(String id) =>
       SupportTicketNotifierProvider._(argument: id, from: this);
 
   @override
@@ -182,10 +124,10 @@ final class SupportTicketNotifierFamily extends $Family
 }
 
 abstract class _$SupportTicketNotifier extends $AsyncNotifier<TicketThread> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  FutureOr<TicketThread> build(int id);
+  FutureOr<TicketThread> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

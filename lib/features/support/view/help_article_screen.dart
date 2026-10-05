@@ -23,7 +23,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class HelpArticleScreen extends ConsumerWidget {
   const HelpArticleScreen({super.key, required this.id});
 
-  final int id;
+  final String id;
 
   void _share(BuildContext context, HelpArticle article) {
     final bangla = context.fmt.isBangla;

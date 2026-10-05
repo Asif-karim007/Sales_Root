@@ -101,7 +101,7 @@ class ExpenseDetailSheet extends ConsumerWidget {
 
     ref.listen(expenseWithdrawProvider, (_, next) {
       switch (next) {
-        case AsyncData(value: final ExpenseClaim _):
+        case AsyncData(value: final String _):
           showSrSuccess(context, l10n.hrExpenseWithdrawn);
           Navigator.of(context).pop();
         case AsyncError(:final error):
@@ -126,10 +126,6 @@ class ExpenseDetailSheet extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
             ],
-            if (claim.isPending && claim.approvalStep > 1) ...[
-              SrNote(message: l10n.hrExpenseWaitingManager),
-              const SizedBox(height: 12),
-            ],
             HrLineCard(lines: _lines(context)),
             if (claim.canWithdraw) ...[
               const SizedBox(height: 16),
@@ -150,48 +146,23 @@ class ExpenseDetailSheet extends ConsumerWidget {
   List<Widget> _lines(BuildContext context) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final code = claim.code;
     final date = claim.expenseDate;
     final description = claim.description;
-    final prospect = claim.prospectName;
-    final approvedBy = claim.approvedByName;
-    final receipts = claim.attachments;
+    final company = claim.companyName;
     return [
-      if (code != null) HrLine(label: l10n.hrExpenseDetailCode, value: code),
       if (date != null)
         HrLine(label: l10n.hrExpenseDate, value: fmt.date(date)),
       if (description != null && description.isNotEmpty)
         HrLine(label: l10n.hrExpenseNote, value: description),
-      if (claim.hasRoute)
-        HrLine(label: l10n.hrExpenseDetailRoute, value: expenseRoute(claim)),
-      if (prospect != null)
-        HrLine(label: l10n.hrExpenseDetailCustomer, value: prospect),
-      if (claim.personCount > 1)
-        HrLine(
-          label: l10n.hrExpensePeople,
-          value: fmt.number(claim.personCount),
-        ),
-      if (receipts.isNotEmpty)
-        HrLine(
-          label: l10n.hrExpenseReceipt,
-          value: receipts.map((r) => r.name).join(', '),
-        ),
-      if (approvedBy != null)
-        HrLine(
-          label: l10n.hrExpenseDetailApprovedBy,
-          value: approvedBy.of(fmt.isBangla),
-        ),
+      if (company != null)
+        HrLine(label: l10n.hrExpenseDetailCustomer, value: company),
+      if (claim.hasReceipt)
+        HrLine(label: l10n.hrExpenseReceipt, value: l10n.hrAttached),
     ];
   }
 }
 
-/// "Uttara → Banani", with whichever end is known.
-String expenseRoute(ExpenseClaim claim) => [
-  claim.startLocation,
-  claim.endLocation,
-].where((s) => s != null && s.isNotEmpty).join(' → ');
-
-/// Totals per stage for the summary tiles, from the list's facets.
+/// Money per stage for the summary tiles, from the list's `totals` facet.
 class ExpenseTotals extends StatelessWidget {
   const ExpenseTotals({super.key, required this.totals});
 
@@ -201,25 +172,18 @@ class ExpenseTotals extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    String total(ExpenseStage stage) =>
-        fmt.moneyCompact(totals[stage.wire] ?? 0);
+    String total(String key) => fmt.moneyCompact(totals[key] ?? 0);
 
     return SrStatGrid(
       columns: 3,
       spacing: 8,
       tiles: [
-        SrKpiTile(
-          label: l10n.hrExpensePendingTotal,
-          value: total(ExpenseStage.pending),
-        ),
+        SrKpiTile(label: l10n.hrExpensePendingTotal, value: total('pending')),
         SrKpiTile(
           label: l10n.hrExpenseApprovedTotal,
-          value: total(ExpenseStage.approved),
+          value: total('approvedUnpaid'),
         ),
-        SrKpiTile(
-          label: l10n.hrExpensePaidTotal,
-          value: total(ExpenseStage.paid),
-        ),
+        SrKpiTile(label: l10n.hrExpensePaidTotal, value: total('reimbursed')),
       ],
     );
   }

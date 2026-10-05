@@ -1,22 +1,12 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
-import 'package:salesroot/features/hr/data/fake_ticket_repository.dart';
-import 'package:salesroot/features/hr/data/ticket_repository.dart';
+import 'package:salesroot/features/hr/data/hr_repositories.dart';
 import 'package:salesroot/features/hr/models/ticket.dart';
 
 part 'ticket_providers.g.dart';
 
-@Riverpod(keepAlive: true)
-TicketRepository ticketRepository(Ref ref) =>
-    FakeTicketRepository(ref.watch(fakeBackendProvider));
-
 @riverpod
-Future<List<TicketProduct>> ticketProducts(Ref ref) =>
-    ref.watch(ticketRepositoryProvider).products();
-
-@riverpod
-Future<Ticket> ticket(Ref ref, int id) =>
+Future<Ticket> ticket(Ref ref, String id) =>
     ref.watch(ticketRepositoryProvider).get(id);
 
 class TicketFormState {
@@ -77,7 +67,7 @@ enum TicketAction { status, reply }
 @riverpod
 class TicketActionsNotifier extends _$TicketActionsNotifier {
   @override
-  AsyncValue<TicketAction?> build(int id) => const AsyncData(null);
+  AsyncValue<TicketAction?> build(String id) => const AsyncData(null);
 
   Future<void> setStatus(TicketStatus status) => _run(
     TicketAction.status,
@@ -89,7 +79,7 @@ class TicketActionsNotifier extends _$TicketActionsNotifier {
     () => ref.read(ticketRepositoryProvider).reply(id, text),
   );
 
-  Future<void> _run(TicketAction action, Future<Ticket> Function() work) async {
+  Future<void> _run(TicketAction action, Future<void> Function() work) async {
     if (state.isLoading) return;
     state = const AsyncLoading();
     final result = await AsyncValue.guard(() async {

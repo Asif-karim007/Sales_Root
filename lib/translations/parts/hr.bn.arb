@@ -4,7 +4,6 @@
   "hrStatusApproved": "অনুমোদিত",
   "hrStatusRejected": "প্রত্যাখ্যাত",
   "hrStatusPaid": "পরিশোধিত",
-  "hrStatusReturned": "ফেরত",
   "hrStatusWithdrawn": "প্রত্যাহার",
   "hrDaySingle": "{count} দিন",
   "@hrDaySingle": {
@@ -34,6 +33,7 @@
   "hrTakaSign": "৳",
   "hrApproverNote": "অনুমোদনকারীর মন্তব্য",
   "hrWithdraw": "প্রত্যাহার করুন",
+  "hrAttached": "সংযুক্ত",
   "hrPhotoSourceTitle": "ছবি যোগ করুন",
   "hrPhotoCamera": "ছবি তুলুন",
   "hrPhotoGallery": "গ্যালারি থেকে বাছুন",
@@ -74,14 +74,6 @@
     }
   },
   "hrLeaveAutoApproved": "সাথে সাথে অনুমোদিত",
-  "hrLeaveCover": "ওই দিনগুলোর ভিজিট দেখবেন {name}",
-  "@hrLeaveCover": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "hrLeaveBalanceError": "{type} ছুটি বাকি মাত্র {days}",
   "@hrLeaveBalanceError": {
     "placeholders": {
@@ -89,6 +81,14 @@
         "type": "String"
       },
       "type": {
+        "type": "String"
+      }
+    }
+  },
+  "hrLeaveDocumentError": "{days} বা বেশি ছুটিতে কাগজ (যেমন ডাক্তারের সনদ) লাগবে",
+  "@hrLeaveDocumentError": {
+    "placeholders": {
+      "days": {
         "type": "String"
       }
     }
@@ -108,7 +108,6 @@
   "hrLeaveDetailDays": "দিন",
   "hrLeaveDetailApplied": "আবেদনের তারিখ",
   "hrLeaveDetailApprover": "অনুমোদনকারী",
-  "hrLeaveDetailCover": "ভিজিট দেখবেন",
   "hrWithdrawLeaveTitle": "আবেদনটি প্রত্যাহার করবেন?",
   "hrWithdrawLeaveBody": "ম্যানেজার আর এটি দেখবেন না।",
   "hrLeaveWithdrawn": "আবেদন প্রত্যাহার হয়েছে",
@@ -125,14 +124,6 @@
   "hrExpenseVisit": "ভিজিট",
   "hrExpenseVisitNone": "ভিজিট নেই",
   "hrExpenseVisitPick": "ভিজিট যুক্ত করুন",
-  "hrExpenseFrom": "থেকে",
-  "hrExpenseTo": "পর্যন্ত",
-  "hrExpenseFromHint": "যেমন: উত্তরা",
-  "hrExpenseToHint": "যেমন: বনানী",
-  "hrExpensePeople": "কতজন",
-  "hrExpensePeopleLess": "একজন কম",
-  "hrExpensePeopleMore": "আরও একজন",
-  "hrExpenseMoreDetails": "রুট ও লোকসংখ্যা যোগ করুন",
   "hrExpenseReceipt": "বিলের ছবি",
   "hrExpenseReceiptError": "{amount}-এর বেশি হলে বিলের ছবি লাগবে",
   "@hrExpenseReceiptError": {
@@ -152,17 +143,6 @@
       }
     }
   },
-  "hrExpenseApproverManager": "অনুমোদন দেবেন {name}; {amount}-এর বেশি হলে ম্যানেজারও।",
-  "@hrExpenseApproverManager": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
   "hrExpenseAutoApproved": "আপনার দাবি সাথে সাথে অনুমোদিত হয়।",
   "hrExpenseSubmitted": "দাবি জমা হয়েছে",
   "hrExpensePendingTotal": "অপেক্ষায়",
@@ -170,11 +150,7 @@
   "hrExpensePaidTotal": "পরিশোধিত",
   "hrExpenseEmptyTitle": "এখনো কোনো দাবি নেই",
   "hrExpenseEmptyBody": "যাতায়াত, খাবার ও কাজের অন্যান্য খরচ এখানে দাবি করুন।",
-  "hrExpenseDetailCode": "দাবি নং",
-  "hrExpenseDetailRoute": "রুট",
   "hrExpenseDetailCustomer": "গ্রাহক",
-  "hrExpenseDetailApprovedBy": "অনুমোদন করেছেন",
-  "hrExpenseWaitingManager": "অনুমোদনকারী পাস করেছেন; এখন ম্যানেজারের অপেক্ষায়।",
   "hrWithdrawClaimTitle": "দাবিটি প্রত্যাহার করবেন?",
   "hrWithdrawClaimBody": "এটি আর অনুমোদনে যাবে না।",
   "hrExpenseWithdrawn": "দাবি প্রত্যাহার হয়েছে",
@@ -183,35 +159,9 @@
   "hrApprovalsLeave": "ছুটি",
   "hrApprovalsExpense": "খরচ",
   "hrApprovalsCollection": "কালেকশন",
+  "hrApprovalsOther": "অনুরোধ",
   "hrApprovalsDone": "হয়ে গেছে",
   "hrApprovalTagMoney": "টাকা",
-  "hrApprovalCover": "ভিজিট দেখবেন {name}",
-  "@hrApprovalCover": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "hrApprovalPeople": "{count} জন",
-  "@hrApprovalPeople": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "hrApprovalBill": "বিলের ছবি আছে",
-  "hrApprovalVisit": "{name} ভিজিট",
-  "@hrApprovalVisit": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "hrApprovalSlip": "স্লিপ আছে",
-  "hrApprovalLeadApproved": "টিম লিড অনুমোদন করেছেন",
   "hrApprovalDecidedBy": "{name} করেছেন",
   "@hrApprovalDecidedBy": {
     "placeholders": {
@@ -220,10 +170,6 @@
       }
     }
   },
-  "hrMethodCash": "নগদ",
-  "hrMethodBkash": "বিকাশ",
-  "hrMethodCheque": "চেক",
-  "hrMethodBank": "ব্যাংক",
   "hrApprove": "অনুমোদন",
   "hrReject": "প্রত্যাখ্যান",
   "hrRejectTitle": "অনুরোধটি প্রত্যাখ্যান করবেন?",
@@ -268,6 +214,7 @@
   "hrPayslipTotal": "মোট",
   "hrLineBasic": "মূল বেতন",
   "hrLineHouseRent": "বাড়িভাড়া",
+  "hrLineMedical": "চিকিৎসা ভাতা",
   "hrLineConveyance": "যাতায়াত ভাতা",
   "hrLineCommission": "বিক্রয় কমিশন",
   "hrLineCommissionDeal": "বিক্রয় কমিশন ({count}টি ডিল)",
@@ -286,6 +233,8 @@
       }
     }
   },
+  "hrLineBonus": "বোনাস",
+  "hrLineArrears": "বকেয়া বেতন",
   "hrLineReimbursement": "খরচ ফেরত ({count})",
   "@hrLineReimbursement": {
     "placeholders": {
@@ -294,6 +243,7 @@
       }
     }
   },
+  "hrLineReimbursementPlain": "খরচ ফেরত",
   "hrLineUnpaidLeave": "অনুমোদনহীন ছুটি {days}",
   "@hrLineUnpaidLeave": {
     "placeholders": {
@@ -302,6 +252,7 @@
       }
     }
   },
+  "hrLineUnpaidLeavePlain": "অনুমোদনহীন ছুটি",
   "hrLineLate": "দেরি {days}",
   "@hrLineLate": {
     "placeholders": {
@@ -310,8 +261,11 @@
       }
     }
   },
+  "hrLineLatePlain": "দেরি",
   "hrLineAdvance": "অগ্রিম ফেরত",
   "hrLinePf": "প্রভিডেন্ট ফান্ড",
+  "hrLineTax": "আয়কর",
+  "hrLineOtherDeduction": "অন্যান্য কর্তন",
   "hrPayslipPresent": "উপস্থিত / কর্মদিবস",
   "hrPayslipPaidVia": "পরিশোধ",
   "hrPayslipPdf": "PDF",
@@ -320,17 +274,17 @@
   "hrPayslipNotIssuedTitle": "এখনো পে-স্লিপ নেই",
   "hrPayslipNotIssuedBody": "প্রতি মাস শেষ হলে পে-স্লিপ দেওয়া হয়।",
   "hrCardTitle": "কর্মীর কার্ড",
-  "hrCardId": "কর্মী আইডি",
   "hrCardDesignation": "পদবি",
   "hrCardJoined": "যোগদান",
-  "hrCardDuty": "ডিউটি",
   "hrCardReportsTo": "রিপোর্ট করে",
   "hrCardSalary": "বেতন কাঠামো",
   "hrCardPayrollOnly": "শুধু পেরোল ভূমিকা",
   "hrCardPayslips": "পে-স্লিপ",
+  "hrCardNoSalary": "পেরোল এখনো বেতন কাঠামো ঠিক করেনি।",
   "hrCardBasic": "মূল",
   "hrCardBasicError": "মূল বেতন লিখুন",
   "hrCardHouseRent": "বাড়িভাড়া",
+  "hrCardMedical": "চিকিৎসা ভাতা",
   "hrCardConveyance": "যাতায়াত",
   "hrCardCommission": "কমিশন",
   "hrCardCommissionValue": "বিক্রির {rate}",
@@ -341,22 +295,9 @@
       }
     }
   },
-  "hrCardCommissionRate": "কমিশন (বিক্রির %)",
   "hrCardPf": "PF",
+  "hrCardPfRate": "PF (মূল বেতনের %)",
   "hrCardPayout": "পরিশোধ",
-  "hrCardAdvance": "অগ্রিম বাকি",
-  "hrCardAdvanceValue": "{amount} ({count} কিস্তি)",
-  "@hrCardAdvanceValue": {
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      },
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "hrCardNone": "নেই",
   "hrCardPrivacy": "এই তথ্য ওয়ার্কস্পেসের চাবি দিয়ে এনক্রিপ্টেড; শুধু মালিক, পেরোল ম্যানেজার ও কর্মী নিজে দেখতে পারেন।",
   "hrCardEdit": "বেতন সম্পাদনা",
   "hrCardSaved": "বেতন কাঠামো সংরক্ষিত হয়েছে",
@@ -389,8 +330,6 @@
       }
     }
   },
-  "hrTicketItem": "পণ্য",
-  "hrTicketItemPick": "পণ্য বাছুন",
   "hrTicketDescription": "কী সমস্যা?",
   "hrTicketDescriptionHint": "গ্রাহক যা বলেছেন",
   "hrTicketDescriptionError": "সমস্যাটি লিখুন",
@@ -408,17 +347,6 @@
   "@hrTicketSla": {
     "placeholders": {
       "sla": {
-        "type": "String"
-      }
-    }
-  },
-  "hrTicketSlaLeft": "SLA {sla} ({left} বাকি)",
-  "@hrTicketSlaLeft": {
-    "placeholders": {
-      "sla": {
-        "type": "String"
-      },
-      "left": {
         "type": "String"
       }
     }
@@ -456,11 +384,11 @@
   "hrSourceWhatsApp": "WhatsApp",
   "hrSourcePhone": "ফোন",
   "hrTicketChangeStatus": "অবস্থা বদলান",
+  "hrTicketNew": "নতুন",
   "hrTicketOpen": "খোলা",
-  "hrTicketInProgress": "চলছে",
-  "hrTicketOnHold": "অপেক্ষায়",
+  "hrTicketWaiting": "অপেক্ষায়",
   "hrTicketResolved": "সমাধান",
-  "hrTicketCreateVisit": "ভিজিট বানান",
+  "hrTicketClosed": "বন্ধ",
   "hrTicketReply": "উত্তর দিন",
   "hrTicketReplyHint": "উত্তর লিখুন",
   "hrTicketReplySent": "উত্তর পাঠানো হয়েছে",

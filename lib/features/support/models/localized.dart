@@ -11,9 +11,6 @@ LocalizedName localizedField(Map<String, dynamic> json, String key) =>
 List<LocalizedName> localizedList(dynamic value, String key) =>
     jsonList(value, (item) => localizedField(item, key));
 
-/// True when [text] contains Bangla script.
-bool hasBanglaScript(String text) => RegExp('[ঀ-৿]').hasMatch(text);
-
 /// Folds the two-code-point forms of য়, ড় and ঢ় into their single code
 /// points, so text typed on different keyboards compares equal.
 String normalizeBangla(String text) => text

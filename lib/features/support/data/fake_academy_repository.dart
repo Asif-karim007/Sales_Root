@@ -5,6 +5,7 @@ import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/support/data/academy_fixtures.dart';
 import 'package:salesroot/features/support/data/academy_repository.dart';
+import 'package:salesroot/features/support/data/fake_page.dart';
 import 'package:salesroot/features/support/models/lesson.dart';
 
 class FakeAcademyRepository implements AcademyRepository {
@@ -41,20 +42,20 @@ class FakeAcademyRepository implements AcademyRepository {
                 .where((row) => row['Category'] == category.wire)
                 .toList()
               ..sort((a, b) => _order(a).compareTo(_order(b)));
-        return PageResult.fromJson(fakePage(rows, page: page), Lesson.fromJson);
+        return PageResult.fromJson(fakeApiPage(rows, page), Lesson.fromJson);
       });
 
   @override
-  Future<Lesson> lesson(int id) => _backend.run(
+  Future<Lesson> lesson(String id) => _backend.run(
     'Academy lesson $id',
-    () => Lesson.fromJson(_table.byId(id)),
+    () => Lesson.fromJson(_table.byId(_rowId(id))),
   );
 
   @override
-  Future<Lesson> complete(int id, {int? quizAnswer}) => _backend.run(
+  Future<Lesson> complete(String id, {int? quizAnswer}) => _backend.run(
     'Academy complete $id',
     () {
-      final row = _table.byId(id);
+      final row = _table.byId(_rowId(id));
       final quiz = jsonObject(row['Quiz'], (json) => json);
       if (quiz != null && quizAnswer != quiz['CorrectIndex']) {
         throw const ApiFailure(
@@ -75,7 +76,7 @@ class FakeAcademyRepository implements AcademyRepository {
         }
       }
       return Lesson.fromJson(
-        _table.update(id, {'Progress': 100, 'IsNew': false}),
+        _table.update(_rowId(id), {'Progress': 100, 'IsNew': false}),
       );
     },
   );
@@ -85,6 +86,8 @@ class FakeAcademyRepository implements AcademyRepository {
     'Academy career',
     () => CareerPath.fromJson(_career(withSteps: true)),
   );
+
+  static int _rowId(String id) => int.tryParse(id) ?? 0;
 
   static int _order(Map<String, dynamic> row) =>
       jsonInt(row['CareerStep']) ?? jsonInt(row['Id']) ?? 0;

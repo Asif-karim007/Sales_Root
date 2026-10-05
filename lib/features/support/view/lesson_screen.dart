@@ -20,7 +20,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class LessonScreen extends ConsumerStatefulWidget {
   const LessonScreen({super.key, required this.id});
 
-  final int id;
+  final String id;
 
   @override
   ConsumerState<LessonScreen> createState() => _LessonScreenState();

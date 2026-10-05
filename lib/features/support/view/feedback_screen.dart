@@ -80,13 +80,13 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
         );
   }
 
-  Future<void> _done(FeedbackReceipt receipt) async {
+  Future<void> _done() async {
     final l10n = context.l10n;
     final router = GoRouter.of(context);
     await showSupportDoneSheet(
       context,
       title: l10n.supportFeedbackDoneTitle,
-      message: l10n.supportFeedbackDoneBody(receipt.number),
+      message: l10n.supportFeedbackDoneBody,
     );
     if (router.canPop()) router.pop();
   }
@@ -96,9 +96,8 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
     final l10n = context.l10n;
     final submit = ref.watch(feedbackSubmitProvider);
     ref.listen(feedbackSubmitProvider, (_, next) {
-      final receipt = next.value;
-      if (receipt != null) {
-        _done(receipt);
+      if (next.value == true) {
+        _done();
       } else if (next.hasError) {
         showSrError(context, supportFailureText(context, next.error));
       }

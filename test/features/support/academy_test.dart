@@ -7,7 +7,7 @@ import 'package:salesroot/features/support/providers/academy_providers.dart';
 import 'support_test_container.dart';
 
 void main() {
-  const handlingObjections = 14;
+  const handlingObjections = '14';
 
   test('completing a career lesson updates every progress view', () async {
     final container = await supportContainer();
@@ -47,17 +47,19 @@ void main() {
   test('a wrong quiz answer does not complete the lesson', () async {
     final container = await supportContainer();
     addTearDown(container.dispose);
-    container.listen(lessonCompleteProvider(3), (_, _) {});
-    final lesson = await container.read(academyRepositoryProvider).lesson(3);
+    container.listen(lessonCompleteProvider('3'), (_, _) {});
+    final lesson = await container.read(academyRepositoryProvider).lesson('3');
     final wrong = (lesson.quiz?.correctIndex ?? 0) == 0 ? 1 : 0;
 
     await container
-        .read(lessonCompleteProvider(3).notifier)
+        .read(lessonCompleteProvider('3').notifier)
         .complete(quizAnswer: wrong);
 
-    final error = container.read(lessonCompleteProvider(3)).error;
+    final error = container.read(lessonCompleteProvider('3')).error;
     expect(error, isA<ApiFailure>().having((f) => f.isValidation, '400', true));
-    final unchanged = await container.read(academyRepositoryProvider).lesson(3);
+    final unchanged = await container
+        .read(academyRepositoryProvider)
+        .lesson('3');
     expect(unchanged.progress, 40);
   });
 
@@ -65,10 +67,10 @@ void main() {
     final container = await supportContainer();
     addTearDown(container.dispose);
     final repository = container.read(academyRepositoryProvider);
-    final coaching = await repository.lesson(16);
+    final coaching = await repository.lesson('16');
 
     await expectLater(
-      repository.complete(16, quizAnswer: coaching.quiz?.correctIndex),
+      repository.complete('16', quizAnswer: coaching.quiz?.correctIndex),
       throwsA(isA<ApiFailure>().having((f) => f.isConflict, '409', true)),
     );
   });

@@ -77,7 +77,7 @@ class Lesson {
     this.reasonCount = 0,
   });
 
-  final int id;
+  final String id;
   final LessonCategory category;
   final LocalizedName title;
   final LocalizedName summary;
@@ -104,7 +104,7 @@ class Lesson {
   factory Lesson.fromJson(Map<String, dynamic> json) {
     final actionLabel = localizedField(json, 'ActionLabel');
     return Lesson(
-      id: jsonInt(json['Id']) ?? 0,
+      id: jsonId(json['Id']) ?? '',
       category: LessonCategory.fromWire(json['Category'] as String?),
       title: localizedField(json, 'Title'),
       summary: localizedField(json, 'Summary'),
@@ -136,14 +136,14 @@ class CareerStep {
   });
 
   final int index;
-  final int lessonId;
+  final String lessonId;
   final LocalizedName title;
   final LocalizedName subtitle;
   final CareerStepStatus status;
 
   factory CareerStep.fromJson(Map<String, dynamic> json) => CareerStep(
     index: jsonInt(json['Index']) ?? 0,
-    lessonId: jsonInt(json['LessonId']) ?? 0,
+    lessonId: jsonId(json['LessonId']) ?? '',
     title: localizedField(json, 'Title'),
     subtitle: localizedField(json, 'Subtitle'),
     status: switch (json['Status']) {

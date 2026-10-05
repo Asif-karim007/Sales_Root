@@ -11,7 +11,7 @@ class HrPagedList<T> extends StatelessWidget {
     super.key,
     required this.paged,
     required this.itemBuilder,
-    required this.onLoadMore,
+    this.onLoadMore,
     required this.onRefresh,
     this.header = const [],
     this.gap = 10,
@@ -19,7 +19,9 @@ class HrPagedList<T> extends StatelessWidget {
 
   final Paged<T> paged;
   final Widget Function(BuildContext context, T item) itemBuilder;
-  final VoidCallback onLoadMore;
+
+  /// Null for a list the server sends whole.
+  final VoidCallback? onLoadMore;
   final Future<void> Function() onRefresh;
 
   /// Widgets above the items, scrolling with them.
@@ -29,11 +31,13 @@ class HrPagedList<T> extends StatelessWidget {
   static const double _loadAhead = 400;
 
   bool _onScroll(ScrollNotification notification) {
-    if (notification.metrics.extentAfter < _loadAhead &&
+    final loadMore = onLoadMore;
+    if (loadMore != null &&
+        notification.metrics.extentAfter < _loadAhead &&
         paged.hasMore &&
         !paged.isLoadingMore &&
         paged.loadMoreError == null) {
-      onLoadMore();
+      loadMore();
     }
     return false;
   }

@@ -1,0 +1,67 @@
+[
+ {
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "membershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+  "leaveTypeId": "01a10131-38cd-7dea-bb9b-ddbfbfca888e",
+  "key": "annual",
+  "nameBn": "বার্ষিক ছুটি",
+  "nameEn": "Annual leave",
+  "isPaid": true,
+  "year": 2026,
+  "entitlement": 17.0,
+  "taken": 0,
+  "pending": 0
+ },
+ {
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "membershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+  "leaveTypeId": "01a10131-38c6-76c6-a2f5-a2b8a0687914",
+  "key": "casual",
+  "nameBn": "নৈমিত্তিক ছুটি",
+  "nameEn": "Casual leave",
+  "isPaid": true,
+  "year": 2026,
+  "entitlement": 10.0,
+  "taken": 0,
+  "pending": 2.0
+ },
+ {
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "membershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+  "leaveTypeId": "01a10131-38cd-768b-ad6f-03f9a62e21a7",
+  "key": "maternity",
+  "nameBn": "মাতৃত্বকালীন ছুটি",
+  "nameEn": "Maternity leave",
+  "isPaid": true,
+  "year": 2026,
+  "entitlement": 112.0,
+  "taken": 0,
+  "pending": 0
+ },
+ {
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "membershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+  "leaveTypeId": "01a10131-38cd-75b9-afa8-2361848111c5",
+  "key": "sick",
+  "nameBn": "অসুস্থতার ছুটি",
+  "nameEn": "Sick leave",
+  "isPaid": true,
+  "year": 2026,
+  "entitlement": 14.0,
+  "taken": 0,
+  "pending": 0
+ },
+ {
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "membershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+  "leaveTypeId": "01a10131-38cd-7e3b-8ba8-8593de0ef0dc",
+  "key": "unpaid",
+  "nameBn": "বিনা বেতনে ছুটি",
+  "nameEn": "Unpaid leave",
+  "isPaid": false,
+  "year": 2026,
+  "entitlement": 0.0,
+  "taken": 0,
+  "pending": 0
+ }
+]

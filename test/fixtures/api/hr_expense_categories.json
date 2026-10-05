@@ -1,0 +1,79 @@
+[
+ {
+  "id": "01a10131-4df2-7c8f-9306-2f72b762c1f0",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "key": "travel",
+  "nameBn": "যাতায়াত",
+  "nameEn": "Travel / transport",
+  "receiptRequiredAbove": 500.0,
+  "dailyCap": null,
+  "isActive": true,
+  "sortOrder": 1
+ },
+ {
+  "id": "01a10131-4df7-7e78-aa94-d2d6858c05a2",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "key": "fuel",
+  "nameBn": "জ্বালানি",
+  "nameEn": "Fuel",
+  "receiptRequiredAbove": 300.0,
+  "dailyCap": null,
+  "isActive": true,
+  "sortOrder": 2
+ },
+ {
+  "id": "01a10131-4df7-73d9-a641-0da27389b0e2",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "key": "food",
+  "nameBn": "খাবার",
+  "nameEn": "Food / DA",
+  "receiptRequiredAbove": 500.0,
+  "dailyCap": null,
+  "isActive": true,
+  "sortOrder": 3
+ },
+ {
+  "id": "01a10131-4df8-7db6-85c3-a19a251a77fe",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "key": "mobile",
+  "nameBn": "মোবাইল বিল",
+  "nameEn": "Mobile / internet",
+  "receiptRequiredAbove": 0.0,
+  "dailyCap": null,
+  "isActive": true,
+  "sortOrder": 4
+ },
+ {
+  "id": "01a10131-4df8-75ae-9f97-1d6037ff4a04",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "key": "entertainment",
+  "nameBn": "আপ্যায়ন",
+  "nameEn": "Client entertainment",
+  "receiptRequiredAbove": 500.0,
+  "dailyCap": null,
+  "isActive": true,
+  "sortOrder": 5
+ },
+ {
+  "id": "01a10131-4df8-7bb7-ad0e-10d91051bec0",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "key": "lodging",
+  "nameBn": "থাকা",
+  "nameEn": "Lodging",
+  "receiptRequiredAbove": 0.0,
+  "dailyCap": null,
+  "isActive": true,
+  "sortOrder": 6
+ },
+ {
+  "id": "01a10131-4df8-7f6e-bd2e-272a51c59499",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "key": "other",
+  "nameBn": "অন্যান্য",
+  "nameEn": "Other",
+  "receiptRequiredAbove": 200.0,
+  "dailyCap": null,
+  "isActive": true,
+  "sortOrder": 9
+ }
+]

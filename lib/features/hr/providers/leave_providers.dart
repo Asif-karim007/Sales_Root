@@ -2,18 +2,12 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
 import 'package:salesroot/core/paging/paged.dart';
-import 'package:salesroot/features/hr/data/fake_leave_repository.dart';
-import 'package:salesroot/features/hr/data/leave_repository.dart';
+import 'package:salesroot/features/hr/data/hr_repositories.dart';
 import 'package:salesroot/features/hr/models/leave.dart';
 import 'package:salesroot/features/hr/providers/hr_paging.dart';
 
 part 'leave_providers.g.dart';
-
-@Riverpod(keepAlive: true)
-LeaveRepository leaveRepository(Ref ref) =>
-    FakeLeaveRepository(ref.watch(fakeBackendProvider));
 
 @riverpod
 Future<List<LeaveBalance>> leaveBalances(Ref ref) =>
@@ -23,19 +17,19 @@ Future<List<LeaveBalance>> leaveBalances(Ref ref) =>
 @riverpod
 class LeaveStatusFilterNotifier extends _$LeaveStatusFilterNotifier {
   @override
-  int? build() => null;
+  LeaveStatus? build() => null;
 
-  void set(int? statusId) => state = statusId;
+  void set(LeaveStatus? status) => state = status;
 }
 
 @riverpod
 class LeaveListNotifier extends _$LeaveListNotifier {
   LeaveQuery get _query =>
-      LeaveQuery(statusId: ref.read(leaveStatusFilterProvider));
+      LeaveQuery(status: ref.read(leaveStatusFilterProvider));
 
   @override
   Future<Paged<LeaveRequest>> build() async {
-    final query = LeaveQuery(statusId: ref.watch(leaveStatusFilterProvider));
+    final query = LeaveQuery(status: ref.watch(leaveStatusFilterProvider));
     return Paged.first(await ref.watch(leaveRepositoryProvider).list(query));
   }
 
@@ -56,9 +50,9 @@ class LeaveListNotifier extends _$LeaveListNotifier {
 @riverpod
 class LeaveWithdrawNotifier extends _$LeaveWithdrawNotifier {
   @override
-  AsyncValue<int?> build() => const AsyncData(null);
+  AsyncValue<String?> build() => const AsyncData(null);
 
-  Future<void> withdraw(int id) async {
+  Future<void> withdraw(String id) async {
     state = const AsyncLoading();
     final result = await AsyncValue.guard(() async {
       await ref.read(leaveRepositoryProvider).withdraw(id);
@@ -100,15 +94,18 @@ class LeaveFormState {
 
   /// Set after a submit attempt, so errors show only once they matter.
   final bool showErrors;
-  final AsyncValue<LeaveRequest?> submission;
 
-  Set<LeaveField> get errors =>
-      draft.errors(data.lookups.leaveTypes, data.balances);
+  /// The id of the request once it is sent.
+  final AsyncValue<String?> submission;
+
+  Set<LeaveField> get errors => draft.errors(data.lookups, data.balances);
+
+  double get noOfDays => draft.days(data.lookups.holidays);
 
   LeaveFormState copyWith({
     LeaveDraft? draft,
     bool? showErrors,
-    AsyncValue<LeaveRequest?>? submission,
+    AsyncValue<String?>? submission,
   }) => LeaveFormState(
     data: data,
     draft: draft ?? this.draft,
@@ -122,17 +119,17 @@ class LeaveFormNotifier extends _$LeaveFormNotifier {
   @override
   Future<LeaveFormState> build() async {
     final repository = ref.watch(leaveRepositoryProvider);
-    final (lookups, balances, recent) = await (
+    final [lookups, balances, recent] = await Future.wait<Object>([
       repository.lookups(),
       repository.balances(),
       repository.list(const LeaveQuery()),
-    ).wait;
-    final types = lookups.leaveTypes;
+    ]);
+    final types = (lookups as LeaveLookups).leaveTypes;
     return LeaveFormState(
       data: LeaveFormData(
         lookups: lookups,
-        balances: balances,
-        recent: recent.items.take(3).toList(),
+        balances: balances as List<LeaveBalance>,
+        recent: (recent as PageResult<LeaveRequest>).items.take(3).toList(),
       ),
       draft: LeaveDraft(leaveTypeId: types.isEmpty ? null : types.first.id),
     );

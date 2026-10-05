@@ -1,13 +1,41 @@
-import 'package:salesroot/core/utils/json_fields.dart';
+import 'package:flutter/foundation.dart';
+
 import 'package:salesroot/features/support/models/support_ticket.dart';
 
+/// What `help/feedback` stores: feedback, a moment survey or an enquiry.
+enum FeedbackKind {
+  feedback('feedback'),
+  survey('survey'),
+  enquiry('enquiry');
+
+  const FeedbackKind(this.wire);
+
+  final String wire;
+}
+
+/// A FeedbackCreate body; null fields are left out.
+Map<String, dynamic> feedbackBody(
+  FeedbackKind kind, {
+  int? rating,
+  String? body,
+  String? screen,
+  String? screenshotKey,
+}) => {
+  'kind': kind.wire,
+  'rating': ?rating,
+  'body': ?body,
+  'screen': ?screen,
+  'platform': defaultTargetPlatform.name,
+  'screenshotKey': ?screenshotKey,
+};
+
 enum FeedbackArea {
-  addingLeads('AddingLeads'),
-  scanning('Scanning'),
-  chat('Chat'),
-  reports('Reports'),
-  payment('Payment'),
-  nothing('Nothing');
+  addingLeads('adding_leads'),
+  scanning('scanning'),
+  chat('chat'),
+  reports('reports'),
+  payment('payment'),
+  nothing('nothing');
 
   const FeedbackArea(this.wire);
 
@@ -43,26 +71,20 @@ class FeedbackInput {
   final bool wantsReply;
   final SupportAttachment? screenshot;
 
-  Map<String, dynamic> toJson() => {
-    'Rating': rating?.score,
-    'Areas': [for (final area in areas) area.wire],
-    'Text': text.trim().isEmpty ? null : text.trim(),
-    'WantsReply': wantsReply,
-    'Screenshot': screenshot?.toJson(),
-  }..removeWhere((_, value) => value == null);
-}
+  /// The note, then the areas and the reply wish as tagged lines, since the
+  /// server keeps one text.
+  String get body => [
+    if (text.trim().isNotEmpty) text.trim(),
+    if (areas.isNotEmpty) 'areas: ${areas.map((a) => a.wire).join(', ')}',
+    if (wantsReply) 'reply: yes',
+  ].join('\n');
 
-class FeedbackReceipt {
-  const FeedbackReceipt({required this.id, required this.number});
-
-  final int id;
-  final String number;
-
-  factory FeedbackReceipt.fromJson(Map<String, dynamic> json) =>
-      FeedbackReceipt(
-        id: jsonInt(json['Id']) ?? 0,
-        number: json['Number'] as String? ?? '',
-      );
+  Map<String, dynamic> toJson({String? screenshotKey}) => feedbackBody(
+    FeedbackKind.feedback,
+    rating: rating?.score,
+    body: body.isEmpty ? null : body,
+    screenshotKey: screenshotKey,
+  );
 }
 
 enum EnquiryKind {
@@ -94,6 +116,8 @@ enum CallWindow {
   final String wire;
 }
 
+enum EnquiryField { kind, company, name, mobile, details }
+
 class EnquiryInput {
   const EnquiryInput({
     required this.kind,
@@ -111,25 +135,28 @@ class EnquiryInput {
   final String details;
   final CallWindow callWindow;
 
-  Map<String, dynamic> toJson() => {
-    'Kind': kind?.wire,
-    'Company': company.trim(),
-    'Name': name.trim(),
-    'Mobile': mobile.trim(),
-    'Details': details.trim(),
-    'CallWindow': callWindow.wire,
-  }..removeWhere((_, value) => value == null);
-}
+  static final _phone = RegExp(r'^\+?(88)?01\d{9}$');
 
-class EnquiryReceipt {
-  const EnquiryReceipt({required this.id, required this.reference});
+  Set<EnquiryField> get errors => {
+    if (kind == null) EnquiryField.kind,
+    if (company.trim().isEmpty) EnquiryField.company,
+    if (name.trim().isEmpty) EnquiryField.name,
+    if (!_phone.hasMatch(mobile.replaceAll(RegExp(r'[ \-]'), '')))
+      EnquiryField.mobile,
+    if (details.trim().isEmpty) EnquiryField.details,
+  };
 
-  final int id;
-  final String reference;
-
-  factory EnquiryReceipt.fromJson(Map<String, dynamic> json) => EnquiryReceipt(
-    id: jsonInt(json['Id']) ?? 0,
-    reference: json['Reference'] as String? ?? '',
+  /// The enquiry as one text for the support desk.
+  Map<String, dynamic> toJson() => feedbackBody(
+    FeedbackKind.enquiry,
+    body: [
+      'kind: ${kind?.wire}',
+      'company: ${company.trim()}',
+      'name: ${name.trim()}',
+      'mobile: ${mobile.trim()}',
+      'call: ${callWindow.wire}',
+      details.trim(),
+    ].join('\n'),
   );
 }
 

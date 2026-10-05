@@ -9,93 +9,6 @@ part of 'ticket_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(ticketRepository)
-final ticketRepositoryProvider = TicketRepositoryProvider._();
-
-final class TicketRepositoryProvider
-    extends
-        $FunctionalProvider<
-          TicketRepository,
-          TicketRepository,
-          TicketRepository
-        >
-    with $Provider<TicketRepository> {
-  TicketRepositoryProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'ticketRepositoryProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$ticketRepositoryHash();
-
-  @$internal
-  @override
-  $ProviderElement<TicketRepository> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  TicketRepository create(Ref ref) {
-    return ticketRepository(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(TicketRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<TicketRepository>(value),
-    );
-  }
-}
-
-String _$ticketRepositoryHash() => r'0cbfd6818be773ccabf2f0859846af908c6b141b';
-
-@ProviderFor(ticketProducts)
-final ticketProductsProvider = TicketProductsProvider._();
-
-final class TicketProductsProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<TicketProduct>>,
-          List<TicketProduct>,
-          FutureOr<List<TicketProduct>>
-        >
-    with
-        $FutureModifier<List<TicketProduct>>,
-        $FutureProvider<List<TicketProduct>> {
-  TicketProductsProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'ticketProductsProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$ticketProductsHash();
-
-  @$internal
-  @override
-  $FutureProviderElement<List<TicketProduct>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<TicketProduct>> create(Ref ref) {
-    return ticketProducts(ref);
-  }
-}
-
-String _$ticketProductsHash() => r'ee5d53736a9effbd5682adad7f1ff228b787f3af';
-
 @ProviderFor(ticket)
 final ticketProvider = TicketFamily._();
 
@@ -104,7 +17,7 @@ final class TicketProvider
     with $FutureModifier<Ticket>, $FutureProvider<Ticket> {
   TicketProvider._({
     required TicketFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'ticketProvider',
@@ -130,7 +43,7 @@ final class TicketProvider
 
   @override
   FutureOr<Ticket> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return ticket(ref, argument);
   }
 
@@ -145,10 +58,10 @@ final class TicketProvider
   }
 }
 
-String _$ticketHash() => r'9b08649c8fb95d5122fbd749240afa3be2fbfa46';
+String _$ticketHash() => r'7a1fe311b9dc2fa08337b259d7816619d810368d';
 
 final class TicketFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Ticket>, int> {
+    with $FunctionalFamilyOverride<FutureOr<Ticket>, String> {
   TicketFamily._()
     : super(
         retry: null,
@@ -158,7 +71,7 @@ final class TicketFamily extends $Family
         isAutoDispose: true,
       );
 
-  TicketProvider call(int id) => TicketProvider._(argument: id, from: this);
+  TicketProvider call(String id) => TicketProvider._(argument: id, from: this);
 
   @override
   String toString() => r'ticketProvider';
@@ -232,7 +145,7 @@ final class TicketActionsNotifierProvider
   /// that went through.
   TicketActionsNotifierProvider._({
     required TicketActionsNotifierFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'ticketActionsProvider',
@@ -275,7 +188,7 @@ final class TicketActionsNotifierProvider
 }
 
 String _$ticketActionsNotifierHash() =>
-    r'3cb8f253e35c1b875bdfb9c086dd7ad06c333e46';
+    r'af869e1d6a4de617ef9682781cf785428775bf98';
 
 /// Status changes and replies on one ticket; the state names the last one
 /// that went through.
@@ -287,7 +200,7 @@ final class TicketActionsNotifierFamily extends $Family
           AsyncValue<TicketAction?>,
           AsyncValue<TicketAction?>,
           AsyncValue<TicketAction?>,
-          int
+          String
         > {
   TicketActionsNotifierFamily._()
     : super(
@@ -301,7 +214,7 @@ final class TicketActionsNotifierFamily extends $Family
   /// Status changes and replies on one ticket; the state names the last one
   /// that went through.
 
-  TicketActionsNotifierProvider call(int id) =>
+  TicketActionsNotifierProvider call(String id) =>
       TicketActionsNotifierProvider._(argument: id, from: this);
 
   @override
@@ -313,10 +226,10 @@ final class TicketActionsNotifierFamily extends $Family
 
 abstract class _$TicketActionsNotifier
     extends $Notifier<AsyncValue<TicketAction?>> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  AsyncValue<TicketAction?> build(int id);
+  AsyncValue<TicketAction?> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

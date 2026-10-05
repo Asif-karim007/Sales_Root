@@ -73,15 +73,15 @@ void main() {
   test('a helpful vote is recorded', () async {
     final container = await supportContainer();
     addTearDown(container.dispose);
-    container.listen(articleVoteProvider(1), (_, _) {});
-    container.listen(helpArticleProvider(1), (_, _) {});
-    final before = await container.read(helpArticleProvider(1).future);
+    container.listen(articleVoteProvider('1'), (_, _) {});
+    container.listen(helpArticleProvider('1'), (_, _) {});
+    final before = await container.read(helpArticleProvider('1').future);
 
-    await container.read(articleVoteProvider(1).notifier).vote(helpful: true);
-    container.invalidate(helpArticleProvider(1));
-    final after = await container.read(helpArticleProvider(1).future);
+    await container.read(articleVoteProvider('1').notifier).vote(helpful: true);
+    container.invalidate(helpArticleProvider('1'));
+    final after = await container.read(helpArticleProvider('1').future);
 
-    expect(container.read(articleVoteProvider(1)).value, isTrue);
+    expect(container.read(articleVoteProvider('1')).value, isTrue);
     expect(after.helpfulCount, before.helpfulCount + 1);
   });
 }

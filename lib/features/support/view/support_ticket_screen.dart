@@ -17,12 +17,11 @@ import 'package:salesroot/features/support/view/widget/support_rows.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #111 a conversation with support. Replies from support arrive while the
-/// screen is open.
+/// #111 a conversation with support.
 class SupportTicketScreen extends ConsumerStatefulWidget {
   const SupportTicketScreen({super.key, required this.id});
 
-  final int id;
+  final String id;
 
   @override
   ConsumerState<SupportTicketScreen> createState() =>
@@ -94,7 +93,7 @@ class _SupportTicketScreenState extends ConsumerState<SupportTicketScreen> {
       }
       final before = previous?.value?.ticket.messages.length ?? 0;
       final after = next.value?.ticket.messages.length ?? 0;
-      if (after != before || next.value?.agentTyping == true) _toBottom();
+      if (after != before) _toBottom();
     });
     final loaded = thread.value;
     final agent = loaded?.ticket.agentName;
@@ -123,13 +122,8 @@ class _SupportTicketScreenState extends ConsumerState<SupportTicketScreen> {
           value: thread,
           loading: (_) => const SrSkeletonList(cards: true, count: 4),
           onRetry: () => ref.invalidate(provider),
-          data: (_, thread) => _Conversation(
-            thread: thread,
-            controller: _scroll,
-            canReply: canReply,
-            onResolve: () => ref.read(provider.notifier).resolve(),
-            onStillIssue: _replyFocus.requestFocus,
-          ),
+          data: (_, thread) =>
+              _Conversation(ticket: thread.ticket, controller: _scroll),
         ),
       ),
     );
@@ -137,29 +131,14 @@ class _SupportTicketScreenState extends ConsumerState<SupportTicketScreen> {
 }
 
 class _Conversation extends StatelessWidget {
-  const _Conversation({
-    required this.thread,
-    required this.controller,
-    required this.canReply,
-    required this.onResolve,
-    required this.onStillIssue,
-  });
+  const _Conversation({required this.ticket, required this.controller});
 
-  final TicketThread thread;
+  final SupportTicket ticket;
   final ScrollController controller;
-  final bool canReply;
-  final VoidCallback onResolve;
-  final VoidCallback onStillIssue;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final ticket = thread.ticket;
-    final askResolved =
-        canReply &&
-        !ticket.isResolved &&
-        ticket.hasAgentReply &&
-        !thread.agentTyping;
 
     return ListView(
       controller: controller,
@@ -170,32 +149,6 @@ class _Conversation extends StatelessWidget {
         for (final message in ticket.messages) ...[
           _MessageBubble(message: message),
           const SizedBox(height: 10),
-        ],
-        if (thread.agentTyping) _Typing(agent: ticket.agentName),
-        if (askResolved) ...[
-          const SizedBox(height: 4),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              SrButton(
-                label: l10n.supportTicketResolved,
-                icon: Icons.check_rounded,
-                variant: SrButtonVariant.secondary,
-                size: SrButtonSize.sm,
-                loading: thread.resolving,
-                onPressed: onResolve,
-              ),
-              SrButton(
-                label: l10n.supportTicketStillIssue,
-                icon: Icons.replay_rounded,
-                variant: SrButtonVariant.secondary,
-                size: SrButtonSize.sm,
-                onPressed: onStillIssue,
-              ),
-            ],
-          ),
         ],
         if (ticket.isResolved)
           SrNote(
@@ -223,6 +176,7 @@ class _TicketHeader extends StatelessWidget {
       TicketStatus.resolved => SrTone.neutral,
     };
     final status = l10n.ticketStatus(ticket.status);
+    final within = ticket.replyWithinHours;
 
     return SrCard(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -247,10 +201,8 @@ class _TicketHeader extends StatelessWidget {
                   [
                     l10n.ticketCategory(ticket.category),
                     status,
-                    if (!ticket.isResolved)
-                      l10n.supportTicketReplyWithin(
-                        fmt.number(ticket.replyWithinHours),
-                      ),
+                    if (!ticket.isResolved && within != null)
+                      l10n.supportTicketReplyWithin(fmt.number(within)),
                   ].join(' · '),
                   style: AppText.meta(c.ink2, size: 12),
                 ),
@@ -307,35 +259,6 @@ class _MessageBubble extends StatelessWidget {
                 ],
               ),
             ),
-    );
-  }
-}
-
-class _Typing extends StatelessWidget {
-  const _Typing({required this.agent});
-
-  final String? agent;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = SrColors.of(context);
-    final l10n = context.l10n;
-    final agent = this.agent;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          Icon(Icons.more_horiz_rounded, size: 20, color: c.accent),
-          const SizedBox(width: 8),
-          Text(
-            agent == null
-                ? l10n.supportTicketTypingTeam
-                : l10n.supportTicketTyping(agent),
-            style: AppText.meta(c.ink2),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -5,53 +5,39 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:salesroot/core/storage/prefs_provider.dart';
 import 'package:salesroot/features/support/models/support_forms.dart';
-import 'package:salesroot/features/support/providers/ticket_providers.dart';
+import 'package:salesroot/features/support/data/support_repositories.dart';
 
 part 'support_form_providers.g.dart';
 
+/// True once the feedback is sent.
 @riverpod
 class FeedbackSubmitNotifier extends _$FeedbackSubmitNotifier {
   @override
-  FutureOr<FeedbackReceipt?> build() => null;
+  FutureOr<bool> build() => false;
 
   Future<void> submit(FeedbackInput input) async {
     if (state.isLoading) return;
     state = const AsyncLoading();
-    final result = await AsyncValue.guard(
-      () => ref.read(supportRepositoryProvider).sendFeedback(input),
-    );
+    final result = await AsyncValue.guard(() async {
+      await ref.read(supportRepositoryProvider).sendFeedback(input);
+      return true;
+    });
     if (!ref.mounted) return;
     state = result;
   }
 }
 
+/// True once the enquiry is sent.
 @riverpod
 class EnquirySubmitNotifier extends _$EnquirySubmitNotifier {
   @override
-  FutureOr<EnquiryReceipt?> build() => null;
+  FutureOr<bool> build() => false;
 
   Future<void> submit(EnquiryInput input) async {
     if (state.isLoading) return;
     state = const AsyncLoading();
-    final result = await AsyncValue.guard(
-      () => ref.read(supportRepositoryProvider).sendEnquiry(input),
-    );
-    if (!ref.mounted) return;
-    state = result;
-  }
-}
-
-/// True once the data export has been requested.
-@riverpod
-class DataExportNotifier extends _$DataExportNotifier {
-  @override
-  FutureOr<bool> build() => false;
-
-  Future<void> request() async {
-    if (state.isLoading) return;
-    state = const AsyncLoading();
     final result = await AsyncValue.guard(() async {
-      await ref.read(supportRepositoryProvider).requestDataExport();
+      await ref.read(supportRepositoryProvider).sendEnquiry(input);
       return true;
     });
     if (!ref.mounted) return;

@@ -8,54 +8,6 @@ part of 'expense_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-
-@ProviderFor(expenseRepository)
-final expenseRepositoryProvider = ExpenseRepositoryProvider._();
-
-final class ExpenseRepositoryProvider
-    extends
-        $FunctionalProvider<
-          ExpenseRepository,
-          ExpenseRepository,
-          ExpenseRepository
-        >
-    with $Provider<ExpenseRepository> {
-  ExpenseRepositoryProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'expenseRepositoryProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$expenseRepositoryHash();
-
-  @$internal
-  @override
-  $ProviderElement<ExpenseRepository> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  ExpenseRepository create(Ref ref) {
-    return expenseRepository(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ExpenseRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ExpenseRepository>(value),
-    );
-  }
-}
-
-String _$expenseRepositoryHash() => r'e396f8b97e54aa56724f7e323f34d1e87c5180ec';
-
 /// The status chip on the claim list; null shows every claim.
 
 @ProviderFor(ExpenseStageFilterNotifier)
@@ -140,7 +92,7 @@ final class ExpenseListNotifierProvider
 }
 
 String _$expenseListNotifierHash() =>
-    r'788b7430a568935a5076a804ac86d8336abac26f';
+    r'5cff31a6aba9431b977214b5d45ea4a6d527becf';
 
 abstract class _$ExpenseListNotifier
     extends $AsyncNotifier<Paged<ExpenseClaim>> {
@@ -169,8 +121,7 @@ final expenseWithdrawProvider = ExpenseWithdrawNotifierProvider._();
 
 /// Withdrawing a pending claim from its detail sheet.
 final class ExpenseWithdrawNotifierProvider
-    extends
-        $NotifierProvider<ExpenseWithdrawNotifier, AsyncValue<ExpenseClaim?>> {
+    extends $NotifierProvider<ExpenseWithdrawNotifier, AsyncValue<String?>> {
   /// Withdrawing a pending claim from its detail sheet.
   ExpenseWithdrawNotifierProvider._()
     : super(
@@ -191,32 +142,31 @@ final class ExpenseWithdrawNotifierProvider
   ExpenseWithdrawNotifier create() => ExpenseWithdrawNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AsyncValue<ExpenseClaim?> value) {
+  Override overrideWithValue(AsyncValue<String?> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<AsyncValue<ExpenseClaim?>>(value),
+      providerOverride: $SyncValueProvider<AsyncValue<String?>>(value),
     );
   }
 }
 
 String _$expenseWithdrawNotifierHash() =>
-    r'a28930ed406261c43fce5c0bc5234dbcc45219ef';
+    r'e64a5b794954fb99ce4be3e427d1cf5eb68dabc4';
 
 /// Withdrawing a pending claim from its detail sheet.
 
 abstract class _$ExpenseWithdrawNotifier
-    extends $Notifier<AsyncValue<ExpenseClaim?>> {
-  AsyncValue<ExpenseClaim?> build();
+    extends $Notifier<AsyncValue<String?>> {
+  AsyncValue<String?> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref =
-        this.ref as $Ref<AsyncValue<ExpenseClaim?>, AsyncValue<ExpenseClaim?>>;
+    final ref = this.ref as $Ref<AsyncValue<String?>, AsyncValue<String?>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<ExpenseClaim?>, AsyncValue<ExpenseClaim?>>,
-              AsyncValue<ExpenseClaim?>,
+              AnyNotifier<AsyncValue<String?>, AsyncValue<String?>>,
+              AsyncValue<String?>,
               Object?,
               Object?
             >;
@@ -224,21 +174,21 @@ abstract class _$ExpenseWithdrawNotifier
   }
 }
 
-/// The claim form. With [visitId] the visit is linked and its locations
-/// prefill the route.
+/// The claim form. With [visitId] the visit is linked and the category
+/// starts on travel.
 
 @ProviderFor(ExpenseFormNotifier)
 final expenseFormProvider = ExpenseFormNotifierFamily._();
 
-/// The claim form. With [visitId] the visit is linked and its locations
-/// prefill the route.
+/// The claim form. With [visitId] the visit is linked and the category
+/// starts on travel.
 final class ExpenseFormNotifierProvider
     extends $AsyncNotifierProvider<ExpenseFormNotifier, ExpenseFormState> {
-  /// The claim form. With [visitId] the visit is linked and its locations
-  /// prefill the route.
+  /// The claim form. With [visitId] the visit is linked and the category
+  /// starts on travel.
   ExpenseFormNotifierProvider._({
     required ExpenseFormNotifierFamily super.from,
-    required int? super.argument,
+    required String? super.argument,
   }) : super(
          retry: null,
          name: r'expenseFormProvider',
@@ -273,10 +223,10 @@ final class ExpenseFormNotifierProvider
 }
 
 String _$expenseFormNotifierHash() =>
-    r'4a2735dfc39ef54a3c1f9355d7ac640a9239718b';
+    r'92da7ecc740471e5162042a0e54eabca71233f3b';
 
-/// The claim form. With [visitId] the visit is linked and its locations
-/// prefill the route.
+/// The claim form. With [visitId] the visit is linked and the category
+/// starts on travel.
 
 final class ExpenseFormNotifierFamily extends $Family
     with
@@ -285,7 +235,7 @@ final class ExpenseFormNotifierFamily extends $Family
           AsyncValue<ExpenseFormState>,
           ExpenseFormState,
           FutureOr<ExpenseFormState>,
-          int?
+          String?
         > {
   ExpenseFormNotifierFamily._()
     : super(
@@ -296,24 +246,24 @@ final class ExpenseFormNotifierFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// The claim form. With [visitId] the visit is linked and its locations
-  /// prefill the route.
+  /// The claim form. With [visitId] the visit is linked and the category
+  /// starts on travel.
 
-  ExpenseFormNotifierProvider call(int? visitId) =>
+  ExpenseFormNotifierProvider call(String? visitId) =>
       ExpenseFormNotifierProvider._(argument: visitId, from: this);
 
   @override
   String toString() => r'expenseFormProvider';
 }
 
-/// The claim form. With [visitId] the visit is linked and its locations
-/// prefill the route.
+/// The claim form. With [visitId] the visit is linked and the category
+/// starts on travel.
 
 abstract class _$ExpenseFormNotifier extends $AsyncNotifier<ExpenseFormState> {
-  late final _$args = ref.$arg as int?;
-  int? get visitId => _$args;
+  late final _$args = ref.$arg as String?;
+  String? get visitId => _$args;
 
-  FutureOr<ExpenseFormState> build(int? visitId);
+  FutureOr<ExpenseFormState> build(String? visitId);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

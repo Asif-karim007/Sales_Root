@@ -15,19 +15,19 @@ import 'package:salesroot/features/support/support_routes.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-import 'support_test_container.dart';
+import 'support_api_setup.dart';
 
 void main() {
   final locations = [
     Routes.feedback,
     Routes.help,
-    Routes.helpArticleFor(1),
+    Routes.helpArticleFor('1'),
     Routes.supportNew,
-    Routes.supportTicketFor(3),
+    Routes.supportTicketFor(ticketId),
     Routes.aiGuide,
     Routes.dataSafety,
     Routes.academy,
-    Routes.lessonFor(14),
+    Routes.lessonFor('14'),
     Routes.career,
     Routes.about,
     Routes.enquiry,
@@ -49,8 +49,10 @@ void main() {
       buildNumber: '1',
       buildSignature: '',
     );
-    final container = await supportContainer();
-    addTearDown(container.dispose);
+    final api = supportStub();
+    final container = await tester.runAsync(() => supportApiContainer(api));
+    if (container == null) return;
+    api.offline = offline;
     container
         .read(devSettingsProvider.notifier)
         .update((s) => s.copyWith(offline: offline));
@@ -115,15 +117,16 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
 
-    expect(find.textContaining('green + button'), findsOneWidget);
-    expect(find.text('Add a lead'), findsOneWidget);
+    expect(find.textContaining('নতুন লিড'), findsOneWidget);
+    expect(find.text('Open my leads'), findsOneWidget);
+    expect(find.text('Did this help?'), findsOneWidget);
     await unmount(tester);
   });
 
   for (final location in [
     Routes.help,
-    Routes.helpArticleFor(1),
-    Routes.supportTicketFor(3),
+    Routes.helpArticleFor('1'),
+    Routes.supportTicketFor(ticketId),
     Routes.academy,
     Routes.career,
   ]) {

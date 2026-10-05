@@ -10,9 +10,11 @@ enum AppDestination {
   scanCard('ScanCard'),
   newTask('NewTask'),
   newVisit('NewVisit'),
+  visits('Visits'),
   attendance('Attendance'),
   newQuotation('NewQuotation'),
   newCollection('NewCollection'),
+  collection('Collection'),
   outstanding('Outstanding'),
   inviteMember('InviteMember'),
   teamChat('TeamChat'),
@@ -23,7 +25,8 @@ enum AppDestination {
   dataSafety('DataSafety'),
   support('Support'),
   help('Help'),
-  academy('Academy');
+  academy('Academy'),
+  leave('Leave');
 
   const AppDestination(this.wire);
 
@@ -44,9 +47,11 @@ enum AppDestination {
     scanCard => Routes.scan,
     newTask => Routes.taskNew,
     newVisit => '${Routes.visits}?new=1',
+    visits => Routes.visits,
     attendance => Routes.attendance,
     newQuotation => Routes.quotationNew,
     newCollection => Routes.collectionNew,
+    collection => Routes.collection,
     outstanding => Routes.outstanding,
     inviteMember => Routes.teamInvite,
     teamChat => Routes.chats,
@@ -58,6 +63,7 @@ enum AppDestination {
     support => Routes.supportNew,
     help => Routes.help,
     academy => Routes.academy,
+    leave => Routes.leave,
   };
 
   /// [path] with [params] added to its query.

@@ -208,7 +208,7 @@ final class HelpArticleProvider
     with $FutureModifier<HelpArticle>, $FutureProvider<HelpArticle> {
   HelpArticleProvider._({
     required HelpArticleFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'helpArticleProvider',
@@ -235,7 +235,7 @@ final class HelpArticleProvider
 
   @override
   FutureOr<HelpArticle> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return helpArticle(ref, argument);
   }
 
@@ -250,10 +250,10 @@ final class HelpArticleProvider
   }
 }
 
-String _$helpArticleHash() => r'044f7180d19e041de84fe97a62ee9eca1af92b75';
+String _$helpArticleHash() => r'b8cf8df85774ef95943fed56a31da1ac20819dc1';
 
 final class HelpArticleFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<HelpArticle>, int> {
+    with $FunctionalFamilyOverride<FutureOr<HelpArticle>, String> {
   HelpArticleFamily._()
     : super(
         retry: null,
@@ -263,7 +263,7 @@ final class HelpArticleFamily extends $Family
         isAutoDispose: true,
       );
 
-  HelpArticleProvider call(int id) =>
+  HelpArticleProvider call(String id) =>
       HelpArticleProvider._(argument: id, from: this);
 
   @override
@@ -281,7 +281,7 @@ final class ArticleVoteNotifierProvider
   /// The reader's "did this help?" answer; null until they answer.
   ArticleVoteNotifierProvider._({
     required ArticleVoteNotifierFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'articleVoteProvider',
@@ -316,7 +316,7 @@ final class ArticleVoteNotifierProvider
 }
 
 String _$articleVoteNotifierHash() =>
-    r'0c8d372cc92e651c7e63f011dcafb196d7473c37';
+    r'7848845929f93bfea37c495c0e0f04550feab6d1';
 
 /// The reader's "did this help?" answer; null until they answer.
 
@@ -327,7 +327,7 @@ final class ArticleVoteNotifierFamily extends $Family
           AsyncValue<bool?>,
           bool?,
           FutureOr<bool?>,
-          int
+          String
         > {
   ArticleVoteNotifierFamily._()
     : super(
@@ -340,7 +340,7 @@ final class ArticleVoteNotifierFamily extends $Family
 
   /// The reader's "did this help?" answer; null until they answer.
 
-  ArticleVoteNotifierProvider call(int id) =>
+  ArticleVoteNotifierProvider call(String id) =>
       ArticleVoteNotifierProvider._(argument: id, from: this);
 
   @override
@@ -350,10 +350,10 @@ final class ArticleVoteNotifierFamily extends $Family
 /// The reader's "did this help?" answer; null until they answer.
 
 abstract class _$ArticleVoteNotifier extends $AsyncNotifier<bool?> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  FutureOr<bool?> build(int id);
+  FutureOr<bool?> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

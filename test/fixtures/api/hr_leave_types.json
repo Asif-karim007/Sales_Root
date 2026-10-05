@@ -1,0 +1,50 @@
+[
+ {
+  "id": "01a10131-38c6-76c6-a2f5-a2b8a0687914",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "key": "casual",
+  "nameBn": "নৈমিত্তিক ছুটি",
+  "nameEn": "Casual leave",
+  "daysPerYear": 10.0,
+  "isPaid": true,
+  "carryForwardMax": 0.0,
+  "docRequiredFromDays": null,
+  "sortOrder": 1,
+  "isActive": true,
+  "createdAt": "2026-10-03T09:56:05.44291Z",
+  "updatedAt": "2026-10-03T09:56:05.44291Z",
+  "deletedAt": null
+ },
+ {
+  "id": "01a10131-38cd-75b9-afa8-2361848111c5",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "key": "sick",
+  "nameBn": "অসুস্থতার ছুটি",
+  "nameEn": "Sick leave",
+  "daysPerYear": 14.0,
+  "isPaid": true,
+  "carryForwardMax": 0.0,
+  "docRequiredFromDays": 3.0,
+  "sortOrder": 2,
+  "isActive": true,
+  "createdAt": "2026-10-03T09:56:05.44291Z",
+  "updatedAt": "2026-10-03T09:56:05.44291Z",
+  "deletedAt": null
+ },
+ {
+  "id": "01a10131-38cd-7e3b-8ba8-8593de0ef0dc",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "key": "unpaid",
+  "nameBn": "বিনা বেতনে ছুটি",
+  "nameEn": "Unpaid leave",
+  "daysPerYear": 0.0,
+  "isPaid": false,
+  "carryForwardMax": 0.0,
+  "docRequiredFromDays": null,
+  "sortOrder": 9,
+  "isActive": true,
+  "createdAt": "2026-10-03T09:56:05.44291Z",
+  "updatedAt": "2026-10-03T09:56:05.44291Z",
+  "deletedAt": null
+ }
+]

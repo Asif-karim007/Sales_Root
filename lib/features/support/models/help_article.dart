@@ -38,7 +38,7 @@ class HelpArticle {
     this.helpfulCount = 0,
   });
 
-  final int id;
+  final String id;
   final HelpCategory category;
   final LocalizedName title;
   final LocalizedName summary;
@@ -59,7 +59,7 @@ class HelpArticle {
   factory HelpArticle.fromJson(Map<String, dynamic> json) {
     final tip = localizedField(json, 'Tip');
     return HelpArticle(
-      id: jsonInt(json['Id']) ?? 0,
+      id: jsonId(json['Id']) ?? '',
       category: HelpCategory.fromWire(json['Category'] as String?),
       title: localizedField(json, 'Title'),
       summary: localizedField(json, 'Summary'),

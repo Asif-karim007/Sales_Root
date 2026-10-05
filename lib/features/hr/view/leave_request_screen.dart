@@ -33,7 +33,7 @@ class LeaveRequestScreen extends ConsumerWidget {
 
     ref.listen(leaveFormProvider.select((s) => s.value?.submission), (_, next) {
       switch (next) {
-        case AsyncData(value: final LeaveRequest _):
+        case AsyncData(value: final String _):
           showSrSuccess(context, l10n.hrLeaveSubmitted);
           closeHrForm(context, Routes.leave);
         case AsyncError(:final error):
@@ -153,6 +153,7 @@ class _LeaveFormState extends ConsumerState<_LeaveForm> {
     final start = draft.start;
     final end = draft.end;
     final attachment = draft.attachmentPath;
+    final needsDocument = type?.docRequiredFromDays != null;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -199,7 +200,7 @@ class _LeaveFormState extends ConsumerState<_LeaveForm> {
           textCapitalization: TextCapitalization.sentences,
           onChanged: (text) => _form.edit((d) => d.copyWith(reason: text)),
         ),
-        if (!easy) ...[
+        if (!easy || needsDocument) ...[
           const SizedBox(height: 14),
           SrFieldLabel(l10n.hrLeaveAttachment, optional: true),
           const SizedBox(height: 8),
@@ -210,6 +211,12 @@ class _LeaveFormState extends ConsumerState<_LeaveForm> {
             onRemove: (_) =>
                 _form.edit((d) => d.copyWith(attachmentPath: () => null)),
           ),
+          if (type != null && errors.contains(LeaveField.document))
+            HrFieldError(
+              l10n.hrLeaveDocumentError(
+                fmt.days(type.docRequiredFromDays ?? 0),
+              ),
+            ),
         ],
         const SizedBox(height: 16),
         _SummaryNote(state: state, type: type),
@@ -305,8 +312,7 @@ class _HalfDaySwitch extends StatelessWidget {
   }
 }
 
-/// "2 days · approver Rafiqul Islam · your visits go to Rumpa", or what
-/// stops the request.
+/// "2 days · approver Rafiqul Islam", or what stops the request.
 class _SummaryNote extends StatelessWidget {
   const _SummaryNote({required this.state, required this.type});
 
@@ -317,8 +323,8 @@ class _SummaryNote extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final draft = state.draft;
     final lookups = state.data.lookups;
+    final days = state.noOfDays;
     final type = this.type;
 
     if (type != null && state.errors.contains(LeaveField.balance)) {
@@ -334,17 +340,15 @@ class _SummaryNote extends StatelessWidget {
         ),
       );
     }
-    if (draft.noOfDays <= 0) return const SizedBox.shrink();
+    if (days <= 0) return const SizedBox.shrink();
 
     final approver = lookups.approverName;
-    final cover = lookups.coverName;
     return SrNote(
       message: [
-        fmt.days(draft.noOfDays),
+        fmt.days(days),
         approver == null
             ? l10n.hrLeaveAutoApproved
-            : l10n.hrLeaveApprover(approver.of(fmt.isBangla)),
-        if (cover != null) l10n.hrLeaveCover(cover.of(fmt.isBangla)),
+            : l10n.hrLeaveApprover(approver),
       ].join(' · '),
     );
   }

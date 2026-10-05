@@ -1,6 +1,7 @@
 import 'package:salesroot/core/fake/fake_backend.dart';
 import 'package:salesroot/core/fake/fake_store.dart';
 import 'package:salesroot/core/paging/paged.dart';
+import 'package:salesroot/features/support/data/fake_page.dart';
 import 'package:salesroot/features/support/data/help_fixtures.dart';
 import 'package:salesroot/features/support/data/help_repository.dart';
 import 'package:salesroot/features/support/models/help_article.dart';
@@ -22,7 +23,7 @@ class FakeHelpRepository implements HelpRepository {
             .where((row) => matchesHelpTerm(row, query.term))
             .toList();
         return PageResult.fromJson(
-          fakePage(rows, page: page),
+          fakeApiPage(rows, page),
           HelpArticle.fromJson,
         );
       });
@@ -37,18 +38,22 @@ class FakeHelpRepository implements HelpRepository {
   );
 
   @override
-  Future<HelpArticle> article(int id) => _backend.run(
+  Future<HelpArticle> article(String id) => _backend.run(
     'Help article $id',
-    () => HelpArticle.fromJson(_table.byId(id)),
+    () => HelpArticle.fromJson(_table.byId(_rowId(id))),
   );
 
   @override
-  Future<void> rate(int id, {required bool helpful}) =>
+  Future<void> rate(String id, {required bool helpful}) =>
       _backend.run('Help rate $id', () {
-        final row = _table.byId(id);
+        final row = _table.byId(_rowId(id));
         if (!helpful) return;
-        _table.update(id, {'HelpfulCount': (row['HelpfulCount'] as int) + 1});
+        _table.update(_rowId(id), {
+          'HelpfulCount': (row['HelpfulCount'] as int) + 1,
+        });
       });
+
+  static int _rowId(String id) => int.tryParse(id) ?? 0;
 }
 
 /// The help articles: shared content, seeded even in an empty workspace.

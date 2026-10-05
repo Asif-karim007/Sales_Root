@@ -15,14 +15,7 @@
   "supportFeedbackWantReplyBody": "সাপোর্ট টিম যোগাযোগ করবে",
   "supportFeedbackScreenshot": "স্ক্রিনশট যোগ করুন",
   "supportFeedbackDoneTitle": "ধন্যবাদ!",
-  "supportFeedbackDoneBody": "আপনার মতামত টিকিট #{number} হিসেবে জমা হয়েছে। উত্তর চাইলে ১ কর্মদিবসে জানাব।",
-  "@supportFeedbackDoneBody": {
-    "placeholders": {
-      "number": {
-        "type": "String"
-      }
-    }
-  },
+  "supportFeedbackDoneBody": "আপনার মতামত SalesRoot টিমের কাছে পৌঁছেছে। উত্তর চাইলে ১ কর্মদিবসে জানাব।",
   "supportRatingAwful": "খুব খারাপ",
   "supportRatingPoor": "খারাপ",
   "supportRatingOkay": "মোটামুটি",
@@ -59,7 +52,6 @@
   "supportHelpPhone": "09611-000000",
   "supportHelpMyRequests": "আমার অনুরোধ",
   "supportHelpNoRequests": "আপনি এখনো কোনো অনুরোধ পাঠাননি।",
-  "supportHelpMoreRequests": "পুরোনো অনুরোধ দেখুন",
   "supportHelpNoResults": "কোনো লেখা মেলেনি",
   "supportHelpNoResultsBody": "অন্য শব্দে খুঁজুন, অথবা নিজের ভাষায় AI গাইডকে জিজ্ঞেস করুন।",
   "supportHelpResults": "{count}টি লেখা",
@@ -106,9 +98,11 @@
   "supportGoScanCard": "কার্ড স্ক্যান করুন",
   "supportGoNewTask": "কাজ তৈরি করুন",
   "supportGoNewVisit": "ভিজিট শুরু করুন",
+  "supportGoVisits": "ভিজিট খুলুন",
   "supportGoAttendance": "হাজিরা খুলুন",
   "supportGoNewQuotation": "কোটেশন বানান",
   "supportGoNewCollection": "কালেকশন লিখুন",
+  "supportGoCollection": "আদায় খুলুন",
   "supportGoOutstanding": "বকেয়া দেখুন",
   "supportGoInviteMember": "সদস্য আমন্ত্রণ",
   "supportGoTeamChat": "চ্যাট খুলুন",
@@ -120,6 +114,7 @@
   "supportGoSupport": "সাপোর্টকে জিজ্ঞেস করুন",
   "supportGoHelp": "সাহায্য খুঁজুন",
   "supportGoAcademy": "একাডেমি খুলুন",
+  "supportGoLeave": "ছুটি খুলুন",
   "supportFormTitle": "সাপোর্ট",
   "supportFormKind": "কী ধরনের সমস্যা?",
   "supportTicketCatQuestion": "প্রশ্ন",
@@ -201,22 +196,12 @@
       }
     }
   },
-  "supportTicketResolved": "সমাধান হয়েছে",
-  "supportTicketStillIssue": "এখনো সমস্যা",
   "supportTicketResolvedNote": "অনুরোধটির সমাধান হয়েছে। আবার হলে নিচে লিখুন, আমরা আবার খুলব।",
-  "supportTicketTyping": "{name} উত্তর লিখছেন…",
-  "@supportTicketTyping": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "supportTicketTypingTeam": "সাপোর্ট উত্তর লিখছে…",
   "supportTicketReplyHint": "উত্তর লিখুন",
   "supportTicketAttach": "স্ক্রিনশট যোগ করুন",
   "supportGuideTitle": "SalesRoot গাইড",
   "supportGuideSubtitle": "বাংলা বা English-এ বলুন",
+  "supportGuideRulesMode": "SalesRoot গাইডের দ্রুত উত্তর",
   "supportGuideGreeting": "আসসালামু আলাইকুম! আমি SalesRoot গাইড। অ্যাপে কোনো কাজ কীভাবে করবেন জিজ্ঞেস করুন, আমি ধাপগুলো দেখিয়ে দেব।",
   "supportGuideTry": "এভাবে জিজ্ঞেস করুন",
   "supportGuidePromptAddLead": "কীভাবে লিড যোগ করব?",
@@ -228,9 +213,11 @@
   "supportGuideConfirm": "হ্যাঁ, বানাও",
   "supportGuideDecline": "না",
   "supportGuideDeclined": "ঠিক আছে, বানাব না।",
-  "supportGuideReadArticle": "পুরো লেখা পড়ুন",
-  "supportGuideWatch": "ভিডিও দেখব",
   "supportGuideThinking": "খুঁজে দেখছি…",
+  "supportGuideRateAsk": "উত্তরটা কাজে লাগল?",
+  "supportGuideRateUp": "কাজে লেগেছে",
+  "supportGuideRateDown": "কাজে লাগেনি",
+  "supportGuideRated": "জানানোর জন্য ধন্যবাদ",
   "supportGuideInputHint": "প্রশ্ন লিখুন",
   "supportGuideSafety": "AI কিছু লেখা বা পাঠানোর আগে সবসময় নিশ্চিত হয়ে নেয়। আপনি যা বলেন শুধু তা-ই পড়ে।",
   "supportSafetyTitle": "তথ্যের নিরাপত্তা",
@@ -247,9 +234,6 @@
   "supportSafetyBackupsBody": "প্রতিদিন; ৩৫ দিন রাখা হয়; মুছে ফেলা রেকর্ড ৩০ দিন ফেরানো যায়",
   "supportSafetyDownload": "যেকোনো সময় ডাউনলোড",
   "supportSafetyDownloadBody": "CSV ও ফাইল হিসেবে সব তথ্য নিন",
-  "supportSafetyExport": "আমার ডেটা ডাউনলোড",
-  "supportSafetyExportRequested": "ডাউনলোডের অনুরোধ গেছে",
-  "supportSafetyExportStarted": "আপনার ডেটা গুছানো হচ্ছে। সাধারণত এক ঘণ্টার মধ্যে লিংকসহ নোটিফিকেশন পাবেন।",
   "supportSafetyPrivacy": "গোপনীয়তা নীতি",
   "supportAcademyTitle": "সেলস একাডেমি",
   "supportAcademyTip": "আজকের টিপ",
@@ -378,12 +362,5 @@
   "supportEnquiryTimeAfternoon": "বিকেল ২–৫টা",
   "supportEnquiryTimeEvening": "সন্ধ্যা ৫–৭টা",
   "supportEnquiryDoneTitle": "পেয়েছি!",
-  "supportEnquiryDoneBody": "Nexzen-এর একজন ১ কর্মদিবসে কল করবেন। রেফারেন্স #{reference}।",
-  "@supportEnquiryDoneBody": {
-    "placeholders": {
-      "reference": {
-        "type": "String"
-      }
-    }
-  }
+  "supportEnquiryDoneBody": "Nexzen-এর একজন ১ কর্মদিবসে কল করবেন।"
 }

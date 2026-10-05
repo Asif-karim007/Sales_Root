@@ -14,9 +14,11 @@ extension SupportLabels on AppLocalizations {
     AppDestination.scanCard => supportGoScanCard,
     AppDestination.newTask => supportGoNewTask,
     AppDestination.newVisit => supportGoNewVisit,
+    AppDestination.visits => supportGoVisits,
     AppDestination.attendance => supportGoAttendance,
     AppDestination.newQuotation => supportGoNewQuotation,
     AppDestination.newCollection => supportGoNewCollection,
+    AppDestination.collection => supportGoCollection,
     AppDestination.outstanding => supportGoOutstanding,
     AppDestination.inviteMember => supportGoInviteMember,
     AppDestination.teamChat => supportGoTeamChat,
@@ -28,6 +30,7 @@ extension SupportLabels on AppLocalizations {
     AppDestination.support => supportGoSupport,
     AppDestination.help => supportGoHelp,
     AppDestination.academy => supportGoAcademy,
+    AppDestination.leave => supportGoLeave,
   };
 
   String helpCategory(HelpCategory category) => switch (category) {

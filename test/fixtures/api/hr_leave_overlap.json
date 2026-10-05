@@ -1,0 +1,8 @@
+{
+ "code": "V-019",
+ "message": {
+  "bn": "এই দিনগুলোতে আগেই ছুটি আছে",
+  "en": "Leave already exists on these days"
+ },
+ "field": "fromDate"
+}

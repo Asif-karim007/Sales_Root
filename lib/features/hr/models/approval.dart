@@ -1,25 +1,29 @@
 import 'package:salesroot/core/utils/json_fields.dart';
-import 'package:salesroot/features/hr/models/expense.dart';
 import 'package:salesroot/features/hr/models/hr_json.dart';
-import 'package:salesroot/features/hr/models/leave.dart';
 
 enum ApprovalKind {
-  leave('Leave'),
-  expense('Expense'),
-  collection('Collection');
+  leave('leave'),
+  expense('expense'),
+  collection('collection'),
+  other('');
 
   const ApprovalKind(this.wire);
 
   final String wire;
 
-  static ApprovalKind fromWire(String? value) =>
-      values.firstWhere((k) => k.wire == value, orElse: () => leave);
+  static ApprovalKind fromWire(String? value) => switch (value) {
+    'leave' => leave,
+    'expense' => expense,
+    'collection' || 'payment' => collection,
+    _ => other,
+  };
 }
 
 enum ApprovalState {
-  pending('Pending'),
-  approved('Approved'),
-  rejected('Rejected');
+  pending('pending'),
+  approved('approved'),
+  rejected('rejected'),
+  cancelled('cancelled');
 
   const ApprovalState(this.wire);
 
@@ -31,129 +35,87 @@ enum ApprovalState {
 
 /// The approval chips: everything waiting, one kind, or already decided.
 enum ApprovalFilter {
-  pending('Pending'),
-  leave('Leave'),
-  expense('Expense'),
-  collection('Collection'),
-  done('Done');
+  pending('pending'),
+  leave('leave'),
+  expense('expense'),
+  collection('collection'),
+  done('done');
 
   const ApprovalFilter(this.wire);
 
   final String wire;
+
+  ApprovalKind? get kind => switch (this) {
+    leave => ApprovalKind.leave,
+    expense => ApprovalKind.expense,
+    collection => ApprovalKind.collection,
+    _ => null,
+  };
 }
 
-/// Cash a rep collected that has to be confirmed before it counts.
-class CollectionApproval {
-  const CollectionApproval({
-    required this.amount,
-    required this.method,
-    required this.companyName,
-    this.companyId,
-    this.hasSlip = false,
-    this.collectedAt,
-  });
-
-  final double amount;
-
-  /// `Cash`, `bKash`, `Cheque` or `Bank`.
-  final String method;
-  final int? companyId;
-  final String companyName;
-  final bool hasSlip;
-  final DateTime? collectedAt;
-
-  factory CollectionApproval.fromJson(Map<String, dynamic> json) =>
-      CollectionApproval(
-        amount: jsonDouble(json['Amount']) ?? 0,
-        method: json['Method'] as String? ?? '',
-        companyId: jsonInt(json['CompanyId']),
-        companyName: json['CompanyName'] as String? ?? '',
-        hasSlip: jsonBool(json['HasSlip']),
-        collectedAt: jsonDate(json['CollectedAt']),
-      );
-}
-
-/// One request in the approvals queue. Exactly one of [leave], [expense]
-/// and [collection] is set, by [kind].
+/// One request in the approvals queue.
 class ApprovalItem {
   const ApprovalItem({
     required this.kind,
     required this.id,
-    required this.employeeId,
     required this.employeeName,
     required this.state,
+    this.summary = '',
+    this.amount,
+    this.reason,
     this.submittedAt,
     this.decisionNote,
-    this.decidedByName,
-    this.leave,
-    this.expense,
-    this.collection,
+    this.approverName,
   });
 
   final ApprovalKind kind;
-
-  /// The id of the leave request, claim or collection.
-  final int id;
-  final int employeeId;
-  final LocalizedName employeeName;
+  final String id;
+  final String employeeName;
   final ApprovalState state;
+
+  /// What is asked for, as the server words it.
+  final String summary;
+  final double? amount;
+  final String? reason;
   final DateTime? submittedAt;
   final String? decisionNote;
-  final LocalizedName? decidedByName;
-  final LeaveRequest? leave;
-  final ExpenseClaim? expense;
-  final CollectionApproval? collection;
+  final String? approverName;
 
-  String get key => '${kind.wire}-$id';
+  bool get isPending => state == ApprovalState.pending;
 
-  factory ApprovalItem.fromJson(Map<String, dynamic> json) => ApprovalItem(
-    kind: ApprovalKind.fromWire(json['Kind'] as String?),
-    id: jsonInt(json['Id']) ?? 0,
-    employeeId: jsonInt(json['EmployeeId']) ?? 0,
-    employeeName: jsonLocalizedOrEmpty(
-      json['EmployeeName'],
-      json['EmployeeNameBn'],
-    ),
-    state: ApprovalState.fromWire(json['State'] as String?),
-    submittedAt: jsonDate(json['SubmittedAt']),
-    decisionNote: json['DecisionNote'] as String?,
-    decidedByName: jsonLocalized(
-      json['DecidedByName'],
-      json['DecidedByNameBn'],
-    ),
-    leave: jsonObject(json['Leave'], LeaveRequest.fromJson),
-    expense: jsonObject(json['Expense'], ExpenseClaim.fromJson),
-    collection: jsonObject(json['Collection'], CollectionApproval.fromJson),
-  );
+  factory ApprovalItem.fromJson(Map<String, dynamic> json) {
+    final name = json['requestedByName'] as String? ?? '';
+    final summary = json['summary'] as String? ?? '';
+    return ApprovalItem(
+      kind: ApprovalKind.fromWire(json['type'] as String?),
+      id: jsonId(json['id']) ?? '',
+      employeeName: name,
+      state: ApprovalState.fromWire(json['status'] as String?),
+      summary: name.isNotEmpty && summary.startsWith('$name: ')
+          ? summary.substring(name.length + 2)
+          : summary,
+      amount: jsonDouble(json['amount']),
+      reason: json['reason'] as String?,
+      submittedAt: jsonDate(json['createdAt']),
+      decisionNote: json['decisionNote'] as String?,
+      approverName: json['approverName'] as String?,
+    );
+  }
 }
 
 /// An approve or reject. A rejection needs a [reason].
 class ApprovalDecision {
   const ApprovalDecision({
-    required this.kind,
     required this.id,
     required this.approve,
     this.reason,
   });
 
-  final ApprovalKind kind;
-  final int id;
+  final String id;
   final bool approve;
   final String? reason;
 
-  Map<String, dynamic> toJson() => {
-    'Kind': kind.wire,
-    'Id': id,
-    'Decision': approve ? 'Approve' : 'Reject',
-    'Reason': trimmedOrNull(reason),
-  }..removeWhere((_, value) => value == null);
-}
+  String get action => approve ? 'approve' : 'reject';
 
-class ApprovalQuery {
-  const ApprovalQuery({this.page = 1, this.filter = ApprovalFilter.pending});
-
-  final int page;
-  final ApprovalFilter filter;
-
-  ApprovalQuery next(int page) => ApprovalQuery(page: page, filter: filter);
+  Map<String, dynamic> toJson() => {'note': ?trimmedOrNull(reason)};
 }

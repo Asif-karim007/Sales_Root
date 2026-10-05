@@ -27,14 +27,15 @@ class LeaveBalanceGrid extends StatelessWidget {
       spacing: 8,
       tiles: [
         for (final balance in balances)
-          SrKpiTile(
-            label: balance.leaveType.of(fmt.isBangla),
-            value:
-                '${n(balance.remainingAfterPending)}/${n(balance.entitlement)}',
-            delta: balance.pending > 0
-                ? context.l10n.hrLeavePendingDays(fmt.days(balance.pending))
-                : null,
-          ),
+          if (balance.isPaid)
+            SrKpiTile(
+              label: balance.leaveType.of(fmt.isBangla),
+              value:
+                  '${n(balance.remainingAfterPending)}/${n(balance.entitlement)}',
+              delta: balance.pending > 0
+                  ? context.l10n.hrLeavePendingDays(fmt.days(balance.pending))
+                  : null,
+            ),
       ],
     );
   }
@@ -55,8 +56,8 @@ class LeaveRequestRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final approver = request.approverName;
-    final status = l10n.leaveStatus(request.statusId);
+    final decidedBy = request.decidedByName;
+    final status = l10n.leaveStatus(request.status);
 
     return SrListRow(
       leading: SrAvatar(
@@ -69,8 +70,8 @@ class LeaveRequestRow extends StatelessWidget {
           '${request.leaveType.of(fmt.isBangla)} · ${leaveRange(fmt, request)}',
       subtitle: [
         fmt.days(request.noOfDays),
-        if (!request.isPending && approver != null)
-          '$status · ${approver.of(fmt.isBangla).split(' ').first}',
+        if (!request.isPending && decidedBy != null)
+          '$status · ${decidedBy.split(' ').first}',
       ].join(' · '),
       trailing: SrTag(status, tone: request.tone),
       divider: divider,
@@ -117,7 +118,7 @@ class LeaveDetailSheet extends ConsumerWidget {
 
     ref.listen(leaveWithdrawProvider, (_, next) {
       switch (next) {
-        case AsyncData(value: final int _):
+        case AsyncData(value: final String _):
           showSrSuccess(context, l10n.hrLeaveWithdrawn);
           Navigator.of(context).pop();
         case AsyncError(:final error):
@@ -129,7 +130,7 @@ class LeaveDetailSheet extends ConsumerWidget {
     return SrSheet(
       title: request.leaveType.of(fmt.isBangla),
       subtitle: leaveRange(fmt, request),
-      trailing: SrTag(l10n.leaveStatus(request.statusId), tone: request.tone),
+      trailing: SrTag(l10n.leaveStatus(request.status), tone: request.tone),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -154,27 +155,20 @@ class LeaveDetailSheet extends ConsumerWidget {
   List<Widget> _lines(BuildContext context) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final approver = request.approverName;
-    final cover = request.coverName;
+    final decidedBy = request.decidedByName;
     final applied = request.appliedAt;
     final reason = request.reason;
     final remarks = request.remarks;
-    final attachment = request.attachment?.fileName;
     return [
       HrLine(label: l10n.hrLeaveDetailDays, value: fmt.days(request.noOfDays)),
       if (applied != null)
         HrLine(label: l10n.hrLeaveDetailApplied, value: fmt.date(applied)),
       if (reason != null) HrLine(label: l10n.hrLeaveReason, value: reason),
-      if (approver != null)
-        HrLine(
-          label: l10n.hrLeaveDetailApprover,
-          value: approver.of(fmt.isBangla),
-        ),
-      if (cover != null)
-        HrLine(label: l10n.hrLeaveDetailCover, value: cover.of(fmt.isBangla)),
+      if (decidedBy != null)
+        HrLine(label: l10n.hrLeaveDetailApprover, value: decidedBy),
       if (remarks != null) HrLine(label: l10n.hrApproverNote, value: remarks),
-      if (attachment != null)
-        HrLine(label: l10n.hrLeaveAttachment, value: attachment),
+      if (request.hasDocument)
+        HrLine(label: l10n.hrLeaveAttachment, value: l10n.hrAttached),
     ];
   }
 }

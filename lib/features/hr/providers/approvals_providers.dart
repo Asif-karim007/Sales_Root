@@ -1,22 +1,14 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
 import 'package:salesroot/core/paging/paged.dart';
-import 'package:salesroot/features/hr/data/approvals_repository.dart';
-import 'package:salesroot/features/hr/data/fake_approvals_repository.dart';
+import 'package:salesroot/features/hr/data/hr_repositories.dart';
 import 'package:salesroot/features/hr/models/approval.dart';
 import 'package:salesroot/features/hr/providers/expense_providers.dart';
-import 'package:salesroot/features/hr/providers/hr_paging.dart';
 import 'package:salesroot/features/hr/providers/leave_providers.dart';
-import 'package:salesroot/features/hr/providers/payroll_providers.dart';
 
 part 'approvals_providers.g.dart';
 
-@Riverpod(keepAlive: true)
-ApprovalsRepository approvalsRepository(Ref ref) =>
-    FakeApprovalsRepository(ref.watch(fakeBackendProvider));
-
-const String approvalCountsFacet = 'Counts';
+const String approvalCountsFacet = 'counts';
 
 @riverpod
 class ApprovalFilterNotifier extends _$ApprovalFilterNotifier {
@@ -27,28 +19,10 @@ class ApprovalFilterNotifier extends _$ApprovalFilterNotifier {
 }
 
 @riverpod
-class ApprovalListNotifier extends _$ApprovalListNotifier {
-  ApprovalQuery get _query =>
-      ApprovalQuery(filter: ref.read(approvalFilterProvider));
-
-  @override
-  Future<Paged<ApprovalItem>> build() async {
-    final query = ApprovalQuery(filter: ref.watch(approvalFilterProvider));
-    final page = await ref.watch(approvalsRepositoryProvider).list(query);
-    return Paged.first(page, facetKeys: const [approvalCountsFacet]);
-  }
-
-  Future<void> loadMore() async {
-    final current = state.value;
-    if (current == null || !current.hasMore || current.isLoadingMore) return;
-    state = AsyncData(current.loadingMore());
-    final next = await loadPageAfter(
-      current,
-      (page) => ref.read(approvalsRepositoryProvider).list(_query.next(page)),
-    );
-    if (!ref.mounted) return;
-    state = AsyncData(next);
-  }
+Future<Paged<ApprovalItem>> approvalList(Ref ref) async {
+  final filter = ref.watch(approvalFilterProvider);
+  final page = await ref.watch(approvalsRepositoryProvider).list(filter);
+  return Paged.first(page, facetKeys: const [approvalCountsFacet]);
 }
 
 /// The result of a decision, for the snackbar.
@@ -58,7 +32,7 @@ class ApprovalOutcome {
   final bool approved;
   final int count;
 
-  /// The request as it now stands, for a single decision.
+  /// The request as it now stands, when the server sent it back.
   final ApprovalItem? item;
 }
 
@@ -88,7 +62,6 @@ class ApprovalActionsNotifier extends _$ApprovalActionsNotifier {
       ..invalidate(approvalListProvider)
       ..invalidate(leaveListProvider)
       ..invalidate(leaveBalancesProvider)
-      ..invalidate(expenseListProvider)
-      ..invalidate(payslipProvider);
+      ..invalidate(expenseListProvider);
   }
 }

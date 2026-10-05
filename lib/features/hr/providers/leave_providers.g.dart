@@ -9,48 +9,6 @@ part of 'leave_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(leaveRepository)
-final leaveRepositoryProvider = LeaveRepositoryProvider._();
-
-final class LeaveRepositoryProvider
-    extends
-        $FunctionalProvider<LeaveRepository, LeaveRepository, LeaveRepository>
-    with $Provider<LeaveRepository> {
-  LeaveRepositoryProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'leaveRepositoryProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$leaveRepositoryHash();
-
-  @$internal
-  @override
-  $ProviderElement<LeaveRepository> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  LeaveRepository create(Ref ref) {
-    return leaveRepository(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(LeaveRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<LeaveRepository>(value),
-    );
-  }
-}
-
-String _$leaveRepositoryHash() => r'fe92142a5e0d0c4a44ff855eddf12311eee95255';
-
 @ProviderFor(leaveBalances)
 final leaveBalancesProvider = LeaveBalancesProvider._();
 
@@ -99,7 +57,7 @@ final leaveStatusFilterProvider = LeaveStatusFilterNotifierProvider._();
 
 /// The status chip on the leave list; null shows every request.
 final class LeaveStatusFilterNotifierProvider
-    extends $NotifierProvider<LeaveStatusFilterNotifier, int?> {
+    extends $NotifierProvider<LeaveStatusFilterNotifier, LeaveStatus?> {
   /// The status chip on the leave list; null shows every request.
   LeaveStatusFilterNotifierProvider._()
     : super(
@@ -120,30 +78,30 @@ final class LeaveStatusFilterNotifierProvider
   LeaveStatusFilterNotifier create() => LeaveStatusFilterNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(int? value) {
+  Override overrideWithValue(LeaveStatus? value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<int?>(value),
+      providerOverride: $SyncValueProvider<LeaveStatus?>(value),
     );
   }
 }
 
 String _$leaveStatusFilterNotifierHash() =>
-    r'ddcd99ceb0eb15e4123ba9b7e94984a6b3bcd3b1';
+    r'6ff5efa63165c9155bc2722fa503479a216beb8b';
 
 /// The status chip on the leave list; null shows every request.
 
-abstract class _$LeaveStatusFilterNotifier extends $Notifier<int?> {
-  int? build();
+abstract class _$LeaveStatusFilterNotifier extends $Notifier<LeaveStatus?> {
+  LeaveStatus? build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<int?, int?>;
+    final ref = this.ref as $Ref<LeaveStatus?, LeaveStatus?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<int?, int?>,
-              int?,
+              AnyNotifier<LeaveStatus?, LeaveStatus?>,
+              LeaveStatus?,
               Object?,
               Object?
             >;
@@ -175,7 +133,7 @@ final class LeaveListNotifierProvider
   LeaveListNotifier create() => LeaveListNotifier();
 }
 
-String _$leaveListNotifierHash() => r'd026b910a7fa208f9d993f40b6e458e3dbcf7c04';
+String _$leaveListNotifierHash() => r'b98d955c964acac83ed577b0ad701c03c0b74d75';
 
 abstract class _$LeaveListNotifier extends $AsyncNotifier<Paged<LeaveRequest>> {
   FutureOr<Paged<LeaveRequest>> build();
@@ -203,7 +161,7 @@ final leaveWithdrawProvider = LeaveWithdrawNotifierProvider._();
 
 /// Withdrawing a pending request from its detail sheet.
 final class LeaveWithdrawNotifierProvider
-    extends $NotifierProvider<LeaveWithdrawNotifier, AsyncValue<int?>> {
+    extends $NotifierProvider<LeaveWithdrawNotifier, AsyncValue<String?>> {
   /// Withdrawing a pending request from its detail sheet.
   LeaveWithdrawNotifierProvider._()
     : super(
@@ -224,30 +182,30 @@ final class LeaveWithdrawNotifierProvider
   LeaveWithdrawNotifier create() => LeaveWithdrawNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AsyncValue<int?> value) {
+  Override overrideWithValue(AsyncValue<String?> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<AsyncValue<int?>>(value),
+      providerOverride: $SyncValueProvider<AsyncValue<String?>>(value),
     );
   }
 }
 
 String _$leaveWithdrawNotifierHash() =>
-    r'c15e1306963692a86c7887700dfcc0fba06a222a';
+    r'39682d755ee8db13a94dc3ddfed3c210f9d3fd51';
 
 /// Withdrawing a pending request from its detail sheet.
 
-abstract class _$LeaveWithdrawNotifier extends $Notifier<AsyncValue<int?>> {
-  AsyncValue<int?> build();
+abstract class _$LeaveWithdrawNotifier extends $Notifier<AsyncValue<String?>> {
+  AsyncValue<String?> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<int?>, AsyncValue<int?>>;
+    final ref = this.ref as $Ref<AsyncValue<String?>, AsyncValue<String?>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<int?>, AsyncValue<int?>>,
-              AsyncValue<int?>,
+              AnyNotifier<AsyncValue<String?>, AsyncValue<String?>>,
+              AsyncValue<String?>,
               Object?,
               Object?
             >;
@@ -279,7 +237,7 @@ final class LeaveFormNotifierProvider
   LeaveFormNotifier create() => LeaveFormNotifier();
 }
 
-String _$leaveFormNotifierHash() => r'c8f7bfbd5093e24ce17a53a073ca6b7d71a02e04';
+String _$leaveFormNotifierHash() => r'28b0a0f50fc0c8d032a3da5a32935c2c02198255';
 
 abstract class _$LeaveFormNotifier extends $AsyncNotifier<LeaveFormState> {
   FutureOr<LeaveFormState> build();
