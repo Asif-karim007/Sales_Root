@@ -27,8 +27,10 @@ final salesBranch = StatefulShellBranch(
   ],
 );
 
-int? _intQuery(GoRouterState state, String key) =>
-    int.tryParse(state.uri.queryParameters[key] ?? '');
+String? _query(GoRouterState state, String key) {
+  final value = state.uri.queryParameters[key] ?? '';
+  return value.isEmpty ? null : value;
+}
 
 final List<RouteBase> salesRoutes = [
   GoRoute(
@@ -45,9 +47,8 @@ final List<RouteBase> salesRoutes = [
     path: Routes.quotationNew,
     redirect: requireAccess(AppModule.quotation, ModuleRight.add),
     builder: (context, state) => QuotationWizardScreen(
-      leadId: _intQuery(state, 'leadId'),
-      fromId: _intQuery(state, 'from'),
-      revise: state.uri.queryParameters['mode'] == 'revise',
+      leadId: _query(state, 'leadId'),
+      editId: _query(state, 'edit'),
     ),
   ),
   GoRoute(
@@ -79,9 +80,8 @@ final List<RouteBase> salesRoutes = [
     path: Routes.collectionNew,
     redirect: requireAccess(AppModule.collection, ModuleRight.add),
     builder: (context, state) => CollectionEntryScreen(
-      customerId: _intQuery(state, 'customerId'),
-      invoiceId: _intQuery(state, 'invoiceId'),
-      orderId: _intQuery(state, 'orderId'),
+      customerId: _query(state, 'customerId'),
+      invoiceId: _query(state, 'invoiceId'),
     ),
   ),
   GoRoute(

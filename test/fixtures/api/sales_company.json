@@ -1,0 +1,77 @@
+{
+ "company": {
+  "id": "01a10101-8657-7f15-8630-b08119f1ae61",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "name": "Rahim Traders",
+  "type": "retail",
+  "phone": "+8801811000010",
+  "email": null,
+  "website": null,
+  "address": null,
+  "area": "Mirpur 10",
+  "district": "Dhaka",
+  "lat": 23.8069,
+  "lng": 90.3687,
+  "ownerMembershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+  "creditLimit": 200000.0,
+  "creditDays": 15,
+  "tags": [],
+  "custom": "{\"route\": \"Mirpur-A\", \"shopSize\": \"M\", \"outletType\": \"retail\"}",
+  "isCustomer": true,
+  "notes": null,
+  "createdBy": null,
+  "createdAt": "2026-10-03T09:03:59.542506Z",
+  "updatedAt": "2026-10-03T09:03:59.542506Z",
+  "deletedAt": null,
+  "version": 15,
+  "ownerName": "Rafi Ahmed",
+  "contactCount": 2,
+  "openLeads": 1,
+  "outstanding": 68000.0,
+  "overdue": 68000.0,
+  "maxAgeDays": 44,
+  "lastActivityAt": "2026-10-02T09:03:59.542506Z"
+ },
+ "people": [
+  {
+   "id": "01a10101-865e-7196-8bd5-2cf8d667f937",
+   "name": "Mr Rahim",
+   "phone": "+8801811000010",
+   "email": null,
+   "designation": "Owner",
+   "roleInCompany": "decision_maker",
+   "doNotMessage": false
+  },
+  {
+   "id": "01a10101-8668-7881-a6eb-dbdd67e520c3",
+   "name": "Sumaiya Akter",
+   "phone": "+8801911000020",
+   "email": null,
+   "designation": "Manager",
+   "roleInCompany": "payer",
+   "doNotMessage": false
+  }
+ ],
+ "leads": [
+  {
+   "id": "01a10101-866a-7007-90bc-2326bcdb9d50",
+   "title": "50 cartons soap · November",
+   "status": "open",
+   "amount": 206400.0,
+   "nextFollowUp": "2026-10-03T11:03:59.542506Z",
+   "stageNameEn": "Sample given",
+   "stageNameBn": "নমুনা দেওয়া"
+  }
+ ],
+ "dues": [
+  {
+   "id": "01a10101-86c3-7953-a890-76ae4af30571",
+   "label": "INV-OLD-0031",
+   "amount": 68000.0,
+   "paidAmt": 0.0,
+   "dueDate": "2026-08-22T00:00:00",
+   "status": "due",
+   "ageDays": 44
+  }
+ ]
+}

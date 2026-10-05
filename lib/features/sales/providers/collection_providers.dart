@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/features/sales/data/sales_repositories.dart';
 import 'package:salesroot/features/sales/models/collection.dart';
+import 'package:salesroot/features/sales/models/instalment.dart';
 import 'package:salesroot/features/sales/models/outstanding.dart';
 import 'package:salesroot/features/sales/providers/paging.dart';
 import 'package:salesroot/features/sales/providers/sales_refresh.dart';
@@ -12,20 +13,6 @@ part 'collection_providers.g.dart';
 @riverpod
 Future<CollectionSummary> collectionSummary(Ref ref) =>
     ref.watch(collectionRepositoryProvider).summary();
-
-@riverpod
-class DueList extends _$DueList {
-  @override
-  Future<Paged<DueRow>> build() async =>
-      Paged.first(await ref.watch(collectionRepositoryProvider).dues(1));
-
-  Future<void> loadMore() => loadNextPage(
-    current: state.value,
-    fetch: (page) => ref.read(collectionRepositoryProvider).dues(page),
-    mounted: () => ref.mounted,
-    emit: (next) => state = AsyncData(next),
-  );
-}
 
 @riverpod
 class CollectionList extends _$CollectionList {
@@ -42,12 +29,8 @@ class CollectionList extends _$CollectionList {
 }
 
 @riverpod
-Future<Collection> collection(Ref ref, int id) =>
+Future<Collection> collection(Ref ref, String id) =>
     ref.watch(collectionRepositoryProvider).get(id);
-
-@riverpod
-Future<CustomerDues> customerDues(Ref ref, int companyId) =>
-    ref.watch(collectionRepositoryProvider).customerDues(companyId);
 
 @riverpod
 Future<OutstandingSummary> outstandingSummary(Ref ref) =>
@@ -61,27 +44,48 @@ class OutstandingFilterNotifier extends _$OutstandingFilterNotifier {
   void set(OutstandingFilter filter) => state = filter;
 }
 
-/// Customers with unpaid bills under [filter], 20 at a time.
+/// Customers with dues under [filter], most overdue first, 20 at a time.
 @riverpod
 class OutstandingList extends _$OutstandingList {
   @override
-  Future<Paged<CustomerOutstanding>> build(
-    OutstandingFilter filter, {
-    String search = '',
-  }) async => Paged.first(
-    await ref
-        .watch(collectionRepositoryProvider)
-        .outstanding(filter, search: search),
-  );
+  Future<Paged<CustomerOutstanding>> build(OutstandingFilter filter) async =>
+      Paged.first(
+        await ref
+            .watch(collectionRepositoryProvider)
+            .outstanding(OutstandingQuery(filter: filter)),
+      );
 
   Future<void> loadMore() => loadNextPage(
     current: state.value,
     fetch: (page) => ref
         .read(collectionRepositoryProvider)
-        .outstanding(filter, search: search, page: page),
+        .outstanding(OutstandingQuery(filter: filter, page: page)),
     mounted: () => ref.mounted,
     emit: (next) => state = AsyncData(next),
   );
+}
+
+/// Changes the cheque's status or cancels one receipt.
+@riverpod
+class ReceiptActions extends _$ReceiptActions {
+  @override
+  AsyncValue<Collection?> build(String id) => const AsyncData(null);
+
+  Future<void> setChequeStatus(ChequeStatus status) => _run(
+    () => ref.read(collectionRepositoryProvider).setChequeStatus(id, status),
+  );
+
+  Future<void> cancel(String reason) =>
+      _run(() => ref.read(collectionRepositoryProvider).cancel(id, reason));
+
+  Future<void> _run(Future<Collection> Function() action) async {
+    if (state.isLoading) return;
+    state = const AsyncLoading();
+    final result = await AsyncValue.guard(action);
+    if (!ref.mounted) return;
+    state = result;
+    if (result.hasValue) refreshSales(ref);
+  }
 }
 
 class CollectionDraft {
@@ -91,61 +95,51 @@ class CollectionDraft {
     this.amount = 0,
     this.method = PaymentMethod.cash,
     this.reference = '',
-    this.senderNumber = '',
-    this.bankName = '',
-    this.chequeNumber = '',
     this.chequeDate,
     this.note = '',
-    this.photoPath,
     this.selected,
     this.submission,
   });
 
-  /// The customer and their open instalments; null until one is picked.
+  /// The customer and their open receivables; null until one is picked.
   final CustomerDues? dues;
-  final int amount;
+  final double amount;
   final PaymentMethod method;
   final DateTime collectedAt;
+
+  /// The TrxID, cheque number or bank reference.
   final String reference;
-  final String senderNumber;
-  final String bankName;
-  final String chequeNumber;
   final DateTime? chequeDate;
   final String note;
-  final String? photoPath;
 
-  /// Keys of the instalments the user chose to apply to; null applies to all.
+  /// Ids of the receivables the user chose to apply to; null applies to all.
   final Set<String>? selected;
   final AsyncValue<Collection>? submission;
 
   bool get isSaving => submission?.isLoading ?? false;
 
-  List<DueItem> get targets {
-    final items = dues?.items ?? const <DueItem>[];
-    final keys = selected;
-    if (keys == null) return items;
-    return items.where((i) => keys.contains(i.key)).toList();
+  List<Instalment> get targets {
+    final items = dues?.items ?? const <Instalment>[];
+    final ids = selected;
+    if (ids == null) return items;
+    return items.where((i) => ids.contains(i.id)).toList();
   }
 
   List<Allocation> get allocations => allocateOldestFirst(targets, amount);
 
-  int get allocated => allocations.fold(0, (sum, a) => sum + a.amount);
+  double get allocated => allocations.fold(0, (sum, a) => sum + a.amount);
 
-  /// What does not fit the chosen instalments.
-  int get unallocated => amount - allocated;
+  /// What does not fit the chosen receivables; kept as an advance.
+  double get unallocated => amount - allocated;
 
   CollectionDraft copyWith({
     CustomerDues? dues,
-    int? amount,
+    double? amount,
     PaymentMethod? method,
     DateTime? collectedAt,
     String? reference,
-    String? senderNumber,
-    String? bankName,
-    String? chequeNumber,
     DateTime? chequeDate,
     String? note,
-    String? Function()? photoPath,
     Set<String>? Function()? selected,
     AsyncValue<Collection>? Function()? submission,
   }) => CollectionDraft(
@@ -154,27 +148,19 @@ class CollectionDraft {
     method: method ?? this.method,
     collectedAt: collectedAt ?? this.collectedAt,
     reference: reference ?? this.reference,
-    senderNumber: senderNumber ?? this.senderNumber,
-    bankName: bankName ?? this.bankName,
-    chequeNumber: chequeNumber ?? this.chequeNumber,
     chequeDate: chequeDate ?? this.chequeDate,
     note: note ?? this.note,
-    photoPath: photoPath != null ? photoPath() : this.photoPath,
     selected: selected != null ? selected() : this.selected,
     submission: submission != null ? submission() : this.submission,
   );
 }
 
-/// The record-a-collection form. Opened for a customer, a bill or an order,
-/// it starts on the oldest instalment due there.
+/// The record-a-collection form. Opened for a customer or a bill, it starts
+/// on the oldest receivable due there.
 @riverpod
 class CollectionEntry extends _$CollectionEntry {
   @override
-  Future<CollectionDraft> build({
-    int? customerId,
-    int? invoiceId,
-    int? orderId,
-  }) async {
+  Future<CollectionDraft> build({String? customerId, String? invoiceId}) async {
     final draft = CollectionDraft(collectedAt: DateTime.now());
     final companyId = customerId ?? await _companyOf();
     if (companyId == null) return draft;
@@ -184,30 +170,23 @@ class CollectionEntry extends _$CollectionEntry {
     return _focus(draft.copyWith(dues: dues), dues);
   }
 
-  /// The customer of the bill or order the form was opened for.
-  Future<int?> _companyOf() async {
-    final orders = ref.read(orderRepositoryProvider);
+  /// The customer of the bill the form was opened for.
+  Future<String?> _companyOf() async {
     final invoice = invoiceId;
-    if (invoice != null) return (await orders.invoice(invoice)).companyId;
-    final order = orderId;
-    if (order != null) return (await orders.get(order)).companyId;
-    return null;
+    if (invoice == null) return null;
+    return (await ref.read(orderRepositoryProvider).invoice(invoice)).companyId;
   }
 
   CollectionDraft _focus(CollectionDraft draft, CustomerDues dues) {
     final focus = dues.items
-        .where(
-          (i) =>
-              (invoiceId != null && i.invoiceId == invoiceId) ||
-              (orderId != null && i.orderId == orderId),
-        )
+        .where((i) => invoiceId != null && i.invoiceId == invoiceId)
         .toList();
     final first = focus.isEmpty
         ? (dues.items.isEmpty ? null : dues.items.first)
         : focus.first;
     return draft.copyWith(
       amount: first?.due ?? 0,
-      selected: () => focus.isEmpty ? null : {for (final i in focus) i.key},
+      selected: () => focus.isEmpty ? null : {for (final i in focus) i.id},
     );
   }
 
@@ -217,7 +196,7 @@ class CollectionEntry extends _$CollectionEntry {
     state = AsyncData(change(draft));
   }
 
-  Future<void> pickCustomer(int companyId) async {
+  Future<void> pickCustomer(String companyId) async {
     final draft = state.value;
     if (draft == null) return;
     state = const AsyncLoading();
@@ -237,7 +216,7 @@ class CollectionEntry extends _$CollectionEntry {
     );
   }
 
-  void setAmount(int amount) => _edit((d) => d.copyWith(amount: amount));
+  void setAmount(double amount) => _edit((d) => d.copyWith(amount: amount));
 
   void setMethod(PaymentMethod method) =>
       _edit((d) => d.copyWith(method: method));
@@ -247,24 +226,13 @@ class CollectionEntry extends _$CollectionEntry {
 
   void setReference(String value) => _edit((d) => d.copyWith(reference: value));
 
-  void setSenderNumber(String value) =>
-      _edit((d) => d.copyWith(senderNumber: value));
-
-  void setBankName(String value) => _edit((d) => d.copyWith(bankName: value));
-
-  void setChequeNumber(String value) =>
-      _edit((d) => d.copyWith(chequeNumber: value));
-
   void setChequeDate(DateTime value) =>
       _edit((d) => d.copyWith(chequeDate: value));
 
   void setNote(String value) => _edit((d) => d.copyWith(note: value));
 
-  void setPhoto(String? path) =>
-      _edit((d) => d.copyWith(photoPath: () => path));
-
-  void setTargets(Set<String>? keys) =>
-      _edit((d) => d.copyWith(selected: () => keys));
+  void setTargets(Set<String>? ids) =>
+      _edit((d) => d.copyWith(selected: () => ids));
 
   Future<void> save() async {
     final draft = state.value;
@@ -282,16 +250,10 @@ class CollectionEntry extends _$CollectionEntry {
               collectedAt: draft.collectedAt,
               allocations: draft.allocations,
               reference: method == PaymentMethod.cash ? null : draft.reference,
-              senderNumber: method.isMobile ? draft.senderNumber : null,
-              bankName: method.needsBank ? draft.bankName : null,
-              chequeNumber: method == PaymentMethod.cheque
-                  ? draft.chequeNumber
-                  : null,
               chequeDate: method == PaymentMethod.cheque
                   ? draft.chequeDate
                   : null,
               note: draft.note,
-              photoPath: draft.photoPath,
             ),
           ),
     );

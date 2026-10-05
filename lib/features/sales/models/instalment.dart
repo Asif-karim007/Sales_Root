@@ -1,106 +1,39 @@
+import 'package:salesroot/core/format/app_date_utils.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/sales/models/sales_math.dart';
 
-enum InstalmentKind {
-  advance('Advance'),
-  onDelivery('OnDelivery'),
-  afterInstallation('AfterInstallation'),
-  onBill('OnBill');
-
-  const InstalmentKind(this.wire);
-
-  final String wire;
-
-  static InstalmentKind fromWire(String? value) => values.firstWhere(
-    (k) => k.wire == value,
-    orElse: () => InstalmentKind.onBill,
-  );
-}
-
-/// How the total is split into instalments; the last share takes the rest so
-/// the schedule always adds up to the total.
-enum PaymentTerms {
-  fullAdvance('FullAdvance', [(InstalmentKind.advance, 10000)]),
-  advance50('Advance50', [
-    (InstalmentKind.advance, 5000),
-    (InstalmentKind.onDelivery, 5000),
-  ]),
-  advance50Split('Advance50Split', [
-    (InstalmentKind.advance, 5000),
-    (InstalmentKind.onDelivery, 3750),
-    (InstalmentKind.afterInstallation, 1250),
-  ]),
-  advance30('Advance30', [
-    (InstalmentKind.advance, 3000),
-    (InstalmentKind.onDelivery, 5000),
-    (InstalmentKind.afterInstallation, 2000),
-  ]),
-  onDelivery('OnDelivery', [(InstalmentKind.onDelivery, 10000)]),
-  credit30('Credit30', [(InstalmentKind.onBill, 10000)]);
-
-  const PaymentTerms(this.wire, this.shares);
-
-  final String wire;
-  final List<(InstalmentKind, int)> shares;
-
-  static PaymentTerms fromWire(String? value) => values.firstWhere(
-    (t) => t.wire == value,
-    orElse: () => PaymentTerms.advance50,
-  );
-
-  /// The instalments for [total], dated from [start]: advance at once, the
-  /// delivery share after [deliveryDays], installation 15 days later and
-  /// credit 30 days later.
-  List<Instalment> schedule(int total, DateTime start, int deliveryDays) {
-    final rows = <Instalment>[];
-    var left = total;
-    for (var i = 0; i < shares.length; i++) {
-      final (kind, bps) = shares[i];
-      final amount = i == shares.length - 1 ? left : applyBps(total, bps);
-      left -= amount;
-      rows.add(
-        Instalment(
-          seq: i + 1,
-          kind: kind,
-          dueDate: start.add(Duration(days: _offset(kind, deliveryDays))),
-          amount: amount,
-        ),
-      );
-    }
-    return rows;
-  }
-
-  static int _offset(InstalmentKind kind, int deliveryDays) => switch (kind) {
-    InstalmentKind.advance => 0,
-    InstalmentKind.onDelivery => deliveryDays,
-    InstalmentKind.afterInstallation => deliveryDays + 15,
-    InstalmentKind.onBill => 30,
-  };
-}
-
 enum InstalmentState { paid, partial, upcoming, dueToday, overdue }
 
+/// One receivable: a bill's instalment, or an opening balance carried in.
 class Instalment {
   const Instalment({
-    required this.seq,
-    required this.kind,
+    required this.id,
+    required this.label,
     required this.dueDate,
     required this.amount,
+    this.seq,
     this.paid = 0,
     this.daysOverdue,
+    this.invoiceId,
   });
 
-  final int seq;
-  final InstalmentKind kind;
-  final DateTime dueDate;
-  final int amount;
-  final int paid;
+  final String id;
 
-  /// Days past the due date by the server's clock: 0 on the day, negative
-  /// before it.
+  /// The server's name for it: `1st instalment`, `1/2 instalment`, or the
+  /// old bill number for an opening balance.
+  final String label;
+
+  /// The instalment number; null for a receivable not split from a bill.
+  final int? seq;
+  final DateTime dueDate;
+  final double amount;
+  final double paid;
+  final String? invoiceId;
+
+  /// Days past the due date: 0 on the day, negative before it.
   final int? daysOverdue;
 
-  int get due => amount - paid;
+  double get due => amount - paid;
 
   InstalmentState get state {
     if (due <= 0) return InstalmentState.paid;
@@ -110,28 +43,60 @@ class Instalment {
     return paid > 0 ? InstalmentState.partial : InstalmentState.upcoming;
   }
 
-  Instalment copyWith({DateTime? dueDate, int? amount}) => Instalment(
-    seq: seq,
-    kind: kind,
-    dueDate: dueDate ?? this.dueDate,
-    amount: amount ?? this.amount,
-    paid: paid,
-    daysOverdue: daysOverdue,
-  );
+  /// A row of `receivables` or of `GET companies/{id}/dues`. The due date is
+  /// a calendar date, so how late it is counts from [today].
+  factory Instalment.fromJson(Map<String, dynamic> json, {DateTime? today}) {
+    final dueDate = jsonDate(json['dueDate']) ?? DateTime(2000);
+    final day = today;
+    return Instalment(
+      id: jsonId(json['id']) ?? '',
+      label: json['label'] as String? ?? '',
+      seq: jsonInt(json['instalmentNo']),
+      dueDate: dueDate,
+      amount: jsonDouble(json['amount']) ?? 0,
+      paid: jsonDouble(json['paidAmt']) ?? 0,
+      invoiceId: jsonId(json['invoiceId']),
+      daysOverdue: day == null
+          ? null
+          : AppDateUtils.dateOnly(
+              day,
+            ).difference(AppDateUtils.dateOnly(dueDate)).inDays,
+    );
+  }
+}
 
-  factory Instalment.fromJson(Map<String, dynamic> json) => Instalment(
-    seq: jsonInt(json['Seq']) ?? 1,
-    kind: InstalmentKind.fromWire(json['Kind'] as String?),
-    dueDate: jsonDate(json['DueDate']) ?? DateTime(2000),
-    amount: jsonInt(json['Amount']) ?? 0,
-    paid: jsonInt(json['Paid']) ?? 0,
-    daysOverdue: jsonInt(json['DaysOverdue']),
+/// `POST invoices/{id}/instalments`: the bill's balance split into [count]
+/// equal parts, [intervalDays] apart from [firstDueDate].
+class InstalmentPlan {
+  const InstalmentPlan({
+    required this.count,
+    required this.intervalDays,
+    required this.firstDueDate,
+  });
+
+  final int count;
+  final int intervalDays;
+  final DateTime firstDueDate;
+
+  /// The parts as the server makes them: equal, the last taking the
+  /// rounding.
+  List<double> split(double total) {
+    final part = (total / count * 100).floorToDouble() / 100;
+    return [
+      for (var i = 0; i < count; i++)
+        i == count - 1 ? roundMoney(total - part * (count - 1)) : part,
+    ];
+  }
+
+  DateTime dueOf(int index) => DateTime(
+    firstDueDate.year,
+    firstDueDate.month,
+    firstDueDate.day + intervalDays * index,
   );
 
   Map<String, dynamic> toJson() => {
-    'Seq': seq,
-    'Kind': kind.wire,
-    'DueDate': jsonUtc(dueDate),
-    'Amount': amount,
+    'count': count,
+    'intervalDays': intervalDays,
+    'firstDueDate': AppDateUtils.toApiDateOnly(firstDueDate),
   };
 }

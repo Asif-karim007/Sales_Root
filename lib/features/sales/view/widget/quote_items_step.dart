@@ -13,14 +13,13 @@ import 'package:salesroot/features/sales/providers/product_providers.dart';
 import 'package:salesroot/features/sales/providers/quotation_wizard.dart';
 import 'package:salesroot/features/sales/view/sales_labels.dart';
 import 'package:salesroot/features/sales/view/widget/customer_picker.dart';
-import 'package:salesroot/features/sales/view/widget/paged_footer.dart';
 import 'package:salesroot/features/sales/view/widget/search_box.dart';
 import 'package:salesroot/features/sales/view/widget/voice_search_button.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #52: the customer and price list, then products with quantities. The
-/// search takes typing or voice.
+/// #52: the customer, then products with quantities. The search takes typing
+/// or voice.
 class QuoteItemsStep extends ConsumerStatefulWidget {
   const QuoteItemsStep({super.key, required this.draft, required this.wizard});
 
@@ -58,61 +57,51 @@ class _QuoteItemsStepState extends ConsumerState<QuoteItemsStep> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final draft = widget.draft;
-    final provider = productListProvider(_term, null);
+    final provider = productListProvider(_term);
     final results = ref.watch(provider);
     final customer = draft.customer;
-    return LoadMoreListener(
-      paged: results.value,
-      onLoadMore: () => ref.read(provider.notifier).loadMore(),
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          SrMetrics.gutter,
-          14,
-          SrMetrics.gutter,
-          32,
-        ),
-        children: [
-          customer == null
-              ? _PickCustomerCard(onTap: _pickCustomer)
-              : _CustomerCard(customer: customer, onTap: _pickCustomer),
-          const SizedBox(height: 10),
-          _PriceListRow(
-            value: draft.priceList,
-            onChanged: widget.wizard.setPriceList,
-          ),
-          if (draft.lines.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            SrSectionHeader(
-              title: l10n.salesInThisQuotation(
-                context.fmt.number(draft.itemCount),
-              ),
-            ),
-            const SizedBox(height: 8),
-            SrRowGroup(
-              dividerIndent: 66,
-              rows: [
-                for (final line in draft.lines)
-                  _LineRow(line: line, wizard: widget.wizard),
-              ],
-            ),
-          ],
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        SrMetrics.gutter,
+        14,
+        SrMetrics.gutter,
+        32,
+      ),
+      children: [
+        customer == null
+            ? _PickCustomerCard(onTap: _pickCustomer)
+            : _CustomerCard(customer: customer, onTap: _pickCustomer),
+        if (draft.lines.isNotEmpty) ...[
           const SizedBox(height: 16),
-          SearchBox(
-            hint: l10n.salesSearchOrSay,
-            controller: _search,
-            onSearch: (term) => setState(() => _term = term),
-            suffix: VoiceSearchButton(onText: _spoken),
+          SrSectionHeader(
+            title: l10n.salesInThisQuotation(
+              context.fmt.number(draft.itemCount),
+            ),
           ),
-          const SizedBox(height: 10),
-          _Results(
-            value: results,
-            draft: draft,
-            onAdd: widget.wizard.addProduct,
-            onRetry: () => ref.invalidate(provider),
-            onLoadMore: () => ref.read(provider.notifier).loadMore(),
+          const SizedBox(height: 8),
+          SrRowGroup(
+            dividerIndent: 66,
+            rows: [
+              for (final line in draft.lines)
+                _LineRow(line: line, wizard: widget.wizard),
+            ],
           ),
         ],
-      ),
+        const SizedBox(height: 16),
+        SearchBox(
+          hint: l10n.salesSearchOrSay,
+          controller: _search,
+          onSearch: (term) => setState(() => _term = term),
+          suffix: VoiceSearchButton(onText: _spoken),
+        ),
+        const SizedBox(height: 10),
+        _Results(
+          value: results,
+          draft: draft,
+          onAdd: widget.wizard.addProduct,
+          onRetry: () => ref.invalidate(provider),
+        ),
+      ],
     );
   }
 }
@@ -151,46 +140,22 @@ class _CustomerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final fmt = context.fmt;
+    final phone = customer.contactPhone;
+    final details = [
+      ?customer.contactName,
+      if (phone != null) fmt.phone(phone),
+      ?customer.area,
+    ];
     return SrCard(
       padding: EdgeInsets.zero,
       child: SrListRow(
         leading: SrAvatar(name: customer.name),
         title: customer.name,
-        subtitle:
-            '${customer.contactName} · ${l10n.salesPriceListOf(l10n.priceList(customer.priceList))}',
+        subtitle: details.isEmpty ? null : details.join(' · '),
         trailing: SrTag(l10n.salesCustomer, tone: SrTone.ok),
         onTap: onTap,
       ),
-    );
-  }
-}
-
-class _PriceListRow extends StatelessWidget {
-  const _PriceListRow({required this.value, required this.onChanged});
-
-  final PriceList value;
-  final ValueChanged<PriceList> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = SrColors.of(context);
-    final l10n = context.l10n;
-    return Row(
-      children: [
-        Expanded(child: Text(l10n.salesPriceList, style: AppText.meta(c.ink2))),
-        SizedBox(
-          width: 190,
-          child: SrSegmented(
-            compact: true,
-            segments: [
-              SrSegment(l10n.priceList(PriceList.list)),
-              SrSegment(l10n.priceList(PriceList.dealer)),
-            ],
-            index: value.index,
-            onChanged: (i) => onChanged(PriceList.values[i]),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -211,7 +176,7 @@ class _LineRow extends StatelessWidget {
       subtitle: '${fmt.money(line.unitPrice)} / ${l10n.unit(line.unit)}',
       trailing: QtyStepper(
         qty: line.qty,
-        onChanged: (qty) => wizard.setQty(line.productId, qty),
+        onChanged: (qty) => wizard.setQty(line.key, qty),
       ),
     );
   }
@@ -223,14 +188,12 @@ class _Results extends StatelessWidget {
     required this.draft,
     required this.onAdd,
     required this.onRetry,
-    required this.onLoadMore,
   });
 
   final AsyncValue<Paged<Product>> value;
   final QuotationDraft draft;
   final ValueChanged<Product> onAdd;
   final VoidCallback onRetry;
-  final VoidCallback onLoadMore;
 
   @override
   Widget build(BuildContext context) {
@@ -241,33 +204,29 @@ class _Results extends StatelessWidget {
         icon: Icons.search_off_rounded,
         title: l10n.salesProductsEmpty,
       ),
-      AsyncValue(:final value?) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (value.items.any((p) => draft.qtyOf(p.id) == 0))
-            SrRowGroup(
-              dividerIndent: 66,
-              rows: [
-                for (final product in value.items)
-                  if (draft.qtyOf(product.id) == 0)
-                    SrListRow(
-                      leading: SrAvatar(name: product.name, square: true),
-                      title: product.nameIn(bangla: fmt.isBangla),
-                      subtitle:
-                          '${fmt.money(product.priceIn(draft.priceList))} / ${l10n.unit(product.unit)}',
-                      trailing: SrIconButton(
-                        icon: Icons.add_rounded,
-                        compact: true,
-                        tooltip: l10n.commonAdd,
+      AsyncValue(:final value?) =>
+        value.items.any((p) => draft.qtyOf(p.id) == 0)
+            ? SrRowGroup(
+                dividerIndent: 66,
+                rows: [
+                  for (final product in value.items)
+                    if (draft.qtyOf(product.id) == 0)
+                      SrListRow(
+                        leading: SrAvatar(name: product.name, square: true),
+                        title: product.nameIn(bangla: fmt.isBangla),
+                        subtitle:
+                            '${fmt.money(product.price)} / ${l10n.unit(product.unit)}',
+                        trailing: SrIconButton(
+                          icon: Icons.add_rounded,
+                          compact: true,
+                          tooltip: l10n.commonAdd,
+                          onTap: () => onAdd(product),
+                        ),
                         onTap: () => onAdd(product),
                       ),
-                      onTap: () => onAdd(product),
-                    ),
-              ],
-            ),
-          PagedFooter(paged: value, onRetry: onLoadMore),
-        ],
-      ),
+                ],
+              )
+            : const SizedBox.shrink(),
       AsyncValue(:final error?) => SrErrorState(
         error: error,
         compact: true,
@@ -286,11 +245,11 @@ class _Results extends StatelessWidget {
 class QtyStepper extends StatelessWidget {
   const QtyStepper({super.key, required this.qty, required this.onChanged});
 
-  final int qty;
-  final ValueChanged<int> onChanged;
+  final double qty;
+  final ValueChanged<double> onChanged;
 
   Future<void> _type(BuildContext context) async {
-    final typed = await showSrSheet<int>(
+    final typed = await showSrSheet<double>(
       context: context,
       builder: (_) => _QtySheet(qty: qty),
     );
@@ -341,14 +300,18 @@ class QtyStepper extends StatelessWidget {
 class _QtySheet extends StatefulWidget {
   const _QtySheet({required this.qty});
 
-  final int qty;
+  final double qty;
 
   @override
   State<_QtySheet> createState() => _QtySheetState();
 }
 
 class _QtySheetState extends State<_QtySheet> {
-  late final _controller = TextEditingController(text: '${widget.qty}');
+  late final _controller = TextEditingController(
+    text: widget.qty == widget.qty.roundToDouble()
+        ? widget.qty.toStringAsFixed(0)
+        : '${widget.qty}',
+  );
 
   @override
   void dispose() {
@@ -357,7 +320,7 @@ class _QtySheetState extends State<_QtySheet> {
   }
 
   void _done() =>
-      Navigator.of(context).pop(int.tryParse(_controller.text.trim()) ?? 0);
+      Navigator.of(context).pop(double.tryParse(_controller.text.trim()) ?? 0);
 
   @override
   Widget build(BuildContext context) {
@@ -371,10 +334,11 @@ class _QtySheetState extends State<_QtySheet> {
           SrTextField(
             controller: _controller,
             autofocus: true,
-            keyboardType: TextInputType.number,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(5),
+              FilteringTextInputFormatter.allow(
+                RegExp(r'^\d{0,5}(\.\d{0,3})?'),
+              ),
             ],
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => _done(),

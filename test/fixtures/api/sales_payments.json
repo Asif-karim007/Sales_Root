@@ -1,0 +1,37 @@
+{
+ "items": [
+  {
+   "id": "01a10101-86b7-7e01-8f91-9b87ec1e2fb0",
+   "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+   "receiptNo": "RCPT-2026-00001",
+   "companyId": "01a10101-865d-7e81-90c1-c811923c2adf",
+   "contactId": null,
+   "leadId": null,
+   "amount": 50000.0,
+   "method": "bkash",
+   "reference": "BKX7H2K9Q1",
+   "chequeDate": null,
+   "chequeStatus": null,
+   "receivedAt": "2026-09-30T09:03:59.542506Z",
+   "receivedBy": "01a10101-8656-7886-b8e5-4f197fbd9159",
+   "advanceAmt": 0.0,
+   "note": null,
+   "publicToken": "473da43a7d2aaaad601acb54",
+   "status": "posted",
+   "cancelledReason": null,
+   "gatewayRef": null,
+   "createdBy": "01a10101-8644-75d5-813c-211d42aa3d68",
+   "createdAt": "2026-10-03T09:03:59.542506Z",
+   "updatedAt": "2026-10-03T09:03:59.542506Z",
+   "deletedAt": null,
+   "version": 46,
+   "companyName": "Green Agro Ltd.",
+   "contactName": null,
+   "receivedByName": "Rafi Ahmed",
+   "allocations": "[{\"receivableId\" : \"01a10101-86b3-72a4-ac27-ec0ad9fd74b7\", \"label\" : \"1st instalment\", \"amount\" : 50000.00}]"
+  }
+ ],
+ "total": 1,
+ "offset": 0,
+ "limit": 3
+}

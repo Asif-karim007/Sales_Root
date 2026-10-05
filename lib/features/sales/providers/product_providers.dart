@@ -3,65 +3,41 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/features/sales/data/sales_repositories.dart';
 import 'package:salesroot/features/sales/models/product.dart';
-import 'package:salesroot/features/sales/providers/paging.dart';
 
 part 'product_providers.g.dart';
 
-/// The catalogue matching [search] in [category], 20 at a time.
+/// The catalogue matching [search].
 @riverpod
-class ProductList extends _$ProductList {
+Future<Paged<Product>> productList(Ref ref, String search) async => Paged.first(
+  await ref.watch(productRepositoryProvider).list(ProductQuery(search: search)),
+);
+
+@riverpod
+class ProductSearch extends _$ProductSearch {
   @override
-  Future<Paged<Product>> build(String search, ProductCategory? category) async {
-    final result = await ref
-        .watch(productRepositoryProvider)
-        .list(ProductQuery(search: search, category: category));
-    return Paged.first(result, facetKeys: const ['CategoryCounts']);
+  String build() => '';
+
+  void set(String search) => state = search;
+}
+
+/// Adds a product to the catalogue, or saves one; null until the first save.
+@riverpod
+class ProductEditor extends _$ProductEditor {
+  @override
+  AsyncValue<Product>? build(String? id) => null;
+
+  Future<void> save(ProductInput input) async {
+    if (state?.isLoading ?? false) return;
+    state = const AsyncLoading();
+    final repository = ref.read(productRepositoryProvider);
+    final productId = id;
+    final result = await AsyncValue.guard(
+      () => productId == null
+          ? repository.create(input)
+          : repository.save(productId, input),
+    );
+    if (!ref.mounted) return;
+    state = result;
+    if (result.hasValue) ref.invalidate(productListProvider);
   }
-
-  Future<void> loadMore() => loadNextPage(
-    current: state.value,
-    fetch: (page) => ref
-        .read(productRepositoryProvider)
-        .list(ProductQuery(search: search, category: category, page: page)),
-    mounted: () => ref.mounted,
-    emit: (next) => state = AsyncData(next),
-  );
-}
-
-class ProductFilter {
-  const ProductFilter({
-    this.search = '',
-    this.category,
-    this.priceList = PriceList.list,
-  });
-
-  final String search;
-  final ProductCategory? category;
-  final PriceList priceList;
-}
-
-@riverpod
-class ProductFilterNotifier extends _$ProductFilterNotifier {
-  @override
-  ProductFilter build() => const ProductFilter();
-
-  void setSearch(String search) => state = ProductFilter(
-    search: search,
-    category: state.category,
-    priceList: state.priceList,
-  );
-
-  void setCategory(ProductCategory? category) => state = ProductFilter(
-    search: state.search,
-    category: category,
-    priceList: state.priceList,
-  );
-
-  void togglePriceList() => state = ProductFilter(
-    search: state.search,
-    category: state.category,
-    priceList: state.priceList == PriceList.list
-        ? PriceList.dealer
-        : PriceList.list,
-  );
 }

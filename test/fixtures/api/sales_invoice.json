@@ -1,0 +1,83 @@
+{
+ "invoice": {
+  "id": "01a10101-86a8-78f8-a541-3fcb7add305d",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "number": "INV-2026-00001",
+  "orderId": "01a10101-869f-7916-b997-939393716475",
+  "leadId": null,
+  "companyId": "01a10101-865d-7e81-90c1-c811923c2adf",
+  "contactId": null,
+  "ownerMembershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+  "status": "partial",
+  "issueDate": "2026-09-23T00:00:00",
+  "dueDate": "2026-10-23T00:00:00",
+  "subtotal": 100000.0,
+  "discountAmt": 0.0,
+  "taxAmt": 0.0,
+  "total": 100000.0,
+  "paidAmt": 50000.0,
+  "publicToken": "404582ce902850796f66eec9",
+  "note": null,
+  "cancelledReason": null,
+  "createdBy": "01a10101-8644-75d5-813c-211d42aa3d68",
+  "createdAt": "2026-10-03T09:03:59.542506Z",
+  "updatedAt": "2026-10-03T09:03:59.542506Z",
+  "deletedAt": null,
+  "version": 48,
+  "companyName": "Green Agro Ltd.",
+  "contactName": null,
+  "contactPhone": null,
+  "orderNumber": "SO-2026-00001",
+  "ownerName": "Rafi Ahmed"
+ },
+ "lines": [
+  {
+   "id": "01a10101-86af-7bdb-b122-6d3522d4dfd8",
+   "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+   "invoiceId": "01a10101-86a8-78f8-a541-3fcb7add305d",
+   "productId": "01a10101-868f-7152-8a02-e5b178328511",
+   "description": "Detergent 1kg (carton of 12)",
+   "qty": 47.619,
+   "unit": "ctn",
+   "unitPrice": 2100.0,
+   "discountPct": 0.0,
+   "taxPct": 0.0,
+   "lineTotal": 100000.0,
+   "sortOrder": 0,
+   "updatedAt": "2026-10-03T09:03:59.542506Z",
+   "deletedAt": null,
+   "version": 43
+  }
+ ],
+ "receivables": [
+  {
+   "id": "01a10101-86b3-72a4-ac27-ec0ad9fd74b7",
+   "label": "1st instalment",
+   "instalmentNo": 1,
+   "amount": 50000.0,
+   "paidAmt": 50000.0,
+   "dueDate": "2026-09-30T00:00:00",
+   "status": "paid"
+  },
+  {
+   "id": "01a10101-86b7-7436-8647-06f0f499818b",
+   "label": "2nd instalment",
+   "instalmentNo": 2,
+   "amount": 50000.0,
+   "paidAmt": 0.0,
+   "dueDate": "2026-10-23T00:00:00",
+   "status": "due"
+  }
+ ],
+ "payments": [
+  {
+   "id": "01a10101-86b7-7e01-8f91-9b87ec1e2fb0",
+   "receiptNo": "RCPT-2026-00001",
+   "paymentAmount": 50000.0,
+   "amount": 50000.0,
+   "method": "bkash",
+   "reference": "BKX7H2K9Q1",
+   "receivedAt": "2026-09-30T09:03:59.542506Z"
+  }
+ ]
+}

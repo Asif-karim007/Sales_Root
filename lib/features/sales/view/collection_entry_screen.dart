@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 
 import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/experience_level.dart';
@@ -11,7 +10,7 @@ import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
-import 'package:salesroot/features/sales/models/collection.dart';
+import 'package:salesroot/features/sales/models/instalment.dart';
 import 'package:salesroot/features/sales/providers/collection_providers.dart';
 import 'package:salesroot/features/sales/view/sales_labels.dart';
 import 'package:salesroot/features/sales/view/widget/collection_fields.dart';
@@ -20,19 +19,17 @@ import 'package:salesroot/features/sales/view/widget/sales_failure.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #61: records money received, by any method, against the customer's
-/// oldest dues or the instalments the user picks.
-class CollectionEntryScreen extends ConsumerStatefulWidget {
-  const CollectionEntryScreen({
-    super.key,
-    this.customerId,
-    this.invoiceId,
-    this.orderId,
-  });
+String _amountText(double amount) => amount == amount.roundToDouble()
+    ? amount.toStringAsFixed(0)
+    : amount.toStringAsFixed(2);
 
-  final int? customerId;
-  final int? invoiceId;
-  final int? orderId;
+/// #61: records money received, by any method, against the customer's
+/// oldest dues or the ones the user picks.
+class CollectionEntryScreen extends ConsumerStatefulWidget {
+  const CollectionEntryScreen({super.key, this.customerId, this.invoiceId});
+
+  final String? customerId;
+  final String? invoiceId;
 
   @override
   ConsumerState<CollectionEntryScreen> createState() =>
@@ -45,7 +42,6 @@ class _CollectionEntryScreenState extends ConsumerState<CollectionEntryScreen> {
   CollectionEntryProvider get _provider => collectionEntryProvider(
     customerId: widget.customerId,
     invoiceId: widget.invoiceId,
-    orderId: widget.orderId,
   );
 
   @override
@@ -60,31 +56,21 @@ class _CollectionEntryScreenState extends ConsumerState<CollectionEntryScreen> {
     await ref.read(_provider.notifier).pickCustomer(picked.companyId);
   }
 
-  Future<void> _photo() async {
-    final picked = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-      imageQuality: 70,
-      maxWidth: 1600,
-    );
-    if (picked != null) ref.read(_provider.notifier).setPhoto(picked.path);
-  }
-
   Future<void> _pickTargets(CollectionDraft draft) async {
     final dues = draft.dues;
     if (dues == null) return;
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final targets = {for (final item in draft.targets) item.key};
-    final picked = await showSrSheet<List<DueItem>>(
+    final targets = {for (final item in draft.targets) item.id};
+    final picked = await showSrSheet<List<Instalment>>(
       context: context,
-      builder: (_) => SrMultiOptionSheet<DueItem>(
+      builder: (_) => SrMultiOptionSheet<Instalment>(
         title: l10n.salesApplyTo,
         options: dues.items,
-        labelOf: (item) =>
-            '${item.invoiceNumber ?? item.orderNumber} · ${l10n.instalment(item.instalment)}',
+        labelOf: l10n.instalment,
         subtitleOf: (item) =>
-            '${fmt.money(item.due)} · ${fmt.dayMonth(item.instalment.dueDate)}',
-        isSelected: (item) => targets.contains(item.key),
+            '${fmt.money(item.due)} · ${fmt.dayMonth(item.dueDate)}',
+        isSelected: (item) => targets.contains(item.id),
       ),
     );
     if (picked == null) return;
@@ -93,7 +79,7 @@ class _CollectionEntryScreenState extends ConsumerState<CollectionEntryScreen> {
         .setTargets(
           picked.isEmpty || picked.length == dues.items.length
               ? null
-              : {for (final item in picked) item.key},
+              : {for (final item in picked) item.id},
         );
   }
 
@@ -104,7 +90,7 @@ class _CollectionEntryScreenState extends ConsumerState<CollectionEntryScreen> {
     ref
       ..listen(_provider.select((s) => s.value?.dues?.companyId), (_, _) {
         final amount = ref.read(_provider).value?.amount ?? 0;
-        _amount.text = amount > 0 ? '$amount' : '';
+        _amount.text = amount > 0 ? _amountText(amount) : '';
       })
       ..listen(_provider.select((s) => s.value?.submission), (previous, next) {
         if (previous == next) return;
@@ -144,7 +130,7 @@ class _CollectionEntryScreenState extends ConsumerState<CollectionEntryScreen> {
                   draft: draft,
                   onChanged: (value) => ref
                       .read(_provider.notifier)
-                      .setAmount(int.tryParse(value) ?? 0),
+                      .setAmount(double.tryParse(value) ?? 0),
                 ),
                 const SizedBox(height: 14),
                 CollectionMethodFields(
@@ -160,12 +146,6 @@ class _CollectionEntryScreenState extends ConsumerState<CollectionEntryScreen> {
                 _ApplyTo(
                   draft: draft,
                   onChange: easy ? null : () => _pickTargets(draft),
-                ),
-                const SizedBox(height: 12),
-                _PhotoButton(
-                  draft: draft,
-                  onTake: _photo,
-                  onRemove: () => ref.read(_provider.notifier).setPhoto(null),
                 ),
               ],
             ],
@@ -251,13 +231,12 @@ class _AmountField extends StatelessWidget {
       controller: controller,
       label: l10n.salesAmount,
       prefix: Text(l10n.salesTaka, style: AppText.metric(c.ink2, size: 20)),
-      keyboardType: TextInputType.number,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [
-        FilteringTextInputFormatter.digitsOnly,
-        LengthLimitingTextInputFormatter(9),
+        FilteringTextInputFormatter.allow(RegExp(r'^\d{0,9}(\.\d{0,2})?')),
       ],
       helper: draft.amount > 0 ? context.fmt.money(draft.amount) : null,
-      error: failure is ApiFailure && failure.fieldError('Amount') != null
+      error: failure is ApiFailure && failure.fieldError('amount') != null
           ? l10n.salesEnterAmount
           : null,
       onChanged: onChanged,
@@ -299,7 +278,7 @@ class _ApplyTo extends StatelessWidget {
           else
             for (final a in allocations)
               Text(
-                '${a.invoiceNumber ?? a.orderNumber} · ${l10n.salesInstalmentOf(l10n.ordinal(a.seq))} · ${fmt.money(a.amount)}',
+                '${a.label} · ${fmt.money(a.amount)}',
                 style: AppText.meta(c.ink2),
               ),
           if (draft.selected == null && allocations.isNotEmpty)
@@ -312,49 +291,6 @@ class _ApplyTo extends StatelessWidget {
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-class _PhotoButton extends StatelessWidget {
-  const _PhotoButton({
-    required this.draft,
-    required this.onTake,
-    required this.onRemove,
-  });
-
-  final CollectionDraft draft;
-  final VoidCallback onTake;
-  final VoidCallback onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final cheque = draft.method == PaymentMethod.cheque;
-    final label = cheque ? l10n.salesPhotoOfCheque : l10n.salesPhotoOfSlip;
-    if (draft.photoPath == null) {
-      return SrButton(
-        label: label,
-        icon: Icons.photo_camera_outlined,
-        variant: SrButtonVariant.secondary,
-        size: SrButtonSize.sm,
-        onPressed: onTake,
-      );
-    }
-    return SrListRow(
-      padding: EdgeInsets.zero,
-      leading: const SrAvatar(
-        icon: Icons.check_rounded,
-        tone: SrAvatarTone.accent,
-      ),
-      title: l10n.salesPhotoAdded,
-      subtitle: label,
-      trailing: SrIconButton(
-        icon: Icons.close_rounded,
-        compact: true,
-        tooltip: l10n.commonDelete,
-        onTap: onRemove,
       ),
     );
   }

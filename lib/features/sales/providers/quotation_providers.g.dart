@@ -91,7 +91,7 @@ final class QuotationListProvider
   QuotationList create() => QuotationList();
 }
 
-String _$quotationListHash() => r'dc028222394e2028a45b87b107b443197df2b839';
+String _$quotationListHash() => r'b3a3e3f6424d1250bdf33dcd24f0f842ba081bac';
 
 abstract class _$QuotationList extends $AsyncNotifier<Paged<Quotation>> {
   FutureOr<Paged<Quotation>> build();
@@ -155,7 +155,7 @@ final class AwaitingQuotationsProvider
 }
 
 String _$awaitingQuotationsHash() =>
-    r'07bf520d6cf05e605f74e15a0b5b2e83d78a5556';
+    r'0546bccfcabb794a0477fbb3e1bc2b55c26bc687';
 
 @ProviderFor(quotation)
 final quotationProvider = QuotationFamily._();
@@ -170,7 +170,7 @@ final class QuotationProvider
     with $FutureModifier<Quotation>, $FutureProvider<Quotation> {
   QuotationProvider._({
     required QuotationFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'quotationProvider',
@@ -196,7 +196,7 @@ final class QuotationProvider
 
   @override
   FutureOr<Quotation> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return quotation(ref, argument);
   }
 
@@ -211,10 +211,10 @@ final class QuotationProvider
   }
 }
 
-String _$quotationHash() => r'0a67f45a6c0e3616a0a2a2dd9f222e1227747389';
+String _$quotationHash() => r'73beaa94593ace0a8619efb04e44d44ce4176481';
 
 final class QuotationFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Quotation>, int> {
+    with $FunctionalFamilyOverride<FutureOr<Quotation>, String> {
   QuotationFamily._()
     : super(
         retry: null,
@@ -224,7 +224,7 @@ final class QuotationFamily extends $Family
         isAutoDispose: true,
       );
 
-  QuotationProvider call(int id) =>
+  QuotationProvider call(String id) =>
       QuotationProvider._(argument: id, from: this);
 
   @override
@@ -284,7 +284,7 @@ final class QuotationActionsProvider
   /// a message or move on.
   QuotationActionsProvider._({
     required QuotationActionsFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'quotationActionsProvider',
@@ -328,7 +328,7 @@ final class QuotationActionsProvider
   }
 }
 
-String _$quotationActionsHash() => r'182e05b84a7d361ac3eadbe7d1d8241175dcdfbb';
+String _$quotationActionsHash() => r'd980adfb8e743b649a7226aa42e8b70de8f8d789';
 
 /// The actions on one quotation. The screen listens for the outcome to show
 /// a message or move on.
@@ -340,7 +340,7 @@ final class QuotationActionsFamily extends $Family
           AsyncValue<QuotationOutcome?>,
           AsyncValue<QuotationOutcome?>,
           AsyncValue<QuotationOutcome?>,
-          int
+          String
         > {
   QuotationActionsFamily._()
     : super(
@@ -354,7 +354,7 @@ final class QuotationActionsFamily extends $Family
   /// The actions on one quotation. The screen listens for the outcome to show
   /// a message or move on.
 
-  QuotationActionsProvider call(int id) =>
+  QuotationActionsProvider call(String id) =>
       QuotationActionsProvider._(argument: id, from: this);
 
   @override
@@ -366,10 +366,10 @@ final class QuotationActionsFamily extends $Family
 
 abstract class _$QuotationActions
     extends $Notifier<AsyncValue<QuotationOutcome?>> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
 
-  AsyncValue<QuotationOutcome?> build(int id);
+  AsyncValue<QuotationOutcome?> build(String id);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

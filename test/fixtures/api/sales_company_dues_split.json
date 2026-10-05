@@ -1,0 +1,26 @@
+[
+ {
+  "id": "01a10cf7-88a7-7cb0-a7d1-e331bff34612",
+  "label": "1/2 instalment",
+  "instalmentNo": 1,
+  "amount": 6450.0,
+  "paidAmt": 0.0,
+  "balance": 6450.0,
+  "dueDate": "2026-10-10T00:00:00",
+  "status": "due",
+  "ageDays": 0,
+  "invoiceId": "01a10cf7-70ca-75c8-967c-e54e929f240d"
+ },
+ {
+  "id": "01a10cf7-88a8-751d-8457-fd6645c970a8",
+  "label": "2/2 instalment",
+  "instalmentNo": 2,
+  "amount": 6450.0,
+  "paidAmt": 0.0,
+  "balance": 6450.0,
+  "dueDate": "2026-10-25T00:00:00",
+  "status": "due",
+  "ageDays": 0,
+  "invoiceId": "01a10cf7-70ca-75c8-967c-e54e929f240d"
+ }
+]

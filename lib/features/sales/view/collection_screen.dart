@@ -47,7 +47,7 @@ class CollectionScreen extends ConsumerWidget {
         data: (context, summary) => RefreshIndicator(
           onRefresh: () async {
             ref
-              ..invalidate(dueListProvider)
+              ..invalidate(outstandingListProvider)
               ..invalidate(collectionListProvider)
               ..invalidate(collectionSummaryProvider);
             await ref.read(collectionSummaryProvider.future);
@@ -171,7 +171,7 @@ class _MethodFigure extends StatelessWidget {
   const _MethodFigure({required this.label, required this.amount});
 
   final String label;
-  final int amount;
+  final double amount;
 
   @override
   Widget build(BuildContext context) {
@@ -214,7 +214,6 @@ class _Figures extends StatelessWidget {
         SrKpiTile(
           label: l10n.salesDueToday,
           value: fmt.moneyCompact(summary.dueToday),
-          delta: l10n.salesCustomerCount(fmt.number(summary.dueTodayCustomers)),
         ),
         SrKpiTile(
           label: l10n.salesCollectedThisMonth,
@@ -232,7 +231,8 @@ class _CollectToday extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final canAdd = ref.watch(moduleAccessProvider(AppModule.collection)).canAdd;
-    final dues = ref.watch(dueListProvider);
+    final provider = outstandingListProvider(OutstandingFilter.all);
+    final dues = ref.watch(provider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -253,10 +253,12 @@ class _CollectToday extends ConsumerWidget {
             dividerIndent: 66,
             rows: [
               for (final due in value.items.take(6))
-                DueRowTile(
-                  due: due,
+                OutstandingRow(
+                  customer: due,
                   onTap: canAdd
-                      ? () => context.push(collectionNewForDue(due))
+                      ? () => context.push(
+                          collectionNewFor(customerId: due.companyId),
+                        )
                       : null,
                 ),
             ],
@@ -264,7 +266,7 @@ class _CollectToday extends ConsumerWidget {
           AsyncValue(:final error?) => SrErrorState(
             error: error,
             compact: true,
-            onRetry: () => ref.invalidate(dueListProvider),
+            onRetry: () => ref.invalidate(provider),
           ),
           _ => const SrSkeletonList(
             count: 3,

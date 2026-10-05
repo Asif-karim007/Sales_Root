@@ -1,29 +1,13 @@
 import 'package:salesroot/core/routing/routes.dart';
-import 'package:salesroot/features/sales/models/outstanding.dart';
 
-/// `/collection/new?customerId=&invoiceId=&orderId=`
-String collectionNewFor({int? customerId, int? invoiceId, int? orderId}) => Uri(
+/// `/collection/new?customerId=&invoiceId=`
+String collectionNewFor({String? customerId, String? invoiceId}) => Uri(
   path: Routes.collectionNew,
-  queryParameters: {
-    'customerId': ?customerId?.toString(),
-    'invoiceId': ?invoiceId?.toString(),
-    'orderId': ?orderId?.toString(),
-  },
+  queryParameters: {'customerId': ?customerId, 'invoiceId': ?invoiceId},
 ).toString();
 
-/// Collects on [due]: against its bill, or its order before there is one.
-String collectionNewForDue(DueRow due) => collectionNewFor(
-  customerId: due.companyId,
-  invoiceId: due.invoiceId,
-  orderId: due.invoiceId == null ? due.orderId : null,
-);
-
-/// `/quotations/new?leadId=&from=&mode=revise`
-String quotationNewFor({int? leadId, int? fromId, bool revise = false}) => Uri(
+/// `/quotations/new?leadId=&edit=`
+String quotationNewFor({String? leadId, String? editId}) => Uri(
   path: Routes.quotationNew,
-  queryParameters: {
-    'leadId': ?leadId?.toString(),
-    'from': ?fromId?.toString(),
-    if (revise) 'mode': 'revise',
-  },
+  queryParameters: {'leadId': ?leadId, 'edit': ?editId},
 ).toString();

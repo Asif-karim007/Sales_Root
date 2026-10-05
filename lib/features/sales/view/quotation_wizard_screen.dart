@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/locale/locale_provider.dart';
+import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/sales/models/quotation.dart';
@@ -19,21 +20,15 @@ import 'package:salesroot/features/sales/view/widget/sales_failure.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// #52–54: a new quotation (or a copy, or the next version) in three steps.
+/// #52–54: a new quotation, or an edit of one, in three steps.
 class QuotationWizardScreen extends ConsumerWidget {
-  const QuotationWizardScreen({
-    super.key,
-    this.leadId,
-    this.fromId,
-    this.revise = false,
-  });
+  const QuotationWizardScreen({super.key, this.leadId, this.editId});
 
-  final int? leadId;
-  final int? fromId;
-  final bool revise;
+  final String? leadId;
+  final String? editId;
 
   QuotationWizardProvider get _provider =>
-      quotationWizardProvider(leadId: leadId, fromId: fromId, revise: revise);
+      quotationWizardProvider(leadId: leadId, editId: editId);
 
   Future<void> _saved(
     BuildContext context,
@@ -43,7 +38,9 @@ class QuotationWizardScreen extends ConsumerWidget {
   ) async {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    if (via == null) {
+    if (quotation.status == QuotationStatus.pendingApproval) {
+      showSrSuccess(context, l10n.salesSentForApproval);
+    } else if (via == null) {
       showSrSuccess(context, l10n.salesDraftSaved);
     } else {
       try {
@@ -63,10 +60,33 @@ class QuotationWizardScreen extends ConsumerWidget {
       }
     }
     if (!context.mounted) return;
-    if (revise) {
+    if (editId != null) {
       context.pop();
     } else {
       context.pushReplacement(Routes.quotationFor(quotation.id));
+    }
+  }
+
+  /// A discount above the user's limit can go to a manager instead.
+  Future<void> _failed(
+    BuildContext context,
+    WidgetRef ref,
+    Object error,
+  ) async {
+    if (error is! ApiFailure || error.fieldError('discountPct') == null) {
+      showSalesFailure(context, error);
+      return;
+    }
+    final l10n = context.l10n;
+    final ask = await showSrConfirm(
+      context,
+      title: l10n.salesAskApproval,
+      message: error.message,
+      confirmLabel: l10n.salesAskApproval,
+      icon: Icons.verified_user_outlined,
+    );
+    if (ask) {
+      await ref.read(_provider.notifier).submit(null, requestApproval: true);
     }
   }
 
@@ -81,7 +101,7 @@ class QuotationWizardScreen extends ConsumerWidget {
         case AsyncData(:final value):
           _saved(context, ref, value, ref.read(_provider).value?.sentVia);
         case AsyncError(:final error):
-          showSalesFailure(context, error);
+          _failed(context, ref, error);
         default:
           break;
       }
@@ -160,14 +180,13 @@ class _WizardBar extends ConsumerWidget {
     if (current == null) return null;
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final revising = current.revising;
+    final editing = current.editing;
     return switch (current.step) {
       QuotationStep.items when current.hasItems => l10n.salesItemsSummary(
         fmt.number(current.itemCount),
         fmt.money(current.totals.subtotal),
       ),
-      QuotationStep.terms when revising != null =>
-        '${revising.number} · ${l10n.salesVersion(fmt.number(revising.version + 1))}',
+      QuotationStep.terms when editing != null => editing.number,
       QuotationStep.terms => l10n.salesDraft,
       _ => null,
     };
@@ -176,13 +195,13 @@ class _WizardBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final revising = draft?.revising;
+    final editing = draft?.editing;
     final step = draft?.step ?? QuotationStep.items;
     final locale = ref.watch(appLocaleProvider);
     return SrAppBar(
       title: switch (step) {
         QuotationStep.review => l10n.salesReviewTitle,
-        _ when revising != null => l10n.salesNewVersionTitle,
+        _ when editing != null => l10n.salesEditQuotation,
         _ => l10n.salesNewQuotation,
       },
       subtitle: _subtitle(context),

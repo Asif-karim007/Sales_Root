@@ -11,7 +11,7 @@ import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/core/workspace/workspace_providers.dart';
-import 'package:salesroot/features/sales/models/product.dart';
+import 'package:salesroot/features/sales/models/outstanding.dart';
 import 'package:salesroot/features/sales/providers/collection_providers.dart';
 import 'package:salesroot/features/sales/providers/order_providers.dart';
 import 'package:salesroot/features/sales/providers/product_providers.dart';
@@ -41,7 +41,7 @@ class SalesHomeScreen extends ConsumerWidget {
             ..invalidate(awaitingQuotationsProvider)
             ..invalidate(productListProvider)
             ..invalidate(orderListProvider)
-            ..invalidate(dueListProvider);
+            ..invalidate(outstandingListProvider);
           await ref.read(salesOverviewProvider.future);
         },
         child: ListView(
@@ -177,7 +177,6 @@ class _Kpis extends ConsumerWidget {
           SrKpiTile(
             label: l10n.salesOpenQuotes,
             value: fmt.number(value.openQuotations),
-            delta: fmt.moneyCompact(value.openQuotationValue),
             onTap: () => context.push(Routes.quotations),
           ),
           SrKpiTile(
@@ -308,19 +307,18 @@ class _ProductsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final list = ref.watch(productListProvider('', null));
+    final list = ref.watch(productListProvider(''));
     final total = list.value?.totalCount ?? 0;
     return _Section(
       title: l10n.salesProductsTitle,
       value: list.whenData((paged) => paged.items.take(3).toList()),
       row: (product) => ProductRow(
         product: product,
-        priceList: PriceList.list,
         showStock: true,
         onTap: () => context.push(Routes.products),
       ),
       empty: l10n.salesProductsEmpty,
-      onRetry: () => ref.invalidate(productListProvider('', null)),
+      onRetry: () => ref.invalidate(productListProvider('')),
       onSeeAll: () => context.push(Routes.products),
       seeAllLabel: l10n.salesAllCount(fmt.number(total)),
     );
@@ -375,17 +373,21 @@ class _DuesSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final canAdd = ref.watch(moduleAccessProvider(AppModule.collection)).canAdd;
+    final provider = outstandingListProvider(OutstandingFilter.all);
     return _Section(
       title: l10n.salesCollectionsDue,
       value: ref
-          .watch(dueListProvider)
+          .watch(provider)
           .whenData((paged) => paged.items.take(3).toList()),
-      row: (due) => DueRowTile(
-        due: due,
-        onTap: () => context.push(collectionNewForDue(due)),
+      row: (due) => OutstandingRow(
+        customer: due,
+        onTap: canAdd
+            ? () => context.push(collectionNewFor(customerId: due.companyId))
+            : null,
       ),
       empty: l10n.salesDuesEmpty,
-      onRetry: () => ref.invalidate(dueListProvider),
+      onRetry: () => ref.invalidate(provider),
       onSeeAll: () => context.push(Routes.collection),
     );
   }

@@ -50,50 +50,6 @@ final class CollectionSummaryProvider
 
 String _$collectionSummaryHash() => r'dc8054a31d7b2469858392b242e9267f3021af1a';
 
-@ProviderFor(DueList)
-final dueListProvider = DueListProvider._();
-
-final class DueListProvider
-    extends $AsyncNotifierProvider<DueList, Paged<DueRow>> {
-  DueListProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'dueListProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$dueListHash();
-
-  @$internal
-  @override
-  DueList create() => DueList();
-}
-
-String _$dueListHash() => r'e1bb79f81477acf22027bf0d73c5f93947201a9a';
-
-abstract class _$DueList extends $AsyncNotifier<Paged<DueRow>> {
-  FutureOr<Paged<DueRow>> build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<Paged<DueRow>>, Paged<DueRow>>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<AsyncValue<Paged<DueRow>>, Paged<DueRow>>,
-              AsyncValue<Paged<DueRow>>,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
 @ProviderFor(CollectionList)
 final collectionListProvider = CollectionListProvider._();
 
@@ -152,7 +108,7 @@ final class CollectionProvider
     with $FutureModifier<Collection>, $FutureProvider<Collection> {
   CollectionProvider._({
     required CollectionFamily super.from,
-    required int super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'collectionProvider',
@@ -178,7 +134,7 @@ final class CollectionProvider
 
   @override
   FutureOr<Collection> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return collection(ref, argument);
   }
 
@@ -193,10 +149,10 @@ final class CollectionProvider
   }
 }
 
-String _$collectionHash() => r'7fb77f51029147c5fbc1aff58d0b20674997d73c';
+String _$collectionHash() => r'8a660336a4cf9934a1990db0ccf0fbfe7ce0aa60';
 
 final class CollectionFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Collection>, int> {
+    with $FunctionalFamilyOverride<FutureOr<Collection>, String> {
   CollectionFamily._()
     : super(
         retry: null,
@@ -206,86 +162,11 @@ final class CollectionFamily extends $Family
         isAutoDispose: true,
       );
 
-  CollectionProvider call(int id) =>
+  CollectionProvider call(String id) =>
       CollectionProvider._(argument: id, from: this);
 
   @override
   String toString() => r'collectionProvider';
-}
-
-@ProviderFor(customerDues)
-final customerDuesProvider = CustomerDuesFamily._();
-
-final class CustomerDuesProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<CustomerDues>,
-          CustomerDues,
-          FutureOr<CustomerDues>
-        >
-    with $FutureModifier<CustomerDues>, $FutureProvider<CustomerDues> {
-  CustomerDuesProvider._({
-    required CustomerDuesFamily super.from,
-    required int super.argument,
-  }) : super(
-         retry: null,
-         name: r'customerDuesProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
-
-  @override
-  String debugGetCreateSourceHash() => _$customerDuesHash();
-
-  @override
-  String toString() {
-    return r'customerDuesProvider'
-        ''
-        '($argument)';
-  }
-
-  @$internal
-  @override
-  $FutureProviderElement<CustomerDues> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<CustomerDues> create(Ref ref) {
-    final argument = this.argument as int;
-    return customerDues(ref, argument);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is CustomerDuesProvider && other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
-  }
-}
-
-String _$customerDuesHash() => r'316bfb325cc20f2b75a78b4f77ef6cd416838896';
-
-final class CustomerDuesFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<CustomerDues>, int> {
-  CustomerDuesFamily._()
-    : super(
-        retry: null,
-        name: r'customerDuesProvider',
-        dependencies: null,
-        $allTransitiveDependencies: null,
-        isAutoDispose: true,
-      );
-
-  CustomerDuesProvider call(int companyId) =>
-      CustomerDuesProvider._(argument: companyId, from: this);
-
-  @override
-  String toString() => r'customerDuesProvider';
 }
 
 @ProviderFor(outstandingSummary)
@@ -384,19 +265,19 @@ abstract class _$OutstandingFilterNotifier
   }
 }
 
-/// Customers with unpaid bills under [filter], 20 at a time.
+/// Customers with dues under [filter], most overdue first, 20 at a time.
 
 @ProviderFor(OutstandingList)
 final outstandingListProvider = OutstandingListFamily._();
 
-/// Customers with unpaid bills under [filter], 20 at a time.
+/// Customers with dues under [filter], most overdue first, 20 at a time.
 final class OutstandingListProvider
     extends
         $AsyncNotifierProvider<OutstandingList, Paged<CustomerOutstanding>> {
-  /// Customers with unpaid bills under [filter], 20 at a time.
+  /// Customers with dues under [filter], most overdue first, 20 at a time.
   OutstandingListProvider._({
     required OutstandingListFamily super.from,
-    required (OutstandingFilter, {String search}) super.argument,
+    required OutstandingFilter super.argument,
   }) : super(
          retry: null,
          name: r'outstandingListProvider',
@@ -412,7 +293,7 @@ final class OutstandingListProvider
   String toString() {
     return r'outstandingListProvider'
         ''
-        '$argument';
+        '($argument)';
   }
 
   @$internal
@@ -430,9 +311,9 @@ final class OutstandingListProvider
   }
 }
 
-String _$outstandingListHash() => r'1509b86c0083259f3703aa7f4fa4462a1b1655d3';
+String _$outstandingListHash() => r'f8f750f48a5666522c2cf73ea436d0b5f23613a3';
 
-/// Customers with unpaid bills under [filter], 20 at a time.
+/// Customers with dues under [filter], most overdue first, 20 at a time.
 
 final class OutstandingListFamily extends $Family
     with
@@ -441,7 +322,7 @@ final class OutstandingListFamily extends $Family
           AsyncValue<Paged<CustomerOutstanding>>,
           Paged<CustomerOutstanding>,
           FutureOr<Paged<CustomerOutstanding>>,
-          (OutstandingFilter, {String search})
+          OutstandingFilter
         > {
   OutstandingListFamily._()
     : super(
@@ -452,30 +333,23 @@ final class OutstandingListFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Customers with unpaid bills under [filter], 20 at a time.
+  /// Customers with dues under [filter], most overdue first, 20 at a time.
 
-  OutstandingListProvider call(
-    OutstandingFilter filter, {
-    String search = '',
-  }) =>
-      OutstandingListProvider._(argument: (filter, search: search), from: this);
+  OutstandingListProvider call(OutstandingFilter filter) =>
+      OutstandingListProvider._(argument: filter, from: this);
 
   @override
   String toString() => r'outstandingListProvider';
 }
 
-/// Customers with unpaid bills under [filter], 20 at a time.
+/// Customers with dues under [filter], most overdue first, 20 at a time.
 
 abstract class _$OutstandingList
     extends $AsyncNotifier<Paged<CustomerOutstanding>> {
-  late final _$args = ref.$arg as (OutstandingFilter, {String search});
-  OutstandingFilter get filter => _$args.$1;
-  String get search => _$args.search;
+  late final _$args = ref.$arg as OutstandingFilter;
+  OutstandingFilter get filter => _$args;
 
-  FutureOr<Paged<CustomerOutstanding>> build(
-    OutstandingFilter filter, {
-    String search = '',
-  });
+  FutureOr<Paged<CustomerOutstanding>> build(OutstandingFilter filter);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
@@ -496,28 +370,133 @@ abstract class _$OutstandingList
               Object?,
               Object?
             >;
-    return element.handleCreate(
-      ref,
-      () => build(_$args.$1, search: _$args.search),
-    );
+    return element.handleCreate(ref, () => build(_$args));
   }
 }
 
-/// The record-a-collection form. Opened for a customer, a bill or an order,
-/// it starts on the oldest instalment due there.
+/// Changes the cheque's status or cancels one receipt.
+
+@ProviderFor(ReceiptActions)
+final receiptActionsProvider = ReceiptActionsFamily._();
+
+/// Changes the cheque's status or cancels one receipt.
+final class ReceiptActionsProvider
+    extends $NotifierProvider<ReceiptActions, AsyncValue<Collection?>> {
+  /// Changes the cheque's status or cancels one receipt.
+  ReceiptActionsProvider._({
+    required ReceiptActionsFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'receiptActionsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$receiptActionsHash();
+
+  @override
+  String toString() {
+    return r'receiptActionsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  ReceiptActions create() => ReceiptActions();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AsyncValue<Collection?> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AsyncValue<Collection?>>(value),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ReceiptActionsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$receiptActionsHash() => r'e74e712397d615b7911f5bef830befe34f0c0fc1';
+
+/// Changes the cheque's status or cancels one receipt.
+
+final class ReceiptActionsFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          ReceiptActions,
+          AsyncValue<Collection?>,
+          AsyncValue<Collection?>,
+          AsyncValue<Collection?>,
+          String
+        > {
+  ReceiptActionsFamily._()
+    : super(
+        retry: null,
+        name: r'receiptActionsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// Changes the cheque's status or cancels one receipt.
+
+  ReceiptActionsProvider call(String id) =>
+      ReceiptActionsProvider._(argument: id, from: this);
+
+  @override
+  String toString() => r'receiptActionsProvider';
+}
+
+/// Changes the cheque's status or cancels one receipt.
+
+abstract class _$ReceiptActions extends $Notifier<AsyncValue<Collection?>> {
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
+
+  AsyncValue<Collection?> build(String id);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref as $Ref<AsyncValue<Collection?>, AsyncValue<Collection?>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<Collection?>, AsyncValue<Collection?>>,
+              AsyncValue<Collection?>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
+}
+
+/// The record-a-collection form. Opened for a customer or a bill, it starts
+/// on the oldest receivable due there.
 
 @ProviderFor(CollectionEntry)
 final collectionEntryProvider = CollectionEntryFamily._();
 
-/// The record-a-collection form. Opened for a customer, a bill or an order,
-/// it starts on the oldest instalment due there.
+/// The record-a-collection form. Opened for a customer or a bill, it starts
+/// on the oldest receivable due there.
 final class CollectionEntryProvider
     extends $AsyncNotifierProvider<CollectionEntry, CollectionDraft> {
-  /// The record-a-collection form. Opened for a customer, a bill or an order,
-  /// it starts on the oldest instalment due there.
+  /// The record-a-collection form. Opened for a customer or a bill, it starts
+  /// on the oldest receivable due there.
   CollectionEntryProvider._({
     required CollectionEntryFamily super.from,
-    required ({int? customerId, int? invoiceId, int? orderId}) super.argument,
+    required ({String? customerId, String? invoiceId}) super.argument,
   }) : super(
          retry: null,
          name: r'collectionEntryProvider',
@@ -551,10 +530,10 @@ final class CollectionEntryProvider
   }
 }
 
-String _$collectionEntryHash() => r'9ec43f571c24508a68e546d01c9253a2f2d9e559';
+String _$collectionEntryHash() => r'a2697df82737f44c86d0ba6345f5ed771ff19899';
 
-/// The record-a-collection form. Opened for a customer, a bill or an order,
-/// it starts on the oldest instalment due there.
+/// The record-a-collection form. Opened for a customer or a bill, it starts
+/// on the oldest receivable due there.
 
 final class CollectionEntryFamily extends $Family
     with
@@ -563,7 +542,7 @@ final class CollectionEntryFamily extends $Family
           AsyncValue<CollectionDraft>,
           CollectionDraft,
           FutureOr<CollectionDraft>,
-          ({int? customerId, int? invoiceId, int? orderId})
+          ({String? customerId, String? invoiceId})
         > {
   CollectionEntryFamily._()
     : super(
@@ -574,37 +553,28 @@ final class CollectionEntryFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// The record-a-collection form. Opened for a customer, a bill or an order,
-  /// it starts on the oldest instalment due there.
+  /// The record-a-collection form. Opened for a customer or a bill, it starts
+  /// on the oldest receivable due there.
 
-  CollectionEntryProvider call({
-    int? customerId,
-    int? invoiceId,
-    int? orderId,
-  }) => CollectionEntryProvider._(
-    argument: (customerId: customerId, invoiceId: invoiceId, orderId: orderId),
-    from: this,
-  );
+  CollectionEntryProvider call({String? customerId, String? invoiceId}) =>
+      CollectionEntryProvider._(
+        argument: (customerId: customerId, invoiceId: invoiceId),
+        from: this,
+      );
 
   @override
   String toString() => r'collectionEntryProvider';
 }
 
-/// The record-a-collection form. Opened for a customer, a bill or an order,
-/// it starts on the oldest instalment due there.
+/// The record-a-collection form. Opened for a customer or a bill, it starts
+/// on the oldest receivable due there.
 
 abstract class _$CollectionEntry extends $AsyncNotifier<CollectionDraft> {
-  late final _$args =
-      ref.$arg as ({int? customerId, int? invoiceId, int? orderId});
-  int? get customerId => _$args.customerId;
-  int? get invoiceId => _$args.invoiceId;
-  int? get orderId => _$args.orderId;
+  late final _$args = ref.$arg as ({String? customerId, String? invoiceId});
+  String? get customerId => _$args.customerId;
+  String? get invoiceId => _$args.invoiceId;
 
-  FutureOr<CollectionDraft> build({
-    int? customerId,
-    int? invoiceId,
-    int? orderId,
-  });
+  FutureOr<CollectionDraft> build({String? customerId, String? invoiceId});
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
@@ -619,11 +589,7 @@ abstract class _$CollectionEntry extends $AsyncNotifier<CollectionDraft> {
             >;
     return element.handleCreate(
       ref,
-      () => build(
-        customerId: _$args.customerId,
-        invoiceId: _$args.invoiceId,
-        orderId: _$args.orderId,
-      ),
+      () => build(customerId: _$args.customerId, invoiceId: _$args.invoiceId),
     );
   }
 }

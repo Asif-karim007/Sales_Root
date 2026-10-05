@@ -1,16 +1,19 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
+import 'package:salesroot/core/format/app_date_utils.dart';
+import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/sales/models/instalment.dart';
+import 'package:salesroot/features/sales/models/quotation.dart';
 import 'package:salesroot/features/sales/models/sales_line.dart';
 import 'package:salesroot/features/sales/models/sales_math.dart';
 
+/// Where an order stands. The server keeps confirmed, in progress, delivered
+/// and cancelled; an order with a bill shows as invoiced.
 enum OrderStatus {
-  confirmed('Confirmed'),
-  inProgress('InProgress'),
-  delivered('Delivered'),
-  invoiced('Invoiced');
+  confirmed('confirmed'),
+  inProgress('in_progress'),
+  delivered('delivered'),
+  invoiced('invoiced'),
+  cancelled('cancelled');
 
   const OrderStatus(this.wire);
 
@@ -21,218 +24,236 @@ enum OrderStatus {
     orElse: () => OrderStatus.confirmed,
   );
 
+  /// The steps an order goes through, in order.
+  static const steps = [confirmed, inProgress, delivered, invoiced];
+
   bool get toDeliver =>
       this == OrderStatus.confirmed || this == OrderStatus.inProgress;
 }
-
-/// `SO-092`
-String orderNumber(int id) => 'SO-${id.toString().padLeft(3, '0')}';
-
-/// `INV-2026-0912`
-String invoiceNumber(int year, int id) =>
-    'INV-$year-${id.toString().padLeft(4, '0')}';
 
 class SalesOrder {
   const SalesOrder({
     required this.id,
     required this.number,
-    required this.companyId,
     required this.companyName,
     required this.contactName,
     required this.lines,
-    required this.discountBps,
-    required this.vatBps,
+    required this.totals,
     required this.status,
-    required this.instalments,
     required this.createdAt,
+    required this.note,
+    this.companyId,
     this.quotationId,
-    this.quotationNumber,
-    this.contactPhone,
-    this.invoiceId,
-    this.invoiceNumber,
-    this.delivery,
-    this.canEdit = false,
+    this.deliveryDate,
+    this.invoices = const [],
   });
 
-  final int id;
+  final String id;
   final String number;
-  final int? quotationId;
-  final String? quotationNumber;
-  final int companyId;
+  final String? quotationId;
+  final String? companyId;
   final String companyName;
   final String contactName;
-  final String? contactPhone;
   final List<SalesLine> lines;
-  final int discountBps;
-  final int vatBps;
+  final SalesTotals totals;
   final OrderStatus status;
-  final List<Instalment> instalments;
   final DateTime createdAt;
-  final int? invoiceId;
-  final String? invoiceNumber;
-  final Delivery? delivery;
-  final bool canEdit;
-
-  SalesTotals get totals =>
-      computeTotals(lines, discountBps: discountBps, vatBps: vatBps);
-
-  int get paid => instalments.fold(0, (sum, i) => sum + i.paid);
-  int get due => totals.total - paid;
-
-  factory SalesOrder.fromJson(Map<String, dynamic> json) => SalesOrder(
-    id: jsonInt(json['Id']) ?? 0,
-    number: json['Number'] as String? ?? '',
-    quotationId: jsonInt(json['QuotationId']),
-    quotationNumber: json['QuotationNumber'] as String?,
-    companyId: jsonInt(json['CompanyId']) ?? 0,
-    companyName: json['CompanyName'] as String? ?? '',
-    contactName: json['ContactName'] as String? ?? '',
-    contactPhone: json['ContactPhone'] as String?,
-    lines: jsonList(json['Lines'], SalesLine.fromJson),
-    discountBps: jsonInt(json['DiscountBps']) ?? 0,
-    vatBps: jsonInt(json['VatBps']) ?? standardVatBps,
-    status: OrderStatus.fromWire(json['Status'] as String?),
-    instalments: jsonList(json['Instalments'], Instalment.fromJson),
-    createdAt: jsonDate(json['CreatedAt']) ?? DateTime(2000),
-    invoiceId: jsonInt(json['InvoiceId']),
-    invoiceNumber: json['InvoiceNumber'] as String?,
-    delivery: jsonObject(json['Delivery'], Delivery.fromJson),
-    canEdit: jsonBool(json['CanEdit']),
-  );
-}
-
-class Delivery {
-  const Delivery({
-    required this.deliveredAt,
-    required this.receivedBy,
-    required this.note,
-    required this.deliveredProductIds,
-    required this.photoCount,
-    required this.signed,
-  });
-
-  final DateTime deliveredAt;
-  final String receivedBy;
+  final DateTime? deliveryDate;
   final String note;
-  final List<int> deliveredProductIds;
-  final int photoCount;
-  final bool signed;
 
-  factory Delivery.fromJson(Map<String, dynamic> json) => Delivery(
-    deliveredAt: jsonDate(json['DeliveredAt']) ?? DateTime(2000),
-    receivedBy: json['ReceivedBy'] as String? ?? '',
-    note: json['Note'] as String? ?? '',
-    deliveredProductIds: jsonInts(json['DeliveredProductIds']),
-    photoCount: jsonInt(json['PhotoCount']) ?? 0,
-    signed: jsonBool(json['Signed']),
-  );
-}
+  /// The bills made from it; only the detail carries them.
+  final List<InvoiceSummary> invoices;
 
-class DeliveryInput {
-  const DeliveryInput({
-    required this.deliveredAt,
-    required this.receivedBy,
-    required this.note,
-    required this.deliveredProductIds,
-    required this.photos,
-    required this.createBill,
-    this.signaturePng,
-  });
-
-  final DateTime deliveredAt;
-  final String receivedBy;
-  final String note;
-  final List<int> deliveredProductIds;
-
-  /// Local paths of the photos taken.
-  final List<String> photos;
-  final Uint8List? signaturePng;
-  final bool createBill;
-
-  Map<String, dynamic> toJson() {
-    final signature = signaturePng;
-    return {
-      'DeliveredAt': jsonUtc(deliveredAt),
-      'ReceivedBy': receivedBy.trim(),
-      'Note': note.trim().isEmpty ? null : note.trim(),
-      'DeliveredProductIds': deliveredProductIds,
-      'Photos': photos,
-      'Signature': signature == null ? null : base64Encode(signature),
-      'CreateBill': createBill,
-    }..removeWhere((_, value) => value == null);
+  /// The first bill with money still due, to collect against.
+  InvoiceSummary? get openInvoice {
+    for (final invoice in invoices) {
+      if (invoice.due > 0) return invoice;
+    }
+    return null;
   }
+
+  /// A row of `GET orders`, or `GET orders/{id}` with its [lines] and
+  /// [invoices].
+  factory SalesOrder.fromJson(
+    Map<String, dynamic> json, {
+    List<SalesLine> lines = const [],
+    List<InvoiceSummary> invoices = const [],
+  }) {
+    final status = OrderStatus.fromWire(json['status'] as String?);
+    final billed =
+        (jsonDouble(json['invoicedAmt']) ?? 0) > 0 || invoices.isNotEmpty;
+    return SalesOrder(
+      id: jsonId(json['id']) ?? '',
+      number: json['number'] as String? ?? '',
+      quotationId: jsonId(json['quoteId']),
+      companyId: jsonId(json['companyId']),
+      companyName: json['companyName'] as String? ?? '',
+      contactName: json['contactName'] as String? ?? '',
+      lines: lines,
+      totals: documentTotals(json, lines),
+      status: billed && status != OrderStatus.cancelled
+          ? OrderStatus.invoiced
+          : status,
+      createdAt: jsonDate(json['createdAt']) ?? DateTime(2000),
+      deliveryDate: jsonDate(json['deliveryDate']),
+      note: json['note'] as String? ?? '',
+      invoices: invoices,
+    );
+  }
+
+  /// `{order, lines, invoices}`.
+  factory SalesOrder.fromDetail(Map<String, dynamic> json) =>
+      SalesOrder.fromJson(
+        jsonMap(json['order']),
+        lines: jsonList(json['lines'], SalesLine.fromJson),
+        invoices: jsonList(json['invoices'], InvoiceSummary.fromJson),
+      );
+}
+
+/// A bill as an order lists it.
+class InvoiceSummary {
+  const InvoiceSummary({
+    required this.id,
+    required this.number,
+    required this.total,
+    required this.paid,
+    required this.issuedAt,
+    required this.status,
+  });
+
+  final String id;
+  final String number;
+  final double total;
+  final double paid;
+  final DateTime issuedAt;
+  final InvoiceStatus status;
+
+  double get due => status == InvoiceStatus.cancelled ? 0 : total - paid;
+
+  factory InvoiceSummary.fromJson(Map<String, dynamic> json) => InvoiceSummary(
+    id: jsonId(json['id']) ?? '',
+    number: json['number'] as String? ?? '',
+    total: jsonDouble(json['total']) ?? 0,
+    paid: jsonDouble(json['paidAmt']) ?? 0,
+    issuedAt: jsonDate(json['issueDate']) ?? DateTime(2000),
+    status: InvoiceStatus.fromWire(json['status'] as String?),
+  );
+}
+
+/// `PATCH orders/{id}` marking it delivered: an `OrderUpdate`.
+class DeliveryInput {
+  const DeliveryInput({required this.deliveredOn, required this.note});
+
+  final DateTime deliveredOn;
+  final String note;
+
+  Map<String, dynamic> toJson() => {
+    'status': OrderStatus.delivered.wire,
+    'deliveryDate': AppDateUtils.toApiDateOnly(deliveredOn),
+    'note': note.trim().isEmpty ? null : note.trim(),
+  }..removeWhere((_, value) => value == null);
+}
+
+enum InvoiceStatus {
+  issued('issued'),
+  partial('partial'),
+  paid('paid'),
+  cancelled('cancelled');
+
+  const InvoiceStatus(this.wire);
+
+  final String wire;
+
+  static InvoiceStatus fromWire(String? value) => values.firstWhere(
+    (s) => s.wire == value,
+    orElse: () => InvoiceStatus.issued,
+  );
 }
 
 class Invoice {
   const Invoice({
     required this.id,
     required this.number,
-    required this.orderId,
-    required this.orderNumber,
-    required this.companyId,
     required this.companyName,
     required this.contactName,
     required this.lines,
-    required this.discountBps,
-    required this.vatBps,
+    required this.totals,
+    required this.paid,
     required this.issuedAt,
-    required this.instalments,
-    this.contactPhone,
-    this.ageDays = 0,
+    required this.status,
+    this.orderId,
+    this.orderNumber,
+    this.companyId,
+    this.dueDate,
+    this.instalments = const [],
   });
 
-  final int id;
+  final String id;
   final String number;
-  final int orderId;
-  final String orderNumber;
-  final int companyId;
+  final String? orderId;
+  final String? orderNumber;
+  final String? companyId;
   final String companyName;
   final String contactName;
-  final String? contactPhone;
   final List<SalesLine> lines;
-  final int discountBps;
-  final int vatBps;
+  final SalesTotals totals;
+  final double paid;
   final DateTime issuedAt;
+  final DateTime? dueDate;
+  final InvoiceStatus status;
 
-  /// The order's payment schedule, with what has been collected on each.
+  /// What it is to be paid in, with what has been collected on each; only
+  /// the detail carries them.
   final List<Instalment> instalments;
 
-  /// Days since the bill was issued, by the server's clock.
-  final int ageDays;
+  double get due => status == InvoiceStatus.cancelled ? 0 : totals.total - paid;
 
-  SalesTotals get totals =>
-      computeTotals(lines, discountBps: discountBps, vatBps: vatBps);
-
-  int get paid => instalments.fold(0, (sum, i) => sum + i.paid);
-  int get due => totals.total - paid;
-
-  factory Invoice.fromJson(Map<String, dynamic> json) => Invoice(
-    id: jsonInt(json['Id']) ?? 0,
-    number: json['Number'] as String? ?? '',
-    orderId: jsonInt(json['OrderId']) ?? 0,
-    orderNumber: json['OrderNumber'] as String? ?? '',
-    companyId: jsonInt(json['CompanyId']) ?? 0,
-    companyName: json['CompanyName'] as String? ?? '',
-    contactName: json['ContactName'] as String? ?? '',
-    contactPhone: json['ContactPhone'] as String?,
-    lines: jsonList(json['Lines'], SalesLine.fromJson),
-    discountBps: jsonInt(json['DiscountBps']) ?? 0,
-    vatBps: jsonInt(json['VatBps']) ?? standardVatBps,
-    issuedAt: jsonDate(json['IssuedAt']) ?? DateTime(2000),
-    instalments: jsonList(json['Instalments'], Instalment.fromJson),
-    ageDays: jsonInt(json['AgeDays']) ?? 0,
+  /// A row of `GET invoices`, or `GET invoices/{id}` with its [lines] and
+  /// [instalments].
+  factory Invoice.fromJson(
+    Map<String, dynamic> json, {
+    List<SalesLine> lines = const [],
+    List<Instalment> instalments = const [],
+  }) => Invoice(
+    id: jsonId(json['id']) ?? '',
+    number: json['number'] as String? ?? '',
+    orderId: jsonId(json['orderId']),
+    orderNumber: json['orderNumber'] as String?,
+    companyId: jsonId(json['companyId']),
+    companyName: json['companyName'] as String? ?? '',
+    contactName: json['contactName'] as String? ?? '',
+    lines: lines,
+    totals: documentTotals(json, lines),
+    paid: jsonDouble(json['paidAmt']) ?? 0,
+    issuedAt: jsonDate(json['issueDate']) ?? DateTime(2000),
+    dueDate: jsonDate(json['dueDate']),
+    status: InvoiceStatus.fromWire(json['status'] as String?),
+    instalments: instalments,
   );
+
+  /// `{invoice, lines, receivables, payments}`.
+  factory Invoice.fromDetail(Map<String, dynamic> json, {DateTime? today}) =>
+      Invoice.fromJson(
+        jsonMap(json['invoice']),
+        lines: jsonList(json['lines'], SalesLine.fromJson),
+        instalments: jsonList(
+          json['receivables'],
+          (row) => Instalment.fromJson(row, today: today),
+        ),
+      );
 }
 
 class OrderQuery {
   const OrderQuery({this.toDeliver = false, this.page = 1});
 
+  /// Only orders confirmed and not yet delivered.
   final bool toDeliver;
   final int page;
 
-  Map<String, dynamic> toQuery() =>
-      {'ToDeliver': toDeliver ? true : null, 'Page': page, 'PageSize': 20}
-        ..removeWhere((_, value) => value == null);
+  Map<String, dynamic> toQuery() => {
+    if (toDeliver) 'status': OrderStatus.confirmed.wire,
+    ...pageQuery(page),
+  };
 }
 
 /// The figures on the sales home.
@@ -241,29 +262,21 @@ class SalesOverview {
     required this.salesThisMonth,
     required this.salesLastMonth,
     required this.openQuotations,
-    required this.openQuotationValue,
     required this.ordersToDeliver,
     required this.receivable,
   });
 
-  final int salesThisMonth;
-  final int salesLastMonth;
+  /// Order value booked this month and last.
+  final double salesThisMonth;
+  final double salesLastMonth;
+
+  /// Quotations sent and waiting on the customer.
   final int openQuotations;
-  final int openQuotationValue;
   final int ordersToDeliver;
-  final int receivable;
+  final double receivable;
 
   /// Change on last month in percent; null when last month had no sales.
   double? get growth => salesLastMonth == 0
       ? null
       : (salesThisMonth - salesLastMonth) * 100 / salesLastMonth;
-
-  factory SalesOverview.fromJson(Map<String, dynamic> json) => SalesOverview(
-    salesThisMonth: jsonInt(json['SalesThisMonth']) ?? 0,
-    salesLastMonth: jsonInt(json['SalesLastMonth']) ?? 0,
-    openQuotations: jsonInt(json['OpenQuotations']) ?? 0,
-    openQuotationValue: jsonInt(json['OpenQuotationValue']) ?? 0,
-    ordersToDeliver: jsonInt(json['OrdersToDeliver']) ?? 0,
-    receivable: jsonInt(json['Receivable']) ?? 0,
-  );
 }

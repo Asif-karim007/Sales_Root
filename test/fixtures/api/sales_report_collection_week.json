@@ -1,0 +1,89 @@
+{
+ "range": {
+  "preset": "last_7",
+  "from": "2026-09-29",
+  "to": "2026-10-05",
+  "group": "day",
+  "buckets": [
+   "2026-09-29",
+   "2026-09-30",
+   "2026-10-01",
+   "2026-10-02",
+   "2026-10-03",
+   "2026-10-04",
+   "2026-10-05"
+  ],
+  "days": 7
+ },
+ "summary": {
+  "payments": 2,
+  "collected": 57000.0,
+  "outstanding": 123900.0,
+  "overdue": 68000.0
+ },
+ "trend": [
+  {
+   "bucket": "2026-09-29",
+   "payments": 0,
+   "collected": 0,
+   "cash": 0,
+   "mobileBanking": 0,
+   "bank": 0,
+   "fellDue": 0
+  },
+  {
+   "bucket": "2026-09-30",
+   "payments": 1,
+   "collected": 50000.0,
+   "cash": 0,
+   "mobileBanking": 50000.0,
+   "bank": 0,
+   "fellDue": 50000.0
+  },
+  {
+   "bucket": "2026-10-01",
+   "payments": 0,
+   "collected": 0,
+   "cash": 0,
+   "mobileBanking": 0,
+   "bank": 0,
+   "fellDue": 0
+  },
+  {
+   "bucket": "2026-10-02",
+   "payments": 0,
+   "collected": 0,
+   "cash": 0,
+   "mobileBanking": 0,
+   "bank": 0,
+   "fellDue": 0
+  },
+  {
+   "bucket": "2026-10-03",
+   "payments": 0,
+   "collected": 0,
+   "cash": 0,
+   "mobileBanking": 0,
+   "bank": 0,
+   "fellDue": 0
+  },
+  {
+   "bucket": "2026-10-04",
+   "payments": 0,
+   "collected": 0,
+   "cash": 0,
+   "mobileBanking": 0,
+   "bank": 0,
+   "fellDue": 0
+  },
+  {
+   "bucket": "2026-10-05",
+   "payments": 1,
+   "collected": 7000.0,
+   "cash": 0,
+   "mobileBanking": 0,
+   "bank": 7000.0,
+   "fellDue": 0
+  }
+ ]
+}

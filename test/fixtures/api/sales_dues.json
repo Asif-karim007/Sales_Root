@@ -1,0 +1,31 @@
+{
+ "items": [
+  {
+   "companyId": "01a10101-8657-7f15-8630-b08119f1ae61",
+   "companyName": "Rahim Traders",
+   "phone": "+8801811000010",
+   "area": "Mirpur 10",
+   "ownerName": "Rafi Ahmed",
+   "outstanding": 68000.0,
+   "overdue": 68000.0,
+   "oldestDue": "2026-08-22T00:00:00",
+   "maxAgeDays": 44,
+   "items": 1
+  },
+  {
+   "companyId": "01a10101-865d-7e81-90c1-c811923c2adf",
+   "companyName": "Green Agro Ltd.",
+   "phone": "+8801811000012",
+   "area": "Savar",
+   "ownerName": "Rafi Ahmed",
+   "outstanding": 50000.0,
+   "overdue": 0,
+   "oldestDue": "2026-10-23T00:00:00",
+   "maxAgeDays": 0,
+   "items": 1
+  }
+ ],
+ "total": 2,
+ "offset": 0,
+ "limit": 5
+}

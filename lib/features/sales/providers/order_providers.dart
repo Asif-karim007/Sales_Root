@@ -1,7 +1,7 @@
-import 'dart:typed_data';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'package:salesroot/core/access/access_providers.dart';
+import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/features/sales/data/sales_repositories.dart';
 import 'package:salesroot/features/sales/models/instalment.dart';
@@ -51,46 +51,57 @@ class InvoiceList extends _$InvoiceList {
 }
 
 @riverpod
-Future<SalesOrder> order(Ref ref, int id) =>
+Future<SalesOrder> order(Ref ref, String id) =>
     ref.watch(orderRepositoryProvider).get(id);
 
 @riverpod
-Future<Invoice> invoice(Ref ref, int id) =>
+Future<Invoice> invoice(Ref ref, String id) =>
     ref.watch(orderRepositoryProvider).invoice(id);
 
-sealed class OrderOutcome {
-  const OrderOutcome();
-}
-
-class OrderBilled extends OrderOutcome {
-  const OrderBilled(this.invoice);
-
-  final Invoice invoice;
-}
-
-class OrderScheduleSaved extends OrderOutcome {
-  const OrderScheduleSaved();
-}
-
+/// Bills one order. The screen listens for the new bill to open it.
 @riverpod
 class OrderActions extends _$OrderActions {
   @override
-  AsyncValue<OrderOutcome?> build(int id) => const AsyncData(null);
+  AsyncValue<Invoice?> build(String id) => const AsyncData(null);
 
-  Future<void> createInvoice() => _run(
-    () async =>
-        OrderBilled(await ref.read(orderRepositoryProvider).createInvoice(id)),
-  );
-
-  Future<void> saveSchedule(List<Instalment> instalments) => _run(() async {
-    await ref.read(orderRepositoryProvider).updateSchedule(id, instalments);
-    return const OrderScheduleSaved();
-  });
-
-  Future<void> _run(Future<OrderOutcome> Function() action) async {
+  Future<void> createInvoice() async {
     if (state.isLoading) return;
     state = const AsyncLoading();
-    final result = await AsyncValue.guard(action);
+    final result = await AsyncValue.guard(
+      () => ref.read(orderRepositoryProvider).createInvoice(id),
+    );
+    if (!ref.mounted) return;
+    state = result;
+    if (result.hasValue) refreshSales(ref);
+  }
+}
+
+enum InvoiceChange { split, cancelled }
+
+/// Splits one bill into instalments or cancels it.
+@riverpod
+class InvoiceActions extends _$InvoiceActions {
+  @override
+  AsyncValue<InvoiceChange?> build(String id) => const AsyncData(null);
+
+  Future<void> split(InstalmentPlan plan) => _run(InvoiceChange.split, () {
+    return ref.read(orderRepositoryProvider).splitInvoice(id, plan);
+  });
+
+  Future<void> cancel(String reason) => _run(InvoiceChange.cancelled, () {
+    return ref.read(orderRepositoryProvider).cancelInvoice(id, reason);
+  });
+
+  Future<void> _run(
+    InvoiceChange change,
+    Future<Invoice> Function() action,
+  ) async {
+    if (state.isLoading) return;
+    state = const AsyncLoading();
+    final result = await AsyncValue.guard(() async {
+      await action();
+      return change;
+    });
     if (!ref.mounted) return;
     state = result;
     if (result.hasValue) refreshSales(ref);
@@ -100,65 +111,54 @@ class OrderActions extends _$OrderActions {
 class DeliveryDraft {
   const DeliveryDraft({
     required this.order,
-    required this.deliveredAt,
-    required this.receivedBy,
+    required this.deliveredOn,
     required this.note,
     required this.delivered,
-    this.photos = const [],
-    this.signature,
     this.createBill = true,
     this.submission,
   });
 
   final SalesOrder order;
-  final DateTime deliveredAt;
-  final String receivedBy;
+  final DateTime deliveredOn;
   final String note;
 
-  /// Product ids ticked on the checklist.
-  final Set<int> delivered;
-  final List<String> photos;
-  final Uint8List? signature;
+  /// Keys of the lines ticked on the checklist.
+  final Set<String> delivered;
   final bool createBill;
   final AsyncValue<SalesOrder>? submission;
 
   bool get isSaving => submission?.isLoading ?? false;
 
   DeliveryDraft copyWith({
-    DateTime? deliveredAt,
-    String? receivedBy,
+    DateTime? deliveredOn,
     String? note,
-    Set<int>? delivered,
-    List<String>? photos,
-    Uint8List? Function()? signature,
+    Set<String>? delivered,
     bool? createBill,
     AsyncValue<SalesOrder>? Function()? submission,
   }) => DeliveryDraft(
     order: order,
-    deliveredAt: deliveredAt ?? this.deliveredAt,
-    receivedBy: receivedBy ?? this.receivedBy,
+    deliveredOn: deliveredOn ?? this.deliveredOn,
     note: note ?? this.note,
     delivered: delivered ?? this.delivered,
-    photos: photos ?? this.photos,
-    signature: signature != null ? signature() : this.signature,
     createBill: createBill ?? this.createBill,
     submission: submission != null ? submission() : this.submission,
   );
 }
 
-/// The delivery or service completion form for one order.
+/// Marks one order delivered, and bills it at once when asked.
 @riverpod
 class DeliveryForm extends _$DeliveryForm {
   @override
-  Future<DeliveryDraft> build(int orderId) async {
+  Future<DeliveryDraft> build(String orderId) async {
     final order = await ref.read(orderRepositoryProvider).get(orderId);
     return DeliveryDraft(
       order: order,
-      deliveredAt: DateTime.now(),
-      receivedBy: order.contactName,
-      note: '',
-      delivered: {for (final line in order.lines) line.productId},
-      createBill: order.invoiceId == null,
+      deliveredOn: DateTime.now(),
+      note: order.note,
+      delivered: {for (final line in order.lines) line.key},
+      createBill:
+          order.invoices.isEmpty &&
+          ref.read(moduleAccessProvider(AppModule.invoice)).canAdd,
     );
   }
 
@@ -168,29 +168,16 @@ class DeliveryForm extends _$DeliveryForm {
     state = AsyncData(change(draft));
   }
 
-  void setDeliveredAt(DateTime value) =>
-      _edit((d) => d.copyWith(deliveredAt: value));
-
-  void setReceivedBy(String value) =>
-      _edit((d) => d.copyWith(receivedBy: value));
+  void setDeliveredOn(DateTime value) =>
+      _edit((d) => d.copyWith(deliveredOn: value));
 
   void setNote(String value) => _edit((d) => d.copyWith(note: value));
 
-  void toggleItem(int productId) => _edit((d) {
+  void toggleItem(String key) => _edit((d) {
     final next = {...d.delivered};
-    next.contains(productId) ? next.remove(productId) : next.add(productId);
+    next.contains(key) ? next.remove(key) : next.add(key);
     return d.copyWith(delivered: next);
   });
-
-  void addPhoto(String path) =>
-      _edit((d) => d.copyWith(photos: [...d.photos, path]));
-
-  void removePhoto(String path) => _edit(
-    (d) => d.copyWith(photos: d.photos.where((p) => p != path).toList()),
-  );
-
-  void setSignature(Uint8List? png) =>
-      _edit((d) => d.copyWith(signature: () => png));
 
   void setCreateBill(bool value) => _edit((d) => d.copyWith(createBill: value));
 
@@ -198,22 +185,16 @@ class DeliveryForm extends _$DeliveryForm {
     final draft = state.value;
     if (draft == null || draft.isSaving) return;
     state = AsyncData(draft.copyWith(submission: () => const AsyncLoading()));
-    final result = await AsyncValue.guard(
-      () => ref
-          .read(orderRepositoryProvider)
-          .logDelivery(
-            orderId,
-            DeliveryInput(
-              deliveredAt: draft.deliveredAt,
-              receivedBy: draft.receivedBy,
-              note: draft.note,
-              deliveredProductIds: draft.delivered.toList(),
-              photos: draft.photos,
-              signaturePng: draft.signature,
-              createBill: draft.createBill && draft.order.invoiceId == null,
-            ),
-          ),
-    );
+    final repository = ref.read(orderRepositoryProvider);
+    final result = await AsyncValue.guard(() async {
+      final order = await repository.logDelivery(
+        orderId,
+        DeliveryInput(deliveredOn: draft.deliveredOn, note: draft.note),
+      );
+      if (!draft.createBill || order.invoices.isNotEmpty) return order;
+      await repository.createInvoice(orderId);
+      return repository.get(orderId);
+    });
     if (!ref.mounted) return;
     final current = state.value ?? draft;
     state = AsyncData(current.copyWith(submission: () => result));

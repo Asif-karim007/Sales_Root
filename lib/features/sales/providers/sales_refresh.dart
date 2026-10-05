@@ -5,7 +5,7 @@ import 'package:salesroot/features/sales/providers/order_providers.dart';
 import 'package:salesroot/features/sales/providers/quotation_providers.dart';
 
 /// Reloads every sales list, summary and record after a change. A collection
-/// moves the order, its bill, the outstanding and the home figures together,
+/// moves the bill, the order, the outstanding and the home figures together,
 /// so they are refreshed as one.
 void refreshSales(Ref ref) {
   ref
@@ -18,10 +18,8 @@ void refreshSales(Ref ref) {
     ..invalidate(invoiceListProvider)
     ..invalidate(invoiceProvider)
     ..invalidate(collectionSummaryProvider)
-    ..invalidate(dueListProvider)
     ..invalidate(collectionListProvider)
     ..invalidate(collectionProvider)
-    ..invalidate(customerDuesProvider)
     ..invalidate(outstandingSummaryProvider)
     ..invalidate(outstandingListProvider);
 }

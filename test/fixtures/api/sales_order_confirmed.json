@@ -1,0 +1,51 @@
+{
+ "order": {
+  "id": "01a10cf6-ec94-7f9b-a23c-7c03baa31ff7",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "number": "SO-2026-00003",
+  "leadId": null,
+  "quoteId": "01a10cf6-a6c4-7934-b41b-78b3d58041b7",
+  "companyId": "01a10cdb-8377-71c2-b01b-9117bf4770be",
+  "contactId": null,
+  "ownerMembershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+  "status": "confirmed",
+  "subtotal": 12900.0,
+  "discountAmt": 0.0,
+  "taxAmt": 0.0,
+  "total": 12900.0,
+  "deliveryDate": null,
+  "deliveryAddress": null,
+  "custom": "{}",
+  "note": "[test] probe v2",
+  "createdBy": "01a10101-8644-75d5-813c-211d42aa3d68",
+  "createdAt": "2026-10-05T16:47:51.437399Z",
+  "updatedAt": "2026-10-05T16:47:51.437399Z",
+  "deletedAt": null,
+  "version": 232,
+  "companyName": "[test] Probe lead",
+  "contactName": null,
+  "ownerName": "Rafi Ahmed",
+  "invoicedAmt": 0
+ },
+ "lines": [
+  {
+   "id": "01a10cf6-ec96-773c-aec8-da570b9c4b95",
+   "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+   "orderId": "01a10cf6-ec94-7f9b-a23c-7c03baa31ff7",
+   "productId": "01a10101-8689-78e8-a72d-31b71e965856",
+   "description": "[test] Soap",
+   "qty": 3.0,
+   "unit": "ctn",
+   "unitPrice": 4300.0,
+   "discountPct": 0.0,
+   "taxPct": 0.0,
+   "lineTotal": 12900.0,
+   "deliveredQty": 0.0,
+   "sortOrder": 0,
+   "updatedAt": "2026-10-05T16:47:51.437399Z",
+   "deletedAt": null,
+   "version": 233
+  }
+ ],
+ "invoices": []
+}

@@ -5,7 +5,6 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/features/sales/data/sales_repositories.dart';
 import 'package:salesroot/features/sales/models/outstanding.dart';
 import 'package:salesroot/features/sales/models/sales_party.dart';
-import 'package:salesroot/features/sales/view/sales_labels.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
@@ -13,6 +12,7 @@ import 'package:salesroot/widgets/widgets.dart';
 Future<SalesCustomer?> pickSalesCustomer(BuildContext context, WidgetRef ref) {
   final repository = ref.read(quotationRepositoryProvider);
   final l10n = context.l10n;
+  final fmt = context.fmt;
   return showSrSheet<SalesCustomer>(
     context: context,
     builder: (_) => SrSearchSheet<SalesCustomer>(
@@ -20,7 +20,10 @@ Future<SalesCustomer?> pickSalesCustomer(BuildContext context, WidgetRef ref) {
       searchHint: l10n.salesSearchCustomer,
       search: repository.customers,
       labelOf: (c) => c.name,
-      subtitleOf: (c) => '${c.contactName} · ${l10n.priceList(c.priceList)}',
+      subtitleOf: (c) => [
+        ?c.area,
+        if (c.contactPhone case final phone?) fmt.phone(phone),
+      ].join(' · '),
       isSelected: (_) => false,
       withAvatar: true,
     ),
@@ -38,9 +41,7 @@ Future<CustomerOutstanding?> pickDebtor(BuildContext context, WidgetRef ref) {
       title: l10n.salesPickCustomer,
       searchHint: l10n.salesSearchCustomer,
       search: (term, page) async => (await repository.outstanding(
-        OutstandingFilter.byCustomer,
-        search: term,
-        page: page,
+        OutstandingQuery(search: term, page: page),
       )).items,
       labelOf: (c) => c.companyName,
       subtitleOf: (c) => l10n.salesDueAmountLabel(fmt.money(c.due)),

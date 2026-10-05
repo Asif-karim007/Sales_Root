@@ -8,24 +8,21 @@ part of 'quotation_wizard.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The three-step new quotation: customer and items, then discount and
-/// terms, then review and send. [fromId] copies an existing quotation, or
-/// with [revise] makes its next version.
+/// The three-step quotation: customer and items, then discount and terms,
+/// then review and send. [editId] edits an existing quotation in place.
 
 @ProviderFor(QuotationWizard)
 final quotationWizardProvider = QuotationWizardFamily._();
 
-/// The three-step new quotation: customer and items, then discount and
-/// terms, then review and send. [fromId] copies an existing quotation, or
-/// with [revise] makes its next version.
+/// The three-step quotation: customer and items, then discount and terms,
+/// then review and send. [editId] edits an existing quotation in place.
 final class QuotationWizardProvider
     extends $AsyncNotifierProvider<QuotationWizard, QuotationDraft> {
-  /// The three-step new quotation: customer and items, then discount and
-  /// terms, then review and send. [fromId] copies an existing quotation, or
-  /// with [revise] makes its next version.
+  /// The three-step quotation: customer and items, then discount and terms,
+  /// then review and send. [editId] edits an existing quotation in place.
   QuotationWizardProvider._({
     required QuotationWizardFamily super.from,
-    required ({int? leadId, int? fromId, bool revise}) super.argument,
+    required ({String? leadId, String? editId}) super.argument,
   }) : super(
          retry: null,
          name: r'quotationWizardProvider',
@@ -59,11 +56,10 @@ final class QuotationWizardProvider
   }
 }
 
-String _$quotationWizardHash() => r'4bc0cd5258e5dae0c708e0038e68b2f9a8994f55';
+String _$quotationWizardHash() => r'575d24754cbc1dcbc1631b0d4a2adb71d1b1fcac';
 
-/// The three-step new quotation: customer and items, then discount and
-/// terms, then review and send. [fromId] copies an existing quotation, or
-/// with [revise] makes its next version.
+/// The three-step quotation: customer and items, then discount and terms,
+/// then review and send. [editId] edits an existing quotation in place.
 
 final class QuotationWizardFamily extends $Family
     with
@@ -72,7 +68,7 @@ final class QuotationWizardFamily extends $Family
           AsyncValue<QuotationDraft>,
           QuotationDraft,
           FutureOr<QuotationDraft>,
-          ({int? leadId, int? fromId, bool revise})
+          ({String? leadId, String? editId})
         > {
   QuotationWizardFamily._()
     : super(
@@ -83,38 +79,28 @@ final class QuotationWizardFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// The three-step new quotation: customer and items, then discount and
-  /// terms, then review and send. [fromId] copies an existing quotation, or
-  /// with [revise] makes its next version.
+  /// The three-step quotation: customer and items, then discount and terms,
+  /// then review and send. [editId] edits an existing quotation in place.
 
-  QuotationWizardProvider call({
-    int? leadId,
-    int? fromId,
-    bool revise = false,
-  }) => QuotationWizardProvider._(
-    argument: (leadId: leadId, fromId: fromId, revise: revise),
-    from: this,
-  );
+  QuotationWizardProvider call({String? leadId, String? editId}) =>
+      QuotationWizardProvider._(
+        argument: (leadId: leadId, editId: editId),
+        from: this,
+      );
 
   @override
   String toString() => r'quotationWizardProvider';
 }
 
-/// The three-step new quotation: customer and items, then discount and
-/// terms, then review and send. [fromId] copies an existing quotation, or
-/// with [revise] makes its next version.
+/// The three-step quotation: customer and items, then discount and terms,
+/// then review and send. [editId] edits an existing quotation in place.
 
 abstract class _$QuotationWizard extends $AsyncNotifier<QuotationDraft> {
-  late final _$args = ref.$arg as ({int? leadId, int? fromId, bool revise});
-  int? get leadId => _$args.leadId;
-  int? get fromId => _$args.fromId;
-  bool get revise => _$args.revise;
+  late final _$args = ref.$arg as ({String? leadId, String? editId});
+  String? get leadId => _$args.leadId;
+  String? get editId => _$args.editId;
 
-  FutureOr<QuotationDraft> build({
-    int? leadId,
-    int? fromId,
-    bool revise = false,
-  });
+  FutureOr<QuotationDraft> build({String? leadId, String? editId});
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
@@ -129,11 +115,7 @@ abstract class _$QuotationWizard extends $AsyncNotifier<QuotationDraft> {
             >;
     return element.handleCreate(
       ref,
-      () => build(
-        leadId: _$args.leadId,
-        fromId: _$args.fromId,
-        revise: _$args.revise,
-      ),
+      () => build(leadId: _$args.leadId, editId: _$args.editId),
     );
   }
 }

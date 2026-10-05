@@ -1,0 +1,14 @@
+[
+ {
+  "id": "01a10101-86c3-7953-a890-76ae4af30571",
+  "label": "INV-OLD-0031",
+  "instalmentNo": null,
+  "amount": 68000.0,
+  "paidAmt": 0.0,
+  "balance": 68000.0,
+  "dueDate": "2026-08-22T00:00:00",
+  "status": "due",
+  "ageDays": 44,
+  "invoiceId": null
+ }
+]

@@ -2,75 +2,81 @@ import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/sales/models/product.dart';
 import 'package:salesroot/features/sales/models/sales_math.dart';
 
-/// One product line on a quotation, order or bill.
+/// One line on a quotation, order or bill.
 class SalesLine implements PricedLine {
   const SalesLine({
-    required this.productId,
-    required this.code,
     required this.name,
-    required this.nameBn,
     required this.unit,
     required this.qty,
     required this.unitPrice,
+    this.productId,
+    this.nameBn = '',
     this.discountBps = 0,
+    this.vatBps = 0,
   });
 
-  final int productId;
-  final String code;
+  /// Null for a line typed in without a catalogue product.
+  final String? productId;
+
+  /// The line's description; the product's English name when added from the
+  /// catalogue.
   final String name;
   final String nameBn;
   final String unit;
   @override
-  final int qty;
+  final double qty;
   @override
-  final int unitPrice;
+  final double unitPrice;
   @override
   final int discountBps;
+  @override
+  final int vatBps;
+
+  /// Identifies the line within its document.
+  String get key => productId ?? name;
 
   String nameIn({required bool bangla}) =>
       LocalizedName(name, nameBn).of(bangla);
 
-  factory SalesLine.of(Product product, PriceList list, {int qty = 1}) =>
-      SalesLine(
-        productId: product.id,
-        code: product.code,
-        name: product.name,
-        nameBn: product.nameBn,
-        unit: product.unit,
-        qty: qty,
-        unitPrice: product.priceIn(list),
-      );
+  factory SalesLine.of(Product product, {double qty = 1}) => SalesLine(
+    productId: product.id,
+    name: product.name,
+    nameBn: product.nameBn,
+    unit: product.unit,
+    qty: qty,
+    unitPrice: product.price,
+    vatBps: product.vatBps,
+  );
 
-  SalesLine copyWith({int? qty, int? unitPrice, int? discountBps}) => SalesLine(
+  SalesLine copyWith({double? qty, int? discountBps}) => SalesLine(
     productId: productId,
-    code: code,
     name: name,
     nameBn: nameBn,
     unit: unit,
     qty: qty ?? this.qty,
-    unitPrice: unitPrice ?? this.unitPrice,
+    unitPrice: unitPrice,
     discountBps: discountBps ?? this.discountBps,
+    vatBps: vatBps,
   );
 
   factory SalesLine.fromJson(Map<String, dynamic> json) => SalesLine(
-    productId: jsonInt(json['ProductId']) ?? 0,
-    code: json['Code'] as String? ?? '',
-    name: json['Name'] as String? ?? '',
-    nameBn: json['NameBn'] as String? ?? '',
-    unit: json['Unit'] as String? ?? '',
-    qty: jsonInt(json['Qty']) ?? 0,
-    unitPrice: jsonInt(json['UnitPrice']) ?? 0,
-    discountBps: jsonInt(json['DiscountBps']) ?? 0,
+    productId: jsonId(json['productId']),
+    name: json['description'] as String? ?? '',
+    unit: json['unit'] as String? ?? '',
+    qty: jsonDouble(json['qty']) ?? 0,
+    unitPrice: jsonDouble(json['unitPrice']) ?? 0,
+    discountBps: bpsFromPercent(jsonDouble(json['discountPct']) ?? 0),
+    vatBps: bpsFromPercent(jsonDouble(json['taxPct']) ?? 0),
   );
 
+  /// A `LineInput`.
   Map<String, dynamic> toJson() => {
-    'ProductId': productId,
-    'Code': code,
-    'Name': name,
-    'NameBn': nameBn,
-    'Unit': unit,
-    'Qty': qty,
-    'UnitPrice': unitPrice,
-    'DiscountBps': discountBps,
-  };
+    'productId': productId,
+    'description': name,
+    'qty': qty,
+    'unit': unit.isEmpty ? null : unit,
+    'unitPrice': unitPrice,
+    'discountPct': percentFromBps(discountBps),
+    'taxPct': percentFromBps(vatBps),
+  }..removeWhere((_, value) => value == null);
 }
