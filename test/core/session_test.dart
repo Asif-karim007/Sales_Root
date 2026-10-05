@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:salesroot/core/access/access_providers.dart';
@@ -8,6 +11,7 @@ import 'package:salesroot/core/network/api_extras.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/network/interceptors.dart';
 import 'package:salesroot/core/session/session_provider.dart';
+import 'package:salesroot/core/session/session_store.dart';
 import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/core/workspace/workspace_providers.dart';
 
@@ -67,6 +71,19 @@ void main() {
           ),
         ),
       );
+    });
+  });
+
+  group('stored session', () {
+    test('one without real tokens is dropped with its PIN', () async {
+      FlutterSecureStorage.setMockInitialValues({
+        'session': jsonEncode({'Token': 'fake.1', 'UserId': 1}),
+        'pin_hash': 'old',
+      });
+      const store = SessionStore(FlutterSecureStorage());
+
+      expect(await store.read(), isNull);
+      expect(await store.hasPin(), isFalse);
     });
   });
 

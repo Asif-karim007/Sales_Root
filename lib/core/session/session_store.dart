@@ -20,11 +20,16 @@ class SessionStore {
     final raw = await _storage.read(key: _sessionKey);
     if (raw == null) return null;
     final json = jsonDecode(raw);
-    if (json is! Map<String, dynamic>) return null;
-    final session = AuthSession.fromJson(json);
-    return session.token.isEmpty || session.refreshToken == null
-        ? null
-        : session;
+    final session = json is Map<String, dynamic>
+        ? AuthSession.fromJson(json)
+        : null;
+    if (session == null ||
+        session.token.isEmpty ||
+        session.refreshToken == null) {
+      await clear();
+      return null;
+    }
+    return session;
   }
 
   Future<void> write(AuthSession session) =>
