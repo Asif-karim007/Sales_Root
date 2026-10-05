@@ -51,7 +51,7 @@ final class DioProvider extends $FunctionalProvider<Dio, Dio, Dio>
   }
 }
 
-String _$dioHash() => r'e46a77badd44dc1a9a003309bb88c39f47d60658';
+String _$dioHash() => r'88c79ff407fff735d60cd592c6c3dc802e5b0eae';
 
 /// For the calls made without a session: sign-in codes and token refresh.
 
@@ -96,7 +96,7 @@ final class BareDioProvider extends $FunctionalProvider<Dio, Dio, Dio>
   }
 }
 
-String _$bareDioHash() => r'0274a31007dde02e571300b96f8721397f6d2a1f';
+String _$bareDioHash() => r'659346f42e603860aee4f187a59f29b3a0a5b486';
 
 @ProviderFor(sessionApi)
 final sessionApiProvider = SessionApiProvider._();

@@ -36,11 +36,7 @@ class PermissionsNotifier extends _$PermissionsNotifier {
     if (workspace == null) return const {};
     return {
       for (final module in AppModule.values)
-        module: roleGrant(
-          workspace.role,
-          module,
-          finance: workspace.isFinance,
-        ),
+        module: roleGrant(workspace.role, module, finance: workspace.isFinance),
     };
   }
 }

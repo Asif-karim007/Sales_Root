@@ -28,8 +28,8 @@ SeedGraph seedGraph(Ref ref) {
   return SeedGraph.build(
     workspaceId: (workspace?.id ?? '').hashCode & 0xffff,
     kind: workspace?.kind ?? WorkspaceKind.personal,
-    memberCount: workspace?.memberCount ?? 1,
-    leadCount: workspace?.leadCount ?? 0,
+    memberCount: 25,
+    leadCount: 230,
   );
 }
 

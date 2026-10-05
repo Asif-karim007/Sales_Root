@@ -135,7 +135,7 @@ final class SeedGraphProvider
   }
 }
 
-String _$seedGraphHash() => r'b4af2481d7528932bc9e9e52563003b094aea7d9';
+String _$seedGraphHash() => r'12893c07780bad935137dbec0a95fabb5d122817';
 
 /// The fake server for the current workspace. Every fake repository is built
 /// from this, so dev-menu changes reload every screen.

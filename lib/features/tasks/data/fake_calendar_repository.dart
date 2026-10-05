@@ -4,7 +4,6 @@ import 'package:salesroot/core/fake/fake_backend.dart';
 import 'package:salesroot/core/fake/fake_store.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
-import 'package:salesroot/features/tasks/data/calendar_fixtures.dart';
 import 'package:salesroot/features/tasks/data/calendar_repository.dart';
 import 'package:salesroot/features/tasks/models/calendar_event.dart';
 
@@ -13,7 +12,8 @@ class FakeCalendarRepository implements CalendarRepository {
 
   final FakeBackend _backend;
 
-  FakeTable get _table => _backend.table('calendar_events', calendarFixtures);
+  /// Events live on this device for the session only: there is no endpoint.
+  FakeTable get _table => _backend.table('calendar_events', (_) => []);
 
   @override
   Future<List<CalendarEvent>> between(DateTime from, DateTime to) =>

@@ -324,7 +324,7 @@ final class ProfileSubmitNotifierProvider
 }
 
 String _$profileSubmitNotifierHash() =>
-    r'8f8b11025dcb4ae2977f40e89ef03107d1148de2';
+    r'9c745e534742915889944493218ed5003d9b4813';
 
 abstract class _$ProfileSubmitNotifier extends $AsyncNotifier<AuthSession?> {
   FutureOr<AuthSession?> build();

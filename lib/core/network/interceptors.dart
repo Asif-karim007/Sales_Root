@@ -28,6 +28,19 @@ class AuthInterceptor extends Interceptor {
   }
 }
 
+/// IIS answers 411 to a POST without a body, so a body-less write sends `{}`.
+class EmptyBodyInterceptor extends Interceptor {
+  static const _writes = {'POST', 'PUT', 'PATCH'};
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    if (options.data == null && _writes.contains(options.method)) {
+      options.data = const <String, dynamic>{};
+    }
+    handler.next(options);
+  }
+}
+
 class LogInterceptor extends Interceptor {
   static const _redacted = '<redacted>';
   static const _sensitive = {
@@ -129,10 +142,7 @@ class StatusInterceptor extends Interceptor {
     } on ApiFailure catch (failure) {
       if (failure.isOffline) {
         return handler.reject(
-          DioException(
-            requestOptions: response.requestOptions,
-            error: failure,
-          ),
+          DioException(requestOptions: response.requestOptions, error: failure),
         );
       }
       onSessionExpired?.call();

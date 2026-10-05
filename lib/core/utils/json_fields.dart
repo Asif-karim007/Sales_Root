@@ -36,12 +36,8 @@ String? jsonId(dynamic value) {
   return null;
 }
 
-List<String> jsonIds(dynamic value) => value is List
-    ? [
-        for (final item in value)
-          ?jsonId(item),
-      ]
-    : const [];
+List<String> jsonIds(dynamic value) =>
+    value is List ? [for (final item in value) ?jsonId(item)] : const [];
 
 /// An object field, also when the server sends it as an encoded JSON string.
 Map<String, dynamic> jsonMap(dynamic value) {
@@ -90,11 +86,13 @@ class LocalizedName {
   );
 
   /// The `<key>En` / `<key>Bn` pair, e.g. `nameEn` and `nameBn`.
-  factory LocalizedName.pair(Map<String, dynamic> json, [String key = 'name']) =>
-      LocalizedName(
-        json['${key}En'] as String? ?? json[key] as String? ?? '',
-        json['${key}Bn'] as String? ?? '',
-      );
+  factory LocalizedName.pair(
+    Map<String, dynamic> json, [
+    String key = 'name',
+  ]) => LocalizedName(
+    json['${key}En'] as String? ?? json[key] as String? ?? '',
+    json['${key}Bn'] as String? ?? '',
+  );
 
   /// A `{en, bn}` object, as error messages and labels come.
   factory LocalizedName.of(dynamic value) => value is Map

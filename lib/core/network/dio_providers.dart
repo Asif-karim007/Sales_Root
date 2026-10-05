@@ -26,6 +26,7 @@ Dio dio(Ref ref) {
   dio.transformer = FusedTransformer(contentLengthIsolateThreshold: 2048);
   dio.interceptors.addAll([
     AuthInterceptor(token: () => ref.read(sessionProvider).value?.token),
+    EmptyBodyInterceptor(),
     LogInterceptor(),
     StatusInterceptor(
       bangla: () => ref.read(appLocaleProvider) == bangla,
@@ -43,6 +44,7 @@ Dio bareDio(Ref ref) {
   final dio = Dio(_options());
   dio.transformer = FusedTransformer(contentLengthIsolateThreshold: 2048);
   dio.interceptors.addAll([
+    EmptyBodyInterceptor(),
     LogInterceptor(),
     StatusInterceptor(bangla: () => ref.read(appLocaleProvider) == bangla),
   ]);
