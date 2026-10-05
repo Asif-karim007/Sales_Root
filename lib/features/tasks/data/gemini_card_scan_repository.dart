@@ -1,9 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:salesroot/core/access/app_module.dart';
-import 'package:salesroot/core/access/module_access.dart';
-import 'package:salesroot/core/fake/fake_backend.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/network/api_request.dart';
 import 'package:salesroot/features/tasks/data/card_scan_repository.dart';
@@ -11,11 +8,8 @@ import 'package:salesroot/features/tasks/data/gemini_api.dart';
 import 'package:salesroot/features/tasks/models/scanned_card.dart';
 
 /// Reads card photos with Gemini (port of SaleBee's `CardScanRepository`).
-/// The quota check still goes through the fake server until the billing API
-/// arrives.
 class GeminiCardScanRepository implements CardScanRepository {
-  GeminiCardScanRepository(this._backend, {GeminiApi? api})
-    : _api = api ?? GeminiApi();
+  GeminiCardScanRepository({GeminiApi? api}) : _api = api ?? GeminiApi();
 
   static const _model = 'gemini-3.8-flash';
   static const _attempts = 4;
@@ -74,7 +68,6 @@ class GeminiCardScanRepository implements CardScanRepository {
       'This photo shows a QR code. Decode it and return its exact text in '
       'qrText, or null when no QR code can be read.';
 
-  final FakeBackend _backend;
   final GeminiApi _api;
 
   @override
@@ -82,13 +75,6 @@ class GeminiCardScanRepository implements CardScanRepository {
     Uint8List image, {
     ScanMode mode = ScanMode.card,
   }) async {
-    await _backend.run(
-      'Card scan quota',
-      () {},
-      module: AppModule.cardScan,
-      right: ModuleRight.add,
-      quota: QuotaKind.cardScans,
-    );
     for (var attempt = 1; ; attempt++) {
       try {
         return await _scanOnce(image, mode);

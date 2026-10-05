@@ -35,8 +35,8 @@ class TaskFormScreen extends ConsumerStatefulWidget {
     this.day,
   });
 
-  final int? taskId;
-  final int? leadId;
+  final String? taskId;
+  final String? leadId;
   final String? title;
   final DateTime? day;
 
@@ -178,7 +178,7 @@ class _Form extends ConsumerWidget {
     final l10n = context.l10n;
     final easy = ref.watch(experienceLevelProvider) == ExperienceLevel.easy;
     final team = ref.watch(currentRoleProvider) != WorkspaceRole.member;
-    final titleError = draft.failure?.fieldError('Title');
+    final titleError = draft.failure?.fieldError('title');
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -374,14 +374,15 @@ class _LeadField extends ConsumerWidget {
             placeholder: l10n.tasksFieldLinkedHint,
             value: lead == null ? null : l10n.tasksLeadSuffix(lead.shortName),
             icon: Icons.person_search_outlined,
-            error: draft.failure?.fieldError('LeadId'),
+            error: draft.failure?.fieldError('leadId'),
+            enabled: !draft.isEdit,
             onTap: () async {
               final picked = await pickLead(context, ref, currentId: lead?.id);
               if (picked != null) onChanged(picked);
             },
           ),
         ),
-        if (lead != null) ...[
+        if (lead != null && !draft.isEdit) ...[
           const SizedBox(width: 6),
           Padding(
             padding: const EdgeInsets.only(bottom: 5),
@@ -510,11 +511,11 @@ class _AssigneeField extends ConsumerWidget {
     return SrDropdownField(
       label: l10n.tasksFieldAssign,
       icon: Icons.person_outline_rounded,
-      value: assignee == null
+      value: assignee == null || assignee.isMe
           ? l10n.tasksMe
           : assignee.name.of(context.fmt.isBangla),
       error:
-          draft.failure?.fieldError('AssignedToEmployeeId') ??
+          draft.failure?.fieldError('assigneeMembershipId') ??
           (members.hasError ? l10n.errorGeneric : null),
       onTap: () async {
         final list = members.value;
@@ -529,7 +530,7 @@ class _AssigneeField extends ConsumerWidget {
           currentId: assignee?.id,
         );
         if (picked == null) return;
-        onChanged(picked.isMe ? null : picked);
+        onChanged(picked.isMe && !draft.isEdit ? null : picked);
       },
     );
   }

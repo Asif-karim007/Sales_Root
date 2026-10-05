@@ -30,7 +30,7 @@ class EventDraft {
 
   static const _keep = Object();
 
-  final int? eventId;
+  final String? eventId;
   final DateTime start;
   final String title;
   final String location;

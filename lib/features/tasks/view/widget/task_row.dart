@@ -8,31 +8,18 @@ import 'package:salesroot/features/tasks/view/widget/task_type_style.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// The lead when the title does not already name it, then "Quotation ·
-/// ৳ 5.8 lakh", "৳ 50,000 · 2nd instalment" or the description.
+/// Who the task is about when the title does not already name them, then
+/// the type and, in the team view, the assignee.
 String taskSubtitle(
   BuildContext context,
   Task task, {
   bool withAssignee = false,
 }) {
-  final l10n = context.l10n;
-  final fmt = context.fmt;
-  final amount = task.amount;
-  final description = task.description;
-  final type = task.type.label(l10n);
-  final lead = task.lead?.name?.split(' — ').first;
+  final about = task.lead?.name ?? task.party;
   final parts = <String>[
-    if (lead != null && !task.title.contains(lead)) lead,
-    if (amount != null && task.type == TaskType.quotation) ...[
-      type,
-      fmt.moneyCompact(amount),
-    ] else if (amount != null) ...[
-      fmt.moneyCompact(amount),
-      description ?? type,
-    ] else
-      description ?? type,
-    if (withAssignee && !task.assignedToMe)
-      ?task.assignedTo?.label(fmt.isBangla),
+    if (about != null && !task.title.contains(about)) about,
+    task.type.label(context.l10n),
+    if (withAssignee && !task.assignedToMe) ?task.assignedTo?.name,
   ];
   return parts.join(' · ');
 }
@@ -66,7 +53,7 @@ String taskWhenLabel(BuildContext context, Task task, {bool timeOnly = false}) {
 }
 
 /// One task in a list: the done circle, the type icon, title and subtitle,
-/// and the time. Swiping either way ticks it off or back on.
+/// and the time. Swiping either way ticks it off.
 class TaskRow extends StatelessWidget {
   const TaskRow({
     super.key,
@@ -80,7 +67,7 @@ class TaskRow extends StatelessWidget {
   final Task task;
   final VoidCallback onTap;
 
-  /// Null when the user may not change the task.
+  /// Null when the user may not tick the task off, or it is done.
   final VoidCallback? onToggle;
   final bool withAssignee;
 
@@ -120,8 +107,8 @@ class TaskRow extends StatelessWidget {
         onToggle();
         return false;
       },
-      background: _SwipeBackground(done: task.isDone, start: true),
-      secondaryBackground: _SwipeBackground(done: task.isDone, start: false),
+      background: const _SwipeBackground(start: true),
+      secondaryBackground: const _SwipeBackground(start: false),
       child: row,
     );
   }
@@ -149,7 +136,7 @@ class _Leading extends StatelessWidget {
         Semantics(
           button: true,
           checked: done,
-          label: done ? context.l10n.tasksReopen : context.l10n.tasksMarkDone,
+          label: done ? context.l10n.tasksTagDone : context.l10n.tasksMarkDone,
           child: GestureDetector(
             onTap: onToggle,
             behavior: HitTestBehavior.opaque,
@@ -232,30 +219,25 @@ class _When extends StatelessWidget {
 }
 
 class _SwipeBackground extends StatelessWidget {
-  const _SwipeBackground({required this.done, required this.start});
+  const _SwipeBackground({required this.start});
 
-  final bool done;
   final bool start;
 
   @override
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
-    final l10n = context.l10n;
     return Container(
-      color: done ? c.warningTint : c.tint,
+      color: c.tint,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       alignment: start ? Alignment.centerLeft : Alignment.centerRight,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            done ? Icons.undo_rounded : Icons.check_circle_rounded,
-            color: done ? c.warning : c.accent,
-          ),
+          Icon(Icons.check_circle_rounded, color: c.accent),
           const SizedBox(width: 8),
           Text(
-            done ? l10n.tasksSwipeReopen : l10n.tasksSwipeDone,
-            style: AppText.rowTitle(done ? c.warning : c.accent, size: 13),
+            context.l10n.tasksSwipeDone,
+            style: AppText.rowTitle(c.accent, size: 13),
           ),
         ],
       ),

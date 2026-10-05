@@ -1,41 +1,49 @@
+import 'package:salesroot/core/format/app_date_utils.dart';
+import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/tasks/models/task.dart';
 
-/// The create/edit body. Null keys are left out; the server rejects them.
+/// The create/edit body. A reminder of 0 minutes turns it off; the server
+/// sets 15 when the key is missing.
 class TaskInput {
   const TaskInput({
     required this.title,
     required this.type,
     required this.dueDate,
-    this.description,
     this.notes,
     this.leadId,
-    this.assignedToId,
+    this.assigneeId,
     this.reminderMinutes,
-    this.amount,
   });
 
   final String title;
   final TaskType type;
   final DateTime dueDate;
-  final String? description;
   final String? notes;
-  final int? leadId;
-  final int? assignedToId;
+  final String? leadId;
+  final String? assigneeId;
   final int? reminderMinutes;
-  final int? amount;
 
+  /// `TaskCreate`. Null keys are left out.
   Map<String, dynamic> toJson() => {
-    'Title': title.trim(),
-    'TypeId': type.id,
-    'DueDate': jsonUtc(dueDate),
-    'Description': _text(description),
-    'Notes': _text(notes),
-    'LeadId': leadId,
-    'AssignedToEmployeeId': assignedToId,
-    'ReminderMinutes': reminderMinutes,
-    'Amount': amount,
+    'title': title.trim(),
+    'type': type.wire,
+    'dueAt': jsonUtc(dueDate),
+    'remindMin': reminderMinutes ?? 0,
+    'note': _text(notes),
+    'leadId': leadId,
+    'assigneeMembershipId': assigneeId,
   }..removeWhere((_, value) => value == null);
+
+  /// `TaskUpdate`. The server skips null keys, so an emptied note is sent
+  /// as an empty string.
+  Map<String, dynamic> toUpdateJson() => {
+    'title': title.trim(),
+    'type': type.wire,
+    'dueAt': jsonUtc(dueDate),
+    'remindMin': reminderMinutes ?? 0,
+    'note': _text(notes) ?? '',
+  };
 
   static String? _text(String? value) {
     final text = value?.trim() ?? '';
@@ -49,23 +57,19 @@ enum TaskWho { mine, everyone, member }
 /// The filters the list sheet sets. [memberId] applies when [who] is
 /// [TaskWho.member].
 class TaskFilter {
-  const TaskFilter({this.who = TaskWho.mine, this.memberId, this.type});
+  const TaskFilter({this.who = TaskWho.mine, this.memberId});
 
   final TaskWho who;
-  final int? memberId;
-  final TaskType? type;
+  final String? memberId;
 
-  bool get isNarrowed => who != TaskWho.mine || type != null;
+  bool get isNarrowed => who != TaskWho.mine;
 
   @override
   bool operator ==(Object other) =>
-      other is TaskFilter &&
-      other.who == who &&
-      other.memberId == memberId &&
-      other.type == type;
+      other is TaskFilter && other.who == who && other.memberId == memberId;
 
   @override
-  int get hashCode => Object.hash(who, memberId, type);
+  int get hashCode => Object.hash(who, memberId);
 }
 
 /// Paging and filters for the task list.
@@ -74,25 +78,30 @@ class TaskQuery {
     required this.bucket,
     this.filter = const TaskFilter(),
     this.page = 1,
-    this.pageSize = 20,
+    this.size = pageSize,
   });
 
   final TaskBucket bucket;
   final TaskFilter filter;
   final int page;
-  final int pageSize;
+  final int size;
 
   TaskQuery atPage(int page) =>
-      TaskQuery(bucket: bucket, filter: filter, page: page, pageSize: pageSize);
+      TaskQuery(bucket: bucket, filter: filter, page: page, size: size);
 
-  Map<String, dynamic> toQuery() => {
-    'page': page,
-    'pageSize': pageSize,
-    'bucket': bucket.wire,
-    'operationType': filter.who == TaskWho.mine ? 'MyTask' : null,
-    'assignedToEmployeeId': filter.who == TaskWho.member
-        ? filter.memberId
+  /// [me] is the user's membership id, [today] the phone's date.
+  Map<String, dynamic> toQuery({String? me, required DateTime today}) => {
+    ...pageQuery(page, size: size),
+    'view': bucket.view,
+    'to': bucket == TaskBucket.week
+        ? AppDateUtils.toApiDateOnly(
+            DateTime(today.year, today.month, today.day + 7),
+          )
         : null,
-    'typeId': filter.type?.id,
+    'assignee': switch (filter.who) {
+      TaskWho.mine => me,
+      TaskWho.everyone => null,
+      TaskWho.member => filter.memberId,
+    },
   }..removeWhere((_, value) => value == null);
 }

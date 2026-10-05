@@ -1,4 +1,5 @@
 import 'package:salesroot/core/network/api_failure.dart';
+import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/tasks/models/task.dart';
 import 'package:salesroot/features/tasks/models/task_input.dart';
 import 'package:salesroot/features/tasks/models/task_lookups.dart';
@@ -12,8 +13,6 @@ class TaskDraft {
     this.taskId,
     this.title = '',
     this.notes = '',
-    this.description,
-    this.amount,
     this.lead,
     this.assignee,
     this.reminderMinutes = 30,
@@ -33,31 +32,31 @@ class TaskDraft {
       due: task.dueDate ?? DateTime.now(),
       title: task.title,
       notes: task.notes ?? '',
-      description: task.description,
-      amount: task.amount,
       lead: lead == null || leadId == null
           ? null
-          : LeadOption(id: leadId, title: lead.name ?? ''),
-      assignee: assignee == null || assigneeId == null || task.assignedToMe
+          : LeadOption(
+              id: leadId,
+              title: lead.name ?? '',
+              companyName: task.companyName,
+            ),
+      assignee: assigneeId == null
           ? null
-          : MemberOption.fromJson({
-              'Id': assigneeId,
-              'Name': assignee.name,
-              'NameBn': assignee.nameBn,
-            }),
+          : MemberOption(
+              id: assigneeId,
+              name: LocalizedName(assignee?.name ?? '', ''),
+              isMe: task.assignedToMe,
+            ),
       reminderMinutes: task.reminderMinutes,
     );
   }
 
   static const _keep = Object();
 
-  final int? taskId;
+  final String? taskId;
   final TaskType type;
   final DateTime due;
   final String title;
   final String notes;
-  final String? description;
-  final int? amount;
   final LeadOption? lead;
   final MemberOption? assignee;
 
@@ -73,12 +72,10 @@ class TaskDraft {
     title: title,
     type: type,
     dueDate: due,
-    description: description,
     notes: notes,
     leadId: lead?.id,
-    assignedToId: assignee?.id,
+    assigneeId: assignee?.id,
     reminderMinutes: reminderMinutes,
-    amount: amount,
   );
 
   TaskDraft copyWith({
@@ -98,8 +95,6 @@ class TaskDraft {
     due: due ?? this.due,
     title: title ?? this.title,
     notes: notes ?? this.notes,
-    description: description,
-    amount: amount,
     lead: identical(lead, _keep) ? this.lead : lead as LeadOption?,
     assignee: identical(assignee, _keep)
         ? this.assignee

@@ -209,7 +209,7 @@ final class EventFormNotifierProvider
   /// The private-event form: new on [day], or editing [eventId].
   EventFormNotifierProvider._({
     required EventFormNotifierFamily super.from,
-    required ({int? eventId, DateTime? day}) super.argument,
+    required ({String? eventId, DateTime? day}) super.argument,
   }) : super(
          retry: null,
          name: r'eventFormProvider',
@@ -243,7 +243,7 @@ final class EventFormNotifierProvider
   }
 }
 
-String _$eventFormNotifierHash() => r'afbdf78a622ece92f1a8f8ae9c62d8d175a52cb1';
+String _$eventFormNotifierHash() => r'e5e5395b2cc18b947790fe381a4bacf1212dc308';
 
 /// The private-event form: new on [day], or editing [eventId].
 
@@ -254,7 +254,7 @@ final class EventFormNotifierFamily extends $Family
           AsyncValue<EventDraft>,
           EventDraft,
           FutureOr<EventDraft>,
-          ({int? eventId, DateTime? day})
+          ({String? eventId, DateTime? day})
         > {
   EventFormNotifierFamily._()
     : super(
@@ -267,7 +267,7 @@ final class EventFormNotifierFamily extends $Family
 
   /// The private-event form: new on [day], or editing [eventId].
 
-  EventFormNotifierProvider call({int? eventId, DateTime? day}) =>
+  EventFormNotifierProvider call({String? eventId, DateTime? day}) =>
       EventFormNotifierProvider._(
         argument: (eventId: eventId, day: day),
         from: this,
@@ -280,11 +280,11 @@ final class EventFormNotifierFamily extends $Family
 /// The private-event form: new on [day], or editing [eventId].
 
 abstract class _$EventFormNotifier extends $AsyncNotifier<EventDraft> {
-  late final _$args = ref.$arg as ({int? eventId, DateTime? day});
-  int? get eventId => _$args.eventId;
+  late final _$args = ref.$arg as ({String? eventId, DateTime? day});
+  String? get eventId => _$args.eventId;
   DateTime? get day => _$args.day;
 
-  FutureOr<EventDraft> build({int? eventId, DateTime? day});
+  FutureOr<EventDraft> build({String? eventId, DateTime? day});
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

@@ -30,10 +30,7 @@
   },
   "tasksOpenCalendar": "ক্যালেন্ডার",
   "tasksMarkedDone": "হয়ে গেছে হিসেবে রাখা হলো",
-  "tasksReopened": "কাজটি আবার খোলা হলো",
-  "tasksUndo": "ফিরিয়ে নিন",
   "tasksSwipeDone": "হয়ে গেছে",
-  "tasksSwipeReopen": "আবার খুলুন",
   "tasksEmptyTodayTitle": "আজ কোনো কাজ নেই",
   "tasksEmptyTodayBody": "পরের কল বা ভিজিট ঠিক করে রাখুন, যাতে কিছু বাদ না পড়ে।",
   "tasksEmptyOverdueTitle": "দেরির কোনো কাজ নেই",
@@ -45,19 +42,16 @@
   "tasksNewTask": "নতুন কাজ",
   "tasksTypeCall": "কল",
   "tasksTypeVisit": "ভিজিট",
-  "tasksTypeFollowUp": "ফলো-আপ",
   "tasksTypeMeeting": "মিটিং",
-  "tasksTypeQuotation": "কোটেশন",
   "tasksTypeCollection": "কালেকশন",
   "tasksTypeOwn": "নিজের কাজ",
+  "tasksTypeDelivery": "ডেলিভারি",
   "tasksFilterTitle": "কাজ ফিল্টার",
   "tasksFilterWho": "কার কাজ",
   "tasksFilterMine": "আমার",
   "tasksFilterEveryone": "সবার",
   "tasksFilterMember": "একজন সহকর্মী",
   "tasksFilterPickMember": "সহকর্মী বাছুন",
-  "tasksFilterType": "ধরন",
-  "tasksFilterAnyType": "যেকোনো",
   "tasksEditTitle": "কাজ এডিট",
   "tasksFieldWhat": "কী করতে হবে",
   "tasksFieldWhatHint": "যেমন: করিম টেক্সটাইলসকে কল",
@@ -140,24 +134,8 @@
       }
     }
   },
-  "tasksAutoFollowUp": "{name} ফলো-আপ",
-  "@tasksAutoFollowUp": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "tasksAutoMeeting": "{name}-এর সাথে মিটিং",
   "@tasksAutoMeeting": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "tasksAutoQuotation": "{name}-কে কোটেশন পাঠানো",
-  "@tasksAutoQuotation": {
     "placeholders": {
       "name": {
         "type": "String"
@@ -172,6 +150,14 @@
       }
     }
   },
+  "tasksAutoDelivery": "{name}-এ ডেলিভারি",
+  "@tasksAutoDelivery": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "tasksDetailTitle": "কাজ",
   "tasksTagOverdue": "দেরি",
   "tasksTagDone": "হয়ে গেছে",
@@ -180,7 +166,6 @@
   "tasksReschedule": "সময় বদলান",
   "tasksReassign": "অন্যকে দিন",
   "tasksMarkDone": "হয়ে গেছে",
-  "tasksReopen": "আবার খুলুন",
   "tasksLogCall": "কলের ফলাফল লিখুন",
   "tasksDeleteTitle": "কাজটি মুছবেন?",
   "tasksDeleteBody": "সবার কাছ থেকে মুছে যাবে। আর ফেরানো যাবে না।",
@@ -287,6 +272,8 @@
   "tasksScanShutter": "ছবি তুলুন",
   "tasksScanQr": "QR কোড স্ক্যান",
   "tasksScanUnreadable": "কার্ডটি পড়া গেল না। আলোতে আবার চেষ্টা করুন।",
+  "tasksScanUnavailableTitle": "কার্ড স্ক্যান চালু নেই",
+  "tasksScanUnavailableBody": "এই অ্যাপে কার্ড রিডার সেট করা নেই। লিডটি হাতে লিখে যোগ করুন।",
   "tasksScanCameraFailed": "ক্যামেরা খোলা গেল না",
   "tasksScanLimitTitle": "এ মাসের কার্ড স্ক্যান শেষ",
   "tasksScanLimitBody": "স্ক্যান চালিয়ে যেতে প্ল্যান বাড়ান, অথবা তথ্যগুলো নিজে লিখুন।",

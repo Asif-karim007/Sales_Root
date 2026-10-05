@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -23,13 +24,13 @@ import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// The edit form under a task's own path.
-String taskEditLocation(int id) => '${Routes.taskFor(id)}/edit';
+String taskEditLocation(String id) => '${Routes.taskFor(id)}/edit';
 
 /// #36 `taskdetail`: complete, reschedule, reassign, edit, delete, open lead.
 class TaskDetailScreen extends ConsumerWidget {
   const TaskDetailScreen({super.key, required this.id});
 
-  final int id;
+  final String id;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,8 +38,8 @@ class TaskDetailScreen extends ConsumerWidget {
     final value = ref.watch(taskProvider(id));
     final access = ref.watch(moduleAccessProvider(AppModule.task));
     final task = value.value;
-    final canChange = task != null && access.canEdit && task.canEdit;
-    final canDelete = task != null && access.canDelete && task.canDelete;
+    final canChange = task != null && access.canEdit;
+    final canDelete = task != null && access.canDelete;
 
     return SrScaffold(
       appBar: SrAppBar(
@@ -59,21 +60,16 @@ class TaskDetailScreen extends ConsumerWidget {
             ),
         ],
       ),
-      footer: task == null || !canChange
+      footer: task == null || !canChange || task.isDone
           ? null
           : SrButton(
-              label: task.isDone ? l10n.tasksReopen : l10n.tasksMarkDone,
-              icon: task.isDone ? Icons.undo_rounded : Icons.check_rounded,
-              variant: task.isDone
-                  ? SrButtonVariant.secondary
-                  : SrButtonVariant.primary,
+              label: l10n.tasksMarkDone,
+              icon: Icons.check_rounded,
               expand: true,
-              onPressed: () => toggleTaskDone(
+              onPressed: () => completeTask(
                 context,
-                task: task,
-                change: (done) => ref
-                    .read(taskEditorProvider.notifier)
-                    .setDone(task.id, done: done),
+                complete: () =>
+                    ref.read(taskEditorProvider.notifier).complete(task.id),
               ),
             ),
       body: SrAsyncView<Task>(
@@ -145,6 +141,7 @@ class _Detail extends ConsumerWidget {
     final c = SrColors.of(context);
     final team = ref.watch(currentRoleProvider) != WorkspaceRole.member;
     final lead = task.lead;
+    final party = task.party;
     final notes = task.notes?.trim() ?? '';
 
     return ListView(
@@ -159,6 +156,9 @@ class _Detail extends ConsumerWidget {
         if (lead != null) ...[
           const SizedBox(height: 12),
           _LeadCard(task: task, lead: lead),
+        ] else if (party != null) ...[
+          const SizedBox(height: 12),
+          _PartyCard(task: task, name: party),
         ],
         if (notes.isNotEmpty) ...[
           const SizedBox(height: 12),
@@ -264,22 +264,26 @@ class _Detail extends ConsumerWidget {
   }
 }
 
-class _Summary extends StatelessWidget {
+class _Summary extends ConsumerWidget {
   const _Summary({required this.task});
 
   final Task task;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final who = task.assignedToMe
-        ? l10n.tasksMe
-        : task.assignedTo?.label(fmt.isBangla);
-    final creator = task.createdBy;
+    final who = task.assignedToMe ? l10n.tasksMe : task.assignedTo?.name;
+    final creatorId = task.createdById;
+    final creator = creatorId == null
+        ? null
+        : ref
+              .watch(taskMembersProvider)
+              .value
+              ?.firstWhereOrNull((m) => m.userId == creatorId);
     final assignedBy = creator != null && creator.id != task.assignedTo?.id
-        ? l10n.tasksAssignedBy(creator.label(fmt.isBangla))
+        ? l10n.tasksAssignedBy(creator.name.of(fmt.isBangla))
         : null;
     final completed = task.completedOn;
     final meta = [
@@ -358,11 +362,10 @@ class _LeadCard extends ConsumerWidget {
     final fmt = context.fmt;
     final leads = ref.watch(moduleAccessProvider(AppModule.lead));
     final id = lead.id;
-    final name = lead.name ?? '';
-    final phone = lead.contactPhone;
+    final name = lead.name ?? task.companyName ?? '';
+    final phone = lead.phone;
     final subtitle = [
-      ?lead.stage?.of(fmt.isBangla),
-      ?lead.contactName,
+      if (task.companyName != name) ?task.companyName,
       if (phone != null) fmt.phone(phone),
     ].join(' · ');
     final logCall =
@@ -390,6 +393,43 @@ class _LeadCard extends ConsumerWidget {
         onTap: id == null || !leads.canView
             ? null
             : () => context.push(Routes.leadFor(id)),
+      ),
+    );
+  }
+}
+
+/// The company or contact a task without a lead is about.
+class _PartyCard extends ConsumerWidget {
+  const _PartyCard({required this.task, required this.name});
+
+  final Task task;
+  final String name;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final fmt = context.fmt;
+    final companyId = task.companyId;
+    final contactId = task.contactId;
+    final companies = ref.watch(moduleAccessProvider(AppModule.company));
+    final contacts = ref.watch(moduleAccessProvider(AppModule.contact));
+    final phone = task.contactPhone;
+    final location = companyId != null && companies.canView
+        ? Routes.companyFor(companyId)
+        : contactId != null && contacts.canView
+        ? Routes.contactFor(contactId)
+        : null;
+
+    return SrCard(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: SrListRow(
+        title: name,
+        subtitle: [
+          if (task.contactName != name) ?task.contactName,
+          if (phone != null) fmt.phone(phone),
+        ].join(' · '),
+        leading: SrAvatar(name: name),
+        chevron: location != null,
+        onTap: location == null ? null : () => context.push(location),
       ),
     );
   }

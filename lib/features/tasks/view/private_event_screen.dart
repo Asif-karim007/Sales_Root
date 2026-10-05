@@ -20,7 +20,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class PrivateEventScreen extends ConsumerStatefulWidget {
   const PrivateEventScreen({super.key, this.eventId, this.day});
 
-  final int? eventId;
+  final String? eventId;
   final DateTime? day;
 
   @override

@@ -1,10 +1,13 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
 import 'package:salesroot/core/network/api_failure.dart';
+import 'package:salesroot/core/network/dio_providers.dart';
 import 'package:salesroot/core/paging/paged.dart';
-import 'package:salesroot/features/tasks/data/fake_task_lookup_repository.dart';
-import 'package:salesroot/features/tasks/data/fake_task_repository.dart';
+import 'package:salesroot/core/workspace/workspace_providers.dart';
+import 'package:salesroot/features/tasks/data/api_task_lookup_repository.dart';
+import 'package:salesroot/features/tasks/data/api_task_repository.dart';
+import 'package:salesroot/features/tasks/data/task_api.dart';
 import 'package:salesroot/features/tasks/data/task_lookup_repository.dart';
 import 'package:salesroot/features/tasks/data/task_repository.dart';
 import 'package:salesroot/features/tasks/models/task.dart';
@@ -16,12 +19,21 @@ import 'package:salesroot/features/tasks/providers/calendar_providers.dart';
 part 'task_providers.g.dart';
 
 @Riverpod(keepAlive: true)
+TaskApi taskApi(Ref ref) => TaskApi(ref.watch(dioProvider));
+
+/// The user's membership id, rebuilding each repository on a workspace
+/// switch.
+String? _member(Ref ref) => ref
+    .watch(currentWorkspaceProvider.select((w) => (w?.id, w?.membershipId)))
+    .$2;
+
+@Riverpod(keepAlive: true)
 TaskRepository taskRepository(Ref ref) =>
-    FakeTaskRepository(ref.watch(fakeBackendProvider));
+    ApiTaskRepository(ref.watch(taskApiProvider), me: _member(ref));
 
 @Riverpod(keepAlive: true)
 TaskLookupRepository taskLookupRepository(Ref ref) =>
-    FakeTaskLookupRepository(ref.watch(fakeBackendProvider));
+    ApiTaskLookupRepository(ref.watch(taskApiProvider), me: _member(ref));
 
 @riverpod
 class TaskBucketNotifier extends _$TaskBucketNotifier {
@@ -86,14 +98,12 @@ class TaskListNotifier extends _$TaskListNotifier {
     await future;
   }
 
-  /// Ticks [task] off, or back on, in place before the server answers. On a
-  /// failure the row goes back and the failure is rethrown.
-  Future<Task> setDone(Task task, {required bool done}) async {
-    _replace(task.withDone(done));
+  /// Ticks [task] off in place before the server answers. On a failure the
+  /// row goes back and the failure is rethrown.
+  Future<Task> complete(Task task) async {
+    _replace(task.asDone());
     try {
-      final saved = await ref
-          .read(taskRepositoryProvider)
-          .setDone(task.id, done: done);
+      final saved = await ref.read(taskRepositoryProvider).complete(task.id);
       if (!ref.mounted) return saved;
       _replace(saved);
       ref.invalidate(taskCountsProvider);
@@ -114,7 +124,8 @@ class TaskListNotifier extends _$TaskListNotifier {
 }
 
 @riverpod
-Future<Task> task(Ref ref, int id) => ref.watch(taskRepositoryProvider).get(id);
+Future<Task> task(Ref ref, String id) =>
+    ref.watch(taskRepositoryProvider).get(id);
 
 @riverpod
 Future<List<MemberOption>> taskMembers(Ref ref) =>
@@ -136,22 +147,21 @@ class TaskEditor extends _$TaskEditor {
     return saved;
   }
 
-  Future<Task> setDone(int id, {required bool done}) =>
-      _apply(id, _repository.setDone(id, done: done));
+  Future<Task> complete(String id) => _apply(id, _repository.complete(id));
 
-  Future<Task> reschedule(int id, DateTime due) =>
+  Future<Task> reschedule(String id, DateTime due) =>
       _apply(id, _repository.reschedule(id, due));
 
-  Future<Task> reassign(int id, int memberId) =>
+  Future<Task> reassign(String id, String memberId) =>
       _apply(id, _repository.reassign(id, memberId));
 
-  Future<void> delete(int id) async {
+  Future<void> delete(String id) async {
     await _repository.delete(id);
     if (!ref.mounted) return;
     _refreshLists();
   }
 
-  Future<Task> _apply(int id, Future<Task> change) async {
+  Future<Task> _apply(String id, Future<Task> change) async {
     final saved = await change;
     if (!ref.mounted) return saved;
     ref.invalidate(taskProvider(id));
@@ -173,8 +183,8 @@ class TaskEditor extends _$TaskEditor {
 class TaskFormNotifier extends _$TaskFormNotifier {
   @override
   Future<TaskDraft> build({
-    int? taskId,
-    int? leadId,
+    String? taskId,
+    String? leadId,
     String? title,
     DateTime? day,
   }) async {
@@ -193,7 +203,7 @@ class TaskFormNotifier extends _$TaskFormNotifier {
     );
   }
 
-  Future<LeadOption?> _lead(int id) async {
+  Future<LeadOption?> _lead(String id) async {
     try {
       return await ref.read(taskLookupRepositoryProvider).lead(id);
     } on ApiFailure catch (failure) {
@@ -201,6 +211,13 @@ class TaskFormNotifier extends _$TaskFormNotifier {
       rethrow;
     }
   }
+
+  /// The server's answer to a blank title, which an edit does not get.
+  static const _titleMissing = ApiFailure(
+    422,
+    'Please fill this in',
+    fieldErrors: {'title': 'Please fill this in'},
+  );
 
   void _edit(TaskDraft Function(TaskDraft draft) change) {
     final draft = state.value;
@@ -227,6 +244,10 @@ class TaskFormNotifier extends _$TaskFormNotifier {
   Future<void> save() async {
     final draft = state.value;
     if (draft == null || draft.saving) return;
+    if (draft.title.trim().isEmpty) {
+      state = AsyncData(draft.copyWith(failure: _titleMissing));
+      return;
+    }
     state = AsyncData(draft.copyWith(saving: true, failure: null));
     final repository = ref.read(taskRepositoryProvider);
     final id = draft.taskId;

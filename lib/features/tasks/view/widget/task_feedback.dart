@@ -15,37 +15,17 @@ String failureText(BuildContext context, Object error) {
   return error.message.trim().isEmpty ? l10n.errorGeneric : error.message;
 }
 
-/// Ticks [task] off or back on through [change], then offers to undo it.
-Future<void> toggleTaskDone(
+/// Ticks a task off through [complete]. The API cannot reopen a task, so
+/// there is no undo.
+Future<void> completeTask(
   BuildContext context, {
-  required Task task,
-  required Future<Task> Function(bool done) change,
+  required Future<Task> Function() complete,
 }) async {
-  final l10n = context.l10n;
-  final done = !task.isDone;
   try {
-    await change(done);
+    await complete();
   } on ApiFailure catch (failure) {
     if (context.mounted) showSrError(context, failureText(context, failure));
     return;
   }
-  if (!context.mounted) return;
-  showSrSnack(
-    context,
-    done ? l10n.tasksMarkedDone : l10n.tasksReopened,
-    tone: SrSnackTone.success,
-    duration: const Duration(seconds: 4),
-    action: SrSnackAction(
-      label: l10n.tasksUndo,
-      onPressed: () async {
-        try {
-          await change(!done);
-        } on ApiFailure catch (failure) {
-          if (context.mounted) {
-            showSrError(context, failureText(context, failure));
-          }
-        }
-      },
-    ),
-  );
+  if (context.mounted) showSrSuccess(context, context.l10n.tasksMarkedDone);
 }

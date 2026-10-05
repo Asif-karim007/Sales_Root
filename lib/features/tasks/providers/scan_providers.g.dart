@@ -8,22 +8,25 @@ part of 'scan_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Gemini when the build carries a key, the fake reader otherwise.
+/// Gemini when the build carries a key; null when card scanning is not set
+/// up.
 
 @ProviderFor(cardScanRepository)
 final cardScanRepositoryProvider = CardScanRepositoryProvider._();
 
-/// Gemini when the build carries a key, the fake reader otherwise.
+/// Gemini when the build carries a key; null when card scanning is not set
+/// up.
 
 final class CardScanRepositoryProvider
     extends
         $FunctionalProvider<
-          CardScanRepository,
-          CardScanRepository,
-          CardScanRepository
+          CardScanRepository?,
+          CardScanRepository?,
+          CardScanRepository?
         >
-    with $Provider<CardScanRepository> {
-  /// Gemini when the build carries a key, the fake reader otherwise.
+    with $Provider<CardScanRepository?> {
+  /// Gemini when the build carries a key; null when card scanning is not set
+  /// up.
   CardScanRepositoryProvider._()
     : super(
         from: null,
@@ -40,26 +43,26 @@ final class CardScanRepositoryProvider
 
   @$internal
   @override
-  $ProviderElement<CardScanRepository> $createElement(
+  $ProviderElement<CardScanRepository?> $createElement(
     $ProviderPointer pointer,
   ) => $ProviderElement(pointer);
 
   @override
-  CardScanRepository create(Ref ref) {
+  CardScanRepository? create(Ref ref) {
     return cardScanRepository(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(CardScanRepository value) {
+  Override overrideWithValue(CardScanRepository? value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<CardScanRepository>(value),
+      providerOverride: $SyncValueProvider<CardScanRepository?>(value),
     );
   }
 }
 
 String _$cardScanRepositoryHash() =>
-    r'f01a5ba8abc8b72741016145887259909eb99553';
+    r'c9ed136feb28889d3eebb54f38dee3d38d9f494c';
 
 /// The scan in progress, shared by the capture, review, lead and QR screens.
 
@@ -90,7 +93,7 @@ final class ScanSessionNotifierProvider
 }
 
 String _$scanSessionNotifierHash() =>
-    r'8456533adbdacb131194fdf78d0a06fe1cfc0dc1';
+    r'6293c7f9740a6ca39fe39d7ed1e14641e18fe864';
 
 /// The scan in progress, shared by the capture, review, lead and QR screens.
 
@@ -120,8 +123,8 @@ final scannedCompanyMatchProvider = ScannedCompanyMatchFamily._();
 /// The CRM company matching the scanned [name], if there is one.
 
 final class ScannedCompanyMatchProvider
-    extends $FunctionalProvider<AsyncValue<int?>, int?, FutureOr<int?>>
-    with $FutureModifier<int?>, $FutureProvider<int?> {
+    extends $FunctionalProvider<AsyncValue<String?>, String?, FutureOr<String?>>
+    with $FutureModifier<String?>, $FutureProvider<String?> {
   /// The CRM company matching the scanned [name], if there is one.
   ScannedCompanyMatchProvider._({
     required ScannedCompanyMatchFamily super.from,
@@ -146,11 +149,11 @@ final class ScannedCompanyMatchProvider
 
   @$internal
   @override
-  $FutureProviderElement<int?> $createElement($ProviderPointer pointer) =>
+  $FutureProviderElement<String?> $createElement($ProviderPointer pointer) =>
       $FutureProviderElement(pointer);
 
   @override
-  FutureOr<int?> create(Ref ref) {
+  FutureOr<String?> create(Ref ref) {
     final argument = this.argument as String;
     return scannedCompanyMatch(ref, argument);
   }
@@ -167,12 +170,12 @@ final class ScannedCompanyMatchProvider
 }
 
 String _$scannedCompanyMatchHash() =>
-    r'752fe930d7b0512adda4818d27626c2533e43a96';
+    r'4ec6d724959879329317a616ef0e86d8f3f70117';
 
 /// The CRM company matching the scanned [name], if there is one.
 
 final class ScannedCompanyMatchFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<int?>, String> {
+    with $FunctionalFamilyOverride<FutureOr<String?>, String> {
   ScannedCompanyMatchFamily._()
     : super(
         retry: null,

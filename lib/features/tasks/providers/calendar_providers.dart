@@ -96,7 +96,7 @@ Future<CalendarAgenda> calendarAgenda(
 @riverpod
 class EventFormNotifier extends _$EventFormNotifier {
   @override
-  Future<EventDraft> build({int? eventId, DateTime? day}) async {
+  Future<EventDraft> build({String? eventId, DateTime? day}) async {
     if (eventId != null) {
       return EventDraft.fromEvent(
         await ref.read(calendarRepositoryProvider).get(eventId),

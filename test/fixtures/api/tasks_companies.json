@@ -1,0 +1,40 @@
+{
+  "items": [
+    {
+      "id": "01a10101-8657-7f15-8630-b08119f1ae61",
+      "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+      "name": "Rahim Traders",
+      "type": "retail",
+      "phone": "+8801811000010",
+      "email": null,
+      "website": null,
+      "address": null,
+      "area": "Mirpur 10",
+      "district": "Dhaka",
+      "lat": 23.8069,
+      "lng": 90.3687,
+      "ownerMembershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+      "creditLimit": 200000.0,
+      "creditDays": 15,
+      "tags": [],
+      "custom": "{\"route\": \"Mirpur-A\", \"shopSize\": \"M\", \"outletType\": \"retail\"}",
+      "isCustomer": true,
+      "notes": null,
+      "createdBy": null,
+      "createdAt": "2026-10-03T09:03:59.542506Z",
+      "updatedAt": "2026-10-03T09:03:59.542506Z",
+      "deletedAt": null,
+      "version": 15,
+      "ownerName": "Rafi Ahmed",
+      "contactCount": 2,
+      "openLeads": 1,
+      "outstanding": 68000.0,
+      "overdue": 68000.0,
+      "maxAgeDays": 44,
+      "lastActivityAt": "2026-10-02T09:03:59.542506Z"
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 5
+}

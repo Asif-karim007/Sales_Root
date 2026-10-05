@@ -11,3 +11,6 @@ abstract interface class CardScanRepository {
 
 /// Thrown when the photo holds nothing the reader could use.
 const unreadableScan = ApiFailure(422, 'Nothing readable in the photo');
+
+/// Thrown when this build has no card reader configured.
+const scanUnavailable = ApiFailure(503, 'Card scanning is not set up');

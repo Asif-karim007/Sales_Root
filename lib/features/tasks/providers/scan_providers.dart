@@ -2,9 +2,9 @@ import 'dart:typed_data';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:salesroot/core/fake/fake_providers.dart';
+import 'package:salesroot/core/access/access_providers.dart';
+import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/features/tasks/data/card_scan_repository.dart';
-import 'package:salesroot/features/tasks/data/fake_card_scan_repository.dart';
 import 'package:salesroot/features/tasks/data/gemini_api.dart';
 import 'package:salesroot/features/tasks/data/gemini_card_scan_repository.dart';
 import 'package:salesroot/features/tasks/models/scanned_card.dart';
@@ -12,14 +12,11 @@ import 'package:salesroot/features/tasks/providers/task_providers.dart';
 
 part 'scan_providers.g.dart';
 
-/// Gemini when the build carries a key, the fake reader otherwise.
+/// Gemini when the build carries a key; null when card scanning is not set
+/// up.
 @Riverpod(keepAlive: true)
-CardScanRepository cardScanRepository(Ref ref) {
-  final backend = ref.watch(fakeBackendProvider);
-  return GeminiApi.apiKey.isEmpty
-      ? FakeCardScanRepository(backend)
-      : GeminiCardScanRepository(backend);
-}
+CardScanRepository? cardScanRepository(Ref ref) =>
+    GeminiApi.apiKey.isEmpty ? null : GeminiCardScanRepository();
 
 /// A photo and what the reader made of it.
 class ScanCapture {
@@ -54,9 +51,19 @@ class ScanSessionNotifier extends _$ScanSessionNotifier {
   Future<void> scan(Uint8List image, ScanMode mode) async {
     if (state.isLoading) return;
     state = const AsyncLoading();
-    final result = await AsyncValue.guard(
-      () => ref.read(cardScanRepositoryProvider).scan(image, mode: mode),
-    );
+    final result = await AsyncValue.guard(() async {
+      final reader = ref.read(cardScanRepositoryProvider);
+      if (reader == null) throw scanUnavailable;
+      final plan = await ref.read(planProvider.future);
+      if (plan != null && plan.cardScansUsed >= plan.cardScans) {
+        throw const ApiFailure(
+          402,
+          'Plan limit reached',
+          quota: QuotaKind.cardScans,
+        );
+      }
+      return reader.scan(image, mode: mode);
+    });
     if (!ref.mounted) return;
     state = result.whenData(
       (scanned) => ScanCapture(image: image, mode: mode, result: scanned),
@@ -73,5 +80,5 @@ class ScanSessionNotifier extends _$ScanSessionNotifier {
 
 /// The CRM company matching the scanned [name], if there is one.
 @riverpod
-Future<int?> scannedCompanyMatch(Ref ref, String name) =>
+Future<String?> scannedCompanyMatch(Ref ref, String name) =>
     ref.watch(taskLookupRepositoryProvider).findCompany(name);

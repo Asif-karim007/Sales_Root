@@ -10,17 +10,17 @@ abstract interface class TaskRepository {
   /// The user's own tasks due in [from]..[to), for the calendar.
   Future<List<Task>> between(DateTime from, DateTime to);
 
-  Future<Task> get(int id);
+  Future<Task> get(String id);
 
   Future<Task> create(TaskInput input);
 
-  Future<Task> save(int id, TaskInput input);
+  Future<Task> save(String id, TaskInput input);
 
-  Future<Task> setDone(int id, {required bool done});
+  Future<Task> complete(String id);
 
-  Future<Task> reschedule(int id, DateTime due);
+  Future<Task> reschedule(String id, DateTime due);
 
-  Future<Task> reassign(int id, int memberId);
+  Future<Task> reassign(String id, String memberId);
 
-  Future<void> delete(int id);
+  Future<void> delete(String id);
 }

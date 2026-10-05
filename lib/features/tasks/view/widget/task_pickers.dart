@@ -11,7 +11,7 @@ import 'package:salesroot/widgets/widgets.dart';
 Future<LeadOption?> pickLead(
   BuildContext context,
   WidgetRef ref, {
-  int? currentId,
+  String? currentId,
 }) {
   final l10n = context.l10n;
   final repository = ref.read(taskLookupRepositoryProvider);
@@ -38,7 +38,7 @@ Future<MemberOption?> pickMember(
   BuildContext context,
   List<MemberOption> members, {
   required String title,
-  int? currentId,
+  String? currentId,
 }) {
   final l10n = context.l10n;
   final bangla = context.fmt.isBangla;

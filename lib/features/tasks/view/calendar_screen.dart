@@ -20,10 +20,10 @@ import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Where the private-event form opens: new on [day], or editing [id].
-String eventFormLocation({int? id, DateTime? day}) => Uri(
+String eventFormLocation({String? id, DateTime? day}) => Uri(
   path: Routes.calendarEventNew,
   queryParameters: {
-    'id': ?id?.toString(),
+    'id': ?id,
     'date': ?(day == null ? null : AppDateUtils.toApiDateOnly(day)),
   },
 ).toString();
@@ -282,11 +282,10 @@ class _AgendaCard extends ConsumerWidget {
               task: task,
               timeOnly: true,
               onTap: () => context.push(Routes.taskFor(task.id)),
-              onToggle: canEdit && task.canEdit
-                  ? () => toggleTaskDone(
+              onToggle: canEdit && !task.isDone
+                  ? () => completeTask(
                       context,
-                      task: task,
-                      change: (done) => editor.setDone(task.id, done: done),
+                      complete: () => editor.complete(task.id),
                     )
                   : null,
             ),

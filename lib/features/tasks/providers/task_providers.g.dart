@@ -9,6 +9,47 @@ part of 'task_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(taskApi)
+final taskApiProvider = TaskApiProvider._();
+
+final class TaskApiProvider
+    extends $FunctionalProvider<TaskApi, TaskApi, TaskApi>
+    with $Provider<TaskApi> {
+  TaskApiProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'taskApiProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$taskApiHash();
+
+  @$internal
+  @override
+  $ProviderElement<TaskApi> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  TaskApi create(Ref ref) {
+    return taskApi(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TaskApi value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TaskApi>(value),
+    );
+  }
+}
+
+String _$taskApiHash() => r'd693ea1e327491e070eb18c10447b38a2c683d16';
+
 @ProviderFor(taskRepository)
 final taskRepositoryProvider = TaskRepositoryProvider._();
 
@@ -48,7 +89,7 @@ final class TaskRepositoryProvider
   }
 }
 
-String _$taskRepositoryHash() => r'9da4a38d647f89ea32f7b01ca33b34a998a8b136';
+String _$taskRepositoryHash() => r'af1a9bdadf3f524370756686dde1640a3d610c30';
 
 @ProviderFor(taskLookupRepository)
 final taskLookupRepositoryProvider = TaskLookupRepositoryProvider._();
@@ -96,7 +137,7 @@ final class TaskLookupRepositoryProvider
 }
 
 String _$taskLookupRepositoryHash() =>
-    r'fd54a59dd7152fdf0ce3e287319934194d7c4b03';
+    r'd23d3a9b78b8636aa08ef14f6b0c32a876b63cff';
 
 @ProviderFor(TaskBucketNotifier)
 final taskBucketProvider = TaskBucketNotifierProvider._();
@@ -266,7 +307,7 @@ final class TaskListNotifierProvider
   TaskListNotifier create() => TaskListNotifier();
 }
 
-String _$taskListNotifierHash() => r'f3e95b6b89aff6d96433a17165ae7e7777c56a63';
+String _$taskListNotifierHash() => r'cb3afb2d96de5bbed6f8070248e007a1ca973b2a';
 
 abstract class _$TaskListNotifier extends $AsyncNotifier<Paged<Task>> {
   FutureOr<Paged<Task>> build();
@@ -292,14 +333,16 @@ final taskProvider = TaskFamily._();
 final class TaskProvider
     extends $FunctionalProvider<AsyncValue<Task>, Task, FutureOr<Task>>
     with $FutureModifier<Task>, $FutureProvider<Task> {
-  TaskProvider._({required TaskFamily super.from, required int super.argument})
-    : super(
-        retry: null,
-        name: r'taskProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+  TaskProvider._({
+    required TaskFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'taskProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$taskHash();
@@ -318,7 +361,7 @@ final class TaskProvider
 
   @override
   FutureOr<Task> create(Ref ref) {
-    final argument = this.argument as int;
+    final argument = this.argument as String;
     return task(ref, argument);
   }
 
@@ -333,10 +376,10 @@ final class TaskProvider
   }
 }
 
-String _$taskHash() => r'768702649e932f59e5abab89254284a2e117cbe8';
+String _$taskHash() => r'1a02ed026cf4ac6368d2700095e894aef5707b62';
 
 final class TaskFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Task>, int> {
+    with $FunctionalFamilyOverride<FutureOr<Task>, String> {
   TaskFamily._()
     : super(
         retry: null,
@@ -346,7 +389,7 @@ final class TaskFamily extends $Family
         isAutoDispose: true,
       );
 
-  TaskProvider call(int id) => TaskProvider._(argument: id, from: this);
+  TaskProvider call(String id) => TaskProvider._(argument: id, from: this);
 
   @override
   String toString() => r'taskProvider';
@@ -431,7 +474,7 @@ final class TaskEditorProvider extends $NotifierProvider<TaskEditor, void> {
   }
 }
 
-String _$taskEditorHash() => r'05bf5cf0e9f2442826db0c13856e499c318b1c63';
+String _$taskEditorHash() => r'358c751a77af712cc64ff7a10b8e37c301b9d559';
 
 /// Task actions outside the list and the form. Each one refreshes every view
 /// of tasks.
@@ -471,7 +514,7 @@ final class TaskFormNotifierProvider
   /// default.
   TaskFormNotifierProvider._({
     required TaskFormNotifierFamily super.from,
-    required ({int? taskId, int? leadId, String? title, DateTime? day})
+    required ({String? taskId, String? leadId, String? title, DateTime? day})
     super.argument,
   }) : super(
          retry: null,
@@ -506,7 +549,7 @@ final class TaskFormNotifierProvider
   }
 }
 
-String _$taskFormNotifierHash() => r'612937171be160b6e8eb36d9f425119e5383ed00';
+String _$taskFormNotifierHash() => r'53e1e849d39d9273953b367340014f89e907842d';
 
 /// The new-task form, prefilled from `?leadId=&title=&date=`, or the edit
 /// form for [taskId]. A new task is due at 10:00 on [day], tomorrow by
@@ -519,7 +562,7 @@ final class TaskFormNotifierFamily extends $Family
           AsyncValue<TaskDraft>,
           TaskDraft,
           FutureOr<TaskDraft>,
-          ({int? taskId, int? leadId, String? title, DateTime? day})
+          ({String? taskId, String? leadId, String? title, DateTime? day})
         > {
   TaskFormNotifierFamily._()
     : super(
@@ -535,8 +578,8 @@ final class TaskFormNotifierFamily extends $Family
   /// default.
 
   TaskFormNotifierProvider call({
-    int? taskId,
-    int? leadId,
+    String? taskId,
+    String? leadId,
     String? title,
     DateTime? day,
   }) => TaskFormNotifierProvider._(
@@ -554,15 +597,16 @@ final class TaskFormNotifierFamily extends $Family
 
 abstract class _$TaskFormNotifier extends $AsyncNotifier<TaskDraft> {
   late final _$args =
-      ref.$arg as ({int? taskId, int? leadId, String? title, DateTime? day});
-  int? get taskId => _$args.taskId;
-  int? get leadId => _$args.leadId;
+      ref.$arg
+          as ({String? taskId, String? leadId, String? title, DateTime? day});
+  String? get taskId => _$args.taskId;
+  String? get leadId => _$args.leadId;
   String? get title => _$args.title;
   DateTime? get day => _$args.day;
 
   FutureOr<TaskDraft> build({
-    int? taskId,
-    int? leadId,
+    String? taskId,
+    String? leadId,
     String? title,
     DateTime? day,
   });

@@ -1,23 +1,20 @@
 import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/module_access.dart';
 import 'package:salesroot/core/dev/dev_settings.dart';
-import 'package:salesroot/core/fake/fake_providers.dart';
-import 'package:salesroot/core/fake/seed_graph.dart';
 import 'package:salesroot/core/format/app_date_utils.dart';
 import 'package:salesroot/core/locale/locale_provider.dart';
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/core/storage/prefs_provider.dart';
 import 'package:salesroot/core/theme/app_theme.dart';
-import 'package:salesroot/core/workspace/workspace.dart';
-import 'package:salesroot/features/tasks/data/fake_card_scan_repository.dart';
+import 'package:salesroot/core/workspace/workspace_providers.dart';
+import 'package:salesroot/features/tasks/data/card_scan_repository.dart';
 import 'package:salesroot/features/tasks/models/calendar_event.dart';
 import 'package:salesroot/features/tasks/models/scanned_card.dart';
 import 'package:salesroot/features/tasks/models/task.dart';
@@ -36,62 +33,136 @@ import 'package:salesroot/features/tasks/view/task_form_screen.dart';
 import 'package:salesroot/features/tasks/view/tasks_screen.dart';
 import 'package:salesroot/translations/translations.dart';
 
+import '../../helpers/api_stub.dart';
+
+const meId = '01a10101-8656-7886-b8e5-4f197fbd9159';
+const bushraId = '01a10101-8656-7ec4-8e2a-2f921b517ab4';
+const leadId = '01a10101-866a-7007-90bc-2326bcdb9d50';
+
 void main() {
-  group('task tabs', () {
-    test('Today holds what is late, due today and due tomorrow', () async {
-      final container = await tasksContainer();
-      addTearDown(container.dispose);
+  group('task list', () {
+    test('parses the recorded list and asks for my Today tab', () async {
+      final stub = taskStub();
+      final container = await tasksContainer(stub);
+      listenTo(container, taskListProvider);
 
-      var paged = await container.read(taskListProvider.future);
-      while (paged.hasMore) {
-        await container.read(taskListProvider.notifier).loadMore();
-        paged = container.read(taskListProvider).requireValue;
-      }
-      final days = {for (final t in paged.items) t.daysUntilDue};
+      final paged = await container.read(taskListProvider.future);
 
-      expect(paged.items, isNotEmpty);
-      expect(
-        paged.items.every(
-          (t) => t.isOverdue || t.daysUntilDue == 0 || t.daysUntilDue == 1,
-        ),
-        isTrue,
-      );
-      expect(days, containsAll([0, 1]));
-      expect(paged.items.map((t) => t.title), contains('Call Karim Textiles'));
-      expect(paged.items.every((t) => t.assignedToMe), isTrue);
+      expect(paged.items.map((t) => t.title), [
+        'Visit Rahim Traders',
+        'Call back Sumaiya about quote',
+        'Collect ৳ 50,000 from Green Agro',
+      ]);
+      final visit = paged.items.first;
+      expect(visit.type, TaskType.visit);
+      expect(visit.assignedToMe, isTrue);
+      expect(visit.assignedTo?.name, 'Rafi Ahmed');
+      expect(visit.lead?.id, leadId);
+      expect(visit.lead?.name, 'Mr Rahim');
+      expect(visit.lead?.phone, '+8801811000010');
+      expect(visit.companyName, 'Rahim Traders');
+      expect(visit.reminderMinutes, 15);
+      expect(paged.items[1].party, 'Sumaiya Akter');
+      expect(paged.items[1].contactPhone, '+8801911000020');
+      expect(paged.items[2].type, TaskType.collection);
+
+      final query = stub.last('GET', 'tasks')?.queryParameters;
+      expect(query?['view'], 'today');
+      expect(query?['offset'], 0);
+      expect(query?['limit'], 20);
+      expect(query?['assignee'], meId);
     });
 
-    test('each tab filters, and the counts agree with the tabs', () async {
-      final container = await tasksContainer();
-      addTearDown(container.dispose);
+    test('overdue and the day count come from the local date', () {
+      final row = rows().first;
+      final sameDay = Task.fromJson(row, now: DateTime(2026, 10, 3, 23));
+      final later = Task.fromJson(row, now: DateTime(2026, 10, 5, 9));
+      final done = Task.fromJson(fixtureMap('tasks_done'));
+
+      expect(sameDay.daysUntilDue, 0);
+      expect(sameDay.isOverdue, isFalse);
+      expect(later.daysUntilDue, -2);
+      expect(later.isOverdue, isTrue);
+      expect(done.isDone, isTrue);
+      expect(done.isOverdue, isFalse);
+      expect(done.completedOn, isNotNull);
+      expect(done.notes, 'Bring the price list');
+    });
+
+    test('each tab sends its view', () async {
+      final stub = taskStub();
+      final container = await tasksContainer(stub);
+      listenTo(container, taskListProvider);
+      final now = DateTime.now();
+      final weekEnd = AppDateUtils.toApiDateOnly(
+        DateTime(now.year, now.month, now.day + 7),
+      );
+
+      for (final (bucket, view) in [
+        (TaskBucket.overdue, 'overdue'),
+        (TaskBucket.week, 'upcoming'),
+        (TaskBucket.all, null),
+        (TaskBucket.done, 'done'),
+      ]) {
+        container.read(taskBucketProvider.notifier).show(bucket);
+        await container.read(taskListProvider.future);
+        final query = stub.last('GET', 'tasks')?.queryParameters;
+        expect(query?['view'], view, reason: bucket.name);
+        expect(
+          query?['to'],
+          bucket == TaskBucket.week ? weekEnd : null,
+          reason: bucket.name,
+        );
+      }
+    });
+
+    test('the counts are each tab\'s total', () async {
+      const totals = {'today': 5, 'overdue': 3, 'upcoming': 4, 'done': 1};
+      final stub = taskStub()
+        ..on(
+          'GET',
+          'tasks',
+          (RequestOptions r) => {
+            'items': [rows().first],
+            'total': totals[r.queryParameters['view']] ?? 10,
+            'offset': 0,
+            'limit': 1,
+          },
+        );
+      final container = await tasksContainer(stub);
+      listenTo(container, taskCountsProvider);
+
       final counts = await container.read(taskCountsProvider.future);
 
-      for (final bucket in TaskBucket.values.skip(1)) {
-        container.read(taskBucketProvider.notifier).show(bucket);
-        final paged = await container.read(taskListProvider.future);
-        expect(paged.totalCount, counts.of(bucket), reason: bucket.wire);
-        final ok = switch (bucket) {
-          TaskBucket.overdue => paged.items.every((t) => t.isOverdue),
-          TaskBucket.week => paged.items.every(
-            (t) => !t.isDone && (t.daysUntilDue ?? -1) >= 0,
-          ),
-          TaskBucket.all => paged.items.every((t) => !t.isDone),
-          TaskBucket.done => paged.items.every((t) => t.isDone),
-          TaskBucket.today => true,
-        };
-        expect(ok, isTrue, reason: bucket.wire);
-      }
-      expect(counts.overdue, greaterThan(0));
-      expect(counts.done, greaterThan(0));
+      expect(counts.today, 5);
+      expect(counts.overdue, 3);
+      expect(counts.week, 4);
+      expect(counts.all, 10);
+      expect(counts.done, 1);
+      expect(
+        stub.requests
+            .where((r) => r.path == 'tasks')
+            .every((r) => r.queryParameters['limit'] == 1),
+        isTrue,
+      );
     });
 
-    test('the team view pages 20 at a time', () async {
-      final container = await tasksContainer(role: WorkspaceRole.owner);
-      addTearDown(container.dispose);
-      container
-          .read(taskFilterProvider.notifier)
-          .apply(const TaskFilter(who: TaskWho.everyone));
-      container.read(taskBucketProvider.notifier).show(TaskBucket.all);
+    test('pages 20 at a time by offset', () async {
+      final stub = taskStub()
+        ..on('GET', 'tasks', (RequestOptions r) {
+          final offset = r.queryParameters['offset'] as int;
+          return {
+            'items': [
+              for (var i = offset; i < offset + 20 && i < 45; i++)
+                {...rows()[i % 3], 'id': 'task-$i'},
+            ],
+            'total': 45,
+            'offset': offset,
+            'limit': 20,
+          };
+        });
+      final container = await tasksContainer(stub);
+      listenTo(container, taskListProvider);
 
       final first = await container.read(taskListProvider.future);
       expect(first.items, hasLength(20));
@@ -99,16 +170,33 @@ void main() {
 
       await container.read(taskListProvider.notifier).loadMore();
       final second = container.read(taskListProvider).requireValue;
-      expect(second.items, hasLength(40));
+      expect(stub.last('GET', 'tasks')?.queryParameters['offset'], 20);
       expect(second.items.map((t) => t.id).toSet(), hasLength(40));
     });
 
-    test('offline shows as a failure with status 0', () async {
-      final container = await tasksContainer();
-      addTearDown(container.dispose);
-      setDev(container, (s) => s.copyWith(offline: true));
-      final sub = container.listen(taskListProvider, (_, _) {});
-      addTearDown(sub.close);
+    test('the team filter sends whose tasks to show', () async {
+      final stub = taskStub();
+      final container = await tasksContainer(stub, role: 'owner');
+      listenTo(container, taskListProvider);
+      final filter = container.read(taskFilterProvider.notifier);
+
+      filter.apply(const TaskFilter(who: TaskWho.everyone));
+      await container.read(taskListProvider.future);
+      expect(
+        stub.last('GET', 'tasks')?.queryParameters.containsKey('assignee'),
+        isFalse,
+      );
+
+      filter.apply(const TaskFilter(who: TaskWho.member, memberId: bushraId));
+      await container.read(taskListProvider.future);
+      expect(stub.last('GET', 'tasks')?.queryParameters['assignee'], bushraId);
+    });
+
+    test('offline is a failure with status 0', () async {
+      final stub = taskStub();
+      final container = await tasksContainer(stub);
+      listenTo(container, taskListProvider);
+      stub.offline = true;
 
       await expectLater(
         container.read(taskListProvider.future),
@@ -117,144 +205,274 @@ void main() {
     });
   });
 
-  group('complete with undo', () {
-    test('ticks off in place, then undo reopens it', () async {
-      final container = await tasksContainer();
-      addTearDown(container.dispose);
-      final before = await container.read(taskCountsProvider.future);
+  group('task changes', () {
+    test('ticking off posts done and updates the row in place', () async {
+      final stub = taskStub()
+        ..on(
+          'POST',
+          'tasks/{id}/done',
+          (RequestOptions r) => {
+            ...fixtureMap('tasks_done'),
+            'id': r.uri.pathSegments[r.uri.pathSegments.length - 2],
+          },
+        );
+      final container = await tasksContainer(stub);
+      listenTo(container, taskListProvider);
       final paged = await container.read(taskListProvider.future);
-      final task = paged.items.firstWhere(
-        (t) => !t.isDone && t.daysUntilDue == 0,
-      );
-      final notifier = container.read(taskListProvider.notifier);
+      final task = paged.items.first;
 
-      final done = await notifier.setDone(task, done: true);
+      final done = await container
+          .read(taskListProvider.notifier)
+          .complete(task);
+
       expect(done.isDone, isTrue);
       expect(done.completedOn, isNotNull);
+      expect(stub.lastBody('POST', 'tasks/{id}/done'), isEmpty);
       final row = container
           .read(taskListProvider)
           .requireValue
           .items
           .firstWhere((t) => t.id == task.id);
       expect(row.isDone, isTrue);
-      final after = await container.read(taskCountsProvider.future);
-      expect(after.today, before.today - 1);
-      expect(after.done, before.done + 1);
-
-      final undone = await notifier.setDone(done, done: false);
-      expect(undone.isDone, isFalse);
-      final restored = await container.read(taskCountsProvider.future);
-      expect(restored.today, before.today);
-      expect(restored.done, before.done);
     });
 
-    test('a failed tick puts the row back and rethrows', () async {
-      final container = await tasksContainer();
-      addTearDown(container.dispose);
+    test('a refused tick puts the row back and rethrows', () async {
+      final stub = taskStub()..fail('POST', 'tasks/{id}/done', 403);
+      final container = await tasksContainer(stub);
+      listenTo(container, taskListProvider);
       final paged = await container.read(taskListProvider.future);
-      final task = paged.items.firstWhere((t) => !t.isDone);
-      final notifier = container.read(taskListProvider.notifier);
-      setDev(container, (s) => s.copyWith(offline: true));
+      final task = paged.items.first;
 
       await expectLater(
-        notifier.setDone(task, done: true),
-        throwsA(isA<ApiFailure>()),
+        container.read(taskListProvider.notifier).complete(task),
+        throwsA(isA<ApiFailure>().having((f) => f.isForbidden, '403', true)),
       );
       final row = container
           .read(taskListProvider)
-          .value
-          ?.items
+          .requireValue
+          .items
           .firstWhere((t) => t.id == task.id);
-      expect(row?.isDone, isFalse);
+      expect(row.isDone, isFalse);
+    });
+
+    test('a new task from a lead posts TaskCreate', () async {
+      final stub = taskStub()..on('POST', 'tasks', fixture('tasks_created'));
+      final container = await tasksContainer(stub);
+      final provider = taskFormProvider(leadId: leadId);
+      listenTo(container, provider);
+
+      final draft = await container.read(provider.future);
+      expect(draft.lead?.shortName, 'Rahim Traders');
+
+      final form = container.read(provider.notifier)
+        ..setTitle('Call Rahim Traders');
+      await form.save();
+
+      final body = stub.lastBody('POST', 'tasks');
+      expect(body['title'], 'Call Rahim Traders');
+      expect(body['type'], 'call');
+      expect(body['leadId'], leadId);
+      expect(body['remindMin'], 30);
+      expect(DateTime.parse(body['dueAt'] as String).isUtc, isTrue);
+      expect(body.containsKey('note'), isFalse);
+      expect(body.containsKey('assigneeMembershipId'), isFalse);
+      expect(
+        container.read(provider).requireValue.saved?.id,
+        fixtureMap('tasks_created')['id'],
+      );
+    });
+
+    test('a blank title stops at the form; a 422 lands on its field', () async {
+      final stub = taskStub()
+        ..fail(
+          'POST',
+          'tasks',
+          422,
+          code: 'V-001',
+          message: 'Please fill this in',
+          field: 'dueAt',
+        );
+      final container = await tasksContainer(stub);
+      final provider = taskFormProvider();
+      listenTo(container, provider);
+      await container.read(provider.future);
+      final form = container.read(provider.notifier);
+
+      await form.save();
+      expect(
+        container.read(provider).requireValue.failure?.fieldError('title'),
+        isNotNull,
+      );
+      expect(stub.last('POST', 'tasks'), isNull);
+
+      form.setTitle('Visit Delta Power');
+      await form.save();
+      final failure = container.read(provider).requireValue.failure;
+      expect(failure?.isValidation, isTrue);
+      expect(failure?.fieldError('dueAt'), 'Please fill this in');
+    });
+
+    test('an edit patches TaskUpdate, then reassigns', () async {
+      final row = rows().first;
+      final id = row['id'] as String;
+      final stub = taskStub()
+        ..on('PATCH', 'tasks/{id}', {...row, 'title': 'Visit Rahim today'})
+        ..on('POST', 'tasks/{id}/assign', {
+          ...row,
+          'title': 'Visit Rahim today',
+          'assigneeMembershipId': bushraId,
+          'assigneeName': 'Bushra Nowshin',
+        });
+      final container = await tasksContainer(stub, role: 'owner');
+      final provider = taskFormProvider(taskId: id);
+      listenTo(container, provider);
+
+      final draft = await container.read(provider.future);
+      expect(draft.title, 'Visit Rahim Traders');
+      expect(draft.lead?.id, leadId);
+      expect(draft.assignee?.isMe, isTrue);
+
+      final members = await container.read(taskMembersProvider.future);
+      container.read(provider.notifier)
+        ..setTitle('Visit Rahim today')
+        ..setNotes('')
+        ..setAssignee(members.firstWhere((m) => m.id == bushraId));
+      await container.read(provider.notifier).save();
+
+      final patch = stub.lastBody('PATCH', 'tasks/{id}');
+      expect(patch['title'], 'Visit Rahim today');
+      expect(patch['type'], 'visit');
+      expect(patch['remindMin'], 15);
+      expect(patch['note'], '');
+      expect(patch.containsKey('leadId'), isFalse);
+      expect(stub.lastBody('POST', 'tasks/{id}/assign'), {
+        'membershipId': bushraId,
+      });
+      final saved = container.read(provider).requireValue.saved;
+      expect(saved?.assignedTo?.name, 'Bushra Nowshin');
+      expect(saved?.assignedToMe, isFalse);
+    });
+
+    test('a detail looks through the list; an unknown id is a 404', () async {
+      final stub = taskStub();
+      final container = await tasksContainer(stub);
+      final id = rows()[1]['id'] as String;
+      listenTo(container, taskProvider(id));
+      listenTo(container, taskProvider('gone'));
+
+      final task = await container.read(taskProvider(id).future);
+      expect(task.title, 'Call back Sumaiya about quote');
+      final query = stub.last('GET', 'tasks')?.queryParameters;
+      expect(query?.containsKey('view'), isFalse);
+      expect(query?['limit'], 100);
+
+      await expectLater(
+        container.read(taskProvider('gone').future),
+        throwsA(isA<ApiFailure>().having((f) => f.isNotFound, '404', true)),
+      );
+    });
+
+    test('reschedule moves the due time; delete removes it', () async {
+      final row = rows().first;
+      final id = row['id'] as String;
+      final due = DateTime.utc(2026, 10, 9, 5);
+      final stub = taskStub()
+        ..on('POST', 'tasks/{id}/move', {
+          ...row,
+          'dueAt': '2026-10-09T05:00:00Z',
+        })
+        ..on('DELETE', 'tasks/{id}', null, status: 204);
+      final container = await tasksContainer(stub);
+      final editor = container.read(taskEditorProvider.notifier);
+
+      final moved = await editor.reschedule(id, due);
+      expect(stub.lastBody('POST', 'tasks/{id}/move'), {
+        'dueAt': '2026-10-09T05:00:00.000Z',
+      });
+      expect(moved.dueDate?.toUtc(), due);
+
+      await editor.delete(id);
+      expect(stub.last('DELETE', 'tasks/{id}')?.path, 'tasks/$id');
     });
   });
 
-  group('new task', () {
-    test('a prefilled leadId links the lead and saves', () async {
-      final container = await tasksContainer();
-      addTearDown(container.dispose);
-      final provider = taskFormProvider(leadId: 3, title: 'Call Meghna Group');
-      final sub = container.listen(provider, (_, _) {});
-      addTearDown(sub.close);
+  group('lookups', () {
+    test('teammates are the active members, with me marked', () async {
+      final container = await tasksContainer(taskStub());
+      final members = await container.read(taskMembersProvider.future);
 
-      final draft = await container.read(provider.future);
-      expect(draft.lead?.id, 3);
-      expect(draft.title, 'Call Meghna Group');
-      expect(draft.isEdit, isFalse);
-
-      await container.read(provider.notifier).save();
-      final saved = container.read(provider).requireValue.saved;
-      expect(saved, isNotNull);
-      expect(saved?.lead?.id, 3);
-      expect(saved?.assignedToMe, isTrue);
-      expect(saved?.lead?.contactName, isNotNull);
-
-      final fetched = await container.read(taskProvider(saved?.id ?? 0).future);
-      expect(fetched.title, 'Call Meghna Group');
+      expect(members.map((m) => m.name.en), [
+        'Bushra Nowshin',
+        'Rafi Ahmed',
+        'Karim Hossain',
+        'Nadia Rahman',
+      ]);
+      expect(members.where((m) => m.isMe).map((m) => m.id), [meId]);
     });
 
-    test('a blank title is a 400 on the Title field', () async {
-      final container = await tasksContainer();
-      addTearDown(container.dispose);
-      final provider = taskFormProvider();
-      final sub = container.listen(provider, (_, _) {});
-      addTearDown(sub.close);
-      await container.read(provider.future);
+    test('leads search by q, page by offset', () async {
+      final stub = taskStub();
+      final container = await tasksContainer(stub);
 
-      await container.read(provider.notifier).save();
-      final failure = container.read(provider).requireValue.failure;
-      expect(failure?.isValidation, isTrue);
-      expect(failure?.fieldError('Title'), isNotNull);
+      final page = await container
+          .read(taskLookupRepositoryProvider)
+          .searchLeads(' Rahim ', 2);
+
+      expect(page.items.single.title, '50 cartons soap · November');
+      expect(page.items.single.shortName, 'Rahim Traders');
+      final query = stub.last('GET', 'leads')?.queryParameters;
+      expect(query?['q'], 'Rahim');
+      expect(query?['offset'], 20);
     });
 
-    test('a member may not reassign', () async {
-      final container = await tasksContainer();
-      addTearDown(container.dispose);
-      final paged = await container.read(taskListProvider.future);
+    test('a scanned company matches the CRM name loosely', () async {
+      final stub = taskStub();
+      final container = await tasksContainer(stub);
+      final provider = scannedCompanyMatchProvider('RAHIM TRADERS LTD.');
+      listenTo(container, provider);
 
-      await expectLater(
-        container
-            .read(taskEditorProvider.notifier)
-            .reassign(paged.items.first.id, 3),
-        throwsA(isA<ApiFailure>().having((f) => f.isForbidden, '403', true)),
+      final id = await container.read(provider.future);
+
+      expect(id, '01a10101-8657-7f15-8630-b08119f1ae61');
+      expect(
+        stub.last('GET', 'companies')?.queryParameters['q'],
+        'RAHIM TRADERS LTD.',
       );
     });
   });
 
   group('calendar', () {
-    test('merges tasks and private events by day, in time order', () async {
-      final container = await tasksContainer();
-      addTearDown(container.dispose);
-      final today = AppDateUtils.dateOnly(DateTime.now());
-      final from = DateTime(today.year, today.month, today.day - 3);
-      final to = DateTime(today.year, today.month, today.day + 4);
+    test('reads my tasks for the range and merges private events', () async {
+      final stub = taskStub();
+      final container = await tasksContainer(stub);
+      final from = DateTime(2026, 10, 1);
+      final to = DateTime(2026, 10, 8);
+      final provider = calendarAgendaProvider(from, to);
+      listenTo(container, provider);
 
-      final agenda = await container.read(
-        calendarAgendaProvider(from, to).future,
-      );
-      final items = agenda.on(today);
+      final agenda = await container.read(provider.future);
 
-      expect(items.whereType<TaskAgendaItem>(), isNotEmpty);
-      expect(
-        items.whereType<EventAgendaItem>().map((e) => e.event.title),
-        contains('Doctor appointment'),
-      );
+      final query = stub.last('GET', 'tasks')?.queryParameters;
+      expect(query?['from'], '2026-10-01');
+      expect(query?['to'], '2026-10-07');
+      expect(query?['assignee'], meId);
+      final items = [
+        for (var day = from; day.isBefore(to); day = day.add(oneDay))
+          ...agenda.on(day),
+      ];
+      expect(items.whereType<TaskAgendaItem>(), hasLength(3));
       for (var i = 1; i < items.length; i++) {
+        if (!AppDateUtils.isSameDay(items[i].at, items[i - 1].at)) continue;
         expect(items[i].at.isBefore(items[i - 1].at), isFalse);
       }
-      expect(
-        items.whereType<TaskAgendaItem>().every((i) => i.task.assignedToMe),
-        isTrue,
-      );
     });
 
     test('a saved private event shows on its day', () async {
-      final container = await tasksContainer();
-      addTearDown(container.dispose);
+      final stub = taskStub();
+      final container = await tasksContainer(stub);
       final day = DateTime(2026, 11, 3);
       final provider = eventFormProvider(day: day);
-      final sub = container.listen(provider, (_, _) {});
-      addTearDown(sub.close);
+      listenTo(container, provider);
       await container.read(provider.future);
 
       container.read(provider.notifier).setTitle('Dentist');
@@ -280,109 +498,93 @@ void main() {
     });
   });
 
-  final photo = Uint8List.fromList(List.filled(64, 7));
+  group('card scan', () {
+    final photo = Uint8List.fromList(List.filled(64, 7));
 
-  test('without a Gemini key the fake reader is used', () async {
-    final container = await tasksContainer();
-    addTearDown(container.dispose);
-    expect(
-      container.read(cardScanRepositoryProvider),
-      isA<FakeCardScanRepository>(),
-    );
-  });
+    test('without a Gemini key scanning is unavailable', () async {
+      final container = await tasksContainer(taskStub());
+      expect(container.read(cardScanRepositoryProvider), isNull);
+      await container.read(scanSessionProvider.future);
 
-  test('the fake reader returns parsed cards in turn', () async {
-    final container = await tasksContainer();
-    addTearDown(container.dispose);
-    final reader = container.read(cardScanRepositoryProvider);
+      await container
+          .read(scanSessionProvider.notifier)
+          .scan(photo, ScanMode.card);
 
-    final first = await reader.scan(photo);
-    final second = await reader.scan(photo);
+      final error = container.read(scanSessionProvider).error;
+      expect(error, isA<ApiFailure>());
+      expect((error as ApiFailure).statusCode, scanUnavailable.statusCode);
+    });
 
-    final card = (first as CardScanResult).card;
-    expect(card.contactName, 'Md. Karim');
-    expect(card.companyName, 'Karim Textiles Ltd.');
-    expect(card.phone, '+880 1711-234567');
-    expect(card.email, 'karim@karimtex.com');
-    expect(card.filledCount, 6);
-    expect(card.unsure, isEmpty);
+    test('a scan past the plan limit is a 402 on card scans', () async {
+      final billing = fixtureMap('billing');
+      final stub = taskStub()
+        ..on('GET', 'billing', {
+          ...billing,
+          'usage': {...billing['usage'] as Map<String, dynamic>, 'scans': 2000},
+        });
+      final reader = _Reader();
+      final container = await tasksContainer(stub, reader: reader);
+      await container.read(scanSessionProvider.future);
 
-    final unsure = (second as CardScanResult).card;
-    expect(unsure.unsure, {CardField.email});
-    expect(unsure.phones, hasLength(2));
-  });
+      await container
+          .read(scanSessionProvider.notifier)
+          .scan(photo, ScanMode.card);
 
-  test('QR mode reads a link, then a vCard as a contact', () async {
-    final container = await tasksContainer();
-    addTearDown(container.dispose);
-    final reader = container.read(cardScanRepositoryProvider);
+      final failure = container.read(scanSessionProvider).error;
+      expect(failure, isA<ApiFailure>());
+      expect((failure as ApiFailure).isQuota, isTrue);
+      expect(failure.quota, QuotaKind.cardScans);
+      expect(reader.scans, 0);
+    });
 
-    final link = await reader.scan(photo, mode: ScanMode.qr);
-    expect(link, isA<QrScanResult>());
-    expect(
-      (link as QrScanResult).link,
-      Uri.parse('https://karimtex.com/catalog/2026'),
-    );
+    test('a successful scan is kept for the review, with edits', () async {
+      final container = await tasksContainer(taskStub(), reader: _Reader());
+      await container.read(scanSessionProvider.future);
+      final session = container.read(scanSessionProvider.notifier);
 
-    final vcard = await reader.scan(photo, mode: ScanMode.qr);
-    final card = (vcard as CardScanResult).card;
-    expect(card.contactName, 'Rezaul Karim');
-    expect(card.companyName, 'Meghna Group');
-    expect(card.designation, 'Accounts Manager');
-    expect(card.phone, '+8801715667788');
-  });
+      await session.scan(photo, ScanMode.card);
+      final card = container.read(scanSessionProvider).requireValue?.card;
+      expect(card?.contactName, 'Md. Karim');
 
-  test('MECARD and plain text QR codes', () {
-    final me = QrScanResult.parse(
-      'MECARD:N:Hossain,Sajib;TEL:+8801812345678;EMAIL:sajib@delta.com;'
-      'ORG:Delta Power;;',
-    );
-    final card = (me as CardScanResult).card;
-    expect(card.contactName, 'Sajib Hossain');
-    expect(card.companyName, 'Delta Power');
-    expect(card.email, 'sajib@delta.com');
+      session.edit(
+        card?.edited({CardField.contactName: 'Mohammad Karim'}) ??
+            const ScannedCard(),
+      );
+      expect(
+        container.read(scanSessionProvider).requireValue?.card?.contactName,
+        'Mohammad Karim',
+      );
+    });
 
-    final text = QrScanResult.parse('WIFI:T:WPA;S:Office;P:x;;');
-    expect(text, isA<QrScanResult>());
-    expect((text as QrScanResult).link, isNull);
-  });
+    test('QR codes: link, vCard, MECARD and plain text', () {
+      final link = QrScanResult.parse('https://karimtex.com/catalog/2026');
+      expect(
+        (link as QrScanResult).link,
+        Uri.parse('https://karimtex.com/catalog/2026'),
+      );
 
-  test('a scan past the plan limit is a 402 on card scans', () async {
-    final container = await tasksContainer();
-    addTearDown(container.dispose);
-    setDev(container, (s) => s.copyWith(quotaReached: true));
-    await container.read(scanSessionProvider.future);
+      final vcard = QrScanResult.parse(
+        'BEGIN:VCARD\nVERSION:3.0\nFN:Rezaul Karim\nTITLE:Accounts Manager\n'
+        'ORG:Meghna Group\nTEL;TYPE=CELL:+8801715667788\nEND:VCARD',
+      );
+      final contact = (vcard as CardScanResult).card;
+      expect(contact.contactName, 'Rezaul Karim');
+      expect(contact.companyName, 'Meghna Group');
+      expect(contact.designation, 'Accounts Manager');
+      expect(contact.phone, '+8801715667788');
 
-    await container
-        .read(scanSessionProvider.notifier)
-        .scan(photo, ScanMode.card);
+      final me = QrScanResult.parse(
+        'MECARD:N:Hossain,Sajib;TEL:+8801812345678;EMAIL:sajib@delta.com;'
+        'ORG:Delta Power;;',
+      );
+      final card = (me as CardScanResult).card;
+      expect(card.contactName, 'Sajib Hossain');
+      expect(card.companyName, 'Delta Power');
+      expect(card.email, 'sajib@delta.com');
 
-    final state = container.read(scanSessionProvider);
-    expect(state.hasError, isTrue);
-    final failure = state.error;
-    expect(failure, isA<ApiFailure>());
-    expect((failure as ApiFailure).isQuota, isTrue);
-    expect(failure.quota, QuotaKind.cardScans);
-  });
-
-  test('a successful scan is kept for the review, with edits', () async {
-    final container = await tasksContainer();
-    addTearDown(container.dispose);
-    await container.read(scanSessionProvider.future);
-    final session = container.read(scanSessionProvider.notifier);
-
-    await session.scan(photo, ScanMode.card);
-    final card = container.read(scanSessionProvider).requireValue?.card;
-    expect(card?.contactName, 'Md. Karim');
-
-    session.edit(
-      card?.edited({CardField.contactName: 'Mohammad Karim'}) ??
-          const ScannedCard(),
-    );
-    expect(
-      container.read(scanSessionProvider).requireValue?.card?.contactName,
-      'Mohammad Karim',
-    );
+      final text = QrScanResult.parse('WIFI:T:WPA;S:Office;P:x;;');
+      expect((text as QrScanResult).link, isNull);
+    });
   });
 
   group('screens render', () {
@@ -412,14 +614,21 @@ void main() {
       }
     }
 
+    final taskId = rows().first['id'] as String;
     final screens = <String, (Widget, String?)>{
-      'tasks': (const TasksScreen(), 'This week'),
-      'task detail': (const TaskDetailScreen(id: 3), 'Mark done'),
-      'new task': (const TaskFormScreen(leadId: 1), 'Karim Textiles (lead)'),
-      'edit task': (const TaskFormScreen(taskId: 3), 'Edit task'),
-      'calendar': (const CalendarScreen(), 'Doctor appointment'),
+      'tasks': (const TasksScreen(), 'Call back Sumaiya about quote'),
+      'task detail': (TaskDetailScreen(id: taskId), 'Mark done'),
+      'new task': (
+        const TaskFormScreen(leadId: leadId),
+        'Rahim Traders (lead)',
+      ),
+      'edit task': (TaskFormScreen(taskId: taskId), 'Edit task'),
+      'calendar': (const CalendarScreen(), null),
       'private event': (const PrivateEventScreen(), 'Private event'),
-      'scan capture': (const ScanCaptureScreen(), 'Scan a card'),
+      'scan capture': (
+        const ScanCaptureScreen(),
+        'Card scanning isn\'t available',
+      ),
       'scan review': (const ScanReviewScreen(), 'No card scanned'),
       'scan lead': (const ScanLeadScreen(), 'No card scanned'),
       'qr result': (const QrResultScreen(), 'No QR code scanned'),
@@ -429,11 +638,10 @@ void main() {
       for (final MapEntry(key: name, value: (screen, text))
           in screens.entries) {
         testWidgets('$name in ${locale.languageCode}', (tester) async {
-          final container = await tasksContainer(
-            role: WorkspaceRole.owner,
-            fullAccess: true,
+          final container = await tester.runAsync(
+            () => tasksContainer(taskStub(), role: 'owner', fullAccess: true),
           );
-          addTearDown(container.dispose);
+          if (container == null) return;
 
           await pump(tester, container, screen, locale);
 
@@ -447,27 +655,32 @@ void main() {
   });
 }
 
-/// A container over the fake backend for a 25-person team workspace, with
-/// latency off and the given [role].
-Future<ProviderContainer> tasksContainer({
-  WorkspaceRole role = WorkspaceRole.member,
+const oneDay = Duration(days: 1);
+
+List<Map<String, dynamic>> rows() =>
+    (fixtureMap('tasks_list')['items'] as List).cast<Map<String, dynamic>>();
+
+/// The task screens' endpoints, answering from the recorded fixtures.
+ApiStub taskStub() => ApiStub()
+  ..on('GET', 'tasks', fixture('tasks_list'))
+  ..on('GET', 'workspaces/members', fixture('tasks_members'))
+  ..on('GET', 'leads/{id}', fixture('tasks_lead'))
+  ..on('GET', 'leads', fixture('tasks_leads'))
+  ..on('GET', 'companies', fixture('tasks_companies'));
+
+/// A signed-in container over [stub] as Rafi with [role], with the
+/// workspace loaded and fake latency off for the private events.
+Future<ProviderContainer> tasksContainer(
+  ApiStub stub, {
+  String role = 'executive',
   bool fullAccess = false,
+  CardScanRepository? reader,
 }) async {
-  FlutterSecureStorage.setMockInitialValues({});
-  SharedPreferences.setMockInitialValues({});
-  final prefs = await SharedPreferences.getInstance();
-  final container = ProviderContainer(
-    retry: (_, _) => null,
+  final container = await apiContainer(
+    stub,
+    me: meWith(role: role, level: 'standard'),
     overrides: [
-      sharedPreferencesProvider.overrideWithValue(prefs),
-      seedGraphProvider.overrideWithValue(
-        SeedGraph.build(
-          workspaceId: 7,
-          kind: WorkspaceKind.team,
-          memberCount: 25,
-          leadCount: 230,
-        ),
-      ),
+      if (reader != null) cardScanRepositoryProvider.overrideWithValue(reader),
       if (fullAccess)
         moduleAccessProvider.overrideWith(
           (ref, module) => const ModuleAccess(
@@ -483,11 +696,31 @@ Future<ProviderContainer> tasksContainer({
   );
   container
       .read(devSettingsProvider.notifier)
-      .update((s) => s.copyWith(latency: false, role: () => role));
+      .update((s) => s.copyWith(latency: false));
+  await container.read(workspacesProvider.future);
   return container;
 }
 
-void setDev(
-  ProviderContainer container,
-  DevSettings Function(DevSettings settings) change,
-) => container.read(devSettingsProvider.notifier).update(change);
+void listenTo(ProviderContainer container, ProviderListenable<Object?> p) {
+  final sub = container.listen(p, (_, _) {});
+  addTearDown(sub.close);
+}
+
+class _Reader implements CardScanRepository {
+  int scans = 0;
+
+  @override
+  Future<ScanResult> scan(
+    Uint8List image, {
+    ScanMode mode = ScanMode.card,
+  }) async {
+    scans++;
+    return const CardScanResult(
+      ScannedCard(
+        contactName: 'Md. Karim',
+        companyName: 'Karim Textiles Ltd.',
+        phones: ['+880 1711-234567'],
+      ),
+    );
+  }
+}

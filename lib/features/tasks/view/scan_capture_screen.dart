@@ -68,6 +68,9 @@ class _ScanCaptureScreenState extends ConsumerState<ScanCaptureScreen> {
       } else if (error is ApiFailure &&
           error.statusCode == unreadableScan.statusCode) {
         showSrError(context, context.l10n.tasksScanUnreadable);
+      } else if (error is ApiFailure &&
+          error.statusCode == scanUnavailable.statusCode) {
+        showSrError(context, context.l10n.tasksScanUnavailableTitle);
       } else {
         showSrError(context, failureText(context, error));
       }
@@ -87,6 +90,7 @@ class _ScanCaptureScreenState extends ConsumerState<ScanCaptureScreen> {
     final c = SrColors.of(context);
     ref.listen(scanSessionProvider, _onSession);
     final reading = ref.watch(scanSessionProvider).isLoading;
+    final available = ref.watch(cardScanRepositoryProvider) != null;
     final photo = _photo;
 
     return SrScaffold(
@@ -94,51 +98,59 @@ class _ScanCaptureScreenState extends ConsumerState<ScanCaptureScreen> {
         title: l10n.tasksScanTitle,
         actions: const [TasksLanguageToggle()],
       ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          SrMetrics.gutter,
-          16,
-          SrMetrics.gutter,
-          16,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              l10n.tasksScanHint,
-              textAlign: TextAlign.center,
-              style: AppText.lead(c.ink2),
-            ),
-            const SizedBox(height: 16),
-            CardFrame(
-              child: Stack(
-                fit: StackFit.expand,
+      body: !available
+          ? SrEmptyState(
+              icon: Icons.no_photography_outlined,
+              title: l10n.tasksScanUnavailableTitle,
+              message: l10n.tasksScanUnavailableBody,
+            )
+          : Padding(
+              padding: const EdgeInsets.fromLTRB(
+                SrMetrics.gutter,
+                16,
+                SrMetrics.gutter,
+                16,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (photo == null)
-                    const _FramePlaceholder()
-                  else
-                    Image.memory(photo, fit: BoxFit.contain),
-                  if (reading)
-                    ScanBeam(
-                      label: _mode == ScanMode.qr
-                          ? l10n.tasksScanReadingQr
-                          : l10n.tasksScanReading,
+                  Text(
+                    l10n.tasksScanHint,
+                    textAlign: TextAlign.center,
+                    style: AppText.lead(c.ink2),
+                  ),
+                  const SizedBox(height: 16),
+                  CardFrame(
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (photo == null)
+                          const _FramePlaceholder()
+                        else
+                          Image.memory(photo, fit: BoxFit.contain),
+                        if (reading)
+                          ScanBeam(
+                            label: _mode == ScanMode.qr
+                                ? l10n.tasksScanReadingQr
+                                : l10n.tasksScanReading,
+                          ),
+                      ],
                     ),
+                  ),
+                  const SizedBox(height: 14),
+                  const _UsageNote(),
+                  const Spacer(),
+                  _Controls(
+                    enabled: !reading,
+                    onGallery: () =>
+                        _capture(ImageSource.gallery, ScanMode.card),
+                    onShutter: () =>
+                        _capture(ImageSource.camera, ScanMode.card),
+                    onQr: () => _capture(ImageSource.camera, ScanMode.qr),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 14),
-            const _UsageNote(),
-            const Spacer(),
-            _Controls(
-              enabled: !reading,
-              onGallery: () => _capture(ImageSource.gallery, ScanMode.card),
-              onShutter: () => _capture(ImageSource.camera, ScanMode.card),
-              onQr: () => _capture(ImageSource.camera, ScanMode.qr),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -109,11 +109,11 @@ class _LeadFormState extends ConsumerState<_LeadForm> {
         title: l10n.tasksAutoCall(who),
         type: TaskType.call,
         dueDate: _followUpAt,
-        description: [
+        notes: [
           if (card.companyName.isNotEmpty) card.companyName,
           l10n.tasksSourceCard,
+          if (card.phone.isNotEmpty) card.phone,
         ].join(' · '),
-        notes: card.phone,
       );
       try {
         await showSrLoader(

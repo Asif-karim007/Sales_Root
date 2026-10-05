@@ -15,7 +15,7 @@ class CalendarEvent {
     this.reminderMinutes,
   });
 
-  final int id;
+  final String id;
   final String title;
   final DateTime start;
   final String? location;
@@ -24,7 +24,7 @@ class CalendarEvent {
   final int? reminderMinutes;
 
   factory CalendarEvent.fromJson(Map<String, dynamic> json) => CalendarEvent(
-    id: jsonInt(json['Id']) ?? 0,
+    id: '${json['Id']}',
     title: json['Title'] as String? ?? '',
     start: jsonDate(json['Start']) ?? DateTime(2000),
     location: json['Location'] as String?,

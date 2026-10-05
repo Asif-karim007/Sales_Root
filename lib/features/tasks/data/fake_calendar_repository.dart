@@ -26,7 +26,7 @@ class FakeCalendarRepository implements CalendarRepository {
       }, module: AppModule.calendar);
 
   @override
-  Future<CalendarEvent> get(int id) => _backend.run(
+  Future<CalendarEvent> get(String id) => _backend.run(
     'Calendar event $id',
     () => CalendarEvent.fromJson(_own(id)),
     module: AppModule.calendar,
@@ -46,27 +46,28 @@ class FakeCalendarRepository implements CalendarRepository {
   );
 
   @override
-  Future<CalendarEvent> save(int id, CalendarEventInput input) => _backend.run(
-    'Calendar event save $id',
-    () {
-      final row = _own(id);
-      final body = input.toJson();
-      fakeRequire(body, ['Title', 'Start']);
-      row
-        ..remove('Location')
-        ..remove('ReminderMinutes');
-      return CalendarEvent.fromJson(_table.update(id, body));
-    },
-    module: AppModule.calendar,
-    right: ModuleRight.edit,
-  );
+  Future<CalendarEvent> save(String id, CalendarEventInput input) =>
+      _backend.run(
+        'Calendar event save $id',
+        () {
+          final row = _own(id);
+          final body = input.toJson();
+          fakeRequire(body, ['Title', 'Start']);
+          row
+            ..remove('Location')
+            ..remove('ReminderMinutes');
+          return CalendarEvent.fromJson(_table.update(_key(id), body));
+        },
+        module: AppModule.calendar,
+        right: ModuleRight.edit,
+      );
 
   @override
-  Future<void> delete(int id) => _backend.run(
+  Future<void> delete(String id) => _backend.run(
     'Calendar event delete $id',
     () {
       _own(id);
-      _table.delete(id);
+      _table.delete(_key(id));
     },
     module: AppModule.calendar,
     right: ModuleRight.delete,
@@ -75,11 +76,13 @@ class FakeCalendarRepository implements CalendarRepository {
   bool _mine(Map<String, dynamic> row) =>
       jsonInt(row['OwnerId']) == _backend.meId;
 
-  Map<String, dynamic> _own(int id) {
-    final row = _table.byId(id);
+  Map<String, dynamic> _own(String id) {
+    final row = _table.byId(_key(id));
     if (!_mine(row)) throw const ApiFailure(404, 'Record not found');
     return row;
   }
+
+  static int _key(String id) => int.tryParse(id) ?? 0;
 
   static bool _inRange(Map<String, dynamic> row, DateTime from, DateTime to) {
     final start = jsonDate(row['Start']);

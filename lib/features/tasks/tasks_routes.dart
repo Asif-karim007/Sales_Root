@@ -29,7 +29,7 @@ final List<RouteBase> tasksRoutes = [
     path: Routes.taskNew,
     redirect: requireAccess(AppModule.task, ModuleRight.add),
     builder: (context, state) => TaskFormScreen(
-      leadId: _intQuery(state, 'leadId'),
+      leadId: _query(state, 'leadId'),
       title: state.uri.queryParameters['title'],
       day: _dateQuery(state),
     ),
@@ -55,7 +55,7 @@ final List<RouteBase> tasksRoutes = [
     path: Routes.calendarEventNew,
     redirect: requireAccess(AppModule.calendar, ModuleRight.add),
     builder: (context, state) => PrivateEventScreen(
-      eventId: _intQuery(state, 'id'),
+      eventId: _query(state, 'id'),
       day: _dateQuery(state),
     ),
   ),
@@ -81,8 +81,10 @@ final List<RouteBase> tasksRoutes = [
   ),
 ];
 
-int? _intQuery(GoRouterState state, String key) =>
-    int.tryParse(state.uri.queryParameters[key] ?? '');
+String? _query(GoRouterState state, String key) {
+  final value = state.uri.queryParameters[key] ?? '';
+  return value.isEmpty ? null : value;
+}
 
 DateTime? _dateQuery(GoRouterState state) =>
     DateTime.tryParse(state.uri.queryParameters['date'] ?? '');

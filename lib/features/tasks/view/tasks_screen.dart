@@ -9,6 +9,8 @@ import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
+import 'package:salesroot/core/workspace/workspace.dart';
+import 'package:salesroot/core/workspace/workspace_providers.dart';
 import 'package:salesroot/features/tasks/models/task.dart';
 import 'package:salesroot/features/tasks/models/task_input.dart';
 import 'package:salesroot/features/tasks/providers/task_providers.dart';
@@ -41,6 +43,7 @@ class _Header extends ConsumerWidget {
     final bucket = ref.watch(taskBucketProvider);
     final narrowed = ref.watch(taskFilterProvider.select((f) => f.isNarrowed));
     final calendar = ref.watch(moduleAccessProvider(AppModule.calendar));
+    final team = ref.watch(currentRoleProvider) != WorkspaceRole.member;
 
     return SrHeader(
       children: [
@@ -74,13 +77,15 @@ class _Header extends ConsumerWidget {
                 onTap: () => context.push(Routes.calendar),
               ),
             ],
-            const SizedBox(width: 6),
-            SrIconButton(
-              icon: Icons.tune_rounded,
-              tooltip: l10n.commonFilter,
-              badge: narrowed,
-              onTap: () => showTaskFilterSheet(context),
-            ),
+            if (team) ...[
+              const SizedBox(width: 6),
+              SrIconButton(
+                icon: Icons.tune_rounded,
+                tooltip: l10n.commonFilter,
+                badge: narrowed,
+                onTap: () => showTaskFilterSheet(context),
+              ),
+            ],
           ],
         ),
         SrChipRow(
@@ -188,6 +193,7 @@ class _TaskList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(taskListProvider.notifier);
+    final canEdit = ref.watch(moduleAccessProvider(AppModule.task)).canEdit;
     final everyone = ref.watch(
       taskFilterProvider.select((f) => f.who != TaskWho.mine),
     );
@@ -220,12 +226,10 @@ class _TaskList extends ConsumerWidget {
                       task: task,
                       withAssignee: everyone,
                       onTap: () => context.push(Routes.taskFor(task.id)),
-                      onToggle: task.canEdit
-                          ? () => toggleTaskDone(
+                      onToggle: canEdit && !task.isDone
+                          ? () => completeTask(
                               context,
-                              task: task,
-                              change: (done) =>
-                                  notifier.setDone(task, done: done),
+                              complete: () => notifier.complete(task),
                             )
                           : null,
                     ),

@@ -1,219 +1,193 @@
+import 'package:salesroot/core/format/app_date_utils.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 
-/// What a task asks for. The ids are the server's `TypeId`s.
+/// What a task asks for, by the server's `type`.
 enum TaskType {
-  call(1),
-  visit(2),
-  followUp(3),
-  meeting(4),
-  quotation(5),
-  collection(6),
-  own(7);
+  call('call'),
+  visit('visit'),
+  meeting('meeting'),
+  collection('collect'),
+  delivery('delivery'),
+  own('todo');
 
-  const TaskType(this.id);
+  const TaskType(this.wire);
 
-  final int id;
+  final String wire;
 
-  static TaskType fromId(int? id) =>
-      values.firstWhere((type) => type.id == id, orElse: () => own);
-}
-
-class TaskStatusRef {
-  const TaskStatusRef({this.id, this.name, this.isDone = false});
-
-  static const openId = 1;
-  static const doneId = 2;
-
-  final int? id;
-  final String? name;
-  final bool isDone;
-
-  factory TaskStatusRef.fromJson(Map<String, dynamic> json) => TaskStatusRef(
-    id: jsonInt(json['Id']),
-    name: json['Name'] as String?,
-    isDone: jsonBool(json['IsDone']),
-  );
-
-  Map<String, dynamic> toJson() => {'Id': id, 'Name': name, 'IsDone': isDone};
+  static TaskType fromWire(String? value) =>
+      values.firstWhere((type) => type.wire == value, orElse: () => own);
 }
 
 class TaskPerson {
-  const TaskPerson({this.id, this.name, this.nameBn});
+  const TaskPerson({this.id, this.name});
 
-  final int? id;
+  final String? id;
   final String? name;
-  final String? nameBn;
-
-  String label(bool bangla) =>
-      LocalizedName(name ?? '', nameBn ?? '').of(bangla);
-
-  factory TaskPerson.fromJson(Map<String, dynamic> json) => TaskPerson(
-    id: jsonInt(json['Id']),
-    name: json['Name'] as String?,
-    nameBn: json['NameBn'] as String?,
-  );
-
-  Map<String, dynamic> toJson() => {'Id': id, 'Name': name, 'NameBn': nameBn};
 }
 
 /// The lead a task belongs to, with what the detail screen shows about it.
 class TaskLeadRef {
-  const TaskLeadRef({
-    this.id,
-    this.name,
-    this.stage,
-    this.contactName,
-    this.contactPhone,
-  });
+  const TaskLeadRef({this.id, this.name, this.phone});
 
-  final int? id;
+  final String? id;
   final String? name;
-  final LocalizedName? stage;
-  final String? contactName;
-  final String? contactPhone;
-
-  factory TaskLeadRef.fromJson(Map<String, dynamic> json) => TaskLeadRef(
-    id: jsonInt(json['Id']),
-    name: json['Name'] as String?,
-    stage: json['StageName'] == null
-        ? null
-        : LocalizedName(
-            json['StageName'] as String? ?? '',
-            json['StageNameBn'] as String? ?? '',
-          ),
-    contactName: json['ContactName'] as String?,
-    contactPhone: json['ContactPhone'] as String?,
-  );
-
-  Map<String, dynamic> toJson() => {
-    'Id': id,
-    'Name': name,
-    'StageName': stage?.en,
-    'StageNameBn': stage?.bn,
-    'ContactName': contactName,
-    'ContactPhone': contactPhone,
-  }..removeWhere((_, value) => value == null);
+  final String? phone;
 }
 
-/// One task. `IsOverdue` and `DaysUntilDue` come from the server, so the
-/// screens never compare a due date with the phone's clock.
+/// One task. The API sends no overdue flag, so [isOverdue] and
+/// [daysUntilDue] count calendar days from the phone's date at parse time.
 class Task {
   const Task({
     required this.id,
     required this.title,
     required this.type,
-    this.description,
-    this.status = const TaskStatusRef(),
+    this.status = 'open',
     this.dueDate,
     this.isOverdue = false,
     this.daysUntilDue,
     this.assignedTo,
     this.assignedToMe = false,
-    this.createdBy,
+    this.createdById,
     this.createdOn,
     this.completedOn,
     this.lead,
-    this.amount,
+    this.companyId,
+    this.companyName,
+    this.contactId,
+    this.contactName,
+    this.contactPhone,
     this.notes,
     this.reminderMinutes,
-    this.canEdit = false,
-    this.canDelete = false,
   });
 
-  final int id;
+  final String id;
   final String title;
   final TaskType type;
-  final String? description;
-  final TaskStatusRef status;
+
+  /// The server's status: `open` or `done`.
+  final String status;
   final DateTime? dueDate;
   final bool isOverdue;
   final int? daysUntilDue;
   final TaskPerson? assignedTo;
   final bool assignedToMe;
-  final TaskPerson? createdBy;
+
+  /// The user (not membership) who created the task.
+  final String? createdById;
   final DateTime? createdOn;
   final DateTime? completedOn;
   final TaskLeadRef? lead;
-  final int? amount;
+  final String? companyId;
+  final String? companyName;
+  final String? contactId;
+  final String? contactName;
+  final String? contactPhone;
   final String? notes;
 
   /// Minutes before [dueDate]; null means no reminder.
   final int? reminderMinutes;
-  final bool canEdit;
-  final bool canDelete;
 
-  bool get isDone => status.isDone;
+  bool get isDone => status == 'done';
 
-  int? get leadId => lead?.id;
+  String? get leadId => lead?.id;
 
-  factory Task.fromJson(Map<String, dynamic> json) => Task(
-    id: jsonInt(json['Id']) ?? 0,
-    title: json['Title'] as String? ?? '',
-    type: TaskType.fromId(jsonInt(json['TypeId'])),
-    description: json['Description'] as String?,
-    status:
-        jsonObject(json['Status'], TaskStatusRef.fromJson) ??
-        const TaskStatusRef(),
-    dueDate: jsonDate(json['DueDate']),
-    isOverdue: jsonBool(json['IsOverdue']),
-    daysUntilDue: jsonInt(json['DaysUntilDue']),
-    assignedTo: jsonObject(json['AssignedTo'], TaskPerson.fromJson),
-    assignedToMe: jsonBool(json['AssignedToMe']),
-    createdBy: jsonObject(json['CreatedBy'], TaskPerson.fromJson),
-    createdOn: jsonDate(json['CreatedOn']),
-    completedOn: jsonDate(json['CompletedOn']),
-    lead: jsonObject(json['Lead'], TaskLeadRef.fromJson),
-    amount: jsonInt(json['Amount']),
-    notes: json['Notes'] as String?,
-    reminderMinutes: jsonInt(json['ReminderMinutes']),
-    canEdit: jsonBool(json['CanEdit']),
-    canDelete: jsonBool(json['CanDelete']),
-  );
+  /// Who the task is about when it has no lead: the company or the contact.
+  String? get party => companyName ?? contactName;
 
-  /// A copy marked done or open before the server confirms, for an instant
-  /// tick in the list.
-  Task withDone(bool done) => Task(
+  /// [me] is the user's membership id; [now] fixes "today" for the day
+  /// count.
+  factory Task.fromJson(
+    Map<String, dynamic> json, {
+    String? me,
+    DateTime? now,
+  }) {
+    final due = jsonDate(json['dueAt']);
+    final status = json['status'] as String? ?? 'open';
+    final days = due == null ? null : _daysFrom(now ?? DateTime.now(), due);
+    final assigneeId = jsonId(json['assigneeMembershipId']);
+    final leadId = jsonId(json['leadId']);
+    final remind = jsonInt(json['remindMin']);
+    return Task(
+      id: jsonId(json['id']) ?? '',
+      title: json['title'] as String? ?? '',
+      type: TaskType.fromWire(json['type'] as String?),
+      status: status,
+      dueDate: due,
+      isOverdue: status != 'done' && days != null && days < 0,
+      daysUntilDue: days,
+      assignedTo: assigneeId == null
+          ? null
+          : TaskPerson(id: assigneeId, name: json['assigneeName'] as String?),
+      assignedToMe: me != null && assigneeId == me,
+      createdById: jsonId(json['createdBy']),
+      createdOn: jsonDate(json['createdAt']),
+      completedOn: jsonDate(json['doneAt']),
+      lead: leadId == null
+          ? null
+          : TaskLeadRef(
+              id: leadId,
+              name: json['leadName'] as String?,
+              phone: json['leadPhone'] as String?,
+            ),
+      companyId: jsonId(json['companyId']),
+      companyName: json['companyName'] as String?,
+      contactId: jsonId(json['contactId']),
+      contactName: json['contactName'] as String?,
+      contactPhone: json['contactPhone'] as String?,
+      notes: json['note'] as String?,
+      reminderMinutes: remind == null || remind <= 0 ? null : remind,
+    );
+  }
+
+  static int _daysFrom(DateTime now, DateTime due) {
+    final today = AppDateUtils.dateOnly(now);
+    return DateTime.utc(
+      due.year,
+      due.month,
+      due.day,
+    ).difference(DateTime.utc(today.year, today.month, today.day)).inDays;
+  }
+
+  /// A copy marked done before the server confirms, for an instant tick in
+  /// the list.
+  Task asDone() => Task(
     id: id,
     title: title,
     type: type,
-    description: description,
-    status: TaskStatusRef(
-      id: done ? TaskStatusRef.doneId : TaskStatusRef.openId,
-      name: status.name,
-      isDone: done,
-    ),
+    status: 'done',
     dueDate: dueDate,
-    isOverdue: !done && (daysUntilDue ?? 0) < 0,
     daysUntilDue: daysUntilDue,
     assignedTo: assignedTo,
     assignedToMe: assignedToMe,
-    createdBy: createdBy,
+    createdById: createdById,
     createdOn: createdOn,
-    completedOn: done ? completedOn : null,
+    completedOn: completedOn,
     lead: lead,
-    amount: amount,
+    companyId: companyId,
+    companyName: companyName,
+    contactId: contactId,
+    contactName: contactName,
+    contactPhone: contactPhone,
     notes: notes,
     reminderMinutes: reminderMinutes,
-    canEdit: canEdit,
-    canDelete: canDelete,
   );
 }
 
-/// The tabs of the task list (#34).
+/// The tabs of the task list (#34), by the server's `view`. This week is
+/// the open tasks due in the seven days after today.
 enum TaskBucket {
-  today('Today'),
-  overdue('Overdue'),
-  week('Week'),
-  all('All'),
-  done('Done');
+  today('today'),
+  overdue('overdue'),
+  week('upcoming'),
+  all(null),
+  done('done');
 
-  const TaskBucket(this.wire);
+  const TaskBucket(this.view);
 
-  final String wire;
+  final String? view;
 }
 
-/// How many tasks each tab holds. [today] counts what is due today and still
-/// open.
+/// How many tasks each tab holds.
 class TaskCounts {
   const TaskCounts({
     this.today = 0,
@@ -236,12 +210,4 @@ class TaskCounts {
     TaskBucket.all => all,
     TaskBucket.done => done,
   };
-
-  factory TaskCounts.fromJson(Map<String, dynamic> json) => TaskCounts(
-    today: jsonInt(json['Today']) ?? 0,
-    overdue: jsonInt(json['Overdue']) ?? 0,
-    week: jsonInt(json['Week']) ?? 0,
-    all: jsonInt(json['All']) ?? 0,
-    done: jsonInt(json['Done']) ?? 0,
-  );
 }

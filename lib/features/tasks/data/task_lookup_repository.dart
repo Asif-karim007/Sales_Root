@@ -5,10 +5,10 @@ import 'package:salesroot/features/tasks/models/task_lookups.dart';
 abstract interface class TaskLookupRepository {
   Future<PageResult<LeadOption>> searchLeads(String term, int page);
 
-  Future<LeadOption> lead(int id);
+  Future<LeadOption> lead(String id);
 
   Future<List<MemberOption>> members();
 
   /// The id of the company already in the CRM under [name], if any.
-  Future<int?> findCompany(String name);
+  Future<String?> findCompany(String name);
 }
