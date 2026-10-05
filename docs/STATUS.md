@@ -43,29 +43,13 @@ flutter run --dart-define-from-file=secrets.json
 - **Maps on iOS:** copy `ios/Flutter/Secrets.xcconfig.example` to `Secrets.xcconfig` and fill it in.
 - **build_runner:** `tool/gen.sh` deletes `.dart_tool/build` first, because incremental builds deadlocked (0% CPU) after big merges. If a manual `dart run build_runner build` hangs, do the same.
 
-### Demo logins (fake auth, `lib/features/auth/data/auth_fixtures.dart`)
-- **SMS code:** `123456` for every number.
-- **Existing user:** `01711000000`, which signs in as Karim Hossain. The 25 SeedGraph member numbers are also registered.
-- **Email:** `karim@example.com` / `salesroot`.
-- **Invitation codes:**
-  - `DS7Q2M`
-  - `MGS4K8` (new team)
-  - `CTG5TL` (team lead)
-  - `OLD9X1` (expired)
-- **Referral codes:** `RH4K9P`, `KH2026`.
-- **Workspaces:**
-  - My workspace: personal, Free plan.
-  - Dhaka Sales: member role, Team plan with Field Force.
-  - Nexzen Partners: team lead role, Business plan with Field Force and Growth.
+### Backend and test login
+- **API:** `https://salesroot-api.salebee.net/v1/` (Swagger at `/docs`). Plain camelCase JSON, UUID string ids, `offset`/`limit` paging, errors `{code, message: {bn, en}, field}`, validation 422. Access tokens refresh through `auth/refresh` (refresh tokens rotate).
+- **Test account:** `+8801711000002` (Rafi Ahmed, executive in "Dhaka Sales Ltd."). The dev server's OTP is `123456`.
+- **Still fake (no endpoint):** chat, file folders, private calendar events, notices, lead distribution rules, academy, help articles, global search, and the phone-book reader (no contacts plugin).
 
 ### Developer menu (debug only, at the bottom of More)
-It sets:
-- role override, add-ons override, experience level and level lock;
-- quota reached;
-- offline, random 500s and latency;
-- empty workspace (the new-user states), and reseeding the data;
-- the language;
-- PIN lock and sign-out.
+It switches the workspace and experience level, and drives the screens that are still fake: quota reached, offline, random 500s, latency, empty data, reseeding. Plus the language, PIN lock and sign-out.
 
 It also opens the design gallery. Use it to check every state of a screen.
 
