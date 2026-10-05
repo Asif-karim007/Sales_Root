@@ -50,6 +50,25 @@ class LeadTranscript {
     );
   }
 
+  /// This transcript with what the server's parser read out of [text],
+  /// `POST ai/parse`; what it did not find stays as heard.
+  LeadTranscript refinedBy(Map<String, dynamic> json) {
+    String? read(String key) {
+      final value = json[key];
+      return value is String && value.trim().isNotEmpty ? value.trim() : null;
+    }
+
+    final phone = read('phone');
+    return LeadTranscript(
+      text: text,
+      name: read('name') ?? name,
+      company: read('company') ?? read('companyName') ?? company,
+      phone: phone == null ? this.phone : _localPhone(phone),
+      interests: interests,
+      followUp: followUp,
+    );
+  }
+
   static final _phonePattern = RegExp(
     r'(?:\+?\s*8\s*8\s*)?0\s*1(?:[\s-]*\d){9}',
   );
@@ -240,8 +259,10 @@ class LeadTranscript {
   ];
 
   static const _kindWords = [
-    (LeadActivityKind.visit, ['visit', 'ভিজিট', 'যাব', 'দেখা করব']),
-    (LeadActivityKind.meeting, ['meeting', 'meet', 'মিটিং']),
+    (
+      LeadActivityKind.visit,
+      ['visit', 'ভিজিট', 'যাব', 'দেখা করব', 'meeting', 'meet', 'মিটিং'],
+    ),
     (LeadActivityKind.whatsapp, ['whatsapp', 'হোয়াটসঅ্যাপ']),
     (LeadActivityKind.call, ['call', 'follow', 'কল', 'ফোন', 'ফলো']),
   ];

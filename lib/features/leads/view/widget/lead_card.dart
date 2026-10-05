@@ -31,7 +31,7 @@ class LeadCard extends ConsumerWidget {
     final c = SrColors.of(context);
     final access = ref.watch(moduleAccessProvider(AppModule.lead));
     final onPick = this.onPick;
-    final editable = access.canEdit && lead.canEdit;
+    final editable = access.canEdit;
     void open() =>
         onPick != null ? onPick(lead) : context.push(Routes.leadFor(lead.id));
 
@@ -245,8 +245,7 @@ class _Actions extends ConsumerWidget {
     final c = SrColors.of(context);
     final l10n = context.l10n;
     final canVisit = ref.watch(moduleAccessProvider(AppModule.visit)).canAdd;
-    final canLog =
-        ref.watch(moduleAccessProvider(AppModule.lead)).canEdit && lead.canEdit;
+    final canLog = ref.watch(moduleAccessProvider(AppModule.lead)).canEdit;
     final phone = lead.phone;
     return Row(
       children: [
@@ -342,8 +341,8 @@ class LeadMenuSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final access = ref.watch(moduleAccessProvider(AppModule.lead));
-    final editable = access.canEdit && lead.canEdit;
-    final deletable = access.canDelete && lead.canDelete;
+    final editable = access.canEdit;
+    final deletable = access.canDelete;
     final rows = [
       (LeadMenuAction.open, Icons.open_in_new_rounded, l10n.leadsOpen),
       if (editable) ...[

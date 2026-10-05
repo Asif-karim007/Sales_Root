@@ -27,7 +27,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class LeadDetailScreen extends ConsumerWidget {
   const LeadDetailScreen({super.key, required this.id});
 
-  final int id;
+  final String id;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -127,7 +127,7 @@ class _DetailMenu extends ConsumerWidget {
     final l10n = context.l10n;
     final access = ref.watch(moduleAccessProvider(AppModule.lead));
     final chat = ref.watch(moduleAccessProvider(AppModule.chat));
-    final editable = access.canEdit && lead.canEdit;
+    final editable = access.canEdit;
     final rows = [
       (_DetailAction.links, Icons.link_rounded, l10n.leadsDetails),
       if (editable) ...[
@@ -136,7 +136,7 @@ class _DetailMenu extends ConsumerWidget {
       ],
       if (chat.canView)
         (_DetailAction.discuss, Icons.forum_outlined, l10n.leadsDiscuss),
-      if (access.canDelete && lead.canDelete)
+      if (access.canDelete)
         (_DetailAction.delete, Icons.delete_outline_rounded, l10n.commonDelete),
     ];
     return SrSheet(
@@ -172,8 +172,7 @@ class _Body extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final editable =
-        ref.watch(moduleAccessProvider(AppModule.lead)).canEdit && lead.canEdit;
+    final editable = ref.watch(moduleAccessProvider(AppModule.lead)).canEdit;
     return ListView(
       padding: EdgeInsets.zero,
       children: [
@@ -227,7 +226,7 @@ class _Hero extends StatelessWidget {
     final l10n = context.l10n;
     final bangla = context.fmt.isBangla;
     final temperature = lead.temperature;
-    final contact = lead.primaryContact;
+    final contact = lead.contact?.name;
     return Material(
       color: c.surface,
       child: InkWell(
@@ -257,9 +256,8 @@ class _Hero extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       leadMeta([
-                        contact?.name,
-                        contact?.designation,
-                        lead.company?.area?.of(bangla),
+                        if (contact != lead.leadName) contact,
+                        lead.company?.name,
                       ]),
                       style: AppText.meta(c.ink2, size: 13),
                     ),
@@ -274,7 +272,7 @@ class _Hero extends StatelessWidget {
                             temperature.label(l10n),
                             tone: temperature.tone,
                           ),
-                        for (final tag in lead.tags) SrTag(tag.name.of(bangla)),
+                        for (final tag in lead.tags) SrTag(tag),
                       ],
                     ),
                   ],
@@ -302,12 +300,15 @@ class _StageStrip extends ConsumerWidget {
     final all = ref.watch(leadStagesProvider).value ?? const <LeadStage>[];
     final visible = ref.watch(visibleLeadStagesProvider).value ?? const [];
     if (lead.isLost) {
-      final loss = lead.winLoss;
+      final reason = ref
+          .watch(leadLookupsProvider)
+          .value
+          ?.lostReason(lead.lostReason);
       return SrNote(
         tone: SrNoteTone.err,
         icon: Icons.thumb_down_alt_outlined,
         title: lead.stageName(bangla),
-        message: leadMeta([loss?.cause?.of(bangla), loss?.note]),
+        message: leadMeta([reason?.name.of(bangla), lead.lostNote]),
         action: editable
             ? SrButton(
                 label: l10n.leadsReopen,
@@ -345,7 +346,6 @@ class _ContactTiles extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final phone = lead.phone;
-    final email = lead.email;
 
     Future<void> open(
       Future<bool> Function() launch,
@@ -397,17 +397,6 @@ class _ContactTiles extends ConsumerWidget {
           onTap: phone == null
               ? noPhone
               : () => open(() => LeadLauncher.sms(phone), LeadActivityKind.sms),
-        ),
-        const SizedBox(width: 8),
-        _Tile(
-          icon: Icons.mail_outline_rounded,
-          label: l10n.leadsKindEmail,
-          onTap: email == null
-              ? () => showSrWarning(context, l10n.leadsNoEmail)
-              : () => open(
-                  () => LeadLauncher.email(email),
-                  LeadActivityKind.email,
-                ),
         ),
       ],
     );
@@ -471,7 +460,7 @@ class _Deal extends StatelessWidget {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final amount = lead.estimatedAmount;
-    final quoted = lead.lastQuotation?.amount;
+    final quoted = lead.lastQuoted;
     final win = lead.winProbability;
     return SrCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -572,6 +561,7 @@ class _NextTask extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final at = lead.nextTaskAt;
+    final task = lead.nextTask;
     if (!lead.hasNextTask) {
       final canPlan = ref.watch(moduleAccessProvider(AppModule.task)).canAdd;
       if (!lead.isOpen) return const SizedBox.shrink();
@@ -588,7 +578,7 @@ class _NextTask extends ConsumerWidget {
                   Uri(
                     path: Routes.taskNew,
                     queryParameters: {
-                      'leadId': '${lead.id}',
+                      'leadId': lead.id,
                       'title': lead.leadName,
                     },
                   ).toString(),
@@ -603,15 +593,15 @@ class _NextTask extends ConsumerWidget {
       title: l10n.leadsNextTask,
       message: leadMeta([
         at == null ? null : leadDayTime(context, at),
-        lead.nextTaskTitle ?? lead.nextTaskType?.label(l10n),
+        task?.title ?? task?.kind?.label(l10n),
       ]),
-      action: editable
+      action: editable && task != null
           ? SrButton(
               label: l10n.commonDone,
               size: SrButtonSize.sm,
               onPressed: () => ref
                   .read(leadActionsProvider.notifier)
-                  .completeTask(lead, LeadSurface.detail),
+                  .completeTask(lead, task, LeadSurface.detail),
             )
           : null,
     );
@@ -621,8 +611,7 @@ class _NextTask extends ConsumerWidget {
 /// Move stage and Create quotation, each when the user may.
 List<Widget> _footerButtons(BuildContext context, WidgetRef ref, Lead lead) {
   final l10n = context.l10n;
-  final editable =
-      ref.watch(moduleAccessProvider(AppModule.lead)).canEdit && lead.canEdit;
+  final editable = ref.watch(moduleAccessProvider(AppModule.lead)).canEdit;
   final canQuote =
       lead.isOpen &&
       ref.watch(moduleAccessProvider(AppModule.quotation)).canAdd;

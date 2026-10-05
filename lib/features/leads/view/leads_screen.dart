@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/app_module.dart';
-import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/locale/locale_provider.dart';
 import 'package:salesroot/core/paging/paged.dart';
 import 'package:salesroot/core/routing/routes.dart';
@@ -136,29 +135,15 @@ class _Header extends ConsumerWidget {
     final filter = ref.watch(leadFilterProvider);
     final paged = board ? null : ref.watch(leadListProvider).value;
     final locale = ref.watch(appLocaleProvider);
-    final fmt = context.fmt;
 
     return SrHeader(
       children: [
         Row(
           children: [
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    board ? l10n.leadsPipeline : l10n.leadsTitle,
-                    style: AppText.pageTitle(c.ink, size: 22),
-                  ),
-                  if (paged != null)
-                    Text(
-                      l10n.leadsSummary(
-                        fmt.number(paged.openCount),
-                        fmt.number(paged.closingThisWeek),
-                      ),
-                      style: AppText.meta(c.ink2),
-                    ),
-                ],
+              child: Text(
+                board ? l10n.leadsPipeline : l10n.leadsTitle,
+                style: AppText.pageTitle(c.ink, size: 22),
               ),
             ),
             SrLanguageToggle(
@@ -195,7 +180,7 @@ class _Header extends ConsumerWidget {
           ),
         SrSegmented(
           segments: [
-            SrSegment(l10n.leadsMyLeads, count: paged?.chipCount(LeadChip.all)),
+            SrSegment(l10n.leadsMyLeads, count: paged?.totalCount),
             SrSegment(l10n.leadsPipeline),
           ],
           index: board ? 1 : 0,
@@ -205,12 +190,7 @@ class _Header extends ConsumerWidget {
           SrChipRow(
             padding: EdgeInsets.zero,
             chips: [
-              for (final chip in LeadChip.values)
-                SrChipItem(
-                  chip.label(l10n),
-                  count: paged?.chipCount(chip),
-                  tone: chip.tone,
-                ),
+              for (final chip in LeadChip.values) SrChipItem(chip.label(l10n)),
             ],
             index: filter.chip.index,
             onChanged: (i) =>

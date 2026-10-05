@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/access/app_module.dart';
-import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/locale/locale_provider.dart';
+import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/leads/models/lead_input.dart';
@@ -21,8 +21,8 @@ import 'package:salesroot/widgets/widgets.dart';
 class LeadQuickScreen extends ConsumerStatefulWidget {
   const LeadQuickScreen({super.key, this.companyId, this.contactId});
 
-  final int? companyId;
-  final int? contactId;
+  final String? companyId;
+  final String? contactId;
 
   @override
   ConsumerState<LeadQuickScreen> createState() => _LeadQuickScreenState();
@@ -30,11 +30,9 @@ class LeadQuickScreen extends ConsumerStatefulWidget {
 
 class _LeadQuickScreenState extends ConsumerState<LeadQuickScreen> {
   static const _slot = 'quick';
-  static const _shownInterests = 3;
 
   final _name = TextEditingController();
   final _phone = TextEditingController();
-  final Set<int> _interests = {};
   String? _nameError;
   String? _phoneError;
   LeadInput? _input;
@@ -48,11 +46,18 @@ class _LeadQuickScreenState extends ConsumerState<LeadQuickScreen> {
   }
 
   Future<void> _prefill() async {
-    if (widget.companyId == null && widget.contactId == null) return;
-    final lookups = await ref.read(leadLookupsProvider.future);
+    final repository = ref.read(leadRepositoryProvider);
+    final contactId = widget.contactId;
+    final LeadLookupContact? contact;
+    final LeadLookupCompany? company;
+    try {
+      contact = contactId == null ? null : await repository.contact(contactId);
+      final companyId = widget.companyId ?? contact?.companyId;
+      company = companyId == null ? null : await repository.company(companyId);
+    } on ApiFailure {
+      return;
+    }
     if (!mounted) return;
-    final contact = lookups.contact(widget.contactId);
-    final company = lookups.company(widget.companyId ?? contact?.companyId);
     setState(() {
       _company = company;
       _contact = contact;
@@ -83,12 +88,9 @@ class _LeadQuickScreenState extends ConsumerState<LeadQuickScreen> {
     final contact = _contact;
     final input = LeadInput(
       leadName: name,
-      companyId: company != null && company.name == name ? company.id : null,
-      contactIds: [?contact?.id],
-      newContact: contact == null && phone.isNotEmpty
-          ? LeadNewContact(name: name, mobile: phone)
-          : null,
-      interestIds: _interests.toList(),
+      phone: phone,
+      companyId: company?.id,
+      contactId: contact?.id,
     );
     _input = input;
     ref.read(leadSaveProvider(_slot).notifier).create(input);
@@ -103,25 +105,6 @@ class _LeadQuickScreenState extends ConsumerState<LeadQuickScreen> {
     context.pushReplacement(
       Uri(path: Routes.leadNew, queryParameters: query).toString(),
     );
-  }
-
-  Future<void> _moreInterests(List<LeadOption> all) async {
-    final bangla = context.fmt.isBangla;
-    final picked = await showSrSheet<List<LeadOption>>(
-      context: context,
-      builder: (context) => SrMultiOptionSheet<LeadOption>(
-        title: context.l10n.leadsInterestedIn,
-        options: all,
-        labelOf: (o) => o.name.of(bangla),
-        isSelected: (o) => _interests.contains(o.id),
-      ),
-    );
-    if (picked == null || !mounted) return;
-    setState(() {
-      _interests
-        ..clear()
-        ..addAll(picked.map((o) => o.id));
-    });
   }
 
   @override
@@ -160,7 +143,7 @@ class _LeadQuickScreenState extends ConsumerState<LeadQuickScreen> {
               label: l10n.leadsNameOrCompany,
               hint: l10n.leadsNameOrCompanyHint,
               prefixIcon: Icons.person_outline_rounded,
-              error: _nameError ?? leadFieldError(save, 'LeadName'),
+              error: _nameError ?? leadFieldError(save, 'name'),
               textCapitalization: TextCapitalization.words,
               textInputAction: TextInputAction.next,
               autofocus: widget.companyId == null && widget.contactId == null,
@@ -171,22 +154,11 @@ class _LeadQuickScreenState extends ConsumerState<LeadQuickScreen> {
               label: l10n.leadsMobile,
               hint: l10n.leadsMobileHint,
               prefixIcon: Icons.call_outlined,
-              error: _phoneError ?? leadFieldError(save, 'Mobile'),
+              error: _phoneError ?? leadFieldError(save, 'phone'),
               keyboardType: TextInputType.phone,
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9+ \-]')),
               ],
-            ),
-            const SizedBox(height: 14),
-            SrFieldLabel(l10n.leadsInterestedIn, optional: true),
-            const SizedBox(height: 8),
-            _Interests(
-              selected: _interests,
-              shown: _shownInterests,
-              onToggle: (id) => setState(() {
-                if (!_interests.remove(id)) _interests.add(id);
-              }),
-              onMore: _moreInterests,
             ),
             const SizedBox(height: 16),
             SrNote(message: l10n.leadsQuickNote),
@@ -240,51 +212,6 @@ class _LeadQuickScreenState extends ConsumerState<LeadQuickScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _Interests extends ConsumerWidget {
-  const _Interests({
-    required this.selected,
-    required this.shown,
-    required this.onToggle,
-    required this.onMore,
-  });
-
-  final Set<int> selected;
-  final int shown;
-  final ValueChanged<int> onToggle;
-  final ValueChanged<List<LeadOption>> onMore;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final bangla = context.fmt.isBangla;
-    final all = ref.watch(leadLookupsProvider).value?.interests ?? const [];
-    final visible = [
-      for (final (i, o) in all.indexed)
-        if (i < shown || selected.contains(o.id)) o,
-    ];
-    return Wrap(
-      spacing: 6,
-      runSpacing: 6,
-      children: [
-        for (final option in visible)
-          SrChip(
-            label: option.name.of(bangla),
-            selected: selected.contains(option.id),
-            onTap: () => onToggle(option.id),
-          ),
-        if (all.length > visible.length)
-          SrChip(
-            label: context.l10n.leadsMoreInterests,
-            icon: Icons.add_rounded,
-            tone: SrTone.accent,
-            onTap: () => onMore(all),
-          ),
-        if (all.isEmpty)
-          const SrSkeletonBox(width: 180, height: 30, radius: 15),
-      ],
     );
   }
 }

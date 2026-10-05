@@ -5,6 +5,7 @@ import 'package:speech_to_text/speech_recognition_result.dart';
 
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/locale/locale_provider.dart';
+import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
@@ -79,6 +80,15 @@ class _LeadVoiceScreenState extends ConsumerState<LeadVoiceScreen> {
       _heard = heard;
       _phase = _words.trim().isEmpty ? _Phase.unheard : _Phase.confirm;
     });
+    if (_phase == _Phase.confirm) _refine(heard);
+  }
+
+  /// Lets the server's parser improve what the phone heard, unless the user
+  /// has already corrected it.
+  Future<void> _refine(LeadTranscript heard) async {
+    final refined = await ref.read(leadRepositoryProvider).refine(heard);
+    if (!mounted || !identical(_heard, heard)) return;
+    setState(() => _heard = refined);
   }
 
   void _language(bool bangla) {
@@ -100,25 +110,31 @@ class _LeadVoiceScreenState extends ConsumerState<LeadVoiceScreen> {
       showSrWarning(context, l10n.leadsErrorMobile);
       return;
     }
-    final lookups = await ref.read(leadLookupsProvider.future);
-    final company = lookups.companyNamed(heard.company);
+    final companyId = await _knownCompany(heard.company);
     final input = LeadInput(
       leadName: title,
-      companyId: company?.id,
-      companyName: company == null ? heard.company : null,
-      newContact: phone == null
-          ? null
-          : LeadNewContact(name: heard.name ?? title, mobile: phone),
-      interestIds: [
-        for (final interest in lookups.interests)
-          if (heard.interests.contains(interest.name.en)) interest.id,
-      ],
-      sourceId: lookups.sourceNamed('Phone call')?.id,
+      phone: phone,
+      title: heard.interests.isEmpty ? null : heard.interests.join(', '),
+      companyId: companyId,
+      companyName: companyId == null ? heard.company : null,
+      source: LeadSource.phone.wire,
       followUp: heard.followUp,
     );
     _input = input;
     if (!mounted) return;
     await ref.read(leadSaveProvider(_slot).notifier).create(input);
+  }
+
+  /// The id of the company named [name] when it is already on the list.
+  Future<String?> _knownCompany(String? name) async {
+    final key = name?.trim().toLowerCase() ?? '';
+    if (key.isEmpty) return null;
+    try {
+      final hits = await ref.read(leadRepositoryProvider).companies(key, 1);
+      return hits.where((c) => c.name.toLowerCase() == key).firstOrNull?.id;
+    } on ApiFailure {
+      return null;
+    }
   }
 
   void _update(LeadTranscript heard) => setState(() => _heard = heard);
@@ -302,7 +318,7 @@ class _Retry extends StatelessWidget {
   );
 }
 
-class _Confirm extends ConsumerWidget {
+class _Confirm extends StatelessWidget {
   const _Confirm({required this.heard, required this.onChanged});
 
   final LeadTranscript heard;
@@ -338,24 +354,6 @@ class _Confirm extends ConsumerWidget {
     if (text != null) onSaved(text.trim().isEmpty ? null : text.trim());
   }
 
-  Future<void> _editInterests(
-    BuildContext context,
-    List<LeadOption> all,
-  ) async {
-    final bangla = context.fmt.isBangla;
-    final picked = await showSrSheet<List<LeadOption>>(
-      context: context,
-      builder: (context) => SrMultiOptionSheet<LeadOption>(
-        title: context.l10n.leadsInterest,
-        options: all,
-        labelOf: (o) => o.name.of(bangla),
-        isSelected: (o) => heard.interests.contains(o.name.en),
-      ),
-    );
-    if (picked == null) return;
-    onChanged(_with(interests: [for (final o in picked) o.name.en]));
-  }
-
   Future<void> _editFollowUp(BuildContext context) async {
     final now = DateTime.now();
     final current = heard.followUp;
@@ -380,17 +378,13 @@ class _Confirm extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final c = SrColors.of(context);
     final l10n = context.l10n;
     final fmt = context.fmt;
-    final all = ref.watch(leadLookupsProvider).value?.interests ?? const [];
     final followUp = heard.followUp;
     final phone = heard.phone;
-    final interests = [
-      for (final o in all)
-        if (heard.interests.contains(o.name.en)) o.name.of(fmt.isBangla),
-    ];
+    final interests = heard.interests.join(', ');
     final rows = [
       (
         l10n.leadsName,
@@ -425,8 +419,20 @@ class _Confirm extends ConsumerWidget {
       ),
       (
         l10n.leadsInterest,
-        interests.isEmpty ? null : interests.join(', '),
-        () => _editInterests(context, all),
+        interests.isEmpty ? null : interests,
+        () => _editText(
+          context,
+          l10n.leadsInterest,
+          interests,
+          (v) => onChanged(
+            _with(
+              interests: [
+                for (final part in (v ?? '').split(','))
+                  if (part.trim().isNotEmpty) part.trim(),
+              ],
+            ),
+          ),
+        ),
       ),
       (
         l10n.leadsFollowUp,

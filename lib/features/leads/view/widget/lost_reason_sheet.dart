@@ -11,7 +11,7 @@ import 'package:salesroot/widgets/widgets.dart';
 class LostReasonChoice {
   const LostReasonChoice({required this.reasonId, this.note});
 
-  final int reasonId;
+  final String reasonId;
   final String? note;
 }
 
@@ -25,7 +25,7 @@ class LostReasonSheet extends ConsumerStatefulWidget {
 
 class _LostReasonSheetState extends ConsumerState<LostReasonSheet> {
   final _note = TextEditingController();
-  int? _reasonId;
+  String? _reasonId;
 
   @override
   void dispose() {
@@ -89,8 +89,8 @@ class _Reasons extends StatelessWidget {
   });
 
   final List<LeadOption> reasons;
-  final int? selected;
-  final ValueChanged<int> onPick;
+  final String? selected;
+  final ValueChanged<String> onPick;
 
   @override
   Widget build(BuildContext context) {

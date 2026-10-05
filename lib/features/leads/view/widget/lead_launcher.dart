@@ -2,16 +2,13 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:salesroot/core/utils/debug_log.dart';
 
-/// Opens the phone, WhatsApp, SMS and email apps for a lead's contact.
+/// Opens the phone, WhatsApp and SMS apps for a lead's contact.
 abstract final class LeadLauncher {
   static Future<bool> call(String phone) =>
       _open(Uri(scheme: 'tel', path: _dialable(phone)));
 
   static Future<bool> sms(String phone) =>
       _open(Uri(scheme: 'sms', path: _dialable(phone)));
-
-  static Future<bool> email(String address) =>
-      _open(Uri(scheme: 'mailto', path: address));
 
   /// wa.me wants the number in international form without the plus.
   static Future<bool> whatsapp(String phone) {

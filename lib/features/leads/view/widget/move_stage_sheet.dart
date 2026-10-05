@@ -4,14 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/leads/models/lead.dart';
+import 'package:salesroot/features/leads/models/lead_input.dart';
 import 'package:salesroot/features/leads/models/lead_stage.dart';
 import 'package:salesroot/features/leads/providers/lead_providers.dart';
 import 'package:salesroot/features/leads/view/widget/lost_reason_sheet.dart';
+import 'package:salesroot/features/leads/view/widget/stage_fields_sheet.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Runs #30 → #31 → save: pick a stage (or take [to]), give a reason when
-/// it is Lost, then move [lead]; [origin] shows the undo snackbar.
+/// it is Lost or fill what the stage requires, then move [lead]; [origin]
+/// shows the undo snackbar.
 Future<void> moveLeadStage(
   BuildContext context,
   WidgetRef ref,
@@ -29,18 +32,35 @@ Future<void> moveLeadStage(
   if (target == null || target.id == lead.stage?.id || !context.mounted) {
     return;
   }
-  if (!target.isLost) return actions.moveStage(lead, target, origin);
-  final reason = await showSrSheet<LostReasonChoice>(
+  if (target.isLost) {
+    final reason = await showSrSheet<LostReasonChoice>(
+      context: context,
+      builder: (_) => const LostReasonSheet(),
+    );
+    if (reason == null) return;
+    return actions.moveStage(
+      lead,
+      LeadStageInput(
+        stage: target,
+        lostReason: reason.reasonId,
+        note: reason.note,
+      ),
+      origin,
+    );
+  }
+  final missing = stageFieldsMissing(lead, target);
+  if (missing.isEmpty) {
+    return actions.moveStage(lead, LeadStageInput(stage: target), origin);
+  }
+  final filled = await showSrSheet<StageFields>(
     context: context,
-    builder: (_) => const LostReasonSheet(),
+    builder: (_) => StageFieldsSheet(stage: target, keys: missing),
   );
-  if (reason == null) return;
+  if (filled == null) return;
   await actions.moveStage(
     lead,
-    target,
+    LeadStageInput(stage: target, amount: filled.amount, custom: filled.custom),
     origin,
-    lostReasonId: reason.reasonId,
-    note: reason.note,
   );
 }
 
@@ -105,11 +125,8 @@ class _StageRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = SrColors.of(context);
-    final bangla = context.fmt.isBangla;
-    final hint = stage.hint.of(bangla);
     return SrListRow(
-      title: stage.name.of(bangla),
-      subtitle: hint.isEmpty ? null : hint,
+      title: stage.name.of(context.fmt.isBangla),
       divider: divider,
       padding: const EdgeInsets.symmetric(vertical: 10),
       leading: current

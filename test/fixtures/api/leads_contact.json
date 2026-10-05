@@ -1,0 +1,30 @@
+{
+ "contact": {
+  "id": "01a10101-865e-7196-8bd5-2cf8d667f937",
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "name": "Mr Rahim",
+  "phone": "+8801811000010",
+  "phone2": null,
+  "email": null,
+  "designation": "Owner",
+  "companyId": "01a10101-8657-7f15-8630-b08119f1ae61",
+  "roleInCompany": "decision_maker",
+  "address": null,
+  "area": null,
+  "birthday": null,
+  "tags": [],
+  "custom": "{}",
+  "doNotMessage": false,
+  "ownerMembershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+  "cardImageUrl": null,
+  "notes": null,
+  "createdBy": null,
+  "createdAt": "2026-10-03T09:03:59.542506Z",
+  "updatedAt": "2026-10-03T09:03:59.542506Z",
+  "deletedAt": null,
+  "version": 19,
+  "companyName": "Rahim Traders",
+  "ownerName": "Rafi Ahmed",
+  "lastActivityAt": null
+ }
+}

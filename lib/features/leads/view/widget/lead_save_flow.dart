@@ -15,9 +15,9 @@ import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
 /// Reacts to a lead form's save: opens the saved lead, offers the duplicate
-/// sheet on a 409 (saving again with [retry] when kept), the upgrade sheet on
-/// a 402, and a snackbar for anything else. A 400 is left to the form, which
-/// shows the field errors.
+/// sheet when the phone is on another lead (saving again with [retry] when
+/// kept), the upgrade sheet on a 402, and a snackbar for anything else. A
+/// validation error is left to the form, which shows the field errors.
 void onLeadSaved(
   BuildContext context,
   AsyncValue<Lead?> next, {
@@ -62,7 +62,8 @@ void onLeadSaved(
   showSrError(context, leadFailureText(l10n, error));
 }
 
-/// The text to show under a field for a 400's field errors.
+/// The text to show under [field] (the server's name for it) when the save
+/// failed validation.
 String? leadFieldError(AsyncValue<Lead?> state, String field) {
   final error = state.error;
   return error is ApiFailure ? error.fieldError(field) : null;
@@ -88,7 +89,7 @@ Future<void> _offerDuplicate(
   }
 }
 
-/// #27: the lead that already has this number or company.
+/// #27: the lead that already has this number.
 class LeadDuplicateSheet extends StatelessWidget {
   const LeadDuplicateSheet({super.key, required this.failure});
 
@@ -101,21 +102,13 @@ class LeadDuplicateSheet extends StatelessWidget {
     final fmt = context.fmt;
     final existing = failure.existing;
     final created = existing.createdOn;
-    final byPhone = failure.field == LeadDuplicateField.phone;
     return SrSheet(
-      title: byPhone
-          ? l10n.leadsDuplicatePhoneTitle
-          : l10n.leadsDuplicateCompanyTitle,
+      title: l10n.leadsDuplicatePhoneTitle,
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              byPhone
-                  ? l10n.leadsDuplicatePhoneBody
-                  : l10n.leadsDuplicateCompanyBody,
-              style: AppText.lead(c.ink2),
-            ),
+            Text(l10n.leadsDuplicatePhoneBody, style: AppText.lead(c.ink2)),
             const SizedBox(height: 12),
             SrCard(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),

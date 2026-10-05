@@ -1,48 +1,51 @@
+import 'package:collection/collection.dart';
+
 import 'package:salesroot/core/access/experience_level.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 
 /// One pipeline stage, with the win probability a lead takes on there.
+/// [requiredFields] must be filled before a lead moves in: `amount`, or the
+/// key of a custom lead field.
 class LeadStage {
   const LeadStage({
     required this.id,
     required this.name,
-    this.hint = const LocalizedName('', ''),
+    this.pipelineId,
     this.winProbability = 0,
     this.funnelOrder = 0,
+    this.showInEasy = true,
     this.isWon = false,
     this.isLost = false,
+    this.requiredFields = const [],
   });
 
-  final int id;
+  final String id;
   final LocalizedName name;
-
-  /// What the stage means, shown under its name when moving a lead.
-  final LocalizedName hint;
+  final String? pipelineId;
   final int winProbability;
   final int funnelOrder;
+  final bool showInEasy;
   final bool isWon;
   final bool isLost;
+  final List<String> requiredFields;
 
   bool get isOpen => !isWon && !isLost;
 
   factory LeadStage.fromJson(Map<String, dynamic> json) => LeadStage(
-    id: jsonInt(json['Id']) ?? 0,
-    name: LocalizedName.fromJson(json),
-    hint: LocalizedName(
-      json['Hint'] as String? ?? '',
-      json['HintBn'] as String? ?? '',
-    ),
-    winProbability: jsonInt(json['WinProbability']) ?? 0,
-    funnelOrder: jsonInt(json['FunnelOrder']) ?? 0,
-    isWon: jsonBool(json['IsWon']),
-    isLost: jsonBool(json['IsLost']),
+    id: jsonId(json['id']) ?? '',
+    name: LocalizedName.pair(json),
+    pipelineId: jsonId(json['pipelineId']),
+    winProbability: jsonInt(json['probability']) ?? 0,
+    funnelOrder: jsonInt(json['sortOrder']) ?? 0,
+    showInEasy: json['showInEasy'] != false,
+    isWon: jsonBool(json['isWon']),
+    isLost: jsonBool(json['isLost']),
+    requiredFields: jsonStrings(json['requiredFields']),
   );
 }
 
 extension LeadStageList on List<LeadStage> {
-  static const int _easyOpenStages = 3;
-
-  LeadStage? byId(int? id) {
+  LeadStage? byId(String? id) {
     for (final stage in this) {
       if (stage.id == id) return stage;
     }
@@ -53,15 +56,13 @@ extension LeadStageList on List<LeadStage> {
 
   LeadStage? get lost => _first((s) => s.isLost);
 
-  /// The open stages and Won, in funnel order. Easy keeps the first three
-  /// open stages only.
+  /// Every stage but Lost, in funnel order. Easy keeps the stages the
+  /// workspace marks for it.
   List<LeadStage> visibleFor(ExperienceLevel level) {
-    final open = where((s) => s.isOpen).toList()
-      ..sort((a, b) => a.funnelOrder.compareTo(b.funnelOrder));
-    final won = this.won;
+    final easy = level == ExperienceLevel.easy;
     return [
-      ...level == ExperienceLevel.easy ? open.take(_easyOpenStages) : open,
-      ?won,
+      for (final stage in sortedBy((s) => s.funnelOrder))
+        if (!stage.isLost && (!easy || stage.showInEasy || stage.isWon)) stage,
     ];
   }
 
@@ -73,7 +74,7 @@ extension LeadStageList on List<LeadStage> {
 
   /// Where [stageId] sits among [visible]; a stage Easy hides counts as the
   /// last visible stage before it.
-  int positionIn(List<LeadStage> visible, int? stageId) {
+  int positionIn(List<LeadStage> visible, String? stageId) {
     final stage = byId(stageId);
     if (stage == null) return -1;
     var position = -1;

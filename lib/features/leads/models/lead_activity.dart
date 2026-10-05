@@ -1,19 +1,19 @@
 import 'package:salesroot/core/utils/json_fields.dart';
 
-/// What a timeline entry or logged activity is. The first seven can be
-/// logged by hand; the rest are written by the server.
+/// What a timeline entry or logged activity is. The first six can be logged
+/// by hand; the rest are written by the server.
 enum LeadActivityKind {
-  call('Call'),
-  meeting('Meeting'),
-  visit('Visit'),
-  note('Note'),
-  whatsapp('WhatsApp'),
-  sms('Sms'),
-  email('Email'),
-  quotation('Quotation'),
-  stageChange('StageChange'),
-  task('Task'),
-  created('Created');
+  call('call'),
+  visit('visit'),
+  note('note'),
+  whatsapp('whatsapp'),
+  sms('sms'),
+  email('email'),
+  task('task'),
+  stageChange('stage'),
+  won('won'),
+  lost('lost'),
+  system('system');
 
   const LeadActivityKind(this.wire);
 
@@ -21,7 +21,6 @@ enum LeadActivityKind {
 
   static const List<LeadActivityKind> loggable = [
     call,
-    meeting,
     visit,
     note,
     whatsapp,
@@ -30,14 +29,14 @@ enum LeadActivityKind {
   ];
 
   /// Kinds that take a duration.
-  bool get timed => this == call || this == meeting || this == visit;
+  bool get timed => this == call || this == visit;
 
   /// The `?type=` value of the log-activity route.
   String get query => name.toLowerCase();
 
   static LeadActivityKind? fromWire(String? value) {
     for (final kind in values) {
-      if (kind.wire.toLowerCase() == value?.toLowerCase()) return kind;
+      if (kind.wire == value?.toLowerCase()) return kind;
     }
     return null;
   }
@@ -51,10 +50,12 @@ enum LeadActivityKind {
 }
 
 enum CallOutcome {
-  answered('Answered'),
-  noAnswer('NoAnswer'),
-  busy('Busy'),
-  wrongNumber('WrongNumber');
+  answered('talked'),
+  noAnswer('no_answer'),
+  busy('busy'),
+  switchedOff('switched_off'),
+  callback('callback'),
+  wrongNumber('wrong_number');
 
   const CallOutcome(this.wire);
 
@@ -75,52 +76,63 @@ class LeadActivity {
     required this.kind,
     this.occurredOn,
     this.description,
-    this.durationMinutes,
+    this.durationSeconds,
     this.outcome,
-    this.actorName,
-    this.reference,
+    this.lostReason,
     this.amount,
-    this.channel,
-    this.viewed = false,
     this.stageName,
-    this.photoCount = 0,
   });
 
-  final int id;
+  final String id;
   final LeadActivityKind kind;
   final DateTime? occurredOn;
   final String? description;
-  final int? durationMinutes;
+  final int? durationSeconds;
   final CallOutcome? outcome;
-  final String? actorName;
 
-  /// A quotation number or task title.
-  final String? reference;
+  /// The lost-reason key of a Lost entry.
+  final String? lostReason;
+
+  /// What a Won entry was won for.
   final double? amount;
-
-  /// How a quotation went out (WhatsApp, Email…).
-  final String? channel;
-  final bool viewed;
 
   /// The stage a stage change moved to.
   final LocalizedName? stageName;
-  final int photoCount;
 
-  factory LeadActivity.fromJson(Map<String, dynamic> json) => LeadActivity(
-    id: jsonInt(json['Id']) ?? 0,
-    kind:
-        LeadActivityKind.fromWire(json['Kind'] as String?) ??
-        LeadActivityKind.note,
-    occurredOn: jsonDate(json['OccurredOn']),
-    description: json['Description'] as String?,
-    durationMinutes: jsonInt(json['DurationMinutes']),
-    outcome: CallOutcome.fromWire(json['ActivityOutcome'] as String?),
-    actorName: json['ActorName'] as String?,
-    reference: json['Reference'] as String?,
-    amount: jsonDouble(json['Amount']),
-    channel: json['Channel'] as String?,
-    viewed: jsonBool(json['Viewed']),
-    stageName: jsonObject(json['Stage'], LocalizedName.fromJson),
-    photoCount: jsonInt(json['PhotoCount']) ?? 0,
-  );
+  int? get durationMinutes {
+    final seconds = durationSeconds;
+    return seconds == null || seconds == 0 ? null : (seconds / 60).ceil();
+  }
+
+  factory LeadActivity.fromJson(Map<String, dynamic> json) {
+    final kind =
+        LeadActivityKind.fromWire(json['type'] as String?) ??
+        LeadActivityKind.system;
+    final body = json['body'] as String?;
+    final meta = jsonMap(json['meta']);
+    final outcome = json['outcome'] as String?;
+    return LeadActivity(
+      id: jsonId(json['id']) ?? '',
+      kind: kind,
+      occurredOn: jsonDate(json['occurredAt']),
+      description: kind == LeadActivityKind.stageChange ? null : body,
+      durationSeconds: jsonInt(json['durationSec']),
+      outcome: CallOutcome.fromWire(outcome),
+      lostReason: kind == LeadActivityKind.lost ? outcome : null,
+      amount: jsonDouble(meta['Amount'] ?? meta['amount']),
+      stageName: kind == LeadActivityKind.stageChange
+          ? _stageName(body ?? '')
+          : null,
+    );
+  }
+
+  /// The server writes the stage as "Visited / ভিজিট হয়েছে".
+  static LocalizedName _stageName(String body) {
+    final split = body.indexOf(' / ');
+    if (split < 0) return LocalizedName(body, '');
+    return LocalizedName(
+      body.substring(0, split).trim(),
+      body.substring(split + 3).trim(),
+    );
+  }
 }

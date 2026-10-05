@@ -26,9 +26,6 @@ final leadsBranch = StatefulShellBranch(
   ],
 );
 
-int? _intParam(GoRouterState state, String name) =>
-    int.tryParse(state.uri.queryParameters[name] ?? '');
-
 final List<RouteBase> leadsRoutes = [
   GoRoute(
     path: Routes.leadBoard,
@@ -46,8 +43,8 @@ final List<RouteBase> leadsRoutes = [
     path: Routes.leadQuick,
     redirect: requireAccess(AppModule.lead, ModuleRight.add),
     builder: (context, state) => LeadQuickScreen(
-      companyId: _intParam(state, 'companyId'),
-      contactId: _intParam(state, 'contactId'),
+      companyId: state.uri.queryParameters['companyId'],
+      contactId: state.uri.queryParameters['contactId'],
     ),
   ),
   GoRoute(

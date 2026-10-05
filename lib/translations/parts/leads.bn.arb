@@ -1,21 +1,9 @@
 {
   "@@locale": "bn",
   "leadsTitle": "লিড",
-  "leadsSummary": "{open}টি খোলা · এ সপ্তাহে {closing}টি ক্লোজ",
-  "@leadsSummary": {
-    "placeholders": {
-      "open": {
-        "type": "String"
-      },
-      "closing": {
-        "type": "String"
-      }
-    }
-  },
   "leadsMyLeads": "আমার লিড",
   "leadsPipeline": "পাইপলাইন",
   "leadsChipDueToday": "আজ",
-  "leadsChipOverdue": "দেরি",
   "leadsChipStalled": "থেমে",
   "leadsSearchHint": "নাম, প্রতিষ্ঠান বা নম্বর খুঁজুন",
   "leadsStage": "ধাপ",
@@ -27,13 +15,11 @@
   "leadsStartVisit": "ভিজিট শুরু",
   "leadsLogActivity": "কাজের খবর",
   "leadsKindCall": "কল",
-  "leadsKindMeeting": "মিটিং",
   "leadsKindVisit": "ভিজিট",
   "leadsKindNote": "নোট",
   "leadsKindWhatsapp": "WhatsApp",
   "leadsKindSms": "SMS",
   "leadsKindEmail": "ইমেইল",
-  "leadsKindQuotation": "কোটেশন",
   "leadsKindTask": "কাজ",
   "leadsEmptyTitle": "এখনো কোনো লিড নেই",
   "leadsEmptyBody": "প্রথম লিড যোগ করুন। নাম আর নম্বর হলেই চলবে।",
@@ -44,7 +30,7 @@
   "leadsOpen": "লিড খুলুন",
   "leadsMoveStage": "ধাপ বদলান",
   "leadsDeleteTitle": "লিডটি মুছবেন?",
-  "leadsDeleteBody": "{name} ও এর টাইমলাইন মুছে যাবে। এটা আর ফেরানো যাবে না।",
+  "leadsDeleteBody": "{name} ও এর টাইমলাইন মুছে যাবে। সাথে সাথে ফেরানো যাবে।",
   "@leadsDeleteBody": {
     "placeholders": {
       "name": {
@@ -69,7 +55,6 @@
   "leadsMoveUndone": "ধাপ বদল ফেরানো হয়েছে",
   "leadsTaskDone": "কাজ শেষ হয়েছে",
   "leadsNoPhone": "এই লিডে কোনো ফোন নম্বর নেই",
-  "leadsNoEmail": "এই লিডে কোনো ইমেইল নেই",
   "leadsLaunchFailed": "অ্যাপটি খোলা গেল না",
   "leadsBoardHint": "কার্ড টেনে অন্য কলামে ফেলুন; ১০ সেকেন্ডে আনডু করা যায়।",
   "leadsBoardEmptyColumn": "কোনো লিড নেই",
@@ -82,13 +67,7 @@
   "leadsTempHot": "গরম",
   "leadsTempWarm": "উষ্ণ",
   "leadsTempCold": "ঠান্ডা",
-  "leadsMinValue": "সর্বনিম্ন",
-  "leadsMaxValue": "সর্বোচ্চ",
   "leadsCreated": "তৈরি",
-  "leadsAnyTime": "যেকোনো সময়",
-  "leadsCreatedWeek": "গত ৭ দিন",
-  "leadsCreatedMonth": "গত ৩০ দিন",
-  "leadsCreatedQuarter": "গত ৯০ দিন",
   "leadsTags": "ট্যাগ",
   "leadsShowCount": "{count}টি দেখান",
   "@leadsShowCount": {
@@ -99,32 +78,18 @@
     }
   },
   "leadsShowLeads": "লিড দেখান",
-  "leadsAndMore": "{name}, +{count}",
-  "@leadsAndMore": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "leadsNewLead": "নতুন লিড",
   "leadsEditLead": "লিড সম্পাদনা",
   "leadsNameOrCompany": "নাম বা প্রতিষ্ঠান",
   "leadsNameOrCompanyHint": "যেমন: রাহিম এন্টারপ্রাইজ",
   "leadsMobile": "মোবাইল নম্বর",
   "leadsMobileHint": "০১XXX XXX XXX",
-  "leadsInterestedIn": "আগ্রহ কীসে?",
-  "leadsMoreInterests": "আরও",
   "leadsQuickNote": "প্রতিষ্ঠান ও কনট্যাক্ট পরে যুক্ত করা যাবে। শুধু নাম আর নম্বর হলেই চলবে।",
   "leadsSpeak": "কথা বলে",
   "leadsScanCard": "কার্ড স্ক্যান",
   "leadsFullForm": "পুরো ফর্ম",
   "leadsErrorName": "নাম বা প্রতিষ্ঠানের নাম লিখুন",
   "leadsErrorMobile": "সঠিক মোবাইল নম্বর লিখুন, যেমন ০১৭১২ ৩৪৫ ৬৭৮",
-  "leadsErrorTitle": "লিডের নাম লিখুন",
   "leadsErrorAmount": "টাকার অঙ্ক লিখুন",
   "leadsErrorWhatHappened": "কী হলো লিখুন",
   "leadsSaved": "লিড সেভ হয়েছে",
@@ -168,24 +133,15 @@
       }
     }
   },
-  "leadsNoCompany": "প্রতিষ্ঠান নেই",
-  "leadsContacts": "কনট্যাক্ট",
-  "leadsPickContacts": "কনট্যাক্ট বেছে নিন",
-  "leadsPickCompanyFirst": "আগে প্রতিষ্ঠান বেছে নিন",
   "leadsContactPerson": "কনট্যাক্ট ব্যক্তি",
-  "leadsContactName": "কনট্যাক্টের নাম",
-  "leadsDesignation": "পদবি",
   "leadsExpectedClose": "সম্ভাব্য ক্লোজ",
   "leadsPickDate": "তারিখ বেছে নিন",
-  "leadsInterests": "আগ্রহ",
   "leadsNote": "নোট",
   "leadsNoteHint": "যেমন: ছাদে ১২ প্যানেল, নেট মিটারিং চান",
   "leadsScanBannerTitle": "ভিজিটিং কার্ড থেকে",
   "leadsScanBanner": "কার্ড থেকে পড়া তথ্য সেভের আগে মিলিয়ে নিন।",
   "leadsDuplicatePhoneTitle": "একই নম্বর পাওয়া গেছে",
   "leadsDuplicatePhoneBody": "এই নম্বরে আগেই একজন আছেন:",
-  "leadsDuplicateCompanyTitle": "একই প্রতিষ্ঠান পাওয়া গেছে",
-  "leadsDuplicateCompanyBody": "এই প্রতিষ্ঠানের একটি খোলা লিড আগেই আছে:",
   "leadsCreatedOn": "তৈরি {date}",
   "@leadsCreatedOn": {
     "placeholders": {
@@ -234,17 +190,6 @@
   "leadsTimeline": "টাইমলাইন",
   "leadsAddNote": "নোট যোগ",
   "leadsTimelineEmpty": "এখনো কিছু লেখা হয়নি",
-  "leadsTimelineCreated": "লিড তৈরি হয়েছে",
-  "leadsTimelineQuotation": "কোটেশন #{code} পাঠানো",
-  "@leadsTimelineQuotation": {
-    "placeholders": {
-      "code": {
-        "type": "String"
-      }
-    }
-  },
-  "leadsTimelineTaskDone": "কাজ শেষ",
-  "leadsViewed": "দেখেছেন",
   "leadsMinutes": "{count} মিনিট",
   "@leadsMinutes": {
     "placeholders": {
@@ -254,43 +199,15 @@
     }
   },
   "leadsUnderAMinute": "১ মিনিটের কম",
-  "leadsPhotoCount": "{count}টি ছবি",
-  "@leadsPhotoCount": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "leadsCreateQuotation": "কোটেশন তৈরি",
   "leadsLogPrompt": "যা পাঠালেন তা লিখে রাখবেন?",
   "leadsLogIt": "লিখুন",
   "leadsLinksSubtitle": "লিড · বিস্তারিত",
   "leadsChange": "বদলান",
   "leadsCompanyTag": "প্রতিষ্ঠান",
-  "leadsContactCount": "{count} কনট্যাক্ট",
-  "@leadsContactCount": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "leadsContactsOnLead": "কনট্যাক্ট (এই লিডে)",
-  "leadsPrimary": "প্রধান",
   "leadsLinksNote": "প্রতিষ্ঠান বা কনট্যাক্ট ছাড়াও লিড থাকতে পারে। এগুলো ঐচ্ছিক।",
   "leadsOtherDetails": "অন্য তথ্য",
-  "leadsInStage": "এই ধাপে",
-  "leadsDays": "{count} দিন",
-  "@leadsDays": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "leadsSharedWith": "শেয়ার",
-  "leadsNobody": "কেউ নেই",
   "leadsNoCompanyLinked": "কোনো প্রতিষ্ঠান যুক্ত নেই",
   "leadsLinkCompany": "প্রতিষ্ঠান যুক্ত করতে চাপুন",
   "leadsNoContactsLinked": "এই লিডে কোনো কনট্যাক্ট নেই",
@@ -301,7 +218,7 @@
   "leadsMarkLost": "হারানো হিসেবে চিহ্নিত করুন",
   "leadsOutcomeAnswered": "কথা হয়েছে",
   "leadsOutcomeNoAnswer": "ধরেনি",
-  "leadsOutcomeBusy": "ব্যস্ত, পরে",
+  "leadsOutcomeBusy": "ব্যস্ত",
   "leadsOutcomeWrongNumber": "ভুল নম্বর",
   "leadsWhatWasSaid": "কী কথা হলো?",
   "leadsWhatWasSaidHint": "যেমন: দাম নিয়ে আগ্রহী, কোটেশন চেয়েছেন",
@@ -313,12 +230,29 @@
   "leadsPickDuration": "কতক্ষণ",
   "leadsWhatHappened": "কী হলো",
   "leadsWhatHappenedHint": "যেমন: স্যাম্পল পছন্দ হয়েছে। দাম ৫% কমালে অর্ডার দেবেন।",
-  "leadsPhoto": "ছবি",
-  "leadsPhotoCamera": "ছবি তুলুন",
-  "leadsPhotoGallery": "গ্যালারি থেকে নিন",
-  "leadsPhotoFailed": "ছবি যোগ করা গেল না",
   "leadsVoiceNote": "ভয়েস নোট",
   "leadsSetFollowUp": "পরের ফলো-আপ ঠিক করুন",
   "leadsActivityLogged": "টাইমলাইনে সেভ হয়েছে",
-  "leadsAdded": "লিড যোগ হয়েছে"
+  "leadsAdded": "লিড যোগ হয়েছে",
+  "leadsKindSystem": "আপডেট",
+  "leadsSourceManual": "নিজে যোগ করা",
+  "leadsSourcePhone": "ফোন কল",
+  "leadsSourceWalkIn": "সরাসরি এসেছেন",
+  "leadsSourceReferral": "রেফারেল",
+  "leadsSourceFacebook": "ফেসবুক",
+  "leadsSourceWebsite": "ওয়েবসাইট",
+  "leadsSourceCard": "ভিজিটিং কার্ড",
+  "leadsOutcomeSwitchedOff": "ফোন বন্ধ",
+  "leadsOutcomeCallback": "পরে কল করতে বলেছে",
+  "leadsErrorRequired": "এটি পূরণ করুন",
+  "leadsStageNeeds": "{stage} ধাপে নিতে",
+  "@leadsStageNeeds": {
+    "placeholders": {
+      "stage": {
+        "type": "String"
+      }
+    }
+  },
+  "leadsRestored": "লিড ফেরত আনা হয়েছে",
+  "leadsPickContact": "একজন কন্টাক্ট বেছে নিন"
 }

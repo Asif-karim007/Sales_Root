@@ -4,32 +4,51 @@ import 'package:salesroot/features/leads/models/lead_input.dart';
 import 'package:salesroot/features/leads/models/lead_lookups.dart';
 import 'package:salesroot/features/leads/models/lead_query.dart';
 import 'package:salesroot/features/leads/models/lead_stage.dart';
+import 'package:salesroot/features/leads/models/lead_transcript.dart';
 
 abstract interface class LeadRepository {
-  /// One page, with the `ChipCounts`, `StageCounts` and `Summary` facets.
   Future<PageResult<Lead>> list(LeadQuery query);
 
-  /// The lead with its timeline.
-  Future<Lead> get(int id);
+  /// The lead with its timeline, open tasks and quotations.
+  Future<Lead> get(String id);
 
+  /// The stages of the workspace's default pipeline.
   Future<List<LeadStage>> stages();
 
   Future<LeadLookups> lookups();
 
-  /// Throws [LeadDuplicateFailure] when the phone or company is already on a
-  /// lead, unless the input allows duplicates.
+  Future<List<LeadLookupCompany>> companies(String search, int page);
+
+  Future<LeadLookupCompany> company(String id);
+
+  /// Contacts matching [search], only [companyId]'s when it is set.
+  Future<List<LeadLookupContact>> contacts(
+    String search,
+    int page, {
+    String? companyId,
+  });
+
+  Future<LeadLookupContact> contact(String id);
+
+  /// Throws [LeadDuplicateFailure] when the phone is already on a lead,
+  /// unless the input allows duplicates.
   Future<Lead> create(LeadInput input);
 
-  Future<Lead> edit(int id, LeadInput input);
+  /// Saves [input] over [lead], moving its stage or owner when they changed.
+  Future<Lead> edit(Lead lead, LeadInput input);
 
-  Future<void> delete(int id);
+  Future<void> delete(String id);
 
-  Future<LeadStageMove> moveStage(int id, LeadStageInput input);
+  Future<Lead> restore(String id);
 
-  Future<Lead> undoStageMove(int id, int moveId);
+  Future<Lead> moveStage(Lead lead, LeadStageInput input);
 
-  /// Marks the lead's next task done.
-  Future<Lead> completeNextTask(int id);
+  Future<Lead> completeTask(String leadId, String taskId);
 
-  Future<Lead> logActivity(int id, LeadActivityInput input);
+  /// Logs the activity and answers the lead as it is afterwards.
+  Future<Lead> logActivity(String leadId, LeadActivityInput input);
+
+  /// [heard] refined by the server's parser when the workspace has it on;
+  /// otherwise [heard] as it is.
+  Future<LeadTranscript> refine(LeadTranscript heard);
 }

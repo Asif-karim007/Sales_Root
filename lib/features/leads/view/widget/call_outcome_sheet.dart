@@ -28,7 +28,7 @@ Future<void> callLead(BuildContext context, WidgetRef ref, Lead lead) async {
     ..start(
       PendingCall(
         leadId: lead.id,
-        contactName: lead.primaryContact?.name ?? lead.leadName,
+        contactName: lead.contact?.name ?? lead.leadName,
         startedAt: DateTime.now(),
       ),
     );
@@ -132,9 +132,7 @@ class _CallOutcomeSheetState extends ConsumerState<CallOutcomeSheet> {
             durationMinutes: _minutes,
             outcome: _outcome,
             description: _note.text,
-            followUp: _followsUp
-                ? LeadFollowUp(kind: LeadActivityKind.call, at: _next)
-                : null,
+            followUpAt: _followsUp ? _next : null,
           ),
         );
   }
@@ -207,9 +205,10 @@ class _OutcomeGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const values = CallOutcome.values;
     final rows = [
-      CallOutcome.values.sublist(0, 2),
-      CallOutcome.values.sublist(2),
+      for (var i = 0; i < values.length; i += 2)
+        values.sublist(i, (i + 2).clamp(0, values.length)),
     ];
     return Column(
       children: [
