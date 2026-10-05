@@ -7,7 +7,6 @@ import 'package:salesroot/features/auth/models/sign_up_flow.dart';
 import 'package:salesroot/features/auth/providers/auth_providers.dart';
 import 'package:salesroot/features/auth/view/code_screen.dart';
 import 'package:salesroot/features/auth/view/create_team_screen.dart';
-import 'package:salesroot/features/auth/view/email_sign_in_screen.dart';
 import 'package:salesroot/features/auth/view/features_screen.dart';
 import 'package:salesroot/features/auth/view/industry_screen.dart';
 import 'package:salesroot/features/auth/view/invite_screen.dart';
@@ -59,10 +58,6 @@ final List<RouteBase> authRoutes = [
     path: Routes.authIndustry,
     redirect: _requireFlow((flow) => flow.session != null, Routes.welcome),
     builder: (context, state) => const IndustryScreen(),
-  ),
-  GoRoute(
-    path: Routes.authEmail,
-    builder: (context, state) => const EmailSignInScreen(),
   ),
   GoRoute(path: Routes.tour, builder: (context, state) => const TourScreen()),
   GoRoute(

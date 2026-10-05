@@ -195,7 +195,7 @@ final class InviteActionNotifierProvider
 }
 
 String _$inviteActionNotifierHash() =>
-    r'6704bff82a9572c71d6e4f80540187a59c64455c';
+    r'97cb90fac7b00fdb358aad0d55f4403a61d1b6a9';
 
 final class InviteActionNotifierFamily extends $Family
     with
@@ -272,7 +272,7 @@ final class CreateTeamNotifierProvider
 }
 
 String _$createTeamNotifierHash() =>
-    r'97ecd72e53f3bd954edf4f2d5ce7c0cde957606f';
+    r'd9ee6a23b53ef39528a8afa07179464b58b146f0';
 
 /// #9. A failed setup after the team exists retries only the setup.
 

@@ -26,7 +26,7 @@ SeedGraph seedGraph(Ref ref) {
   final workspace = ref.watch(currentWorkspaceProvider);
   ref.watch(devSettingsProvider.select((s) => s.seed));
   return SeedGraph.build(
-    workspaceId: workspace?.id ?? 0,
+    workspaceId: (workspace?.id ?? '').hashCode & 0xffff,
     kind: workspace?.kind ?? WorkspaceKind.personal,
     memberCount: workspace?.memberCount ?? 1,
     leadCount: workspace?.leadCount ?? 0,

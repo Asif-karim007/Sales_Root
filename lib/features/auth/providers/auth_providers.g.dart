@@ -9,6 +9,47 @@ part of 'auth_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(authApi)
+final authApiProvider = AuthApiProvider._();
+
+final class AuthApiProvider
+    extends $FunctionalProvider<AuthApi, AuthApi, AuthApi>
+    with $Provider<AuthApi> {
+  AuthApiProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'authApiProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$authApiHash();
+
+  @$internal
+  @override
+  $ProviderElement<AuthApi> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  AuthApi create(Ref ref) {
+    return authApi(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AuthApi value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AuthApi>(value),
+    );
+  }
+}
+
+String _$authApiHash() => r'73ea312fbf5d9e62f123ab82c5a51ea37ebbc009';
+
 @ProviderFor(authRepository)
 final authRepositoryProvider = AuthRepositoryProvider._();
 
@@ -48,7 +89,7 @@ final class AuthRepositoryProvider
   }
 }
 
-String _$authRepositoryHash() => r'186301665ec3968c76cc37e6e923e8a59449820c';
+String _$authRepositoryHash() => r'896c820ee49021180dbd58c8a95a21913a44ac32';
 
 /// The sign-up in progress, kept across the phone, code, PIN, profile and
 /// industry screens.
@@ -234,7 +275,7 @@ final class VerifyCodeNotifierProvider
 }
 
 String _$verifyCodeNotifierHash() =>
-    r'ce4ea95093493db2d5d5cf77285a372183409bcb';
+    r'3a9eee50cfbd11676c4e47d87a6fc28b36b8ddbf';
 
 /// Checks the SMS code. An existing account without a pending invitation is
 /// signed in here; the screen moves every other case on.
@@ -283,7 +324,7 @@ final class ProfileSubmitNotifierProvider
 }
 
 String _$profileSubmitNotifierHash() =>
-    r'5006c1b50712099c2a58f74f16535831d84e3157';
+    r'8f8b11025dcb4ae2977f40e89ef03107d1148de2';
 
 abstract class _$ProfileSubmitNotifier extends $AsyncNotifier<AuthSession?> {
   FutureOr<AuthSession?> build();
@@ -328,7 +369,7 @@ final class IndustrySubmitNotifierProvider
 }
 
 String _$industrySubmitNotifierHash() =>
-    r'b92cb4e3f25a70bb7bdc9e31b727065064db34d2';
+    r'119b5cb15461debc67b8b26eb50a9b74b336db2e';
 
 abstract class _$IndustrySubmitNotifier
     extends $AsyncNotifier<IndustryTemplate?> {
@@ -343,96 +384,6 @@ abstract class _$IndustrySubmitNotifier
             as $ClassProviderElement<
               AnyNotifier<AsyncValue<IndustryTemplate?>, IndustryTemplate?>,
               AsyncValue<IndustryTemplate?>,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
-@ProviderFor(EmailSignInNotifier)
-final emailSignInProvider = EmailSignInNotifierProvider._();
-
-final class EmailSignInNotifierProvider
-    extends $AsyncNotifierProvider<EmailSignInNotifier, AuthSession?> {
-  EmailSignInNotifierProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'emailSignInProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$emailSignInNotifierHash();
-
-  @$internal
-  @override
-  EmailSignInNotifier create() => EmailSignInNotifier();
-}
-
-String _$emailSignInNotifierHash() =>
-    r'0510013d59d93df0557591c201d37bdc2d926522';
-
-abstract class _$EmailSignInNotifier extends $AsyncNotifier<AuthSession?> {
-  FutureOr<AuthSession?> build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<AuthSession?>, AuthSession?>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<AsyncValue<AuthSession?>, AuthSession?>,
-              AsyncValue<AuthSession?>,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
-@ProviderFor(PasswordResetNotifier)
-final passwordResetProvider = PasswordResetNotifierProvider._();
-
-final class PasswordResetNotifierProvider
-    extends $AsyncNotifierProvider<PasswordResetNotifier, bool> {
-  PasswordResetNotifierProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'passwordResetProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$passwordResetNotifierHash();
-
-  @$internal
-  @override
-  PasswordResetNotifier create() => PasswordResetNotifier();
-}
-
-String _$passwordResetNotifierHash() =>
-    r'97191a3f71be4bed50321c94d9440105d79bd707';
-
-abstract class _$PasswordResetNotifier extends $AsyncNotifier<bool> {
-  FutureOr<bool> build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<bool>, bool>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<AsyncValue<bool>, bool>,
-              AsyncValue<bool>,
               Object?,
               Object?
             >;

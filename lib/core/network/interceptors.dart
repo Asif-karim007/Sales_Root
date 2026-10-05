@@ -8,24 +8,21 @@ import 'package:salesroot/core/network/api_extras.dart';
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/utils/debug_log.dart';
 
-/// Strips null query params and attaches the session token and workspace.
+/// Strips null query params and attaches the session token, which also
+/// carries the workspace.
 class AuthInterceptor extends Interceptor {
-  AuthInterceptor({required this.token, required this.workspaceId});
+  AuthInterceptor({required this.token});
 
   final String? Function() token;
-  final int? Function() workspaceId;
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     options.queryParameters.removeWhere((_, value) => value == null);
     final bearer = token();
-    if (bearer != null && bearer.isNotEmpty) {
+    final explicit = options.headers.containsKey('Authorization');
+    if (!explicit && bearer != null && bearer.isNotEmpty) {
       options.headers['Authorization'] =
           'Bearer ${Uri.encodeComponent(bearer)}';
-    }
-    final workspace = workspaceId();
-    if (workspace != null) {
-      options.headers[ApiConfig.workspaceHeader] = '$workspace';
     }
     handler.next(options);
   }
@@ -85,43 +82,94 @@ class LogInterceptor extends Interceptor {
 
 /// The API answers with a real status code and a plain JSON body. A 2xx
 /// passes through; anything else raises [ApiFailure] from the
-/// `{code, message: {bn, en}, field}` error body.
+/// `{code, message: {bn, en}, field}` error body. A 401 on a signed request
+/// refreshes the token once and replays the request.
 class StatusInterceptor extends Interceptor {
-  StatusInterceptor({required this.onSessionExpired, required this.bangla});
+  StatusInterceptor({
+    required this.bangla,
+    this.onSessionExpired,
+    this.refresh,
+    this.replay,
+  });
 
-  final void Function() onSessionExpired;
+  static const _replayed = 'replayed';
+
   final bool Function() bangla;
+  final void Function()? onSessionExpired;
+
+  /// A fresh access token, or null when the session cannot be renewed.
+  final Future<String?> Function()? refresh;
+  final Future<Response<dynamic>> Function(RequestOptions options)? replay;
 
   @override
-  void onResponse(
+  Future<void> onResponse(
     Response<dynamic> response,
     ResponseInterceptorHandler handler,
-  ) {
+  ) async {
     final status = response.statusCode ?? 0;
     if (status >= 200 && status < 300) return handler.next(response);
+    final options = response.requestOptions;
+    final signed = options.headers.containsKey('Authorization');
+    if (status == 401 && signed) {
+      if (options.extra[_replayed] != true) return _renew(response, handler);
+      onSessionExpired?.call();
+    }
+    handler.reject(_failure(response));
+  }
 
+  Future<void> _renew(
+    Response<dynamic> response,
+    ResponseInterceptorHandler handler,
+  ) async {
+    final refresh = this.refresh;
+    final replay = this.replay;
+    final String? token;
+    try {
+      token = refresh == null ? null : await refresh();
+    } on ApiFailure catch (failure) {
+      if (failure.isOffline) {
+        return handler.reject(
+          DioException(
+            requestOptions: response.requestOptions,
+            error: failure,
+          ),
+        );
+      }
+      onSessionExpired?.call();
+      return handler.reject(_failure(response));
+    }
+    if (token == null || replay == null) {
+      onSessionExpired?.call();
+      return handler.reject(_failure(response));
+    }
+    final options = response.requestOptions
+      ..headers['Authorization'] = 'Bearer ${Uri.encodeComponent(token)}'
+      ..extra[_replayed] = true;
+    try {
+      handler.resolve(await replay(options));
+    } on DioException catch (error) {
+      handler.reject(error);
+    }
+  }
+
+  DioException _failure(Response<dynamic> response) {
+    final status = response.statusCode ?? 0;
     final error = _decode(response.data);
     final message = _message(
       error is Map ? error[ApiConfig.errorMessage] : null,
     );
     final field = error is Map ? error[ApiConfig.errorField] : null;
-    if (status == 401 &&
-        response.requestOptions.headers.containsKey('Authorization')) {
-      onSessionExpired();
-    }
-    handler.reject(
-      DioException(
-        requestOptions: response.requestOptions,
-        response: response,
-        type: DioExceptionType.badResponse,
-        error: ApiFailure(
-          status,
-          message.isEmpty ? _fallbackMessage(status) : message,
-          fieldErrors: field is String && message.isNotEmpty
-              ? {field: message}
-              : const {},
-          code: error is Map ? error[ApiConfig.errorCode] as String? : null,
-        ),
+    return DioException(
+      requestOptions: response.requestOptions,
+      response: response,
+      type: DioExceptionType.badResponse,
+      error: ApiFailure(
+        status,
+        message.isEmpty ? _fallbackMessage(status) : message,
+        fieldErrors: field is String && message.isNotEmpty
+            ? {field: message}
+            : const {},
+        code: error is Map ? error[ApiConfig.errorCode] as String? : null,
       ),
     );
   }

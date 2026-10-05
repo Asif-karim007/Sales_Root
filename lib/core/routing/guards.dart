@@ -21,5 +21,4 @@ GoRouterRedirect requireAccess(
 };
 
 /// The `:id` path parameter.
-int idParam(GoRouterState state) =>
-    int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+String idParam(GoRouterState state) => state.pathParameters['id'] ?? '';

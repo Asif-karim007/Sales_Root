@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 
 import 'package:salesroot/core/access/app_module.dart';
-import 'package:salesroot/core/access/data/fake_grants.dart';
+import 'package:salesroot/core/access/role_grants.dart';
 import 'package:salesroot/core/access/module_access.dart';
 import 'package:salesroot/core/fake/fake_backend.dart';
 import 'package:salesroot/core/fake/fake_store.dart';
@@ -342,7 +342,7 @@ class FakeChatRepository implements ChatRepository {
   /// A thread the user may read: one they are in, or any with oversight.
   Map<String, dynamic> _readable(int id) {
     final row = _threads.byId(id);
-    final oversees = fakeGrant(_backend.role, AppModule.chatOversight).canView;
+    final oversees = roleGrant(_backend.role, AppModule.chatOversight).canView;
     if (!_people(row).contains(_me) && !oversees) {
       throw const ApiFailure(403, 'You are not in this chat');
     }
@@ -458,7 +458,7 @@ class FakeChatRepository implements ChatRepository {
           group &&
           joined &&
           (row['AdminId'] == _me ||
-              fakeGrant(_backend.role, AppModule.team).canEdit),
+              roleGrant(_backend.role, AppModule.team).canEdit),
     }..removeWhere((_, value) => value == null);
   }
 

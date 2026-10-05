@@ -4,13 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:salesroot/core/access/app_module.dart';
+import 'package:salesroot/core/access/data/access_api.dart';
 import 'package:salesroot/core/access/data/access_repository.dart';
 import 'package:salesroot/core/access/experience_level.dart';
 import 'package:salesroot/core/access/module_access.dart';
 import 'package:salesroot/core/access/plan.dart';
-import 'package:salesroot/core/dev/dev_settings.dart';
-import 'package:salesroot/core/fake/fake_providers.dart';
+import 'package:salesroot/core/access/role_grants.dart';
 import 'package:salesroot/core/network/api_failure.dart';
+import 'package:salesroot/core/network/dio_providers.dart';
 import 'package:salesroot/core/storage/prefs_provider.dart';
 import 'package:salesroot/core/workspace/workspace.dart';
 import 'package:salesroot/core/workspace/workspace_providers.dart';
@@ -18,37 +19,29 @@ import 'package:salesroot/core/workspace/workspace_providers.dart';
 part 'access_providers.g.dart';
 
 @Riverpod(keepAlive: true)
-AccessRepository accessRepository(Ref ref) =>
-    FakeAccessRepository(ref.watch(fakeBackendProvider));
+AccessApi accessApi(Ref ref) => AccessApi(ref.watch(dioProvider));
 
-/// The role's grants in the current workspace, cached for offline starts.
+@Riverpod(keepAlive: true)
+AccessRepository accessRepository(Ref ref) =>
+    ApiAccessRepository(ref.watch(accessApiProvider));
+
+/// The role's grants in the current workspace. The server applies the same
+/// matrix, so this only decides what the app offers.
 @Riverpod(keepAlive: true)
 class PermissionsNotifier extends _$PermissionsNotifier {
   @override
   Future<Map<AppModule, ModulePermission>> build() async {
-    final workspaceId = ref.watch(
-      currentWorkspaceProvider.select((w) => w?.id),
-    );
-    ref.watch(currentRoleProvider);
-    if (workspaceId == null) return const {};
-    final prefs = ref.read(sharedPreferencesProvider);
-    final key = 'permissions/$workspaceId';
-    try {
-      final rows = await ref.read(accessRepositoryProvider).permissions();
-      await prefs.setString(
-        key,
-        jsonEncode([for (final r in rows) r.toJson()]),
-      );
-      return {for (final row in rows) row.module: row};
-    } on ApiFailure catch (failure) {
-      final cached = prefs.getString(key);
-      if (!failure.isOffline || cached == null) rethrow;
-      final rows = [
-        for (final json in jsonDecode(cached) as List)
-          ?ModulePermission.fromJson(json as Map<String, dynamic>),
-      ];
-      return {for (final row in rows) row.module: row};
-    }
+    await ref.watch(workspacesProvider.future);
+    final workspace = ref.watch(currentWorkspaceProvider);
+    if (workspace == null) return const {};
+    return {
+      for (final module in AppModule.values)
+        module: roleGrant(
+          workspace.role,
+          module,
+          finance: workspace.isFinance,
+        ),
+    };
   }
 }
 
@@ -59,7 +52,6 @@ class PlanNotifier extends _$PlanNotifier {
     final workspaceId = ref.watch(
       currentWorkspaceProvider.select((w) => w?.id),
     );
-    ref.watch(fakeBackendProvider.select((b) => b.settings.addOns));
     if (workspaceId == null) return null;
     final prefs = ref.read(sharedPreferencesProvider);
     final key = 'plan/$workspaceId';
@@ -86,6 +78,8 @@ class ExperienceLevelNotifier extends _$ExperienceLevelNotifier {
       ref.read(sharedPreferencesProvider).getString(_key(workspace)),
     );
     if (stored != null) return stored;
+    final own = workspace?.level;
+    if (own != null) return own;
     return ref.watch(currentRoleProvider) == WorkspaceRole.member
         ? ExperienceLevel.easy
         : ExperienceLevel.standard;
@@ -93,11 +87,20 @@ class ExperienceLevelNotifier extends _$ExperienceLevelNotifier {
 
   bool get isLocked => ref.read(experienceLevelLockedProvider);
 
-  void set(ExperienceLevel level) {
+  /// Applies at once and saves to the member's profile in the background.
+  Future<void> set(ExperienceLevel level) async {
     if (isLocked) return;
     final workspace = ref.read(currentWorkspaceProvider);
-    ref.read(sharedPreferencesProvider).setString(_key(workspace), level.wire);
+    final repository = ref.read(accessRepositoryProvider);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setString(_key(workspace), level.wire);
     state = level;
+    try {
+      await repository.setLevel(level);
+    } on ApiFailure {
+      return;
+    }
   }
 
   static String _key(Workspace? workspace) => 'level/${workspace?.id}';
@@ -105,19 +108,23 @@ class ExperienceLevelNotifier extends _$ExperienceLevelNotifier {
 
 @Riverpod(keepAlive: true)
 bool experienceLevelLocked(Ref ref) =>
-    ref.watch(currentWorkspaceProvider.select((w) => w?.lockedLevel)) != null ||
-    ref.watch(devSettingsProvider.select((s) => s.lockLevel));
+    ref.watch(currentWorkspaceProvider.select((w) => w?.lockedLevel)) != null;
 
 /// What the user may do in [module]: role grants, narrowed by the plan's
 /// add-ons and the experience level.
 @Riverpod(keepAlive: true)
 ModuleAccess moduleAccess(Ref ref, AppModule module) {
   final row = ref.watch(permissionsProvider.select((p) => p.value?[module]));
+  final addOn = module.addOn;
+  final included = ref.watch(
+    currentWorkspaceProvider.select(
+      (w) => addOn == null || (w?.addOns.contains(addOn) ?? false),
+    ),
+  );
   final plan = ref.watch(planProvider).value;
   final level = ref.watch(experienceLevelProvider);
-  final addOn = module.addOn;
   return ModuleAccess.fromPermission(row).restrict(
-    planOk: addOn == null || (plan?.has(addOn) ?? false),
+    planOk: addOn == null || (plan?.has(addOn) ?? included),
     levelOk: level.atLeast(module.minLevel),
   );
 }

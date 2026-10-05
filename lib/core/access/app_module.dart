@@ -1,8 +1,8 @@
 import 'package:salesroot/core/access/experience_level.dart';
 
 enum AddOn {
-  fieldForce('FieldForce'),
-  growth('Growth');
+  fieldForce('fieldforce'),
+  growth('growth');
 
   const AddOn(this.wire);
 

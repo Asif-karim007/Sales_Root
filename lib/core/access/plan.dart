@@ -38,6 +38,38 @@ class Plan {
 
   bool get hasFreeSeat => usersUsed < users;
 
+  /// `GET /billing`: `{workspace: {plan, usersPurchased, …}, usage: {…}}`.
+  factory Plan.fromBilling(Map<String, dynamic> json) {
+    final workspace = jsonMap(json['workspace']);
+    final usage = jsonMap(json['usage']);
+    final code = workspace['plan'] as String? ?? 'free';
+    final layers = jsonStrings(workspace['layers']);
+    return Plan(
+      code: code,
+      name: code.isEmpty ? code : code[0].toUpperCase() + code.substring(1),
+      users: jsonInt(workspace['usersPurchased']) ?? 1,
+      usersUsed: jsonInt(usage['users']) ?? 1,
+      records: jsonInt(workspace['recordLimit']) ?? 0,
+      recordsUsed: jsonInt(usage['records']) ?? 0,
+      storageGb:
+          ((jsonDouble(workspace['storageLimitMb']) ?? 0) +
+              (jsonDouble(workspace['extraStorageMb']) ?? 0)) /
+          1024,
+      storageUsedGb: (jsonDouble(usage['storageMb']) ?? 0) / 1024,
+      cardScans:
+          (jsonInt(workspace['scanLimit']) ?? 0) +
+          (jsonInt(workspace['extraScans']) ?? 0),
+      cardScansUsed: jsonInt(usage['scans']) ?? 0,
+      smsCredits: jsonInt(workspace['smsCredits']) ?? 0,
+      addOns: {
+        if (layers.contains('fieldforce')) AddOn.fieldForce,
+        if (layers.contains('growth')) AddOn.growth,
+      },
+      pricePerMonth: jsonInt(workspace['pricePerMonth']) ?? 0,
+      renewsAt: jsonDate(workspace['billingDate']),
+    );
+  }
+
   factory Plan.fromJson(Map<String, dynamic> json) => Plan(
     code: json['Code'] as String? ?? 'Free',
     name: json['Name'] as String? ?? '',

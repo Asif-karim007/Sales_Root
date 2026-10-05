@@ -1,0 +1,47 @@
+{
+ "accessToken": "test.access",
+ "refreshToken": "test.refresh",
+ "accessExpiresAt": "2026-10-05T16:00:00Z",
+ "me": {
+  "userId": "01a10101-8644-75d5-813c-211d42aa3d68",
+  "phone": "+8801711000002",
+  "name": "Rafi Ahmed",
+  "language": "bn",
+  "hasPin": false,
+  "workspaceId": "01a10101-8645-7750-8f77-adcfb74cb05f",
+  "workspaces": [
+   {
+    "id": "01a10101-8645-7750-8f77-adcfb74cb05f",
+    "name": "Dhaka Sales Ltd.",
+    "type": "sme",
+    "industryPack": "distribution",
+    "plan": "business",
+    "planStatus": "active",
+    "membershipId": "01a10101-8656-7886-b8e5-4f197fbd9159",
+    "role": "executive",
+    "level": "easy",
+    "status": "active",
+    "language": "bn",
+    "levelLocked": false,
+    "defaultLevel": "easy",
+    "layers": [
+     "sales",
+     "collection",
+     "customer360",
+     "fieldforce",
+     "growth",
+     "teamops",
+     "support",
+     "intelligence"
+    ],
+    "currency": "BDT",
+    "timezone": "Asia/Dhaka",
+    "country": "BD",
+    "isNexzen": false
+   }
+  ],
+  "invites": [],
+  "timezone": "Asia/Dhaka",
+  "isOps": false
+ }
+}

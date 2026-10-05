@@ -36,7 +36,7 @@ final class SessionNotifierProvider
   SessionNotifier create() => SessionNotifier();
 }
 
-String _$sessionNotifierHash() => r'5ae47ab1f15f669aacff7d504743fedab536d7af';
+String _$sessionNotifierHash() => r'ba01f2b68d2ae9ba41adf0c1637b6f98b458b719';
 
 /// The signed-in user, or null. Restored from secure storage at start.
 

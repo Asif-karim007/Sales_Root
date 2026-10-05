@@ -14,13 +14,15 @@ class Referral {
   final int creditAmount;
   final int trialDays;
 
-  factory Referral.fromJson(Map<String, dynamic> json) => Referral(
-    code: json['Code'] as String? ?? '',
-    inviter: LocalizedName(
-      json['InviterName'] as String? ?? '',
-      json['InviterNameBn'] as String? ?? '',
-    ),
-    creditAmount: jsonInt(json['CreditAmount']) ?? 0,
-    trialDays: jsonInt(json['TrialDays']) ?? 0,
-  );
+  /// `GET /public/referral/{code}`: `{invitedBy, company, bonus}`.
+  factory Referral.fromJson(String code, Map<String, dynamic> json) {
+    final bonus = jsonMap(json['bonus']);
+    final inviter = json['invitedBy'] as String? ?? '';
+    return Referral(
+      code: code,
+      inviter: LocalizedName(inviter, inviter),
+      creditAmount: jsonInt(bonus['credits']) ?? 0,
+      trialDays: jsonInt(bonus['trialDays']) ?? 0,
+    );
+  }
 }

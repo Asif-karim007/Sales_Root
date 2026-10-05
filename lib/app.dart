@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:salesroot/core/access/access_providers.dart';
 import 'package:salesroot/core/locale/locale_provider.dart';
 import 'package:salesroot/core/routing/app_router.dart';
 import 'package:salesroot/core/session/session_provider.dart';
 import 'package:salesroot/core/theme/app_theme.dart';
+import 'package:salesroot/core/workspace/workspace_providers.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
@@ -23,7 +23,7 @@ class _AppState extends ConsumerState<App> {
   void initState() {
     super.initState();
     _lifecycle = AppLifecycleListener(
-      onResume: () => ref.invalidate(permissionsProvider),
+      onResume: () => ref.invalidate(workspacesProvider),
     );
   }
 

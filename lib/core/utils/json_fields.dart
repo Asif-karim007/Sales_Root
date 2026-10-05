@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:salesroot/core/format/app_date_utils.dart';
 
 /// Tolerant readers for response fields: a wrong or missing type becomes null
@@ -26,6 +28,32 @@ List<String> jsonStrings(dynamic value) => value is List
           if (item is String) item,
       ]
     : const [];
+
+/// An id as the server sends it: a UUID string, or a number from older rows.
+String? jsonId(dynamic value) {
+  if (value is String) return value.isEmpty ? null : value;
+  if (value is num) return '${value.toInt()}';
+  return null;
+}
+
+List<String> jsonIds(dynamic value) => value is List
+    ? [
+        for (final item in value)
+          ?jsonId(item),
+      ]
+    : const [];
+
+/// An object field, also when the server sends it as an encoded JSON string.
+Map<String, dynamic> jsonMap(dynamic value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is! String || value.isEmpty) return const {};
+  try {
+    final decoded = jsonDecode(value);
+    return decoded is Map<String, dynamic> ? decoded : const {};
+  } on FormatException {
+    return const {};
+  }
+}
 
 int? jsonInt(dynamic value) {
   if (value is num) return value.toInt();
@@ -60,4 +88,16 @@ class LocalizedName {
     json['Name'] as String? ?? '',
     json['NameBn'] as String? ?? '',
   );
+
+  /// The `<key>En` / `<key>Bn` pair, e.g. `nameEn` and `nameBn`.
+  factory LocalizedName.pair(Map<String, dynamic> json, [String key = 'name']) =>
+      LocalizedName(
+        json['${key}En'] as String? ?? json[key] as String? ?? '',
+        json['${key}Bn'] as String? ?? '',
+      );
+
+  /// A `{en, bn}` object, as error messages and labels come.
+  factory LocalizedName.of(dynamic value) => value is Map
+      ? LocalizedName('${value['en'] ?? ''}', '${value['bn'] ?? ''}')
+      : LocalizedName(value is String ? value : '', '');
 }

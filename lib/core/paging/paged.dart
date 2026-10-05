@@ -1,8 +1,17 @@
 import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 
-/// One server page: `{Items, Page, PageSize, TotalCount, TotalPages}`. Facets
-/// such as `StageCounts` stay in [raw].
+/// The page size every list uses.
+const int pageSize = 20;
+
+/// The `offset`/`limit` query for 1-based [page].
+Map<String, dynamic> pageQuery(int page, {int size = pageSize}) => {
+  'offset': (page - 1) * size,
+  'limit': size,
+};
+
+/// One server page: `{items, total, offset, limit}`. Extra keys such as
+/// facets or totals stay in [raw].
 class PageResult<T> {
   const PageResult({
     required this.items,
@@ -21,15 +30,29 @@ class PageResult<T> {
   factory PageResult.fromJson(
     Map<String, dynamic> json,
     T Function(Map<String, dynamic>) build,
-  ) => PageResult(
-    items: jsonList(json['Items'], build),
-    page: jsonInt(json['Page']) ?? 1,
-    totalCount: jsonInt(json['TotalCount']) ?? 0,
-    totalPages: jsonInt(json['TotalPages']) ?? 0,
-    raw: json,
+  ) {
+    final items = jsonList(json['items'], build);
+    final limit = jsonInt(json['limit']) ?? pageSize;
+    final offset = jsonInt(json['offset']) ?? 0;
+    final total = jsonInt(json['total']) ?? offset + items.length;
+    return PageResult(
+      items: items,
+      page: limit > 0 ? offset ~/ limit + 1 : 1,
+      totalCount: total,
+      totalPages: limit > 0 ? (total / limit).ceil() : 1,
+      raw: json,
+    );
+  }
+
+  /// A whole list the server sends unpaged, as one page.
+  factory PageResult.all(List<T> items) => PageResult(
+    items: items,
+    page: 1,
+    totalCount: items.length,
+    totalPages: 1,
   );
 
-  /// A `{key: count}` facet, e.g. `facet('StageCounts')`.
+  /// A `{key: count}` facet, e.g. `facet('stageCounts')`.
   Map<String, int> facet(String key) {
     final value = raw[key];
     if (value is! Map) return const {};

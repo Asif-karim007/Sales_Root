@@ -1,5 +1,5 @@
 import 'package:salesroot/core/access/app_module.dart';
-import 'package:salesroot/core/access/data/fake_grants.dart';
+import 'package:salesroot/core/access/role_grants.dart';
 import 'package:salesroot/core/access/module_access.dart';
 import 'package:salesroot/core/fake/fake_backend.dart';
 import 'package:salesroot/core/fake/fake_store.dart';
@@ -22,7 +22,7 @@ class FakeNoticeRepository implements NoticeRepository {
   FakeTable get _balance => _backend.table(growthBalanceTable, balanceFixtures);
 
   ModuleAccess get _grant =>
-      ModuleAccess.fromPermission(fakeGrant(_backend.role, AppModule.notice));
+      ModuleAccess.fromPermission(roleGrant(_backend.role, AppModule.notice));
 
   @override
   Future<PageResult<Notice>> list({int page = 1}) =>

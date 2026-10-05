@@ -1,5 +1,5 @@
 import 'package:salesroot/core/access/app_module.dart';
-import 'package:salesroot/core/access/data/fake_grants.dart';
+import 'package:salesroot/core/access/role_grants.dart';
 import 'package:salesroot/core/access/module_access.dart';
 import 'package:salesroot/core/fake/fake_backend.dart';
 import 'package:salesroot/core/fake/fake_store.dart';
@@ -181,7 +181,7 @@ class FakeQuotationRepository implements QuotationRepository {
       if (quote['OrderId'] != null) {
         throw const ApiFailure(409, 'An order was already made from this.');
       }
-      final orderGrant = fakeGrant(_backend.role, AppModule.order);
+      final orderGrant = roleGrant(_backend.role, AppModule.order);
       if (!ModuleAccess.fromPermission(orderGrant).canAdd) {
         throw const ApiFailure(403, 'You do not have permission to do that.');
       }

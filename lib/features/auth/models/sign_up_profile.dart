@@ -1,26 +1,26 @@
 import 'package:salesroot/core/access/experience_level.dart';
 
 enum WorkStyle {
-  solo('Solo', ExperienceLevel.easy),
-  team('Team', ExperienceLevel.standard),
-  joining('Joining', ExperienceLevel.easy);
+  solo(ExperienceLevel.easy),
+  team(ExperienceLevel.standard),
+  joining(ExperienceLevel.easy);
 
-  const WorkStyle(this.wire, this.startingLevel);
+  const WorkStyle(this.startingLevel);
 
-  final String wire;
   final ExperienceLevel startingLevel;
 }
 
 enum IndustryTemplate {
-  trading('Trading'),
-  realEstate('RealEstate'),
-  education('Education'),
-  itServices('ItServices'),
-  manufacturing('Manufacturing'),
-  general('General');
+  trading('distribution'),
+  realEstate('real_estate'),
+  education('education'),
+  itServices('it_services'),
+  manufacturing('general'),
+  general('general');
 
   const IndustryTemplate(this.wire);
 
+  /// The server's industry pack.
   final String wire;
 }
 
@@ -30,8 +30,5 @@ class SignUpProfile {
   final String name;
   final WorkStyle workStyle;
 
-  Map<String, dynamic> toJson() => {
-    'Name': name.trim(),
-    'WorkStyle': workStyle.wire,
-  };
+  Map<String, dynamic> toJson() => {'name': name.trim()};
 }

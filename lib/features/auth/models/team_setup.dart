@@ -24,8 +24,7 @@ class TeamSetup {
   final Set<AddOn> addOns;
 
   Map<String, dynamic> toJson() => {
-    'IndustryTemplate': industry.wire,
-    'Currency': currency.wire,
-    'AddOns': [for (final addOn in addOns) addOn.wire],
+    'industryPack': industry.wire,
+    'currency': currency.wire,
   };
 }

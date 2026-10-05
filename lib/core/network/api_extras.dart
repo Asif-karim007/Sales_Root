@@ -3,7 +3,6 @@ abstract final class ApiConfig {
     'API_BASE_URL',
     defaultValue: 'https://salesroot-api.salebee.net/v1/',
   );
-  static const String workspaceHeader = 'X-Workspace-Id';
   static const String errorCode = 'code';
   static const String errorMessage = 'message';
   static const String errorField = 'field';

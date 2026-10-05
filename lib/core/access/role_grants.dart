@@ -2,13 +2,18 @@ import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/access/module_access.dart';
 import 'package:salesroot/core/workspace/workspace.dart';
 
-/// The default role matrix the fake server grants.
-ModulePermission fakeGrant(WorkspaceRole role, AppModule module) =>
-    switch (role) {
-      WorkspaceRole.owner => _all(module),
-      WorkspaceRole.teamLead => _teamLead(module),
-      WorkspaceRole.member => _member(module),
-    };
+/// What a role may do in [module]. The server enforces the same matrix;
+/// [finance] widens a member's money rights.
+ModulePermission roleGrant(
+  WorkspaceRole role,
+  AppModule module, {
+  bool finance = false,
+}) => switch (role) {
+  WorkspaceRole.owner => _all(module),
+  WorkspaceRole.teamLead => _teamLead(module),
+  WorkspaceRole.member when finance => _finance(module),
+  WorkspaceRole.member => _member(module),
+};
 
 ModulePermission _all(AppModule module) => ModulePermission(
   module: module,
@@ -49,6 +54,21 @@ ModulePermission _teamLead(AppModule module) => switch (module) {
     canApprove: true,
     canExport: true,
   ),
+};
+
+ModulePermission _finance(AppModule module) => switch (module) {
+  AppModule.quotation ||
+  AppModule.order ||
+  AppModule.invoice ||
+  AppModule.collection ||
+  AppModule.expense ||
+  AppModule.payroll => _all(module),
+  AppModule.reports || AppModule.billing => ModulePermission(
+    module: module,
+    canView: true,
+    canExport: true,
+  ),
+  _ => _member(module),
 };
 
 ModulePermission _member(AppModule module) => switch (module) {

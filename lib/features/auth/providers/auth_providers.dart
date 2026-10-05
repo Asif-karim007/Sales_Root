@@ -1,13 +1,16 @@
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:salesroot/core/access/access_providers.dart';
-import 'package:salesroot/core/fake/fake_providers.dart';
+import 'package:salesroot/core/locale/locale_provider.dart';
 import 'package:salesroot/core/network/api_failure.dart';
+import 'package:salesroot/core/network/dio_providers.dart';
 import 'package:salesroot/core/session/auth_session.dart';
 import 'package:salesroot/core/session/session_provider.dart';
 import 'package:salesroot/core/workspace/workspace_providers.dart';
+import 'package:salesroot/features/auth/data/api_auth_repository.dart';
+import 'package:salesroot/features/auth/data/auth_api.dart';
 import 'package:salesroot/features/auth/data/auth_repository.dart';
-import 'package:salesroot/features/auth/data/fake_auth_repository.dart';
 import 'package:salesroot/features/auth/models/otp_challenge.dart';
 import 'package:salesroot/features/auth/models/phone_verification.dart';
 import 'package:salesroot/features/auth/models/sign_up_flow.dart';
@@ -16,10 +19,16 @@ import 'package:salesroot/features/auth/models/sign_up_profile.dart';
 part 'auth_providers.g.dart';
 
 @Riverpod(keepAlive: true)
-AuthRepository authRepository(Ref ref) => FakeAuthRepository(
-  ref.watch(fakeNetworkProvider),
-  ref.watch(fakeStoreProvider),
-  ref.watch(workspaceRepositoryProvider),
+AuthApi authApi(Ref ref) => AuthApi(ref.watch(bareDioProvider));
+
+@Riverpod(keepAlive: true)
+AuthRepository authRepository(Ref ref) => ApiAuthRepository(
+  ref.watch(authApiProvider),
+  token: () =>
+      ref.read(sessionProvider).value?.token ??
+      ref.read(signUpFlowProvider).session?.token,
+  language: () => ref.read(appLocaleProvider).languageCode,
+  appVersion: () async => (await PackageInfo.fromPlatform()).version,
 );
 
 /// The sign-up in progress, kept across the phone, code, PIN, profile and
@@ -148,7 +157,9 @@ class VerifyCodeNotifier extends _$VerifyCodeNotifier {
     if (phone == null || state.isLoading) return;
     state = const AsyncLoading();
     final result = await AsyncValue.guard(
-      () => ref.read(authRepositoryProvider).verifyCode(phone, code),
+      () => ref
+          .read(authRepositoryProvider)
+          .verifyCode(phone, code, referralCode: flow.referralCode),
     );
     if (!ref.mounted) return;
     final verification = result.value;
@@ -188,7 +199,7 @@ class ProfileSubmitNotifier extends _$ProfileSubmitNotifier {
     final result = await AsyncValue.guard(() async {
       if (invite != null) await _checkInvitation(repository, invite);
       return repository.completeProfile(
-        pending.token,
+        pending,
         SignUpProfile(name: name, workStyle: style),
       );
     });
@@ -227,56 +238,15 @@ class IndustrySubmitNotifier extends _$IndustrySubmitNotifier {
     final pending = ref.read(signUpFlowProvider).session;
     if (pending == null || state.isLoading) return;
     state = const AsyncLoading();
-    final result = await AsyncValue.guard(() async {
-      await ref
-          .read(authRepositoryProvider)
-          .applyIndustryTemplate(pending.token, template);
-      return template;
-    });
-    if (!ref.mounted) return;
-    state = result;
-  }
-}
-
-@riverpod
-class EmailSignInNotifier extends _$EmailSignInNotifier {
-  @override
-  FutureOr<AuthSession?> build() => null;
-
-  Future<void> signIn(
-    String email,
-    String password, {
-    required bool remember,
-  }) async {
-    if (state.isLoading) return;
-    state = const AsyncLoading();
     final result = await AsyncValue.guard(
       () => ref
           .read(authRepositoryProvider)
-          .signInWithEmail(email, password, remember: remember),
+          .applyIndustryTemplate(pending, template),
     );
     if (!ref.mounted) return;
-    state = result;
-    final session = result.value;
-    if (session != null) {
-      await ref.read(sessionProvider.notifier).signIn(session);
+    if (result case AsyncData(:final value)) {
+      ref.read(signUpFlowProvider.notifier).verified(value);
     }
-  }
-}
-
-@riverpod
-class PasswordResetNotifier extends _$PasswordResetNotifier {
-  @override
-  FutureOr<bool> build() => false;
-
-  Future<void> send(String email) async {
-    if (state.isLoading) return;
-    state = const AsyncLoading();
-    final result = await AsyncValue.guard(() async {
-      await ref.read(authRepositoryProvider).requestPasswordReset(email);
-      return true;
-    });
-    if (!ref.mounted) return;
-    state = result;
+    state = result.whenData((_) => template);
   }
 }

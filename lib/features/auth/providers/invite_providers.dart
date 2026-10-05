@@ -28,13 +28,17 @@ class InviteActionNotifier extends _$InviteActionNotifier {
   Future<void> accept() async {
     if (state.isLoading) return;
     state = const AsyncLoading();
-    final result = await AsyncValue.guard(
-      () => ref.read(authRepositoryProvider).acceptInvitation(code),
-    );
+    final current = ref.read(currentWorkspaceProvider.notifier);
+    final result = await AsyncValue.guard(() async {
+      final workspace = await ref
+          .read(authRepositoryProvider)
+          .acceptInvitation(code);
+      await current.select(workspace);
+      return workspace;
+    });
     if (!ref.mounted) return;
-    if (result case AsyncData(value: final workspace)) {
+    if (result.hasValue) {
       ref.invalidate(workspacesProvider);
-      ref.read(currentWorkspaceProvider.notifier).select(workspace);
       ref.read(signUpFlowProvider.notifier).clear();
     }
     state = result.whenData((_) => InviteOutcome.accepted);
@@ -66,16 +70,15 @@ class CreateTeamNotifier extends _$CreateTeamNotifier {
     state = const AsyncLoading();
     final result = await AsyncValue.guard(() async {
       final workspace =
-          _created ?? await ref.read(workspacesProvider.notifier).create(name);
+          _created ??
+          await ref
+              .read(workspacesProvider.notifier)
+              .create(name, industryPack: setup.industry.wire);
       _created = workspace;
-      await ref.read(authRepositoryProvider).setUpTeam(workspace.id, setup);
+      await ref.read(authRepositoryProvider).setUpTeam(setup);
       return workspace;
     });
     if (!ref.mounted) return;
-    final workspace = result.value;
-    if (workspace != null) {
-      ref.read(currentWorkspaceProvider.notifier).select(workspace);
-    }
     state = result;
   }
 }

@@ -1,5 +1,5 @@
 import 'package:salesroot/core/access/app_module.dart';
-import 'package:salesroot/core/access/data/fake_grants.dart';
+import 'package:salesroot/core/access/role_grants.dart';
 import 'package:salesroot/core/access/module_access.dart';
 import 'package:salesroot/core/fake/fake_backend.dart';
 import 'package:salesroot/core/fake/fake_store.dart';
@@ -28,7 +28,7 @@ class FakeLeadInboxRepository implements LeadInboxRepository {
   SeedGraph get _graph => _backend.graph;
 
   bool get _canEdit => ModuleAccess.fromPermission(
-    fakeGrant(_backend.role, AppModule.inbox),
+    roleGrant(_backend.role, AppModule.inbox),
   ).canEdit;
 
   @override

@@ -1,7 +1,7 @@
 enum ExperienceLevel {
-  easy('Easy'),
-  standard('Standard'),
-  advanced('Advanced');
+  easy('easy'),
+  standard('standard'),
+  advanced('advanced');
 
   const ExperienceLevel(this.wire);
 

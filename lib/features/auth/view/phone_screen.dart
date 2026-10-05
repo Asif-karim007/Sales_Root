@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/network/api_failure.dart';
-import 'package:salesroot/core/routing/routes.dart';
 import 'package:salesroot/features/auth/auth_links.dart';
 import 'package:salesroot/features/auth/models/bd_phone.dart';
 import 'package:salesroot/features/auth/models/otp_challenge.dart';
@@ -13,7 +12,6 @@ import 'package:salesroot/features/auth/providers/auth_providers.dart';
 import 'package:salesroot/features/auth/view/widget/auth_failure.dart';
 import 'package:salesroot/features/auth/view/widget/auth_intro.dart';
 import 'package:salesroot/features/auth/view/widget/auth_language_toggle.dart';
-import 'package:salesroot/features/auth/view/widget/auth_link.dart';
 import 'package:salesroot/features/auth/view/widget/phone_field.dart';
 import 'package:salesroot/features/auth/view/widget/referral_banner.dart';
 import 'package:salesroot/translations/translations.dart';
@@ -175,13 +173,6 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
                     expand: true,
                     loading: sending,
                     onPressed: _send,
-                  ),
-                  const SizedBox(height: 6),
-                  Center(
-                    child: AuthLink(
-                      label: l10n.authUseEmail,
-                      onTap: () => context.push(Routes.authEmail),
-                    ),
                   ),
                 ],
               ),

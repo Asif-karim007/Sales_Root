@@ -14,20 +14,28 @@ abstract interface class AuthRepository {
     OtpChannel channel = OtpChannel.sms,
   });
 
-  Future<PhoneVerification> verifyCode(String phone, String code);
-
-  /// Names a new account; [token] is the pending session's.
-  Future<AuthSession> completeProfile(String token, SignUpProfile profile);
-
-  Future<void> applyIndustryTemplate(String token, IndustryTemplate template);
-
-  Future<AuthSession> signInWithEmail(
-    String email,
-    String password, {
-    bool remember = true,
+  Future<PhoneVerification> verifyCode(
+    String phone,
+    String code, {
+    String? referralCode,
   });
 
-  Future<void> requestPasswordReset(String email);
+  /// Names a new account; [pending] is the verified, not yet signed-in
+  /// session.
+  Future<AuthSession> completeProfile(
+    AuthSession pending,
+    SignUpProfile profile,
+  );
+
+  /// Stores the PIN on the account so another device can unlock with it.
+  Future<void> setPin(AuthSession session, String pin);
+
+  /// Gives the account's workspace the template's pack, creating a personal
+  /// workspace first when it has none. Returns the session to continue with.
+  Future<AuthSession> applyIndustryTemplate(
+    AuthSession pending,
+    IndustryTemplate template,
+  );
 
   Future<Referral> referral(String code);
 
@@ -38,5 +46,6 @@ abstract interface class AuthRepository {
 
   Future<void> declineInvitation(String code);
 
-  Future<void> setUpTeam(int workspaceId, TeamSetup setup);
+  /// Applies #9's choices to the current workspace.
+  Future<void> setUpTeam(TeamSetup setup);
 }

@@ -1,8 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'package:salesroot/core/network/api_failure.dart';
 import 'package:salesroot/core/session/session_provider.dart';
 import 'package:salesroot/core/session/session_store.dart';
 import 'package:salesroot/core/storage/prefs_provider.dart';
+import 'package:salesroot/core/utils/debug_log.dart';
 import 'package:salesroot/features/auth/models/pin_entry.dart';
 import 'package:salesroot/features/auth/providers/auth_providers.dart';
 
@@ -52,7 +54,13 @@ class PinSetupNotifier extends _$PinSetupNotifier {
     final session = ref.read(signUpFlowProvider).session;
     if (session == null) return;
     state = PinSetup(entry: entry, first: first, saving: true);
+    final repository = ref.read(authRepositoryProvider);
     await ref.read(sessionStoreProvider).writePin(entry, session.userId);
+    try {
+      await repository.setPin(session, entry);
+    } on ApiFailure catch (failure) {
+      logDebug('PIN not saved to the account: $failure');
+    }
     if (!ref.mounted) return;
     state = PinSetup(entry: entry, first: first, saved: true);
   }

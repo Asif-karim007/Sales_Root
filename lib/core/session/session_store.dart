@@ -33,13 +33,13 @@ class SessionStore {
 
   Future<bool> hasPin() async => await _storage.read(key: _pinKey) != null;
 
-  Future<void> writePin(String pin, int userId) =>
+  Future<void> writePin(String pin, String userId) =>
       _storage.write(key: _pinKey, value: _hash(pin, userId));
 
-  Future<bool> checkPin(String pin, int userId) async =>
+  Future<bool> checkPin(String pin, String userId) async =>
       await _storage.read(key: _pinKey) == _hash(pin, userId);
 
-  static String _hash(String pin, int userId) =>
+  static String _hash(String pin, String userId) =>
       sha256.convert(utf8.encode('salesroot:$userId:$pin')).toString();
 }
 

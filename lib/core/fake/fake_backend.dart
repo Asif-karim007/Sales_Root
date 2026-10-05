@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:salesroot/core/access/app_module.dart';
-import 'package:salesroot/core/access/data/fake_grants.dart';
+import 'package:salesroot/core/access/role_grants.dart';
 import 'package:salesroot/core/access/module_access.dart';
 import 'package:salesroot/core/dev/dev_settings.dart';
 import 'package:salesroot/core/fake/fake_store.dart';
@@ -64,7 +64,7 @@ class FakeBackend {
     ModuleRight right = ModuleRight.view,
     QuotaKind? quota,
   }) => network(label, () {
-    if (module != null && !fakeGrant(role, module).toAccess().allows(right)) {
+    if (module != null && !roleGrant(role, module).toAccess().allows(right)) {
       throw const ApiFailure(403, 'You do not have permission to do that.');
     }
     if (quota != null && settings.quotaReached) {

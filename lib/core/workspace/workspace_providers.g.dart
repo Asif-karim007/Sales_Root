@@ -9,6 +9,47 @@ part of 'workspace_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(workspaceApi)
+final workspaceApiProvider = WorkspaceApiProvider._();
+
+final class WorkspaceApiProvider
+    extends $FunctionalProvider<WorkspaceApi, WorkspaceApi, WorkspaceApi>
+    with $Provider<WorkspaceApi> {
+  WorkspaceApiProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'workspaceApiProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$workspaceApiHash();
+
+  @$internal
+  @override
+  $ProviderElement<WorkspaceApi> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  WorkspaceApi create(Ref ref) {
+    return workspaceApi(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(WorkspaceApi value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<WorkspaceApi>(value),
+    );
+  }
+}
+
+String _$workspaceApiHash() => r'204266a8cd94f6ac4d2405b598592028dfef9895';
+
 @ProviderFor(workspaceRepository)
 final workspaceRepositoryProvider = WorkspaceRepositoryProvider._();
 
@@ -55,7 +96,7 @@ final class WorkspaceRepositoryProvider
 }
 
 String _$workspaceRepositoryHash() =>
-    r'c5c0f81851b2c17eaf7df9d87678a0ebe6d1d1de';
+    r'09d553e0bd1fa4d8017931f502b20150ae98770e';
 
 /// The user's workspaces. Cached so a cold start offline still opens.
 
@@ -86,7 +127,7 @@ final class WorkspacesNotifierProvider
 }
 
 String _$workspacesNotifierHash() =>
-    r'0ee7b6200bfdf1125d1cad3f7d5af4b8d9d037ee';
+    r'326979afbe8e6bbc6600bede9d12c3cd0212d773';
 
 /// The user's workspaces. Cached so a cold start offline still opens.
 
@@ -108,11 +149,15 @@ abstract class _$WorkspacesNotifier extends $AsyncNotifier<List<Workspace>> {
   }
 }
 
+/// The workspace the session token is scoped to.
+
 @ProviderFor(CurrentWorkspaceNotifier)
 final currentWorkspaceProvider = CurrentWorkspaceNotifierProvider._();
 
+/// The workspace the session token is scoped to.
 final class CurrentWorkspaceNotifierProvider
     extends $NotifierProvider<CurrentWorkspaceNotifier, Workspace?> {
+  /// The workspace the session token is scoped to.
   CurrentWorkspaceNotifierProvider._()
     : super(
         from: null,
@@ -141,7 +186,9 @@ final class CurrentWorkspaceNotifierProvider
 }
 
 String _$currentWorkspaceNotifierHash() =>
-    r'bef2653e3753706b3aa5bf60f805f1998f2fb31b';
+    r'505bb3c1ea90554ff9984a2d6754260291022931';
+
+/// The workspace the session token is scoped to.
 
 abstract class _$CurrentWorkspaceNotifier extends $Notifier<Workspace?> {
   Workspace? build();
@@ -161,17 +208,12 @@ abstract class _$CurrentWorkspaceNotifier extends $Notifier<Workspace?> {
   }
 }
 
-/// The role in the current workspace, after any dev-menu override.
-
 @ProviderFor(currentRole)
 final currentRoleProvider = CurrentRoleProvider._();
-
-/// The role in the current workspace, after any dev-menu override.
 
 final class CurrentRoleProvider
     extends $FunctionalProvider<WorkspaceRole, WorkspaceRole, WorkspaceRole>
     with $Provider<WorkspaceRole> {
-  /// The role in the current workspace, after any dev-menu override.
   CurrentRoleProvider._()
     : super(
         from: null,
@@ -205,4 +247,4 @@ final class CurrentRoleProvider
   }
 }
 
-String _$currentRoleHash() => r'1550e199156771222a8b03109efb15e4f68c92df';
+String _$currentRoleHash() => r'05c0ea5217dddfa9e5e2d0cbde63aa5785d66b35';
