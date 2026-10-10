@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:salesroot/core/routing/app_router.dart';
 import 'package:salesroot/core/shell/add_sheet.dart';
 import 'package:salesroot/core/shell/shell_tabs.dart';
+import 'package:salesroot/features/settings/providers/push_providers.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
@@ -16,6 +17,7 @@ class MainShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(pushRegistrationProvider, (_, _) {});
     final tabs = ref.watch(shellTabsProvider);
     final current = tabs.indexWhere((t) => t.index == shell.currentIndex);
     return SrScaffold(

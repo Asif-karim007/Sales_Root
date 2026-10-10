@@ -10,6 +10,9 @@ abstract class SettingsApi {
   @GET('auth/devices')
   Future<dynamic> devices();
 
+  @POST('devices')
+  Future<dynamic> registerDevice(@Body() Map<String, dynamic> body);
+
   @POST('auth/logout-all')
   Future<void> logoutAll();
 

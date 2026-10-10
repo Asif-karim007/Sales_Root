@@ -1,4 +1,4 @@
-package com.salesrootcrm.salesroot
+package com.salesroot.crm
 
 import io.flutter.embedding.android.FlutterActivity
 

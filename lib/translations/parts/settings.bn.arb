@@ -538,5 +538,6 @@
         "type": "String"
       }
     }
-  }
+  },
+  "settingsPushChannel": "নোটিফিকেশন"
 }

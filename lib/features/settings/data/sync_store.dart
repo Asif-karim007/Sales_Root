@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:salesroot/core/storage/install_id.dart';
 import 'package:salesroot/core/utils/json_fields.dart';
 import 'package:salesroot/features/settings/models/sync_models.dart';
 
@@ -14,21 +14,9 @@ class SyncStore {
   final SharedPreferences _prefs;
   final String _workspaceId;
 
-  static const _deviceKey = 'sync/device_id';
-
   String get _key => 'sync/state/$_workspaceId';
 
-  String get deviceId {
-    final saved = _prefs.getString(_deviceKey);
-    if (saved != null) return saved;
-    final random = Random.secure();
-    final id = List.generate(
-      16,
-      (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'),
-    ).join();
-    _prefs.setString(_deviceKey, id);
-    return id;
-  }
+  String get deviceId => installId(_prefs);
 
   SyncSnapshot read() =>
       SyncSnapshot.fromJson(jsonMap(_prefs.getString(_key) ?? ''));

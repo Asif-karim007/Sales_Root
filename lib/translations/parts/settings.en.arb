@@ -302,5 +302,6 @@
   "settingsSyncFieldNote": "Note",
   "settingsSyncFieldPhone": "Phone",
   "settingsSyncFieldTitle": "Title",
-  "settingsSyncReceived": "{count} updates received"
+  "settingsSyncReceived": "{count} updates received",
+  "settingsPushChannel": "Notifications"
 }

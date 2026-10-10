@@ -16,6 +16,20 @@ class ApiSettingsRepository implements SettingsRepository {
   }
 
   @override
+  Future<void> registerPushToken(
+    String token, {
+    required String platform,
+    required String deviceId,
+  }) => apiRequest(
+    'Push token',
+    () => _api.registerDevice({
+      'token': token,
+      'platform': platform,
+      'deviceId': deviceId,
+    }),
+  );
+
+  @override
   Future<void> signOutEverywhere() =>
       apiRequest('Sign out everywhere', () => _api.logoutAll());
 

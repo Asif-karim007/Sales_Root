@@ -4,6 +4,13 @@ import 'package:salesroot/features/settings/models/device_session.dart';
 abstract interface class SettingsRepository {
   Future<List<DeviceSession>> devices();
 
+  /// Lets the server send push messages to this install.
+  Future<void> registerPushToken(
+    String token, {
+    required String platform,
+    required String deviceId,
+  });
+
   /// Signs out every device, this one included.
   Future<void> signOutEverywhere();
 
