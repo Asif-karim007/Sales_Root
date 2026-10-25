@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import 'package:salesroot/core/format/app_format.dart';
+import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/billing/models/invoice.dart';
 import 'package:salesroot/features/billing/pdf/billing_pdf.dart';
 import 'package:salesroot/features/billing/view/widget/billing_labels.dart';
@@ -44,6 +45,7 @@ extension InvoiceLabels on BuildContext {
       text: text,
       lineLabel: (line) => line.item,
       money: signedMoney,
+      colors: SrColors.of(this).paper,
     );
   }
 

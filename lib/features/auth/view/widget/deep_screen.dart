@@ -7,7 +7,7 @@ import 'package:salesroot/features/auth/view/widget/brand.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
-/// The prototype's `.splash`: deep green, the roots drawing, the brand and
+/// The prototype's `.splash`: the deep colour, the roots drawing, the brand and
 /// the tagline, with [bottom] resting on the roots.
 class DeepScreen extends StatelessWidget {
   const DeepScreen({super.key, this.bottom});

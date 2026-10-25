@@ -6,8 +6,10 @@ import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 
 abstract final class AppTheme {
-  static ThemeData get light => _build(SrColors.light);
-  static ThemeData get dark => _build(SrColors.dark);
+  static ThemeData light([SrThemeId theme = SrThemeId.jamdani]) =>
+      _build(SrColors.resolve(theme, Brightness.light));
+  static ThemeData dark([SrThemeId theme = SrThemeId.jamdani]) =>
+      _build(SrColors.resolve(theme, Brightness.dark));
 
   static ThemeData _build(SrColors c) {
     return ThemeData(
@@ -46,7 +48,7 @@ abstract final class AppTheme {
         scrolledUnderElevation: 0,
         centerTitle: false,
         titleTextStyle: AppText.pageTitle(c.ink),
-        systemOverlayStyle: overlayStyle(c.brightness),
+        systemOverlayStyle: overlayStyle(c),
       ),
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: c.accent,
@@ -77,9 +79,8 @@ abstract final class AppTheme {
     );
   }
 
-  static SystemUiOverlayStyle overlayStyle(Brightness brightness) {
-    final isDark = brightness == Brightness.dark;
-    final c = SrColors.forBrightness(brightness);
+  static SystemUiOverlayStyle overlayStyle(SrColors c) {
+    final isDark = c.isDark;
     return SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,

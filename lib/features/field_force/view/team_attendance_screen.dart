@@ -161,7 +161,7 @@ class _SummaryRow extends StatelessWidget {
         FfCountTile(
           value: count(summary?.late),
           label: l10n.ffLate,
-          color: c.gold,
+          color: c.goldText,
         ),
         FfCountTile(
           value: count(summary?.leave),

@@ -15,8 +15,9 @@ Future<void> sharePayslipPdf({
   required AppLocalizations l10n,
   required AppFormat fmt,
   required String workspace,
+  required SrColors colors,
 }) async {
-  final bytes = await buildPayslipPdf(slip, l10n, fmt, workspace);
+  final bytes = await buildPayslipPdf(slip, l10n, fmt, workspace, colors);
   final period = slip.period;
   final month = '${period.year}-${period.month.toString().padLeft(2, '0')}';
   await Printing.sharePdf(bytes: bytes, filename: 'payslip-$month.pdf');
@@ -28,6 +29,7 @@ Future<Uint8List> buildPayslipPdf(
   AppLocalizations l10n,
   AppFormat fmt,
   String workspace,
+  SrColors colors,
 ) async {
   final regular = pw.Font.ttf(
     await rootBundle.load('assets/fonts/AnekBangla-Regular.ttf'),
@@ -38,7 +40,7 @@ Future<Uint8List> buildPayslipPdf(
   final doc = pw.Document(
     theme: pw.ThemeData.withFont(base: regular, bold: bold),
   );
-  final palette = _Palette(SrColors.light);
+  final palette = _Palette(colors);
   doc.addPage(
     pw.Page(
       pageFormat: PdfPageFormat.a4,

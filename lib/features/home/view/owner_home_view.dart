@@ -408,7 +408,10 @@ class _SellerRow extends StatelessWidget {
               child: Text(
                 fmt.number(rank),
                 textAlign: TextAlign.center,
-                style: AppText.rowTitle(rank == 1 ? c.gold : c.ink3, size: 13),
+                style: AppText.rowTitle(
+                  rank == 1 ? c.goldText : c.ink3,
+                  size: 13,
+                ),
               ),
             ),
             const SizedBox(width: 10),

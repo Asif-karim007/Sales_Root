@@ -48,6 +48,7 @@ class QuoteReviewStep extends ConsumerWidget {
   Future<void> _preview(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
     final fmt = context.fmt;
+    final paper = SrColors.of(context).paper;
     final quotation = previewQuotation(draft, l10n.salesNewNumber);
     final seller = await ref.read(sellerProfileProvider.future);
     if (!context.mounted) return;
@@ -59,8 +60,11 @@ class QuoteReviewStep extends ConsumerWidget {
         quotation.number,
         fmt.money(quotation.totals.total),
       ),
-      build: (format) =>
-          SalesPdf(l10n, fmt).quotation(quotation, seller, format: format),
+      build: (format) => SalesPdf(
+        l10n,
+        fmt,
+        paper,
+      ).quotation(quotation, seller, format: format),
     );
   }
 

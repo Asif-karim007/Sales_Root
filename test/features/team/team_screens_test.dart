@@ -60,7 +60,7 @@ Future<void> _show(
       container: container,
       child: Consumer(
         builder: (context, ref, _) => MaterialApp(
-          theme: AppTheme.light,
+          theme: AppTheme.light(),
           locale: ref.watch(appLocaleProvider),
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: AppLocalizations.localizationsDelegates,

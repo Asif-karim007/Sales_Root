@@ -131,7 +131,7 @@ class SupportAttachmentChip extends StatelessWidget {
   }
 }
 
-/// The deep-green media slot used for videos and lesson covers.
+/// The deep-colour media slot used for videos and lesson covers.
 class SupportMediaCover extends StatelessWidget {
   const SupportMediaCover({
     super.key,
@@ -176,7 +176,7 @@ class SupportMediaCover extends StatelessWidget {
                   bottom: 10,
                   child: SrProgressBar(
                     value: progress,
-                    color: c.gold,
+                    color: c.onDeepGold,
                     height: 4,
                   ),
                 ),

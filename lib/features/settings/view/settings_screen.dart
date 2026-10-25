@@ -7,11 +7,13 @@ import 'package:salesroot/core/access/app_module.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/locale/locale_provider.dart';
 import 'package:salesroot/core/routing/routes.dart';
+import 'package:salesroot/core/theme/theme_provider.dart';
 import 'package:salesroot/core/workspace/workspace_providers.dart';
 import 'package:salesroot/features/settings/providers/sync_providers.dart';
 import 'package:salesroot/features/settings/view/widget/level_labels.dart';
 import 'package:salesroot/features/settings/view/widget/settings_widgets.dart';
 import 'package:salesroot/features/settings/view/widget/sign_out_sheet.dart';
+import 'package:salesroot/features/settings/view/widget/theme_sheet.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
 
@@ -50,6 +52,7 @@ class _PersonalGroup extends ConsumerWidget {
     final isBangla = ref.watch(appLocaleProvider) == bangla;
     final level = ref.watch(experienceLevelProvider);
     final locked = ref.watch(experienceLevelLockedProvider);
+    final theme = ref.watch(appThemeProvider);
     return SrRowGroup(
       title: l10n.settingsPersonal,
       rows: [
@@ -68,6 +71,16 @@ class _PersonalGroup extends ConsumerWidget {
           leading: const RowIcon(Icons.tune_rounded),
           chevron: true,
           onTap: () => context.push(Routes.settingsLanguage),
+        ),
+        SrListRow(
+          title: l10n.settingsTheme,
+          subtitle: theme.label(l10n),
+          leading: ThemeSwatch(theme),
+          chevron: true,
+          onTap: () => showSrSheet<void>(
+            context: context,
+            builder: (_) => const ThemeSheet(),
+          ),
         ),
         SrListRow(
           title: l10n.settingsNotifications,

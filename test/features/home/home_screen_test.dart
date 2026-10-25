@@ -43,7 +43,7 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
-          theme: theme ?? AppTheme.light,
+          theme: theme ?? AppTheme.light(),
           locale: locale,
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -63,9 +63,9 @@ void main() {
     ('owner', 'owner', 'standard', OwnerHomeView),
   ];
   final looks = [
-    (bangla, AppTheme.light, 'Bangla, light'),
-    (english, AppTheme.light, 'English, light'),
-    (bangla, AppTheme.dark, 'Bangla, dark'),
+    (bangla, AppTheme.light(), 'Bangla, light'),
+    (english, AppTheme.light(), 'English, light'),
+    (bangla, AppTheme.dark(), 'Bangla, dark'),
   ];
 
   for (final (name, role, level, view) in cases) {

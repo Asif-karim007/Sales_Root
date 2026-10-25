@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/locale/locale_provider.dart';
 import 'package:salesroot/core/network/api_failure.dart';
+import 'package:salesroot/core/theme/sr_palettes.dart';
 import 'package:salesroot/features/hr/models/payroll.dart';
 import 'package:salesroot/features/hr/providers/payroll_providers.dart';
 import 'package:salesroot/features/hr/view/payslip_pdf.dart';
@@ -113,6 +114,7 @@ void main() {
       l10n,
       AppFormat(l10n, bangla),
       'Dhaka Sales Ltd.',
+      jamdaniLight,
     );
     expect(String.fromCharCodes(bytes.take(4)), '%PDF');
   });

@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 
-/// The Root skin. Every colour in the app comes from here.
+import 'package:salesroot/core/theme/sr_palettes.dart';
+
+/// The four colour themes a user can pick in Settings.
+enum SrThemeId { jamdani, pathao, mustard, tea }
+
+/// The active theme's palette. Every colour in the app comes from here.
 @immutable
 class SrColors extends ThemeExtension<SrColors> {
   const SrColors({
+    required this.theme,
     required this.brightness,
     required this.canvas,
     required this.surface,
@@ -11,6 +17,7 @@ class SrColors extends ThemeExtension<SrColors> {
     required this.ink2,
     required this.ink3,
     required this.line,
+    required this.lineStrong,
     required this.accent,
     required this.accent2,
     required this.tint,
@@ -19,7 +26,9 @@ class SrColors extends ThemeExtension<SrColors> {
     required this.onDeepMuted,
     required this.onAccent,
     required this.gold,
+    required this.goldText,
     required this.goldTint,
+    required this.onDeepGold,
     required this.success,
     required this.successTint,
     required this.warning,
@@ -38,6 +47,7 @@ class SrColors extends ThemeExtension<SrColors> {
     required this.sheetShadow,
   });
 
+  final SrThemeId theme;
   final Brightness brightness;
 
   final Color canvas;
@@ -46,6 +56,7 @@ class SrColors extends ThemeExtension<SrColors> {
   final Color ink2;
   final Color ink3;
   final Color line;
+  final Color lineStrong;
 
   final Color accent;
   final Color accent2;
@@ -56,7 +67,9 @@ class SrColors extends ThemeExtension<SrColors> {
   final Color onAccent;
 
   final Color gold;
+  final Color goldText;
   final Color goldTint;
+  final Color onDeepGold;
 
   final Color success;
   final Color successTint;
@@ -79,100 +92,22 @@ class SrColors extends ThemeExtension<SrColors> {
 
   bool get isDark => brightness == Brightness.dark;
 
-  static const SrColors light = SrColors(
-    brightness: Brightness.light,
-    canvas: Color(0xFFF4F6F4),
-    surface: Color(0xFFFFFFFF),
-    ink: Color(0xFF10231B),
-    ink2: Color(0xFF5B6B63),
-    ink3: Color(0xFF8A968F),
-    line: Color(0xFFE2E8E4),
-    accent: Color(0xFF0B5C3E),
-    accent2: Color(0xFF158A5C),
-    tint: Color(0xFFE6F1EB),
-    deep: Color(0xFF0A3325),
-    onDeep: Color(0xFFFFFFFF),
-    onDeepMuted: Color(0xFFB9D4C6),
-    onAccent: Color(0xFFFFFFFF),
-    gold: Color(0xFFC9931E),
-    goldTint: Color(0xFFFBF3E0),
-    success: Color(0xFF0B5C3E),
-    successTint: Color(0xFFE6F1EB),
-    warning: Color(0xFFB7791F),
-    warningTint: Color(0xFFFBF3E0),
-    danger: Color(0xFFB42318),
-    dangerTint: Color(0xFFFCEBE9),
-    info: Color(0xFF1F4FBF),
-    infoTint: Color(0xFFE8EEFB),
-    avatarBg: Color(0xFFEEF2EF),
-    track: Color(0xFFE9EEEA),
-    skeleton: Color(0xFFE7EBE8),
-    skeletonGlow: Color(0xFFF3F6F4),
-    scrim: Color(0x8C000000),
-    cardShadow: [
-      BoxShadow(color: Color(0x0F10231B), blurRadius: 2, offset: Offset(0, 1)),
-    ],
-    floatShadow: [
-      BoxShadow(color: Color(0x14000000), blurRadius: 20, offset: Offset(0, 6)),
-    ],
-    sheetShadow: [
-      BoxShadow(
-        color: Color(0x40000000),
-        blurRadius: 30,
-        offset: Offset(0, -8),
-      ),
-    ],
-  );
-
-  static const SrColors dark = SrColors(
-    brightness: Brightness.dark,
-    canvas: Color(0xFF0B1511),
-    surface: Color(0xFF13201A),
-    ink: Color(0xFFE6EFEA),
-    ink2: Color(0xFFA3B3AA),
-    ink3: Color(0xFF74857B),
-    line: Color(0xFF24332B),
-    accent: Color(0xFF3FBF86),
-    accent2: Color(0xFF2FA373),
-    tint: Color(0xFF173226),
-    deep: Color(0xFF06261A),
-    onDeep: Color(0xFFFFFFFF),
-    onDeepMuted: Color(0xFFA9C7B8),
-    onAccent: Color(0xFF04140D),
-    gold: Color(0xFFE0B04A),
-    goldTint: Color(0xFF2E2614),
-    success: Color(0xFF3FBF86),
-    successTint: Color(0xFF173226),
-    warning: Color(0xFFE3A646),
-    warningTint: Color(0xFF33270F),
-    danger: Color(0xFFF27A6B),
-    dangerTint: Color(0xFF3A1C18),
-    info: Color(0xFF7FA3F0),
-    infoTint: Color(0xFF1A2440),
-    avatarBg: Color(0xFF1B2A23),
-    track: Color(0xFF22312A),
-    skeleton: Color(0xFF1A2822),
-    skeletonGlow: Color(0xFF22332B),
-    scrim: Color(0xB3000000),
-    cardShadow: [],
-    floatShadow: [
-      BoxShadow(color: Color(0x66000000), blurRadius: 20, offset: Offset(0, 6)),
-    ],
-    sheetShadow: [
-      BoxShadow(
-        color: Color(0x80000000),
-        blurRadius: 30,
-        offset: Offset(0, -8),
-      ),
-    ],
-  );
-
   static SrColors of(BuildContext context) =>
       Theme.of(context).extension<SrColors>() ??
-      forBrightness(MediaQuery.platformBrightnessOf(context));
+      resolve(SrThemeId.jamdani, MediaQuery.platformBrightnessOf(context));
 
-  static SrColors forBrightness(Brightness brightness) =>
-      brightness == Brightness.dark ? dark : light;
+  static SrColors resolve(SrThemeId theme, Brightness brightness) {
+    final light = brightness == Brightness.light;
+    return switch (theme) {
+      SrThemeId.jamdani => light ? jamdaniLight : jamdaniDark,
+      SrThemeId.pathao => light ? pathaoLight : pathaoDark,
+      SrThemeId.mustard => light ? mustardLight : mustardDark,
+      SrThemeId.tea => light ? teaLight : teaDark,
+    };
+  }
+
+  /// This theme's light palette, for documents such as PDFs.
+  SrColors get paper => resolve(theme, Brightness.light);
 
   /// The prototype's `linear-gradient(160deg, accent, accent2)`.
   LinearGradient get primaryGradient => LinearGradient(

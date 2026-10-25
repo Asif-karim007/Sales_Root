@@ -6,7 +6,7 @@ import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/theme/app_text.dart';
 import 'package:salesroot/core/theme/sr_colors.dart';
 
-/// Series colours in order: accent first, then gold, the lighter green, info
+/// Series colours in order: accent first, then gold, accent2, info
 /// blue, danger red, warning amber and grey.
 List<Color> srChartColors(SrColors c) => [
   c.accent,

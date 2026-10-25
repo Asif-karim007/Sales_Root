@@ -17,7 +17,7 @@ class AuthBrand extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SproutMark(size: size * 1.25, color: onDark ? c.gold : c.accent),
+        SproutMark(size: size * 1.25, color: onDark ? c.onDeepGold : c.accent),
         SizedBox(width: size * 0.35),
         Text(
           context.l10n.appName,
@@ -81,7 +81,7 @@ class _SproutPainter extends CustomPainter {
   bool shouldRepaint(_SproutPainter old) => old.color != color;
 }
 
-/// The prototype's `.roots` drawing behind the deep-green screens.
+/// The prototype's `.roots` drawing behind the deep-colour screens.
 class RootsBackdrop extends StatelessWidget {
   const RootsBackdrop({super.key, this.height = 300});
 
@@ -95,7 +95,7 @@ class RootsBackdrop extends StatelessWidget {
         opacity: 0.6,
         child: CustomPaint(
           size: Size.fromHeight(height),
-          painter: _RootsPainter(line: c.onDeepMuted, leaf: c.gold),
+          painter: _RootsPainter(line: c.onDeepMuted, leaf: c.onDeepGold),
         ),
       ),
     );

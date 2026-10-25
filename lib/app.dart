@@ -5,6 +5,7 @@ import 'package:salesroot/core/locale/locale_provider.dart';
 import 'package:salesroot/core/routing/app_router.dart';
 import 'package:salesroot/core/session/session_provider.dart';
 import 'package:salesroot/core/theme/app_theme.dart';
+import 'package:salesroot/core/theme/theme_provider.dart';
 import 'package:salesroot/core/workspace/workspace_providers.dart';
 import 'package:salesroot/translations/translations.dart';
 import 'package:salesroot/widgets/widgets.dart';
@@ -38,11 +39,12 @@ class _AppState extends ConsumerState<App> {
     ref.listen(sessionExpiredProvider, (_, expired) {
       if (expired) _showSessionExpired();
     });
+    final theme = ref.watch(appThemeProvider);
     return MaterialApp.router(
       onGenerateTitle: (context) => context.l10n.appName,
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
+      theme: AppTheme.light(theme),
+      darkTheme: AppTheme.dark(theme),
       locale: ref.watch(appLocaleProvider),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,

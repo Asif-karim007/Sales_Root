@@ -14,7 +14,7 @@ extension SrToneColors on SrTone {
     SrTone.ok => c.success,
     SrTone.warn => c.warning,
     SrTone.err => c.danger,
-    SrTone.gold => c.gold,
+    SrTone.gold => c.goldText,
     SrTone.info => c.info,
     SrTone.dark => c.onDeep,
   };

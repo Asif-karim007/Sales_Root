@@ -10,7 +10,7 @@ import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/billing/models/checkout.dart';
 import 'package:salesroot/features/billing/models/invoice.dart';
 
-/// The bundled Anek Bangla for Latin text and ৳, and the Root colours.
+/// The bundled Anek Bangla for Latin text and ৳.
 abstract final class BillingPdfTheme {
   static Future<pw.ThemeData>? _theme;
 
@@ -27,10 +27,6 @@ abstract final class BillingPdfTheme {
     );
   }
 
-  static Color get accent => SrColors.light.accent;
-  static Color get ink => SrColors.light.ink;
-  static Color get muted => SrColors.light.ink2;
-
   static PdfColor pdf(Color color) => PdfColor.fromInt(color.toARGB32());
 }
 
@@ -45,18 +41,17 @@ abstract final class PdfText {
     String value, {
     double size = 11,
     bool bold = false,
-    Color? color,
+    required Color color,
     double maxWidth = 515,
     bool center = false,
   }) async {
-    final ink = color ?? BillingPdfTheme.ink;
     if (!_needsShaping.hasMatch(value)) {
       return pw.Text(
         value,
         textAlign: center ? pw.TextAlign.center : pw.TextAlign.left,
         style: pw.TextStyle(
           fontSize: size,
-          color: BillingPdfTheme.pdf(ink),
+          color: BillingPdfTheme.pdf(color),
           fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
         ),
       );
@@ -67,7 +62,7 @@ abstract final class PdfText {
         style: AppText.style(
           size: size * _scale,
           weight: bold ? FontWeight.w600 : FontWeight.w400,
-          color: ink,
+          color: color,
         ),
       ),
       textAlign: center ? TextAlign.center : TextAlign.left,
@@ -133,11 +128,12 @@ Future<Uint8List> buildInvoicesPdf({
   required InvoicePdfText text,
   required String Function(OrderLine) lineLabel,
   required String Function(int) money,
+  required SrColors colors,
 }) async {
   final theme = await BillingPdfTheme.load();
   final doc = pw.Document(theme: theme, title: text.title);
   for (final invoice in invoices) {
-    final page = await _invoicePage(invoice, text, lineLabel, money);
+    final page = await _invoicePage(invoice, text, lineLabel, money, colors);
     doc.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
@@ -154,16 +150,18 @@ Future<pw.Widget> _invoicePage(
   InvoicePdfText text,
   String Function(OrderLine) lineLabel,
   String Function(int) money,
+  SrColors colors,
 ) async {
   final quote = invoice.quote;
-  final muted = BillingPdfTheme.muted;
+  final muted = colors.ink2;
   final rows = [
-    await _row(text.item, text.amount, header: true),
+    await _row(text.item, text.amount, colors, header: true),
     for (final line in quote.lines)
-      await _row(lineLabel(line), money(line.amount)),
-    if (quote.credits > 0) await _row(text.credits, money(-quote.credits)),
-    await _row(text.vat(invoice), money(quote.vat)),
-    await _row(text.total, money(quote.total), total: true),
+      await _row(lineLabel(line), money(line.amount), colors),
+    if (quote.credits > 0)
+      await _row(text.credits, money(-quote.credits), colors),
+    await _row(text.vat(invoice), money(quote.vat), colors),
+    await _row(text.total, money(quote.total), colors, total: true),
   ];
   return pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.stretch,
@@ -176,13 +174,18 @@ Future<pw.Widget> _invoicePage(
               text.brand,
               size: 24,
               bold: true,
-              color: BillingPdfTheme.accent,
+              color: colors.accent,
             ),
           ),
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.end,
             children: [
-              await PdfText.of(text.title, size: 16, bold: true),
+              await PdfText.of(
+                text.title,
+                size: 16,
+                bold: true,
+                color: colors.ink,
+              ),
               await PdfText.of(invoice.number, color: muted),
               await PdfText.of(text.date(invoice), color: muted),
             ],
@@ -191,7 +194,7 @@ Future<pw.Widget> _invoicePage(
       ),
       pw.SizedBox(height: 28),
       await PdfText.of(text.billedTo, size: 10, color: muted),
-      await PdfText.of(text.workspace, size: 13, bold: true),
+      await PdfText.of(text.workspace, size: 13, bold: true, color: colors.ink),
       pw.SizedBox(height: 4),
       await PdfText.of(text.method(invoice), color: muted),
       pw.SizedBox(height: 22),
@@ -202,18 +205,18 @@ Future<pw.Widget> _invoicePage(
         child: pw.Container(
           padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: pw.BoxDecoration(
-            color: BillingPdfTheme.pdf(SrColors.light.tint),
+            color: BillingPdfTheme.pdf(colors.tint),
             borderRadius: pw.BorderRadius.circular(10),
           ),
           child: await PdfText.of(
             text.status(invoice),
             bold: true,
-            color: BillingPdfTheme.accent,
+            color: colors.accent,
           ),
         ),
       ),
       pw.Spacer(),
-      pw.Divider(color: BillingPdfTheme.pdf(SrColors.light.line)),
+      pw.Divider(color: BillingPdfTheme.pdf(colors.line)),
       await PdfText.of(text.thanks, size: 10, color: muted),
     ],
   );
@@ -221,21 +224,20 @@ Future<pw.Widget> _invoicePage(
 
 Future<pw.Widget> _row(
   String label,
-  String value, {
+  String value,
+  SrColors colors, {
   bool header = false,
   bool total = false,
 }) async {
   final size = total ? 14.0 : 11.5;
-  final color = header ? BillingPdfTheme.muted : BillingPdfTheme.ink;
+  final color = header ? colors.ink2 : colors.ink;
   final bold = header || total;
   return pw.Container(
     padding: const pw.EdgeInsets.symmetric(vertical: 7),
     decoration: pw.BoxDecoration(
       border: pw.Border(
         bottom: pw.BorderSide(
-          color: BillingPdfTheme.pdf(
-            total ? SrColors.light.ink : SrColors.light.line,
-          ),
+          color: BillingPdfTheme.pdf(total ? colors.ink : colors.line),
         ),
       ),
     ),

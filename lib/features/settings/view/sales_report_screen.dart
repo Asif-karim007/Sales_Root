@@ -307,7 +307,10 @@ class _ExportSheet extends StatelessWidget {
           'text/csv',
         );
       } else {
-        final pdf = await showSrLoader(context, salesReportPdf(query, report));
+        final pdf = await showSrLoader(
+          context,
+          salesReportPdf(query, report, SrColors.of(context).paper),
+        );
         await shareFile('$name.pdf', pdf, 'application/pdf');
       }
       navigator.pop();

@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:salesroot/core/locale/locale_provider.dart';
 import 'package:salesroot/core/storage/prefs_provider.dart';
+import 'package:salesroot/core/theme/sr_colors.dart';
+import 'package:salesroot/core/theme/theme_provider.dart';
 import 'package:salesroot/core/workspace/workspace_providers.dart';
 import 'package:salesroot/features/settings/data/sync_store.dart';
 import 'package:salesroot/features/settings/models/sync_models.dart';
@@ -135,6 +137,28 @@ void main() {
 
     expect(container.read(appLocaleProvider), english);
     expect(stub.lastBody('PATCH', 'auth/me'), {'language': 'en'});
+  });
+
+  testWidgets('picking a theme in settings applies and keeps it', (
+    tester,
+  ) async {
+    final container = await tester.runAsync(
+      () => settingsContainer(settingsStub()),
+    );
+    if (container == null) return;
+
+    await pumpScreen(tester, container, const SettingsScreen());
+    await tester.tap(find.text('Theme'));
+    await _settle(tester);
+    await tester.tap(find.text('Mustard Field'));
+    await _settle(tester);
+
+    expect(container.read(appThemeProvider), SrThemeId.mustard);
+    expect(
+      container.read(sharedPreferencesProvider).getString('theme'),
+      'mustard',
+    );
+    expect(find.text('Mustard Field'), findsOneWidget);
   });
 
   testWidgets('the import screen maps, checks and imports a file', (

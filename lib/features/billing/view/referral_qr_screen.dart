@@ -55,6 +55,7 @@ class _QrBody extends StatelessWidget {
       link: overview.link,
       body: _body(context),
       tip: l10n.billingQrTip,
+      colors: SrColors.of(context).paper,
     );
     await Printing.layoutPdf(
       onLayout: (_) => bytes,

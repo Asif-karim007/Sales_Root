@@ -195,7 +195,7 @@ class SrAppBar extends StatelessWidget {
 }
 
 /// The prototype's `.hdr`: a taller header holding a column of [children]
-/// (brand bar, greeting, chips…), on the surface or deep green when [dark].
+/// (brand bar, greeting, chips…), on the surface or the deep colour when [dark].
 class SrHeader extends StatelessWidget {
   const SrHeader({
     super.key,

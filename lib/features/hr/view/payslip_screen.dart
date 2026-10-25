@@ -137,6 +137,7 @@ class _PayslipBodyState extends ConsumerState<_PayslipBody> {
     final l10n = context.l10n;
     final fmt = context.fmt;
     final workspace = ref.read(currentWorkspaceProvider)?.name ?? '';
+    final colors = SrColors.of(context).paper;
     setState(() => _sharing = true);
     try {
       await sharePayslipPdf(
@@ -144,6 +145,7 @@ class _PayslipBodyState extends ConsumerState<_PayslipBody> {
         l10n: l10n,
         fmt: fmt,
         workspace: workspace,
+        colors: colors,
       );
     } on Exception catch (error) {
       if (mounted) showHrFailure(context, error);

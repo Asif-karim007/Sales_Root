@@ -33,6 +33,7 @@ class InvoiceScreen extends ConsumerWidget {
   Future<void> _pdf(BuildContext context, WidgetRef ref, Invoice i) async {
     final l10n = context.l10n;
     final fmt = context.fmt;
+    final paper = SrColors.of(context).paper;
     final seller = await ref.read(sellerProfileProvider.future);
     if (!context.mounted) return;
     await showSalesPdfSheet(
@@ -40,7 +41,8 @@ class InvoiceScreen extends ConsumerWidget {
       title: i.number,
       fileName: '${i.number}.pdf',
       shareText: l10n.salesBillShareText(i.number, fmt.money(i.due)),
-      build: (format) => SalesPdf(l10n, fmt).invoice(i, seller, format: format),
+      build: (format) =>
+          SalesPdf(l10n, fmt, paper).invoice(i, seller, format: format),
     );
   }
 
@@ -52,9 +54,10 @@ class InvoiceScreen extends ConsumerWidget {
   ) async {
     final l10n = context.l10n;
     final fmt = context.fmt;
+    final paper = SrColors.of(context).paper;
     try {
       final seller = await ref.read(sellerProfileProvider.future);
-      final bytes = await SalesPdf(l10n, fmt).invoice(i, seller);
+      final bytes = await SalesPdf(l10n, fmt, paper).invoice(i, seller);
       await shareSalesPdf(
         bytes: bytes,
         fileName: '${i.number}.pdf',

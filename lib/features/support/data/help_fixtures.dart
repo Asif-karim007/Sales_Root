@@ -234,8 +234,8 @@ final List<Map<String, dynamic>> _articles = [
     ),
     steps: [
       (
-        'Tap the green + button in the middle of the bottom bar and choose “Lead”.',
-        'নিচের বারের মাঝখানের সবুজ + বোতাম চেপে “লিড” বেছে নিন।',
+        'Tap the + button in the middle of the bottom bar and choose “Lead”.',
+        'নিচের বারের মাঝখানের + বোতাম চেপে “লিড” বেছে নিন।',
       ),
       (
         'Type the company or person’s name and the mobile number. If the number is already saved, the app shows that lead so you don’t add it twice.',

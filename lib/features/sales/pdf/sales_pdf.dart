@@ -16,10 +16,11 @@ import 'package:salesroot/translations/translations.dart';
 /// Builds the quotation, bill and receipt PDFs in the app's language, set in
 /// the bundled Anek Bangla so Bangla text and ৳ render.
 class SalesPdf {
-  SalesPdf(this.l10n, this.fmt);
+  SalesPdf(this.l10n, this.fmt, this.colors);
 
   final AppLocalizations l10n;
   final AppFormat fmt;
+  final SrColors colors;
 
   static Future<pw.ThemeData>? _theme;
 
@@ -36,18 +37,10 @@ class SalesPdf {
 
   bool get _bangla => fmt.isBangla;
 
-  static final PdfColor _accent = PdfColor.fromInt(
-    SrColors.light.accent.toARGB32(),
-  );
-  static final PdfColor _ink2 = PdfColor.fromInt(
-    SrColors.light.ink2.toARGB32(),
-  );
-  static final PdfColor _rule = PdfColor.fromInt(
-    SrColors.light.line.toARGB32(),
-  );
-  static final PdfColor _tint = PdfColor.fromInt(
-    SrColors.light.tint.toARGB32(),
-  );
+  PdfColor get _accent => PdfColor.fromInt(colors.accent.toARGB32());
+  PdfColor get _ink2 => PdfColor.fromInt(colors.ink2.toARGB32());
+  PdfColor get _rule => PdfColor.fromInt(colors.line.toARGB32());
+  PdfColor get _tint => PdfColor.fromInt(colors.tint.toARGB32());
 
   Future<Uint8List> quotation(
     Quotation quotation,

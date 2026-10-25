@@ -6,7 +6,7 @@ import 'package:salesroot/widgets/sr_card.dart';
 
 /// The prototype's `.kpi` in a card: a label, a big value and an optional
 /// delta line. [deltaUp] picks the arrow; [upIsGood] decides whether up is
-/// green or red.
+/// the success or the danger colour.
 class SrKpiTile extends StatelessWidget {
   const SrKpiTile({
     super.key,

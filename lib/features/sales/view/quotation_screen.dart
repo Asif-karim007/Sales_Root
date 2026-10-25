@@ -30,6 +30,7 @@ class QuotationScreen extends ConsumerWidget {
   Future<void> _pdf(BuildContext context, WidgetRef ref, Quotation q) async {
     final l10n = context.l10n;
     final fmt = context.fmt;
+    final paper = SrColors.of(context).paper;
     final seller = await ref.read(sellerProfileProvider.future);
     if (!context.mounted) return;
     await showSalesPdfSheet(
@@ -41,13 +42,14 @@ class QuotationScreen extends ConsumerWidget {
         fmt.money(q.totals.total),
       ),
       build: (format) =>
-          SalesPdf(l10n, fmt).quotation(q, seller, format: format),
+          SalesPdf(l10n, fmt, paper).quotation(q, seller, format: format),
     );
   }
 
   Future<void> _send(BuildContext context, WidgetRef ref, Quotation q) async {
     final l10n = context.l10n;
     final fmt = context.fmt;
+    final paper = SrColors.of(context).paper;
     final channel = await showSrSheet<SendChannel>(
       context: context,
       builder: (_) => SrOptionSheet<SendChannel>(
@@ -60,7 +62,7 @@ class QuotationScreen extends ConsumerWidget {
     if (channel == null || !context.mounted) return;
     try {
       final seller = await ref.read(sellerProfileProvider.future);
-      final bytes = await SalesPdf(l10n, fmt).quotation(q, seller);
+      final bytes = await SalesPdf(l10n, fmt, paper).quotation(q, seller);
       await shareSalesPdf(
         bytes: bytes,
         fileName: '${q.number}.pdf',

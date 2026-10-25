@@ -91,7 +91,11 @@ List<int> csvBytes(List<List<Object?>> rows) => [
 
 /// The sales report as a one-page PDF. It is always in English: the PDF
 /// engine can't shape Bangla conjuncts.
-Future<Uint8List> salesReportPdf(ReportQuery query, SalesReport report) async {
+Future<Uint8List> salesReportPdf(
+  ReportQuery query,
+  SalesReport report,
+  SrColors colors,
+) async {
   final l10n = lookupAppLocalizations(english);
   final fmt = AppFormat(l10n, english);
   final regular = pw.Font.ttf(
@@ -100,7 +104,7 @@ Future<Uint8List> salesReportPdf(ReportQuery query, SalesReport report) async {
   final bold = pw.Font.ttf(
     await rootBundle.load('assets/fonts/AnekBangla-SemiBold.ttf'),
   );
-  final accent = PdfColor.fromInt(SrColors.light.accent.toARGB32());
+  final accent = PdfColor.fromInt(colors.accent.toARGB32());
   final period = query.isMonth
       ? fmt.monthYear(query.from)
       : '${fmt.date(query.from)} – ${fmt.date(query.to)}';

@@ -28,7 +28,11 @@ class AiGuideButton extends StatelessWidget {
             onTap: () => context.push(Routes.aiGuide),
             child: SizedBox.square(
               dimension: 52,
-              child: Icon(Icons.auto_awesome_rounded, color: c.gold, size: 24),
+              child: Icon(
+                Icons.auto_awesome_rounded,
+                color: c.onDeepGold,
+                size: 24,
+              ),
             ),
           ),
         ),

@@ -28,7 +28,7 @@ class CardFrame extends StatelessWidget {
                 bottom: corner.top ? null : 14,
                 left: corner.left ? 14 : null,
                 right: corner.left ? null : 14,
-                child: _CornerMark(corner: corner, color: c.gold),
+                child: _CornerMark(corner: corner, color: c.onDeepGold),
               ),
           ],
         ),

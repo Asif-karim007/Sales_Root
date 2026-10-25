@@ -19,7 +19,7 @@ BoxDecoration _fieldBox(
       ? c.danger
       : focused
       ? c.accent
-      : c.line;
+      : c.lineStrong;
   return BoxDecoration(
     color: enabled ? c.surface : c.canvas,
     borderRadius: BorderRadius.circular(SrMetrics.radiusButton),

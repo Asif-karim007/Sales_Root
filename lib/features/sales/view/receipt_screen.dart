@@ -37,8 +37,10 @@ class ReceiptScreen extends ConsumerWidget {
   ) async {
     final l10n = context.l10n;
     final fmt = context.fmt;
+    final paper = SrColors.of(context).paper;
     final seller = await ref.read(sellerProfileProvider.future);
-    return (format) => SalesPdf(l10n, fmt).receipt(r, seller, format: format);
+    return (format) =>
+        SalesPdf(l10n, fmt, paper).receipt(r, seller, format: format);
   }
 
   String _shareText(BuildContext context, Collection r) =>

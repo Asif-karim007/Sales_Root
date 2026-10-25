@@ -38,6 +38,7 @@ class QuotationWizardScreen extends ConsumerWidget {
   ) async {
     final l10n = context.l10n;
     final fmt = context.fmt;
+    final paper = SrColors.of(context).paper;
     if (quotation.status == QuotationStatus.pendingApproval) {
       showSrSuccess(context, l10n.salesSentForApproval);
     } else if (via == null) {
@@ -45,7 +46,11 @@ class QuotationWizardScreen extends ConsumerWidget {
     } else {
       try {
         final seller = await ref.read(sellerProfileProvider.future);
-        final bytes = await SalesPdf(l10n, fmt).quotation(quotation, seller);
+        final bytes = await SalesPdf(
+          l10n,
+          fmt,
+          paper,
+        ).quotation(quotation, seller);
         await shareSalesPdf(
           bytes: bytes,
           fileName: '${quotation.number}.pdf',

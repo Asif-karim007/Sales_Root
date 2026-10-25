@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:salesroot/core/theme/sr_palettes.dart';
 import 'package:salesroot/features/billing/models/checkout.dart';
 import 'package:salesroot/features/billing/models/invoice.dart';
 import 'package:salesroot/features/billing/pdf/billing_pdf.dart';
@@ -46,6 +47,7 @@ void main() {
               text: text,
               lineLabel: (line) => line.item,
               money: (amount) => '৳ $amount',
+              colors: jamdaniLight,
             ),
             await buildReferralCardPdf(
               brand: 'SalesRoot',
@@ -53,6 +55,7 @@ void main() {
               link: 'https://q.salesrootcrm.com/r/KH7R2M',
               body: 'স্ক্যান করুন, রেজিস্টার করুন — দুজনেই পান ৳ ১০',
               tip: 'দোকানের কাউন্টারে দেখান',
+              colors: jamdaniLight,
             ),
           ),
         ) ??

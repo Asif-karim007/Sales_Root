@@ -205,19 +205,24 @@ These follow the SaleBee style; there is no freezed or json_serializable.
 
 Port SaleBee's `lib/widgets/sb_*.dart` to `lib/widgets/sr_*.dart` with the prefix `Sr`: SrScaffold, SrPageHeader, SrPrimaryButton/SrOutlinedButton, SrSheet + `showSrSheet`, SrTextField, SrListRow, SrChip/SrTone, SrStates (empty/error/skeleton with one shared shimmer ticker), SrSnack, SrSegmentedSwitch, SrPicker/SrLookupPicker, SrDatePicker, SrCharts, SrFileViewer, SrScroll (SbScrollPhysics), SrDeferred, SrKeyboardDismiss and SrLanguageToggle. **Always reuse these before writing a raw Material tree.**
 
-Restyle them to the prototype's Root skin. The tokens below are verbatim from the prototype CSS:
+The prototype's forest-green palette has been replaced by four user-switchable themes (`SrThemeId`): **Jamdani Violet** (`jamdani`, the default), **Pathao Red** (`pathao`), **Mustard Field** (`mustard`) and **Sylhet Tea** (`tea`). The values live only in `core/theme/sr_palettes.dart`: light from the brand spec, dark derived from it. `appThemeProvider` (`core/theme/theme_provider.dart`) holds the choice, persisted in SharedPreferences under `theme`; it's picked in Settings → Theme.
+
+Brand-spec token → `SrColors` field:
 
 ```
-canvas   #F4F6F4   surface #FFFFFF   ink #10231B   ink2 #5B6B63   ink3 #8A968F
-line     #E2E8E4   accent  #0B5C3E   accent2 #158A5C   tint #E6F1EB   deep #0A3325
-gold     #C9931E   goldTint #FBF3E0   danger #B42318   dangerTint #FCEBE9
-warning  #B7791F   warningTint #FBF3E0   success = accent / tint   avatarBg #EEF2EF   track #E9EEEA
+primary → accent      primaryLight → accent2   primaryDeep → deep     onPrimary → onAccent / onDeep
+text → ink            textMuted → ink2         textHint → ink3        onPrimaryMuted → onDeepMuted
+border → line         borderStrong → lineStrong (input rims)          background → canvas
+backgroundRaised → avatarBg / track / skeleton                        primarySoft → tint / successTint
+accent → gold         accentText → goldText / warning                 accentSoft → goldTint / warningTint
+onDeepGold: gold on deep panels (Pathao uses primaryLight, since its accent is charcoal)
+success = accent · danger #B42318 / dangerTint #FCEBE9 · surface #FFFFFF
 primary gradient: 160° accent → accent2
 radius: card 14 · small 10 · button 12 · sheet 24 · chip pill
 height: button 50 (sm 40, lg 56) · field 50 · list row min 60 · icon button 40
 ```
 
-- Colours **only** from `SrColors`, a `ThemeExtension` with `light` and `dark`. The prototype is light-only, so derive dark values and keep the same token names. Text styles **only** from `core/theme/app_text.dart`.
+- Colours **only** from `SrColors.of(context)`, a `ThemeExtension` resolved per theme and brightness (`SrColors.resolve`). Gold used as text is `goldText`, never `gold`. PDFs take `SrColors.of(context).paper` (the theme's light palette). Text styles **only** from `core/theme/app_text.dart`.
 - Never hard-code a hex value or an ad-hoc `TextStyle` in a screen.
 - Font: **Anek Bangla** 400/500/600/700 for both scripts, bundled as an asset (not google_fonts at runtime). `AppText` presets: `hero`, `pageTitle`, `sectionTitle`, `rowTitle`, `body`, `lead`, `meta`, `label`, `fieldLabel`, `metric`, `button`, `input`, `chip`, `caption`. Anek Bangla covers both scripts, so there are no per-language adjustments. Glyphs it lacks (`→`, `↔`, `●`) fall back to a system font; prefer icons.
 - Bangla is the default locale. In Bangla, **digits are Bangla** and money uses **lakh/crore** (`৳ 18.6 lakh` / `৳ ১৮.৬ লাখ`). In English, digits are Latin. Every number, money amount and date shown goes through `core/format/`.

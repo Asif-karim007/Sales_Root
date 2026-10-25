@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import 'package:salesroot/core/theme/sr_colors.dart';
 import 'package:salesroot/features/billing/pdf/billing_pdf.dart';
 
 /// The shop-counter card (#187) as an A5 page: brand, QR of [link], the code
@@ -13,16 +14,12 @@ Future<Uint8List> buildReferralCardPdf({
   required String link,
   required String body,
   required String tip,
+  required SrColors colors,
 }) async {
   final theme = await BillingPdfTheme.load();
-  final muted = BillingPdfTheme.muted;
+  final muted = colors.ink2;
   final children = [
-    await PdfText.of(
-      brand,
-      size: 22,
-      bold: true,
-      color: BillingPdfTheme.accent,
-    ),
+    await PdfText.of(brand, size: 22, bold: true, color: colors.accent),
     pw.SizedBox(height: 20),
     pw.BarcodeWidget(
       barcode: pw.Barcode.qrCode(),
@@ -30,12 +27,18 @@ Future<Uint8List> buildReferralCardPdf({
       width: 200,
       height: 200,
       drawText: false,
-      color: BillingPdfTheme.pdf(BillingPdfTheme.ink),
+      color: BillingPdfTheme.pdf(colors.ink),
     ),
     pw.SizedBox(height: 18),
-    await PdfText.of(code, size: 28, bold: true),
+    await PdfText.of(code, size: 28, bold: true, color: colors.ink),
     pw.SizedBox(height: 10),
-    await PdfText.of(body, size: 13, maxWidth: 340, center: true),
+    await PdfText.of(
+      body,
+      size: 13,
+      maxWidth: 340,
+      center: true,
+      color: colors.ink,
+    ),
     pw.SizedBox(height: 8),
     await PdfText.of(link, color: muted),
     pw.SizedBox(height: 24),

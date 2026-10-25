@@ -39,9 +39,9 @@ void main() {
   };
 
   final looks = [
-    (bangla, AppTheme.light, 'Bangla, light'),
-    (english, AppTheme.light, 'English, light'),
-    (bangla, AppTheme.dark, 'Bangla, dark'),
+    (bangla, AppTheme.light(), 'Bangla, light'),
+    (english, AppTheme.light(), 'English, light'),
+    (bangla, AppTheme.dark(), 'Bangla, dark'),
   ];
   for (final (locale, theme, look) in looks) {
     for (final MapEntry(key: name, value: screen) in screens.entries) {

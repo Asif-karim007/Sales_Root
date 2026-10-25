@@ -8,6 +8,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:salesroot/core/format/app_format.dart';
 import 'package:salesroot/core/locale/locale_provider.dart';
 import 'package:salesroot/core/theme/app_theme.dart';
+import 'package:salesroot/core/theme/sr_palettes.dart';
 import 'package:salesroot/features/sales/models/collection.dart';
 import 'package:salesroot/features/sales/models/quotation.dart';
 import 'package:salesroot/features/sales/models/sales_order.dart';
@@ -43,7 +44,7 @@ Future<void> _pump(
     UncontrolledProviderScope(
       container: container,
       child: MaterialApp(
-        theme: AppTheme.light,
+        theme: AppTheme.light(),
         locale: locale,
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -210,7 +211,7 @@ void main() {
       test('quotation, bill and receipt in ${locale.languageCode}', () async {
         TestWidgetsFlutterBinding.ensureInitialized();
         final l10n = lookupAppLocalizations(locale);
-        final pdf = SalesPdf(l10n, AppFormat(l10n, locale));
+        final pdf = SalesPdf(l10n, AppFormat(l10n, locale), jamdaniLight);
         final seller = SellerProfile.fromJson(fixtureMap('sales_workspace'));
 
         final documents = [
